@@ -1,0 +1,11 @@
+plugins {
+    id 'org.spongepowered.plugin' version '0.7'
+}
+
+group = pluginGroup
+version = pluginVersion
+
+dependencies {
+compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'}
+
+sponge.plugin.id = pluginId
