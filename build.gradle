@@ -1,11 +1,81 @@
 plugins {
+    id 'java'
+    id 'maven'
+    id 'idea'
+    id 'eclipse'
+    id 'com.github.hierynomus.license' version '0.12.1'
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'org.spongepowered.plugin' version '0.7'
 }
 
-group = pluginGroup
-version = pluginVersion
+defaultTasks 'licenseFormat', 'build'
 
-dependencies {
-compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'}
+group = pluginGroup
+version = "${pluginVersion}-${pluginPatch}"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 sponge.plugin.id = pluginId
+
+repositories {
+    mavenCentral()
+    maven { url 'http://repo.spongepowered.org/maven/' }
+    maven { url 'https://dl.bintray.com/me4502/maven' }
+}
+
+dependencies {
+    compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
+    compile 'com.me4502:ModularFramework:1.5'
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+license {
+    header = file('LICENSE')
+    include '**/*.java'
+
+    ignoreFailures = false
+    strictCheck = true
+
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+task sourceJar(type: Jar) {
+    classifier = 'source'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+jar {
+    classifier = ''
+}
+
+shadowJar {
+    classifier 'dist'
+    dependencies {
+        relocate ('com.me4502.modularframework', 'io.github.connorhartley.guardian.util.modularframework') {
+            include(dependency('com.me4502:ModularFramework'))
+            exclude 'com.me4502.modularframework.ModularFramework'
+        }
+    }
+    exclude 'GradleStart**'
+    exclude '.cache'
+    exclude 'LICENSE'
+    exclude 'com/me4502/modularframework/ModularFramework.class'
+}
+
+build.dependsOn(shadowJar)
+build.dependsOn(sourceJar)
+build.dependsOn(javadocJar)
+build.dependsOn(jar)
