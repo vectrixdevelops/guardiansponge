@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian;
 
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
+import io.github.connorhartley.guardian.service.StorageService;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
@@ -82,6 +83,10 @@ public class Guardian {
     /* Module System */
 
     public ModuleController moduleController;
+
+    /* Services */
+
+    private StorageService storageService;
 
     /* Game Events */
 

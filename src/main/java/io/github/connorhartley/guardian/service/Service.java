@@ -21,16 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.violation.offense;
+package io.github.connorhartley.guardian.service;
 
-public interface OffenseType {
+public interface Service {
 
-    String getOffenseName();
+    void start();
 
-    String getOffenseDescription();
+    void stop();
 
-    int getOffenseSeverity();
-
-    // TODO: Add punishments here...
-
+    boolean hasStarted();
 }
