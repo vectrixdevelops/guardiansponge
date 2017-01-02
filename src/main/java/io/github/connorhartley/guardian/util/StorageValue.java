@@ -27,7 +27,12 @@ import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.util.database.DatabaseConnection;
 import io.github.connorhartley.guardian.util.database.DatabaseQuery;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 
 public class StorageValue<T, K, V> {
@@ -66,6 +71,11 @@ public class StorageValue<T, K, V> {
             internalValue.ifPresent(v -> {
                 this.value = v;
                 save(storageDevice);
+            });
+        } else if (storageDevice instanceof DatabaseConnection) {
+            Optional<V> internalQueryValue = queryInternalValue((DatabaseConnection) storageDevice);
+            internalQueryValue.ifPresent(v -> {
+                this.value = v;
             });
         }
         return this;
@@ -123,17 +133,68 @@ public class StorageValue<T, K, V> {
     }
 
     private <T extends ConfigurationNode> boolean setInternalValue(T storageDevice) {
-        // Configuration stuff...
+        if (storageDevice != null) {
+            ConfigurationNode node = storageDevice.getNode(this.key);
+            if(this.comment != null && node instanceof CommentedConfigurationNode) {
+                ((CommentedConfigurationNode)node).setComment(this.comment);
+            }
+
+            if (this.modified) {
+                if (this.typeToken != null) {
+                    try {
+                        node.setValue(this.typeToken, this.value);
+                    } catch (ObjectMappingException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                } else {
+                    node.setValue(this.value);
+                }
+                this.modified = false;
+            }
+
+            return true;
+        }
         return false;
     }
 
     private <T extends ConfigurationNode> Optional<V> getInternalValue(T storageDevice) {
-        // Configuration stuff...
+        if (storageDevice != null) {
+            ConfigurationNode node = storageDevice.getNode(this.key);
+            if(node.isVirtual()) {
+                this.modified = true;
+            }
+
+            if(this.comment != null && node instanceof CommentedConfigurationNode) {
+                ((CommentedConfigurationNode)node).setComment(this.comment);
+            }
+
+            try {
+                if(typeToken != null)
+                    return Optional.of(node.getValue(this.typeToken, this.defaultValue));
+                else
+                    return Optional.of((V) node.getValue(new TypeToken(this.defaultValue.getClass()){}, this.defaultValue));
+            } catch(Exception e) {
+                return Optional.of(this.defaultValue);
+            }
+        }
         return Optional.empty();
     }
 
-    private <T extends DatabaseConnection> Optional<V> queryInternalValue(T storageDevice) {
-        // Database stuff...
+    private <T extends DatabaseConnection, K extends DatabaseQuery, V extends Object> Optional<V> queryInternalValue(T storageDevice) {
+        if (storageDevice != null && this.key instanceof DatabaseQuery) {
+            try {
+                PreparedStatement statement = storageDevice.getDataSource().getConnection().prepareStatement(((DatabaseQuery) this.key).getQuery());
+                if (this.value instanceof Boolean) {
+                    return Optional.of((V) Boolean.valueOf(statement.execute()));
+                } else if (this.value instanceof ResultSet) {
+                    ResultSet resultSet = statement.executeQuery();
+                    return Optional.of((V) resultSet);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         return Optional.empty();
     }
 

@@ -30,12 +30,12 @@ import java.util.Optional;
 
 public class DatabaseConnection {
 
-    private String driver = "sqlite";
-    private String address = "localhost";
-    private String port = "3306";
-    private String database = "storage";
-    private String username = "root";
-    private String password = "";
+    private final String driver;
+    private final String address;
+    private final String port;
+    private final String database;
+    private final String username;
+    private final String password;
 
     private HikariConfig hikariConfig = new HikariConfig();
 
