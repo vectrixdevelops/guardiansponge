@@ -27,6 +27,7 @@ import java.util.Optional;
 
 public final class ViolationTypes {
 
+    /* Temporary example */
     public static Optional<ViolationType> FLY_VIOLATION;
 
 }

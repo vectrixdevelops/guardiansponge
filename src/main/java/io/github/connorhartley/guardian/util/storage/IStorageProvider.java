@@ -23,12 +23,12 @@
  */
 package io.github.connorhartley.guardian.util.storage;
 
-public interface IStorageProvider {
+public interface IStorageProvider<T> {
 
     void load();
 
     void update();
 
-    String getAddress();
+    T getLocation();
 
 }

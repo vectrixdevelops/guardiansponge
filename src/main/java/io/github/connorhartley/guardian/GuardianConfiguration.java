@@ -29,13 +29,16 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import java.io.File;
+import java.io.IOException;
 
-public class GuardianConfiguration implements IStorageProvider {
+public class GuardianConfiguration implements IStorageProvider<File> {
 
     private Guardian plugin;
 
     private final File configFile;
     private final ConfigurationLoader<CommentedConfigurationNode> configManager;
+
+    private CommentedConfigurationNode configurationNode;
 
     public StorageValue<CommentedConfigurationNode, String, String> configurationVersion =
             new StorageValue<>("version", this.plugin.getPluginContainer().getVersion().orElse("unknown"));
@@ -48,17 +51,42 @@ public class GuardianConfiguration implements IStorageProvider {
 
     @Override
     public void load() {
+        try {
+            if (!this.configFile.exists()) {
+                this.configFile.getParentFile().mkdirs();
+                this.configFile.createNewFile();
+            }
 
+            this.configurationNode = configManager.load(this.plugin.configurationOptions);
+
+            this.configurationVersion.load(this.configurationNode);
+
+            this.configManager.save(this.configurationNode);
+        } catch (IOException e) {
+            this.plugin.getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
+        }
     }
 
     @Override
     public void update() {
+        try {
+            this.configurationNode = this.configManager.load(this.plugin.configurationOptions);
 
+            this.configurationVersion.save(this.configurationNode);
+
+            this.configManager.save(this.configurationNode);
+        } catch (IOException e) {
+            this.plugin.getLogger().error("A problem occurred attempting to update Guardians global configuration!", e);
+        }
     }
 
     @Override
-    public String getAddress() {
-        return null;
+    public File getLocation() {
+        return this.configFile;
+    }
+
+    public StorageValue<?, ?, ?>[] getConfigurationNodes() {
+        return new StorageValue<?, ?, ?>[]{ this.configurationVersion };
     }
 
 }

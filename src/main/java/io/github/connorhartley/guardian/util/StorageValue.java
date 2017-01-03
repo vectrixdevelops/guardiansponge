@@ -24,9 +24,8 @@
 package io.github.connorhartley.guardian.util;
 
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.service.StorageService;
-import io.github.connorhartley.guardian.util.database.DatabaseConnection;
-import io.github.connorhartley.guardian.util.database.DatabaseQuery;
+import io.github.connorhartley.guardian.util.storage.DatabaseConnection;
+import io.github.connorhartley.guardian.util.storage.DatabaseQuery;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
