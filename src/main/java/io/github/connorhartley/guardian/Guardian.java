@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian;
 
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
+import io.github.connorhartley.guardian.service.Service;
 import io.github.connorhartley.guardian.service.StorageService;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
@@ -40,6 +42,8 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 @Plugin(
         id = "guardian",
@@ -86,7 +90,7 @@ public class Guardian {
 
     /* Services */
 
-    private StorageService storageService;
+    private StorageService storageService = new StorageService();
 
     /* Game Events */
 
@@ -98,5 +102,22 @@ public class Guardian {
 
     @Listener
     public void onServerStop(GameStoppingEvent event) {}
+
+    @Listener
+    public void onReload(GameReloadEvent event) {}
+
+    /* Service Loading */
+
+    private void startService(Service service) {
+        if (!service.hasStarted()) {
+            service.start();
+        }
+    }
+
+    private void stopService(Service service) {
+        if (service.hasStarted()) {
+            service.stop();
+        }
+    }
 
 }

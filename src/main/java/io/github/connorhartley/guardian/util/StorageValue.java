@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian.util;
 
 import com.google.common.reflect.TypeToken;
+import io.github.connorhartley.guardian.service.StorageService;
 import io.github.connorhartley.guardian.util.database.DatabaseConnection;
 import io.github.connorhartley.guardian.util.database.DatabaseQuery;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -72,11 +73,6 @@ public class StorageValue<T, K, V> {
                 this.value = v;
                 save(storageDevice);
             });
-        } else if (storageDevice instanceof DatabaseConnection) {
-            Optional<V> internalQueryValue = queryInternalValue((DatabaseConnection) storageDevice);
-            internalQueryValue.ifPresent(v -> {
-                this.value = v;
-            });
         }
         return this;
     }
@@ -84,6 +80,16 @@ public class StorageValue<T, K, V> {
     public StorageValue<T, K, V> save(T storageDevice) {
         if (storageDevice instanceof  ConfigurationNode) {
             setInternalValue((ConfigurationNode) storageDevice);
+        }
+        return this;
+    }
+
+    public StorageValue<T, K, V> query(T storageDevice) {
+        if (storageDevice instanceof DatabaseConnection) {
+            Optional<V> internalQueryValue = queryInternalValue((DatabaseConnection) storageDevice);
+            internalQueryValue.ifPresent(v -> {
+                this.value = v;
+            });
         }
         return this;
     }

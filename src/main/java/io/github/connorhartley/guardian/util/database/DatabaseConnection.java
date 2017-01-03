@@ -60,7 +60,7 @@ public class DatabaseConnection {
         }
     }
 
-    public Optional<HikariDataSource> createDataSource() {
+    private Optional<HikariDataSource> createDataSource() {
         switch (this.driver) {
             case "mysql": {
                 this.hikariConfig.setPoolName("GuardianMySQLPool");
