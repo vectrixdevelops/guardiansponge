@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian;
 
+import io.github.connorhartley.guardian.util.StorageValue;
 import io.github.connorhartley.guardian.util.storage.IStorageProvider;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -31,9 +32,13 @@ import java.io.File;
 
 public class GuardianConfiguration implements IStorageProvider {
 
-    private final Guardian plugin;
+    private Guardian plugin;
+
     private final File configFile;
     private final ConfigurationLoader<CommentedConfigurationNode> configManager;
+
+    public StorageValue<CommentedConfigurationNode, String, String> configurationVersion =
+            new StorageValue<>("version", this.plugin.getPluginContainer().getVersion().orElse("unknown"));
 
     public GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;

@@ -52,14 +52,14 @@ public class StorageValue<T, K, V> {
     private boolean modified;
 
     public StorageValue(K key, V value) {
-        this(key, null, value);
+        this(key, value, null);
     }
 
-    public StorageValue(K key, String comment, V value) {
-        this(key, comment, value, null);
+    public StorageValue(K key, V value, String comment) {
+        this(key, value, comment, null);
     }
 
-    public StorageValue(K key, String comment, V value, TypeToken<V> typeToken) {
+    public StorageValue(K key, V value, String comment, TypeToken<V> typeToken) {
         this.defaultKey = key;
         this.comment = comment;
         this.defaultValue = value;
@@ -138,7 +138,7 @@ public class StorageValue<T, K, V> {
         return this.typeToken == null ? TypeToken.of((Class<V>) this.defaultValue.getClass()) : this.typeToken;
     }
 
-    private <T extends ConfigurationNode> boolean setInternalValue(T storageDevice) {
+    private <T extends ConfigurationNode, K extends String> boolean setInternalValue(T storageDevice) {
         if (storageDevice != null) {
             ConfigurationNode node = storageDevice.getNode(this.key);
             if(this.comment != null && node instanceof CommentedConfigurationNode) {
@@ -164,7 +164,7 @@ public class StorageValue<T, K, V> {
         return false;
     }
 
-    private <T extends ConfigurationNode> Optional<V> getInternalValue(T storageDevice) {
+    private <T extends ConfigurationNode, K extends String> Optional<V> getInternalValue(T storageDevice) {
         if (storageDevice != null) {
             ConfigurationNode node = storageDevice.getNode(this.key);
             if(node.isVirtual()) {
