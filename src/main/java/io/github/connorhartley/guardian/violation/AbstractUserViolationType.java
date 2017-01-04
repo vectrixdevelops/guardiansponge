@@ -35,14 +35,14 @@ public abstract class AbstractUserViolationType implements ViolationType<User> {
     public AbstractUserViolationType() {}
 
     @Override
-    public void handleConnect(User user) {
+    public void track(User user) {
         if (this.users.contains(user)) return;
 
         this.users.add(user);
     }
 
     @Override
-    public void handleDisconnect(User user) {
+    public void untrack(User user) {
         if (!this.users.contains(user)) return;
 
         this.users.remove(user);

@@ -35,14 +35,14 @@ public abstract class AbstractPlayerViolationType implements ViolationType<Playe
     public AbstractPlayerViolationType() {}
 
     @Override
-    public void handleConnect(Player player) {
+    public void track(Player player) {
         if (this.players.contains(player)) return;
 
         this.players.add(player);
     }
 
     @Override
-    public void handleDisconnect(Player player) {
+    public void untrack(Player player) {
         if (!this.players.contains(player)) return;
 
         this.players.remove(player);

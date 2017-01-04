@@ -24,37 +24,34 @@
 package io.github.connorhartley.guardian.data.tag;
 
 import io.github.connorhartley.guardian.data.Keys;
-import io.github.connorhartley.guardian.violation.offense.EmptyOffense;
-import io.github.connorhartley.guardian.violation.offense.OffenseType;
+import io.github.connorhartley.guardian.violation.Offense;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.manipulator.DataManipulatorBuilder;
 import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableSingleData;
 import org.spongepowered.api.data.manipulator.mutable.common.AbstractSingleData;
 import org.spongepowered.api.data.merge.MergeFunction;
 import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
-import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
 import org.spongepowered.api.data.value.mutable.Value;
 
 import java.util.Optional;
 
-public class OffenseData extends AbstractSingleData<OffenseType, OffenseData, OffenseData.Immutable> {
+public class OffenseData extends AbstractSingleData<Offense, OffenseData, OffenseData.Immutable> {
 
-    protected OffenseData(OffenseType value) {
+    protected OffenseData(Offense value) {
         super(value, Keys.GUARDIAN_OFFENSE_TAG);
     }
 
-    public Value<OffenseType> getOffenseType() {
+    public Value<Offense> getOffense() {
         return getValueGetter();
     }
 
     @Override
-    protected Value<OffenseType> getValueGetter() {
+    protected Value<Offense> getValueGetter() {
         return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_OFFENSE_TAG, getValue());
     }
 
@@ -71,7 +68,7 @@ public class OffenseData extends AbstractSingleData<OffenseType, OffenseData, Of
     @Override
     public Optional<OffenseData> from(DataContainer container) {
         if (container.contains(Keys.GUARDIAN_OFFENSE_TAG.getQuery())) {
-            return Optional.of(set(Keys.GUARDIAN_OFFENSE_TAG, (OffenseType) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(getValue())));
+            return Optional.of(set(Keys.GUARDIAN_OFFENSE_TAG, (Offense) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(getValue())));
         }
         return Optional.empty();
     }
@@ -91,18 +88,18 @@ public class OffenseData extends AbstractSingleData<OffenseType, OffenseData, Of
         return 1;
     }
 
-    public static class Immutable extends AbstractImmutableSingleData<OffenseType, Immutable, OffenseData> {
+    public static class Immutable extends AbstractImmutableSingleData<Offense, Immutable, OffenseData> {
 
-        protected Immutable(OffenseType value) {
+        protected Immutable(Offense value) {
             super(value, Keys.GUARDIAN_OFFENSE_TAG);
         }
 
-        public ImmutableValue<OffenseType> getOffenseType() {
+        public ImmutableValue<Offense> getOffense() {
             return getValueGetter();
         }
 
         @Override
-        protected ImmutableValue<OffenseType> getValueGetter() {
+        protected ImmutableValue<Offense> getValueGetter() {
             return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_OFFENSE_TAG, getValue()).asImmutable();
         }
 
@@ -126,11 +123,12 @@ public class OffenseData extends AbstractSingleData<OffenseType, OffenseData, Of
 
         @Override
         public OffenseData create() {
-            return new OffenseData(new EmptyOffense());
+            Offense emptyOffense = new Offense.Builder().setName("unknown").setDescription("Unknown offense.").setSeverity(0).build();
+            return new OffenseData(emptyOffense);
         }
 
-        public Optional<OffenseData> createFrom(OffenseType offenseType) {
-            return Optional.of(new OffenseData(offenseType));
+        public Optional<OffenseData> createFrom(Offense offense) {
+            return Optional.of(new OffenseData(offense));
         }
 
         @Override
@@ -144,9 +142,9 @@ public class OffenseData extends AbstractSingleData<OffenseType, OffenseData, Of
                 return Optional.empty();
             }
 
-            OffenseType offenseType = (OffenseType) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).get();
+            Offense offense = (Offense) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).get();
 
-            return Optional.of(new OffenseData(offenseType));
+            return Optional.of(new OffenseData(offense));
         }
     }
 

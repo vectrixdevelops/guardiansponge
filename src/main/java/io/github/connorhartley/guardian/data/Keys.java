@@ -24,8 +24,7 @@
 package io.github.connorhartley.guardian.data;
 
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.violation.ViolationType;
-import io.github.connorhartley.guardian.violation.offense.OffenseType;
+import io.github.connorhartley.guardian.violation.Offense;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.value.mutable.Value;
 
@@ -36,7 +35,7 @@ public class Keys {
 
     /* Tags : Attached to the player to represent some "type" data. */
 
-    public static Key<Value<OffenseType>> GUARDIAN_OFFENSE_TAG = makeSingleKey(TypeToken.of(OffenseType.class),
-            new TypeToken<Value<OffenseType>>(){}, of("GuardianOffenseTag"), "guardian:guardianoffensetag", "GuardianOffenseTag");
+    public static Key<Value<Offense>> GUARDIAN_OFFENSE_TAG = makeSingleKey(TypeToken.of(Offense.class),
+            new TypeToken<Value<Offense>>(){}, of("GuardianOffenseTag"), "guardian:guardianoffensetag", "GuardianOffenseTag");
 
 }

@@ -32,7 +32,7 @@ import java.util.Optional;
 /**
  * Represents a violation class.
  */
-public interface ViolationType<V> {
+public interface ViolationType<H> {
 
     void onConstruction();
 
@@ -42,11 +42,11 @@ public interface ViolationType<V> {
 
     StabilityStatus getStabilityStatus();
 
-    void handleConnect(V viewer);
+    void track(H human);
 
-    void handleDisconnect(V viewer);
+    void untrack(H human);
 
-    interface Check<P, V> {
+    interface Check<P, H> {
 
         void start();
 
@@ -58,7 +58,7 @@ public interface ViolationType<V> {
 
         P getProvider();
 
-        V getViewer();
+        H getHuman();
 
     }
 
