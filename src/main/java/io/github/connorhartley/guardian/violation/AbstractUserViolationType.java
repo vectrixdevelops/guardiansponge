@@ -23,49 +23,33 @@
  */
 package io.github.connorhartley.guardian.violation;
 
-import io.github.connorhartley.guardian.util.StabilityStatus;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Collection;
 
-/**
- * Represents violation
- */
-public interface ViolationType {
+public abstract class AbstractUserViolationType implements ViolationType {
 
-    void onConstruction();
+    private ArrayList<User> users = new ArrayList<>();
 
-    void onDeconstruction();
+    public AbstractUserViolationType() {}
 
-    boolean isReady();
+    @Override
+    public void handleConnect(User user) {
+        if (this.users.contains(user)) return;
 
-    StabilityStatus getStabilityStatus();
+        this.users.add(user);
+    }
 
-    void handleConnect(Player player);
+    @Override
+    public void handleDisconnect(User user) {
+        if (!this.users.contains(user)) return;
 
-    void handleConnect(User user);
+        this.users.remove(user);
+    }
 
-    void handleDisconnect(Player player);
-
-    void handleDisconnect(User user);
-
-    Check<?, ?>[] getChecks();
-
-    interface Check<P, E> {
-
-        void start();
-
-        void update();
-
-        void stop();
-
-        boolean isExecuting();
-
-        P getProvider();
-
-        E getEntity();
-
+    public Collection<User> getUsers() {
+        return this.users;
     }
 
 }

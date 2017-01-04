@@ -23,49 +23,14 @@
  */
 package io.github.connorhartley.guardian.violation;
 
-import io.github.connorhartley.guardian.util.StabilityStatus;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
+public @interface Violation {
 
-import java.util.Optional;
+    String id();
 
-/**
- * Represents violation
- */
-public interface ViolationType {
+    String name();
 
-    void onConstruction();
+    String version();
 
-    void onDeconstruction();
-
-    boolean isReady();
-
-    StabilityStatus getStabilityStatus();
-
-    void handleConnect(Player player);
-
-    void handleConnect(User user);
-
-    void handleDisconnect(Player player);
-
-    void handleDisconnect(User user);
-
-    Check<?, ?>[] getChecks();
-
-    interface Check<P, E> {
-
-        void start();
-
-        void update();
-
-        void stop();
-
-        boolean isExecuting();
-
-        P getProvider();
-
-        E getEntity();
-
-    }
+    String[] authors();
 
 }

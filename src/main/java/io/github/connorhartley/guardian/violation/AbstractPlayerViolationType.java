@@ -28,22 +28,17 @@ import org.spongepowered.api.entity.living.player.Player;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public abstract class AbstractPlayerViolationType<P> implements ViolationType<P> {
-
-    private final P provider;
+public abstract class AbstractPlayerViolationType implements ViolationType {
 
     private ArrayList<Player> players = new ArrayList<>();
 
-    public AbstractPlayerViolationType(P provider, Player player) {
-        this.provider = provider;
-    }
+    public AbstractPlayerViolationType() {}
 
     @Override
     public void handleConnect(Player player) {
         if (this.players.contains(player)) return;
 
         this.players.add(player);
-        this.update();
     }
 
     @Override
@@ -51,12 +46,6 @@ public abstract class AbstractPlayerViolationType<P> implements ViolationType<P>
         if (!this.players.contains(player)) return;
 
         this.players.remove(player);
-        this.update();
-    }
-
-    @Override
-    public P getProvider() {
-        return this.provider;
     }
 
     public Collection<Player> getPlayers() {
