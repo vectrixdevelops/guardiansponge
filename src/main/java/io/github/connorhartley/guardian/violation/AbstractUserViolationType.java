@@ -28,7 +28,7 @@ import org.spongepowered.api.entity.living.player.User;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public abstract class AbstractUserViolationType implements ViolationType {
+public abstract class AbstractUserViolationType implements ViolationType<User> {
 
     private ArrayList<User> users = new ArrayList<>();
 

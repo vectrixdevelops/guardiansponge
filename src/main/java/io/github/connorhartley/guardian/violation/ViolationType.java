@@ -30,9 +30,9 @@ import org.spongepowered.api.entity.living.player.User;
 import java.util.Optional;
 
 /**
- * Represents violation
+ * Represents a violation class.
  */
-public interface ViolationType {
+public interface ViolationType<V> {
 
     void onConstruction();
 
@@ -42,17 +42,11 @@ public interface ViolationType {
 
     StabilityStatus getStabilityStatus();
 
-    void handleConnect(Player player);
+    void handleConnect(V viewer);
 
-    void handleConnect(User user);
+    void handleDisconnect(V viewer);
 
-    void handleDisconnect(Player player);
-
-    void handleDisconnect(User user);
-
-    Check<?, ?>[] getChecks();
-
-    interface Check<P, E> {
+    interface Check<P, V> {
 
         void start();
 
@@ -64,7 +58,7 @@ public interface ViolationType {
 
         P getProvider();
 
-        E getEntity();
+        V getViewer();
 
     }
 
