@@ -32,7 +32,7 @@ import java.util.Optional;
 /**
  * Represents a violation main class.
  */
-public interface ViolationType {
+public interface ViolationType<P> {
 
     /* Identification */
 
@@ -50,16 +50,22 @@ public interface ViolationType {
 
     /* Module Methods */
 
+    boolean isReady();
+
     void onConstruction();
 
     void handleConnect(Player player);
 
     void handleConnect(User user);
 
+    void update();
+
     void onDeconstruction();
 
     void handleDisconnect(Player player);
 
     void handleDisconnect(User user);
+
+    P getProvider();
 
 }

@@ -21,18 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.violation.offense;
+package io.github.connorhartley.guardian.violation;
 
-public interface OffenseType {
+import org.spongepowered.api.entity.living.player.Player;
 
-    // TODO: Do not use an interface for this. Instead make an offense builder.
+import java.util.ArrayList;
+import java.util.Collection;
 
-    String getOffenseName();
+public abstract class AbstractPlayerViolationType<P> implements ViolationType<P> {
 
-    String getOffenseDescription();
+    private final P provider;
 
-    int getOffenseSeverity();
+    private ArrayList<Player> players = new ArrayList<>();
 
-    // TODO: Add punishments here...
+    public AbstractPlayerViolationType(P provider, Player player) {
+        this.provider = provider;
+    }
+
+    @Override
+    public void handleConnect(Player player) {
+        if (this.players.contains(player)) return;
+
+        this.players.add(player);
+        this.update();
+    }
+
+    @Override
+    public void handleDisconnect(Player player) {
+        if (!this.players.contains(player)) return;
+
+        this.players.remove(player);
+        this.update();
+    }
+
+    @Override
+    public P getProvider() {
+        return this.provider;
+    }
+
+    public Collection<Player> getPlayers() {
+        return this.players;
+    }
 
 }

@@ -23,16 +23,28 @@
  */
 package io.github.connorhartley.guardian.violation.offense;
 
-public interface OffenseType {
+/**
+ * Represents an empty offense reference to use in case
+ * the data is not supplied any.
+ */
+public class EmptyOffense implements OffenseType {
 
-    // TODO: Do not use an interface for this. Instead make an offense builder.
+    public EmptyOffense() {
+    }
 
-    String getOffenseName();
+    @Override
+    public String getOffenseName() {
+        return "unknown";
+    }
 
-    String getOffenseDescription();
+    @Override
+    public String getOffenseDescription() {
+        return "unknown";
+    }
 
-    int getOffenseSeverity();
-
-    // TODO: Add punishments here...
+    @Override
+    public int getOffenseSeverity() {
+        return 0;
+    }
 
 }
