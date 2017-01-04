@@ -90,7 +90,7 @@ public class Guardian {
 
     /* Services */
 
-    private StorageService storageService = new StorageService();
+    private StorageService storageService = new StorageService(this);
 
     /* Game Events */
 

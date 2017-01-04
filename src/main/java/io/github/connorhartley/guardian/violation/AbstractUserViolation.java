@@ -23,33 +23,33 @@
  */
 package io.github.connorhartley.guardian.violation;
 
-import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public abstract class AbstractPlayerViolationType implements ViolationType<Player> {
+public abstract class AbstractUserViolation implements ViolationType<User> {
 
-    private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<User> users = new ArrayList<>();
 
-    public AbstractPlayerViolationType() {}
+    public AbstractUserViolation() {}
 
     @Override
-    public void track(Player player) {
-        if (this.players.contains(player)) return;
+    public void track(User user) {
+        if (this.users.contains(user)) return;
 
-        this.players.add(player);
+        this.users.add(user);
     }
 
     @Override
-    public void untrack(Player player) {
-        if (!this.players.contains(player)) return;
+    public void untrack(User user) {
+        if (!this.users.contains(user)) return;
 
-        this.players.remove(player);
+        this.users.remove(user);
     }
 
-    public Collection<Player> getPlayers() {
-        return this.players;
+    public Collection<User> getUsers() {
+        return this.users;
     }
 
 }

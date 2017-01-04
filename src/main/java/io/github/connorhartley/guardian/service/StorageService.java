@@ -23,9 +23,17 @@
  */
 package io.github.connorhartley.guardian.service;
 
+import io.github.connorhartley.guardian.Guardian;
+
 public class StorageService implements Service {
 
+    private final Guardian plugin;
+
     private boolean started = false;
+
+    public StorageService(Guardian plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
     public void start() {

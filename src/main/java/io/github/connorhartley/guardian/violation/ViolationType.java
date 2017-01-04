@@ -24,10 +24,6 @@
 package io.github.connorhartley.guardian.violation;
 
 import io.github.connorhartley.guardian.util.StabilityStatus;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
-
-import java.util.Optional;
 
 /**
  * Represents a violation class.
