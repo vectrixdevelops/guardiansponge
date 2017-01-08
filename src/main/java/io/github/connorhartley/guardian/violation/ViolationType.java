@@ -27,6 +27,9 @@ import io.github.connorhartley.guardian.util.StabilityStatus;
 
 /**
  * Represents a violation class.
+ *
+ * Deprecation Notice: This is being replaced by an anticheat service API at its core,
+ *                     which will allow a way for new violations to be checked. WIP.
  */
 public interface ViolationType<H> {
 
