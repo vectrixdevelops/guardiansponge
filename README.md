@@ -1,4 +1,4 @@
-# Guardian
+# Guardian [![Build Status](https://travis-ci.org/connorhartley/guardian.svg?branch=master)](https://travis-ci.org/connorhartley/guardian)
 
 > An experimental Sponge anticheat.
 

@@ -1,0 +1,9 @@
+dist: trusty
+install: true
+
+language: java
+jdk:
+  - openjdk8
+  - oraclejdk8
+
+script: gradle build
