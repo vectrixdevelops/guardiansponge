@@ -37,8 +37,6 @@ import java.util.Optional;
 
 public class StorageValue<T, K, V> {
 
-    // TODO: Represents a storable value, referenced by a key.
-
     private K key;
     private K defaultKey;
     private V value;
@@ -59,7 +57,7 @@ public class StorageValue<T, K, V> {
     }
 
     public StorageValue(K key, V value, String comment, TypeToken<V> typeToken) {
-        this.defaultKey = key;
+        this.key = key;
         this.comment = comment;
         this.defaultValue = value;
         this.typeToken = typeToken;

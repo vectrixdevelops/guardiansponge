@@ -39,7 +39,6 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
-import java.util.Optional;
 
 @Plugin(
         id = "guardian",

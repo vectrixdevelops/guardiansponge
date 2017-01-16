@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian;
 
 import io.github.connorhartley.guardian.util.StorageValue;
 import io.github.connorhartley.guardian.util.storage.StorageProvider;
+import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
@@ -39,9 +40,6 @@ public class GuardianConfiguration implements StorageProvider<File> {
     private final ConfigurationLoader<CommentedConfigurationNode> configManager;
 
     private CommentedConfigurationNode configurationNode;
-
-    public StorageValue<CommentedConfigurationNode, String, String> configurationVersion =
-            new StorageValue<>("version", this.plugin.getPluginContainer().getVersion().orElse("unknown"));
 
     public GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
@@ -59,7 +57,8 @@ public class GuardianConfiguration implements StorageProvider<File> {
 
             this.configurationNode = configManager.load(this.plugin.configurationOptions);
 
-            this.configurationVersion.load(this.configurationNode);
+            new StorageValue<CommentedConfigurationNode, String, String>("version", this.plugin.getPluginContainer().getVersion().get(),
+                    null, null).load(this.configurationNode);
 
             this.configManager.save(this.configurationNode);
         } catch (IOException e) {
@@ -72,7 +71,7 @@ public class GuardianConfiguration implements StorageProvider<File> {
         try {
             this.configurationNode = this.configManager.load(this.plugin.configurationOptions);
 
-            this.configurationVersion.save(this.configurationNode);
+//            this.configurationVersion.save(this.configurationNode);
 
             this.configManager.save(this.configurationNode);
         } catch (IOException e) {
@@ -85,8 +84,8 @@ public class GuardianConfiguration implements StorageProvider<File> {
         return this.configFile;
     }
 
-    public StorageValue<?, ?, ?>[] getConfigurationNodes() {
-        return new StorageValue<?, ?, ?>[]{ this.configurationVersion };
-    }
+//    public StorageValue<?, ?, ?>[] getConfigurationNodes() {
+//        return new StorageValue<?, ?, ?>[]{ this.configurationVersion };
+//    }
 
 }
