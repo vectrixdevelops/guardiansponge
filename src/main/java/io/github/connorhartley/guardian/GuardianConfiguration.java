@@ -24,14 +24,14 @@
 package io.github.connorhartley.guardian;
 
 import io.github.connorhartley.guardian.util.StorageValue;
-import io.github.connorhartley.guardian.util.storage.IStorageProvider;
+import io.github.connorhartley.guardian.util.storage.StorageProvider;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import java.io.File;
 import java.io.IOException;
 
-public class GuardianConfiguration implements IStorageProvider<File> {
+public class GuardianConfiguration implements StorageProvider<File> {
 
     private Guardian plugin;
 

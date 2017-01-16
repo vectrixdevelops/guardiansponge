@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.util.storage;
 
-public interface IStorageProvider<T> {
+public interface StorageProvider<T> {
 
     void load();
 
