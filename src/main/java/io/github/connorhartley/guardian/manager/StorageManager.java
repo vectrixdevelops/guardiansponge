@@ -21,35 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.violation;
+package io.github.connorhartley.guardian.manager;
 
-import org.spongepowered.api.entity.living.player.User;
+import io.github.connorhartley.guardian.Guardian;
 
-import java.util.ArrayList;
-import java.util.Collection;
+public class StorageManager implements Manager {
 
-public abstract class AbstractUserViolation implements ViolationType<User> {
+    private final Guardian plugin;
 
-    private ArrayList<User> users = new ArrayList<>();
+    private boolean started = false;
 
-    public AbstractUserViolation() {}
-
-    @Override
-    public void track(User user) {
-        if (this.users.contains(user)) return;
-
-        this.users.add(user);
+    public StorageManager(Guardian plugin) {
+        this.plugin = plugin;
     }
 
     @Override
-    public void untrack(User user) {
-        if (!this.users.contains(user)) return;
-
-        this.users.remove(user);
+    public void start() {
+        this.started = true;
     }
 
-    public Collection<User> getUsers() {
-        return this.users;
+    @Override
+    public void stop() {
+        this.started = false;
+    }
+
+    @Override
+    public boolean hasStarted() {
+        return this.started;
     }
 
 }

@@ -25,8 +25,8 @@ package io.github.connorhartley.guardian;
 
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.service.Service;
-import io.github.connorhartley.guardian.service.StorageService;
+import io.github.connorhartley.guardian.manager.Manager;
+import io.github.connorhartley.guardian.manager.StorageManager;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -90,7 +90,7 @@ public class Guardian {
 
     /* Services */
 
-    private StorageService storageService = new StorageService(this);
+    private StorageManager storageService = new StorageManager(this);
 
     /* Game Events */
 
@@ -106,23 +106,23 @@ public class Guardian {
     @Listener
     public void onReload(GameReloadEvent event) {}
 
-    /* Service Loading */
+    /* Manager Loading */
 
-    private void startService(Service service) {
-        if (!service.hasStarted()) {
-            service.start();
+    private void startService(Manager manager) {
+        if (!manager.hasStarted()) {
+            manager.start();
         }
     }
 
-    private void stopService(Service service) {
-        if (service.hasStarted()) {
-            service.stop();
+    private void stopService(Manager manager) {
+        if (manager.hasStarted()) {
+            manager.stop();
         }
     }
 
-    /* Service */
+    /* Manager */
 
-    public Optional<StorageService> getStorageService() {
+    public Optional<StorageManager> getStorageService() {
         if (this.storageService.hasStarted()) {
             return Optional.of(this.storageService);
         }

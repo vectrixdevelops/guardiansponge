@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.service;
+package io.github.connorhartley.guardian.manager;
 
-public interface Service {
+public interface Manager {
 
     void start();
 
