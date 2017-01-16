@@ -2,7 +2,7 @@
 
 > An experimental Sponge anticheat.
 
-Guardian is an extensible anticheat client for Sponge servers.
+Guardian is an extensible anticheat plugin for Sponge servers.
 
 Guardian is a work in progress and currently has no built in violation modules.
 As well as that, the API is under construction.

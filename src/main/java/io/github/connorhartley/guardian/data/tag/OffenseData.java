@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.data.tag;
 
 import io.github.connorhartley.guardian.data.Keys;
-import io.github.connorhartley.guardian.violation.Offense;
+import io.github.connorhartley.guardian.detection.Offense;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
@@ -38,6 +38,7 @@ import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
 import org.spongepowered.api.data.value.mutable.Value;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class OffenseData extends AbstractSingleData<Offense, OffenseData, OffenseData.Immutable> {
@@ -123,7 +124,7 @@ public class OffenseData extends AbstractSingleData<Offense, OffenseData, Offens
 
         @Override
         public OffenseData create() {
-            Offense emptyOffense = new Offense.Builder().setName("unknown").setDescription("Unknown offense.").setSeverity(0).build();
+            Offense emptyOffense = new Offense.Builder().dateAndTime(LocalDateTime.now()).detection(null).severity(0).build();
             return new OffenseData(emptyOffense);
         }
 

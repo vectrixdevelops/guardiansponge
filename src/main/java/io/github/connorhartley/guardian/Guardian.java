@@ -25,8 +25,6 @@ package io.github.connorhartley.guardian;
 
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.manager.Manager;
-import io.github.connorhartley.guardian.manager.StorageManager;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -88,14 +86,24 @@ public class Guardian {
 
     public ModuleController moduleController;
 
-    /* Services */
+    /* Configuration */
 
-    private StorageManager storageService = new StorageManager(this);
+    protected GuardianConfiguration globalConfiguration;
 
     /* Game Events */
 
     @Listener
-    public void onServerStarting(GameStartingServerEvent event) {}
+    public void onServerStarting(GameStartingServerEvent event) {
+        getLogger().info("Starting Guardian AntiCheat.");
+
+        this.globalConfiguration = new GuardianConfiguration(this, this.pluginConfig, this.pluginConfigManager);
+
+        this.configurationOptions = ConfigurationOptions.defaults();
+
+        getLogger().info("Loading Global Configuration.");
+
+        this.globalConfiguration.load();
+    }
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {}
@@ -105,28 +113,5 @@ public class Guardian {
 
     @Listener
     public void onReload(GameReloadEvent event) {}
-
-    /* Manager Loading */
-
-    private void startService(Manager manager) {
-        if (!manager.hasStarted()) {
-            manager.start();
-        }
-    }
-
-    private void stopService(Manager manager) {
-        if (manager.hasStarted()) {
-            manager.stop();
-        }
-    }
-
-    /* Manager */
-
-    public Optional<StorageManager> getStorageService() {
-        if (this.storageService.hasStarted()) {
-            return Optional.of(this.storageService);
-        }
-        return Optional.empty();
-    }
 
 }
