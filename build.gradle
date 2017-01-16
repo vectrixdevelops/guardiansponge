@@ -5,13 +5,13 @@ plugins {
     id 'eclipse'
     id 'com.github.hierynomus.license' version '0.12.1'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id 'org.spongepowered.plugin' version '0.7'
+    id 'org.spongepowered.plugin' version '0.8.1'
 }
 
 defaultTasks 'licenseFormat', 'build'
 
 group = pluginGroup
-version = "${pluginVersion}-${pluginPatch}"
+version = "${spongeVersion}-${pluginVersion}-${pluginPatch}"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -20,13 +20,14 @@ sponge.plugin.id = pluginId
 
 repositories {
     mavenCentral()
-    maven { url 'http://repo.spongepowered.org/maven/' }
     maven { url 'https://dl.bintray.com/me4502/maven' }
 }
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
-    compile 'com.me4502:ModularFramework:1.5'
+    compile 'org.apache.commons:commons-math3:3.6.1'
+    compile "org.spongepowered:spongeapi:6.0.0-SNAPSHOT"
+    compile 'com.zaxxer:HikariCP:2.5.1'
+    compile 'com.me4502:ModularFramework:1.6'
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
