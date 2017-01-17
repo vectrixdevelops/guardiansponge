@@ -21,19 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian.module;
 
-import io.github.connorhartley.guardian.module.DummyDetection;
+import com.me4502.modularframework.module.Module;
+import io.github.connorhartley.guardian.detection.Detection;
 
-/**
- * Detection Types
- *
- * Contains registry variables of Guardians built in {@link Detection} modules,
- * from the {@link DetectionProvider}.
- */
-public final class DetectionTypes {
+@Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
+public class DummyDetection extends Detection {
 
-    /* Temporary example */
-    public static DetectionProvider DUMMY_DETECTION = new DetectionProvider(DummyDetection.class);
+    // TODO: Test stuff should go in here.
+
+    @Override
+    public void onConstruction() {
+
+    }
+
+    @Override
+    public void onDeconstruction() {
+
+    }
+
+    @Override
+    public boolean isReady() {
+        return false;
+    }
 
 }
