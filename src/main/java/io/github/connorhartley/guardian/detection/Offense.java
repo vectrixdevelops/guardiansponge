@@ -132,12 +132,15 @@ public class Offense {
         /**
          * Severity
          *
-         * <p>Sets the severity of the offense to the builder.</p>
+         * <p>Sets the severity of the offense to the builder.
+         * Value must be between 0 and 100.</p>
          *
          * @param severity The {@link Integer} representing the level of severity
          * @return This {@link Builder}
+         * @throws Exception Value out of bounds exception
          */
-        public Builder severity(int severity) {
+        public Builder severity(int severity) throws Exception {
+            if (severity < 0 || severity > 100) throw new Exception("Value out of bounds exception.");
             this.offenseSeverity = severity;
             return this;
         }

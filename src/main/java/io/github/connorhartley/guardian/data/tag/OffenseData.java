@@ -43,6 +43,8 @@ import java.util.Optional;
 
 public class OffenseData extends AbstractSingleData<Offense, OffenseData, OffenseData.Immutable> {
 
+    // TODO: Work in progress. This may be removed after consideration.
+
     protected OffenseData(Offense value) {
         super(value, Keys.GUARDIAN_OFFENSE_TAG);
     }
@@ -118,13 +120,18 @@ public class OffenseData extends AbstractSingleData<Offense, OffenseData, Offens
     public static class Builder extends AbstractDataBuilder<OffenseData> implements DataManipulatorBuilder<OffenseData, Immutable> {
 
 
-        protected Builder(Class<OffenseData> requiredClass, int supportedVersion) {
-            super(requiredClass, supportedVersion);
+        public Builder() {
+            super(OffenseData.class, 1);
         }
 
         @Override
         public OffenseData create() {
-            Offense emptyOffense = new Offense.Builder().dateAndTime(LocalDateTime.now()).detection(null).severity(0).build();
+            Offense emptyOffense = null;
+            try {
+                emptyOffense = new Offense.Builder().dateAndTime(LocalDateTime.now()).detection(null).severity(0).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return new OffenseData(emptyOffense);
         }
 
