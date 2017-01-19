@@ -25,5 +25,8 @@ package io.github.connorhartley.guardian.sequence.action;
 
 import org.spongepowered.api.event.Event;
 
-public interface ActionBlueprint<T extends Event> {
+public interface ActionBlueprint<H, T extends Event> {
+
+    Action<H, T> create();
+
 }

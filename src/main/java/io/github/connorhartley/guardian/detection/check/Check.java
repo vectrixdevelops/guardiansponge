@@ -40,9 +40,13 @@ public abstract class Check<T> {
         }
     }
 
-    abstract void pass();
+    abstract void before();
 
-    abstract void fail();
+    abstract void update();
+
+    abstract void after(CheckResult result);
+
+    abstract boolean isChecking();
 
     public Optional<T> getHuman() {
         if (this.human != null) {

@@ -23,5 +23,12 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
-public interface CheckRegistry {
+public interface CheckRegistry<H> {
+
+    void registerCheck(CheckProvider<H> checkProvider);
+
+    void unregister(CheckProvider<H> checkProvider);
+
+    void unregister(Class<? extends CheckProvider<H>> checkProviderClass);
+
 }

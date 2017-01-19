@@ -23,13 +23,8 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
-import io.github.connorhartley.guardian.sequence.Sequence;
-import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
+public class CheckResult {
 
-public interface CheckProvider<H> {
-
-    SequenceBlueprint getSequence();
-
-    Check createInstance(CheckManager checkManager, Sequence<H> sequence, H human);
+    // TODO: CheckResult should contain information of Sequence completion or incompletion results used internally and externally.
 
 }

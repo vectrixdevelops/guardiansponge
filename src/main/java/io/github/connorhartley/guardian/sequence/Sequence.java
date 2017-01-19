@@ -23,5 +23,55 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-public class Sequence {
+import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.sequence.action.Action;
+import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.Cause;
+
+import java.util.List;
+
+public class Sequence<H> {
+
+    public Sequence(H human, CheckProvider<H> checkProvider, List<Action<H, ?>> actions) {
+
+    }
+
+    <T extends Event> boolean check(H human, T event) {
+        return false;
+    }
+
+    // Human has passed with no detection of exploitation.
+    boolean pass(H human, Event event, Action<H, ?> action, Cause cause) {
+        return false;
+    }
+
+    // Human has failed with a detection of exploitaton.
+    boolean fail(H human, Event event, Cause cause) {
+        return false;
+    }
+
+    boolean hasExpired() {
+        return false;
+    }
+
+    boolean isCancelled() {
+        return false;
+    }
+
+    boolean isFinished() {
+        return false;
+    }
+
+    public H getHuman() {
+        return null;
+    }
+
+    public CheckProvider<H> getProvider() {
+        return null;
+    }
+
+    public List<Event> getCompleteEvents() {
+        return null;
+    }
+
 }

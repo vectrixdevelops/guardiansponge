@@ -41,6 +41,7 @@ public class Action<H, T extends Event> {
     private int delay;
     private int expire;
 
+    @SafeVarargs
     Action(Class<T> event, Condition<H, T>... conditions) {
         this(event);
         this.conditions.addAll(Arrays.asList(conditions));
@@ -56,35 +57,29 @@ public class Action<H, T extends Event> {
     }
 
     void addCondition(Condition<H, T> condition) {
-
+        this.conditions.add(condition);
     }
 
     void setDelay(int delay) {
-
+        this.delay = delay;
     }
 
     void setExpire(int expire) {
-
+        this.expire = expire;
     }
 
     public void succeed(H human, Event event) {
-
+        this.successfulListeners.forEach(runnable -> runnable.test(human, event));
     }
 
     public boolean fail(H human, Event event) {
-        return false;
+        return this.failedListeners.stream()
+                .anyMatch(callback -> callback.test(human, event));
     }
 
     public boolean testConditions(H human, T event) {
-        return false;
-    }
-
-    public Class<T> getEvent() {
-        return event;
-    }
-
-    public List<Condition<H, T>> getConditions() {
-        return this.conditions;
+        return this.failedListeners.stream()
+                .noneMatch(callback -> callback.test(human, event));
     }
 
     public int getDelay() {
@@ -93,6 +88,14 @@ public class Action<H, T extends Event> {
 
     public int getExpire() {
         return this.expire;
+    }
+
+    public Class<T> getEvent() {
+        return this.event;
+    }
+
+    public List<Condition<H, T>> getConditions() {
+        return this.conditions;
     }
 
     void onSuccess(Condition condition) {

@@ -23,5 +23,31 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-public abstract class SequenceBlueprint {
+import io.github.connorhartley.guardian.detection.check.CheckProvider;
+
+public abstract class SequenceBlueprint<H> {
+
+    protected final CheckProvider provider;
+
+    protected SequenceBlueprint(CheckProvider<H> checkProvider) {
+        this.provider = checkProvider;
+    }
+
+    public abstract Sequence<H> create(H human);
+
+    public CheckProvider<H> getCheckProvider() {
+        return this.provider;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof Sequence) {
+            return ((Sequence) object).getProvider().equals(this.provider);
+        } else if (object instanceof SequenceBlueprint) {
+            return ((SequenceBlueprint) object).getCheckProvider().equals(this.provider);
+        }
+
+        return false;
+    }
+
 }
