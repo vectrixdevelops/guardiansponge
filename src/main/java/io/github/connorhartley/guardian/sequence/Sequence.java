@@ -30,6 +30,7 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class Sequence {
@@ -45,16 +46,43 @@ public class Sequence {
     private boolean cancelled = false;
     private boolean finished = false;
 
+    private Iterator<Action> iterator;
+
     public Sequence(User user, CheckProvider checkProvider, List<Action> actions) {
         this.user = user;
         this.checkProvider = checkProvider;
         this.actions.addAll(actions);
     }
 
-    // ## Do this section...
-
     <T extends Event> boolean check(User user, T event) {
-        return false;
+        this.iterator = this.actions.iterator();
+
+        if (iterator.hasNext()) {
+            Action action = iterator.next();
+
+            long now = System.currentTimeMillis();
+
+            if (!action.getEvent().equals(event.getClass())) {
+                return fail(user, event, action, Cause.builder().named("INVALID", action).build());
+            }
+
+            if (this.last + ((action.getDelay() / 20) * 1000) > now) {
+                return fail(user, event, action, Cause.builder().named("DELAY_FAIL", action.getDelay()).build());
+            }
+
+            if (this.last + ((action.getExpire() / 20) * 1000) < now) {
+                return fail(user, event, action, Cause.builder().named("EXPIRE_FAILED", action.getExpire()).build());
+            }
+
+            Action<T> typeAction = (Action<T>) action;
+
+            if (!typeAction.testConditions(user, event)) {
+                return fail(user, event, action, Cause.builder().named("CONDITION_FAILED", action.getConditions()).build());
+            }
+
+            return pass(user, typeAction, Cause.builder().named("ACTION_PASS", typeAction).build());
+        }
+        return true;
     }
 
     // Human has passed with no detection of exploitation.
@@ -63,11 +91,9 @@ public class Sequence {
     }
 
     // Human has failed with a detection of exploitaton.
-    boolean fail(User user, Action action, Cause cause) {
+    boolean fail(User user, Event event, Action action, Cause cause) {
         return false;
     }
-
-    // ## End of section needing completion.
 
     boolean hasExpired() {
         if (this.actions.isEmpty()) {
