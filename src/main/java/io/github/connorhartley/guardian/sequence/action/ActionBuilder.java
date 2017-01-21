@@ -23,7 +23,61 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
+import io.github.connorhartley.guardian.sequence.SequenceBuilder;
+import io.github.connorhartley.guardian.sequence.condition.Condition;
 import org.spongepowered.api.event.Event;
 
 public class ActionBuilder<T extends Event> {
+
+    private final SequenceBuilder builder;
+    private final Action action;
+
+    public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action) {
+        this.builder = sequenceBuilder;
+        this.action = action;
+    }
+
+    public ActionBuilder<T> condition(Condition<T> condition) {
+        this.action.addCondition(condition);
+        return this;
+    }
+
+    public ActionBuilder<T> delay(int delay) {
+        this.action.setDelay(delay);
+        return this;
+    }
+
+    public ActionBuilder<T> expire(int expire) {
+        this.action.setExpire(expire);
+        return this;
+    }
+
+    public ActionBuilder<T> success(Condition condition) {
+        this.action.onSuccess(condition);
+        return this;
+    }
+
+    public ActionBuilder<T> failure(Condition condition) {
+        this.action.onFailure(condition);
+        return this;
+    }
+
+    public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
+        return action(new Action<>(clazz));
+    }
+
+    public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> blueprint) {
+        return action(blueprint.create());
+    }
+
+    public <K extends Event> ActionBuilder<K> action(Action<K> action) {
+        return this.builder.action(action);
+    }
+
+    public SequenceBlueprint build(CheckProvider provider) {
+        return this.builder.build(provider);
+    }
+
 }

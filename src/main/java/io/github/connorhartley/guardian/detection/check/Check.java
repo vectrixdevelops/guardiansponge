@@ -28,16 +28,12 @@ import org.spongepowered.api.network.PlayerConnection;
 
 import java.util.Optional;
 
-public abstract class Check<T> {
+public abstract class Check {
 
-    private final T human;
+    private final User user;
 
-    public Check(T human) {
-        if (human instanceof User || human instanceof PlayerConnection) {
-            this.human = human;
-        } else {
-            this.human = null;
-        }
+    public Check(User user) {
+        this.user = user;
     }
 
     abstract void before();
@@ -48,9 +44,9 @@ public abstract class Check<T> {
 
     abstract boolean isChecking();
 
-    public Optional<T> getHuman() {
-        if (this.human != null) {
-            return Optional.of(this.human);
+    public Optional<User> getUser() {
+        if (this.user != null) {
+            return Optional.of(this.user);
         }
         return Optional.empty();
     }

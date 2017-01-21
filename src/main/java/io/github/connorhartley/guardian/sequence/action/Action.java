@@ -24,15 +24,16 @@
 package io.github.connorhartley.guardian.sequence.action;
 
 import io.github.connorhartley.guardian.sequence.condition.Condition;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Action<H, T extends Event> {
+public class Action<T extends Event> {
 
-    private final List<Condition<H, T>> conditions = new ArrayList<>();
+    private final List<Condition<T>> conditions = new ArrayList<>();
     private final List<Condition> successfulListeners = new ArrayList<>();
     private final List<Condition> failedListeners = new ArrayList<>();
 
@@ -42,12 +43,12 @@ public class Action<H, T extends Event> {
     private int expire;
 
     @SafeVarargs
-    Action(Class<T> event, Condition<H, T>... conditions) {
+    Action(Class<T> event, Condition<T>... conditions) {
         this(event);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(Class<T> event, List<Condition<H, T>> conditions) {
+    public Action(Class<T> event, List<Condition<T>> conditions) {
         this(event);
         this.conditions.addAll(conditions);
     }
@@ -56,7 +57,7 @@ public class Action<H, T extends Event> {
         this.event = event;
     }
 
-    void addCondition(Condition<H, T> condition) {
+    void addCondition(Condition<T> condition) {
         this.conditions.add(condition);
     }
 
@@ -68,18 +69,18 @@ public class Action<H, T extends Event> {
         this.expire = expire;
     }
 
-    public void succeed(H human, Event event) {
-        this.successfulListeners.forEach(runnable -> runnable.test(human, event));
+    public void succeed(User user, Event event) {
+        this.successfulListeners.forEach(runnable -> runnable.test(user, event));
     }
 
-    public boolean fail(H human, Event event) {
+    public boolean fail(User user, Event event) {
         return this.failedListeners.stream()
-                .anyMatch(callback -> callback.test(human, event));
+                .anyMatch(callback -> callback.test(user, event));
     }
 
-    public boolean testConditions(H human, T event) {
+    public boolean testConditions(User user, T event) {
         return this.failedListeners.stream()
-                .noneMatch(callback -> callback.test(human, event));
+                .noneMatch(callback -> callback.test(user, event));
     }
 
     public int getDelay() {
@@ -94,7 +95,7 @@ public class Action<H, T extends Event> {
         return this.event;
     }
 
-    public List<Condition<H, T>> getConditions() {
+    public List<Condition<T>> getConditions() {
         return this.conditions;
     }
 

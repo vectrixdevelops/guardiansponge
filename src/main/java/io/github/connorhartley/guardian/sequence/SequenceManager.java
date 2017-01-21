@@ -23,5 +23,16 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
+
 public class SequenceManager implements SequenceInvoker {
+
+    // TODO: Sequence manager.
+
+    @Override
+    public void invoke(User user, Event event) {
+
+    }
+
 }

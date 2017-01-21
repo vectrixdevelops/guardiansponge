@@ -25,53 +25,79 @@ package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.action.Action;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Sequence<H> {
+public class Sequence {
 
-    public Sequence(H human, CheckProvider<H> checkProvider, List<Action<H, ?>> actions) {
+    private final User user;
+    private final CheckProvider checkProvider;
 
+    private final List<Action> actions = new ArrayList<>();
+    private final List<Event> completeEvents = new ArrayList<>();
+
+    private long last = System.currentTimeMillis();
+
+    private boolean cancelled = false;
+    private boolean finished = false;
+
+    public Sequence(User user, CheckProvider checkProvider, List<Action> actions) {
+        this.user = user;
+        this.checkProvider = checkProvider;
+        this.actions.addAll(actions);
     }
 
-    <T extends Event> boolean check(H human, T event) {
+    // ## Do this section...
+
+    <T extends Event> boolean check(User user, T event) {
         return false;
     }
 
     // Human has passed with no detection of exploitation.
-    boolean pass(H human, Event event, Action<H, ?> action, Cause cause) {
+    boolean pass(User user, Action action, Cause cause) {
         return false;
     }
 
     // Human has failed with a detection of exploitaton.
-    boolean fail(H human, Event event, Cause cause) {
+    boolean fail(User user, Action action, Cause cause) {
         return false;
     }
 
+    // ## End of section needing completion.
+
     boolean hasExpired() {
-        return false;
+        if (this.actions.isEmpty()) {
+            return false;
+        }
+
+        Action action = this.actions.get(0);
+        long now = System.currentTimeMillis();
+
+        return action != null && this.last + ((action.getExpire() / 20) * 1000) < now;
     }
 
     boolean isCancelled() {
-        return false;
+        return this.cancelled;
     }
 
     boolean isFinished() {
-        return false;
+        return this.finished;
     }
 
-    public H getHuman() {
-        return null;
+    public User getUser() {
+        return this.user;
     }
 
-    public CheckProvider<H> getProvider() {
-        return null;
+    public CheckProvider getProvider() {
+        return this.checkProvider;
     }
 
     public List<Event> getCompleteEvents() {
-        return null;
+        return this.completeEvents;
     }
 
 }

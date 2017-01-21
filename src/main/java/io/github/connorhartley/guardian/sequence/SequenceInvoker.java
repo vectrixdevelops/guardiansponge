@@ -23,5 +23,11 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
+
 public interface SequenceInvoker {
+
+    void invoke(User user, Event event);
+
 }

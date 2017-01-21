@@ -25,11 +25,12 @@ package io.github.connorhartley.guardian.detection.check;
 
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
+import org.spongepowered.api.entity.living.player.User;
 
-public interface CheckProvider<H> {
+public interface CheckProvider {
 
     SequenceBlueprint getSequence();
 
-    Check createInstance(CheckManager checkManager, Sequence<H> sequence, H human);
+    Check createInstance(CheckManager checkManager, Sequence sequence, User user);
 
 }

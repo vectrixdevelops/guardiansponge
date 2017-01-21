@@ -24,18 +24,19 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import org.spongepowered.api.entity.living.player.User;
 
-public abstract class SequenceBlueprint<H> {
+public abstract class SequenceBlueprint {
 
     protected final CheckProvider provider;
 
-    protected SequenceBlueprint(CheckProvider<H> checkProvider) {
+    protected SequenceBlueprint(CheckProvider checkProvider) {
         this.provider = checkProvider;
     }
 
-    public abstract Sequence<H> create(H human);
+    public abstract Sequence create(User user);
 
-    public CheckProvider<H> getCheckProvider() {
+    public CheckProvider getCheckProvider() {
         return this.provider;
     }
 
