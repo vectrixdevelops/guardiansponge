@@ -69,11 +69,12 @@ public class Action<T extends Event> {
         this.expire = expire;
     }
 
-    public void succeed(User user, Event event) {
+    public boolean fail(User user, Event event) {
         this.successfulListeners.forEach(runnable -> runnable.test(user, event));
+        return true;
     }
 
-    public boolean fail(User user, Event event) {
+    public boolean succeed(User user, Event event) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> callback.test(user, event));
     }

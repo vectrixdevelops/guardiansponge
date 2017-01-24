@@ -40,6 +40,7 @@ public class Sequence {
 
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
+    private final List<Event> incompleteEvents = new ArrayList<>();
 
     private long last = System.currentTimeMillis();
 
@@ -63,36 +64,50 @@ public class Sequence {
             long now = System.currentTimeMillis();
 
             if (!action.getEvent().equals(event.getClass())) {
-                return fail(user, event, action, Cause.builder().named("INVALID", action).build());
+                return pass(user, event, action, Cause.builder().named("INVALID", action).build());
             }
 
             if (this.last + ((action.getDelay() / 20) * 1000) > now) {
-                return fail(user, event, action, Cause.builder().named("DELAY_FAIL", action.getDelay()).build());
+                return pass(user, event, action, Cause.builder().named("DELAY_FAILED", action.getDelay()).build());
             }
 
             if (this.last + ((action.getExpire() / 20) * 1000) < now) {
-                return fail(user, event, action, Cause.builder().named("EXPIRE_FAILED", action.getExpire()).build());
+                return pass(user, event, action, Cause.builder().named("EXPIRE_FAILED", action.getExpire()).build());
             }
 
             Action<T> typeAction = (Action<T>) action;
 
             if (!typeAction.testConditions(user, event)) {
-                return fail(user, event, action, Cause.builder().named("CONDITION_FAILED", action.getConditions()).build());
+                return pass(user, event, action, Cause.builder().named("CONDITION_FAILED", action.getConditions()).build());
             }
 
-            return pass(user, typeAction, Cause.builder().named("ACTION_PASS", typeAction).build());
+            this.iterator.remove();
+
+            if (!iterator.hasNext()) {
+                this.finished = true;
+            }
+
+            return fail(user, event, typeAction, Cause.builder().named("ACTION_PASS", typeAction).build());
         }
         return true;
     }
 
-    // Human has passed with no detection of exploitation.
-    boolean pass(User user, Action action, Cause cause) {
+    // TODO: Pass and Fail should maybe be swapped over? As this is in the context of actions & conditions.
+
+    // Called when the player does not meet the requirements.
+    boolean pass(User user, Event event, Action action, Cause cause) {
+        this.cancelled = action.succeed(user, event);
+
+        this.incompleteEvents.add(event);
         return false;
     }
 
-    // Human has failed with a detection of exploitaton.
+    // Called when the player meets the action requirements.
     boolean fail(User user, Event event, Action action, Cause cause) {
-        return false;
+        this.last = System.currentTimeMillis();
+
+        this.completeEvents.add(event);
+        return action.fail(user, event);
     }
 
     boolean hasExpired() {
