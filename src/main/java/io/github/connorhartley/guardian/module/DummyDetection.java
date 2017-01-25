@@ -25,6 +25,9 @@ package io.github.connorhartley.guardian.module;
 
 import com.me4502.modularframework.module.Module;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.check.Check;
+
+import java.util.List;
 
 @Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
 public class DummyDetection extends Detection {
@@ -44,6 +47,11 @@ public class DummyDetection extends Detection {
     @Override
     public boolean isReady() {
         return false;
+    }
+
+    @Override
+    public List<Check> getChecks() {
+        return null;
     }
 
 }

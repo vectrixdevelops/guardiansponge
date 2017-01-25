@@ -23,8 +23,34 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
+import io.github.connorhartley.guardian.sequence.Sequence;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.cause.Cause;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 public class CheckManager {
 
-    // TODO: Manager.
+    // TODO
+
+    private final List<Check> checks = new CopyOnWriteArrayList<>();
+    private final Object plugin;
+
+    public CheckManager(Object plugin) {
+        this.plugin = plugin;
+    }
+
+    public void post(User user, Sequence sequence, CheckProvider checkProvider, Cause cause) {
+        // Posts a report of a failed action / condition sequence on the related check.
+    }
+
+    public void tick() {
+        this.checks.forEach(Check::update);
+    }
+
+    public void cleanup() {
+
+    }
 
 }

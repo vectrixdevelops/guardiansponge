@@ -36,11 +36,9 @@ public abstract class Check {
         this.user = user;
     }
 
-    abstract void before();
+    abstract void report(CheckResult checkResult);
 
     abstract void update();
-
-    abstract void after(CheckResult result);
 
     abstract boolean isChecking();
 
