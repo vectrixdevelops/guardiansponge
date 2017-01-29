@@ -21,22 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian;
 
-public class CheckRegistry {
+public class GuardianDetections {
 
-    // TODO
-
-    public void registerCheck(CheckProvider checkProvider) {
-
-    }
-
-    public void unregister(CheckProvider checkProvider) {
-
-    }
-
-    public void unregister(Class<? extends CheckProvider> checkProviderClass) {
-
-    }
+    // TODO: Built in detection registration here.
 
 }

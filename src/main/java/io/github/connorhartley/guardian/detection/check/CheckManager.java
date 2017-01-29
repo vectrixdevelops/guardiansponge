@@ -23,16 +23,18 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
+import io.github.connorhartley.guardian.event.check.CheckStartEvent;
+import io.github.connorhartley.guardian.event.check.CheckStopEvent;
 import io.github.connorhartley.guardian.sequence.Sequence;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CheckManager {
-
-    // TODO
 
     private final List<Check> checks = new CopyOnWriteArrayList<>();
     private final Object plugin;
@@ -41,8 +43,20 @@ public class CheckManager {
         this.plugin = plugin;
     }
 
-    public void post(User user, Sequence sequence, CheckProvider checkProvider, Cause cause) {
-        // Posts a report of a failed action / condition sequence on the related check.
+    public void post(CheckProvider checkProvider, Sequence sequence, User user, Cause cause) {
+        Check check = checkProvider.createInstance(this, sequence, user);
+
+        CheckStartEvent attempt = new CheckStartEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
+        Sponge.getEventManager().post(attempt);
+        if (attempt.isCancelled()) {
+            return;
+        }
+
+        this.checks.add(check);
+
+        // TODO: Note that the player is being checked.
+
+        Sponge.getEventManager().registerListeners(this.plugin, check);
     }
 
     public void tick() {
@@ -50,7 +64,37 @@ public class CheckManager {
     }
 
     public void cleanup() {
+        this.checks.removeIf(check -> {
+           if (check.isChecking()) {
+               return false;
+           }
 
+           CheckStopEvent attempt = new CheckStopEvent(check, Cause.of(NamedCause.source(this.plugin)));
+           Sponge.getEventManager().post(attempt);
+
+           Sponge.getEventManager().unregisterListeners(check);
+           if (!check.hasFinished()) {
+               check.finish();
+           }
+
+           return true;
+        });
+    }
+
+    public void end(Check check) {
+        if (!check.getUser().isPresent()) return;
+
+        User user = check.getUser().get();
+
+        CheckStopEvent attempt = new CheckStopEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
+        Sponge.getEventManager().post(attempt);
+
+        Sponge.getEventManager().unregisterListeners(check);
+        check.finish();
+
+        this.checks.remove(check);
+
+        // TODO: Note that the player is no longer being checked.
     }
 
 }
