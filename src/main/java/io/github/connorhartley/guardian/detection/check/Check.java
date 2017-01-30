@@ -40,8 +40,6 @@ public abstract class Check {
 
     abstract void finish();
 
-    abstract void finish(CheckResult checkResult);
-
     abstract boolean hasFinished();
 
     abstract boolean isChecking();

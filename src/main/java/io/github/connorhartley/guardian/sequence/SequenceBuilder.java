@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.detection.check.CheckResult;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
@@ -35,10 +36,24 @@ import java.util.List;
 
 public class SequenceBuilder {
 
+    private final CheckResult checkResult;
+
     private List<Action> actions = new ArrayList<>();
 
+    public SequenceBuilder() {
+        this(null);
+    }
+
+    public SequenceBuilder(CheckResult checkResult) {
+        if (checkResult == null) {
+            this.checkResult = new CheckResult();
+        } else {
+            this.checkResult = checkResult;
+        }
+    }
+
     public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(clazz));
+        return action(new Action<>(clazz, this.checkResult));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
@@ -48,14 +63,14 @@ public class SequenceBuilder {
     public <T extends Event> ActionBuilder<T> action(Action<T> action) {
         this.actions.add(action);
 
-        return new ActionBuilder<>(this, action);
+        return new ActionBuilder<>(this, action, checkResult);
     }
 
     public SequenceBlueprint build(CheckProvider provider) {
         return new SequenceBlueprint(provider) {
             @Override
             public Sequence create(User user) {
-                return new Sequence(user, provider, actions);
+                return new Sequence(user, provider, actions, checkResult);
             }
         };
     }

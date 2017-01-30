@@ -25,17 +25,25 @@ package io.github.connorhartley.guardian.data;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.detection.Offense;
+import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.value.mutable.Value;
+
+import java.util.List;
 
 import static org.spongepowered.api.data.DataQuery.of;
 import static org.spongepowered.api.data.key.KeyFactory.makeSingleKey;
 
 public class Keys {
 
+    /* Handler : Attached to the user to represent handler data. Used internally only. */
+
+    public static Key<Value<List<Sequence>>> GUARDIAN_SEQUENCE_HANDLE = makeSingleKey(new TypeToken<List<Sequence>>() {},
+            new TypeToken<Value<List<Sequence>>>() {}, of("GuardianSequenceHandle"), "guardian:guardiansequencehandle", "GuardianSequenceHandle");
+
     /* Tags : Attached to the player to represent some "type" data. */
 
     public static Key<Value<Offense>> GUARDIAN_OFFENSE_TAG = makeSingleKey(TypeToken.of(Offense.class),
-            new TypeToken<Value<Offense>>(){}, of("GuardianOffenseTag"), "guardian:guardianoffensetag", "GuardianOffenseTag");
+            new TypeToken<Value<Offense>>() {}, of("GuardianOffenseTag"), "guardian:guardianoffensetag", "GuardianOffenseTag");
 
 }

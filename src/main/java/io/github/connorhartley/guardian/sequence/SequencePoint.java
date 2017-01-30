@@ -23,15 +23,32 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.github.connorhartley.guardian.detection.check.CheckResult;
 
-public class SequenceHandle {
+public class SequencePoint {
 
-    private final List<Sequence> executing = new ArrayList<>();
+    // TODO: This may be modified soon to be nicer.
 
-    public List<Sequence> getExecuting() {
-        return executing;
+    private final CheckResult checkResult;
+    private final String task;
+    private final boolean pass;
+
+    public SequencePoint(CheckResult checkResult, String task, boolean pass) {
+        this.checkResult = checkResult;
+        this.task = task;
+        this.pass = pass;
+    }
+
+    public boolean hasPassed() {
+        return this.pass;
+    }
+
+    public String getTask() {
+        return this.task;
+    }
+
+    public CheckResult getCheckResult() {
+        return this.checkResult;
     }
 
 }

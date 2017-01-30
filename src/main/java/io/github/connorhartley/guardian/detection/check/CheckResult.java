@@ -23,41 +23,37 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
-import io.github.connorhartley.guardian.sequence.Sequence;
-import io.github.connorhartley.guardian.sequence.action.Action;
-import org.spongepowered.api.entity.living.player.User;
+import io.github.connorhartley.guardian.sequence.SequencePoint;
 
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Make this into a builder.
 public class CheckResult {
 
-    // This is probably going to change a lot.
-
-    // TODO: CheckResult should contain information of Sequence completion or incompletion results used internally and externally.
-
-    private final Sequence sequence;
-    private final User user;
+    // TODO: This may be modified soon to be nicer.
 
     private List<String> passed = new ArrayList<>();
     private List<String> failed = new ArrayList<>();
 
-    public CheckResult(Sequence sequence, User user) {
-        this.sequence = sequence;
-        this.user = user;
-    }
-
-    public void createPoint(String task, boolean pass) {
+    public SequencePoint report(String task, boolean pass) {
         // Creates a point in which a report is formed from.
         if (pass) {
             this.passed.add(task);
         } else {
             this.failed.add(task);
         }
+        return new SequencePoint(this, task, pass);
     }
 
-    public int getReportSize() {
+    public List<String> getPassed() {
+        return this.passed;
+    }
+
+    public List<String> getFailed() {
+        return this.failed;
+    }
+
+    public int getSize() {
         return this.passed.size() + this.failed.size();
     }
 

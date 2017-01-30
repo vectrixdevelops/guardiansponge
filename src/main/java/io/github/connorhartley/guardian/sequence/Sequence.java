@@ -24,10 +24,12 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.detection.check.CheckResult;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,6 +39,8 @@ public class Sequence {
 
     private final User user;
     private final CheckProvider checkProvider;
+
+    private CheckResult checkResult;
 
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
@@ -49,10 +53,11 @@ public class Sequence {
 
     private Iterator<Action> iterator;
 
-    public Sequence(User user, CheckProvider checkProvider, List<Action> actions) {
+    public Sequence(User user, CheckProvider checkProvider, List<Action> actions, CheckResult checkResult) {
         this.user = user;
         this.checkProvider = checkProvider;
         this.actions.addAll(actions);
+        this.checkResult = checkResult;
     }
 
     <T extends Event> boolean check(User user, T event) {
@@ -64,50 +69,72 @@ public class Sequence {
             long now = System.currentTimeMillis();
 
             if (!action.getEvent().equals(event.getClass())) {
-                return pass(user, event, action, Cause.builder().named("INVALID", action).build());
+                action.updateResult(this.checkResult);
+                return fail(user, event, action, Cause.builder().named("INVALID", action).build());
             }
+
+            this.checkResult = action.getCheckResult();
 
             if (this.last + ((action.getDelay() / 20) * 1000) > now) {
-                return pass(user, event, action, Cause.builder().named("DELAY_FAILED", action.getDelay()).build());
+                action.updateResult(this.checkResult);
+                return fail(user, event, action, Cause.builder().named("DELAY_FAILED", action.getDelay()).build());
             }
 
+            this.checkResult = action.getCheckResult();
+
             if (this.last + ((action.getExpire() / 20) * 1000) < now) {
-                return pass(user, event, action, Cause.builder().named("EXPIRE_FAILED", action.getExpire()).build());
+                action.updateResult(this.checkResult);
+                return fail(user, event, action, Cause.builder().named("EXPIRE_FAILED", action.getExpire()).build());
             }
+
+            this.checkResult = action.getCheckResult();
 
             Action<T> typeAction = (Action<T>) action;
 
             if (!typeAction.testConditions(user, event)) {
-                return pass(user, event, action, Cause.builder().named("CONDITION_FAILED", action.getConditions()).build());
+                action.updateResult(this.checkResult);
+                return fail(user, event, action, Cause.builder().named("CONDITION_FAILED", action.getConditions()).build());
             }
 
             this.iterator.remove();
+
+            typeAction.updateResult(this.checkResult);
+            pass(user, event, Cause.builder().named("ACTIONS_COMPLETE", true).build());
+            typeAction.succeed(user, event);
+
+            this.checkResult = action.getCheckResult();
 
             if (!iterator.hasNext()) {
                 this.finished = true;
             }
 
-            return fail(user, event, typeAction, Cause.builder().named("ACTION_PASS", typeAction).build());
+            return true;
         }
         return true;
     }
 
-    // TODO: Pass and Fail should maybe be swapped over? As this is in the context of actions & conditions.
+    // Called when the player meets the action requirements.
+    boolean pass(User user, Event event, Cause cause) {
+        this.last = System.currentTimeMillis();
+
+        // TODO: Post sequence success event.
+
+        this.completeEvents.add(event);
+        return true;
+    }
 
     // Called when the player does not meet the requirements.
-    boolean pass(User user, Event event, Action action, Cause cause) {
-        this.cancelled = action.succeed(user, event);
+    boolean fail(User user, Event event, Action action, Cause cause) {
+        this.cancelled = action.fail(user, event);
+
+        // TODO: Post sequence fail event.
 
         this.incompleteEvents.add(event);
         return false;
     }
 
-    // Called when the player meets the action requirements.
-    boolean fail(User user, Event event, Action action, Cause cause) {
-        this.last = System.currentTimeMillis();
-
-        this.completeEvents.add(event);
-        return action.fail(user, event);
+    CheckResult getCheckResult() {
+        return this.checkResult;
     }
 
     boolean hasExpired() {

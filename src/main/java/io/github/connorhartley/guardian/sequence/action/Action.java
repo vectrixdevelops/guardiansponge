@@ -23,7 +23,9 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import io.github.connorhartley.guardian.detection.check.CheckResult;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
+import io.github.connorhartley.guardian.sequence.SequencePoint;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
@@ -41,20 +43,22 @@ public class Action<T extends Event> {
 
     private int delay;
     private int expire;
+    private CheckResult checkResult;
 
     @SafeVarargs
-    Action(Class<T> event, Condition<T>... conditions) {
-        this(event);
+    Action(Class<T> event, CheckResult checkResult, Condition<T>... conditions) {
+        this(event, checkResult);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(Class<T> event, List<Condition<T>> conditions) {
-        this(event);
+    public Action(Class<T> event, CheckResult checkResult, List<Condition<T>> conditions) {
+        this(event, checkResult);
         this.conditions.addAll(conditions);
     }
 
-    public Action(Class<T> event) {
+    public Action(Class<T> event, CheckResult checkResult) {
         this.event = event;
+        this.checkResult = checkResult;
     }
 
     void addCondition(Condition<T> condition) {
@@ -69,19 +73,32 @@ public class Action<T extends Event> {
         this.expire = expire;
     }
 
-    public boolean fail(User user, Event event) {
-        this.successfulListeners.forEach(runnable -> runnable.test(user, event));
-        return true;
+    public void updateResult(CheckResult checkResult) {
+        this.checkResult = checkResult;
     }
 
-    public boolean succeed(User user, Event event) {
+    public void succeed(User user, Event event) {
+        this.successfulListeners.forEach(callback -> this.checkResult = callback.test(user, event, this.checkResult).getCheckResult());
+    }
+
+    public boolean fail(User user, Event event) {
         return this.failedListeners.stream()
-                .anyMatch(callback -> callback.test(user, event));
+                .anyMatch(callback -> {
+                    SequencePoint sequencePoint = callback.test(user, event, this.checkResult);
+
+                    this.checkResult = sequencePoint.getCheckResult();
+                    return sequencePoint.hasPassed();
+                });
     }
 
     public boolean testConditions(User user, T event) {
-        return this.failedListeners.stream()
-                .noneMatch(callback -> callback.test(user, event));
+        return !this.conditions.stream()
+                .anyMatch(condition -> {
+                    SequencePoint sequencePoint = condition.test(user, event, this.checkResult);
+
+                    this.checkResult = sequencePoint.getCheckResult();
+                    return !sequencePoint.hasPassed();
+                });
     }
 
     public int getDelay() {
@@ -98,6 +115,10 @@ public class Action<T extends Event> {
 
     public List<Condition<T>> getConditions() {
         return this.conditions;
+    }
+
+    public CheckResult getCheckResult() {
+        return this.checkResult;
     }
 
     void onSuccess(Condition condition) {

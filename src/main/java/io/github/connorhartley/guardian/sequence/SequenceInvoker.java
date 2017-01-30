@@ -25,9 +25,10 @@ package io.github.connorhartley.guardian.sequence;
 
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.Cause;
 
 public interface SequenceInvoker {
 
-    void invoke(User user, Event event);
+    void invoke(User user, Event event, Cause cause);
 
 }
