@@ -21,54 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.event.check;
+package io.github.connorhartley.guardian.event.sequence;
 
-import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckResult;
+import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.impl.AbstractEvent;
 
-import java.util.Optional;
+public class SequenceSucceedEvent extends AbstractEvent {
 
-public class CheckStopEvent extends AbstractEvent {
-
-    private final Check check;
+    private final Sequence sequence;
     private final User user;
+    private final Event event;
     private final Cause cause;
-    private final CheckResult checkResult;
 
-    public CheckStopEvent(Check check, Cause cause) {
-        this(check, null, cause);
-    }
-
-    public CheckStopEvent(Check check, User user, Cause cause) {
-        this(check, user, null, cause);
-    }
-
-    public CheckStopEvent(Check check, User user, CheckResult checkResult, Cause cause) {
-        this.check = check;
+    public SequenceSucceedEvent(Sequence sequence, User user, Event event, Cause cause) {
+        this.sequence = sequence;
         this.user = user;
-        this.checkResult = checkResult;
+        this.event = event;
         this.cause = cause;
     }
 
-    public Check getCheck() {
-        return this.check;
+    public Sequence getSequence() {
+        return this.sequence;
     }
 
-    public Optional<User> getUser() {
-        if (this.user == null) return Optional.empty();
-        return Optional.of(this.user);
+    public User getUser() {
+        return this.user;
     }
 
-    public Optional<CheckResult> getCheckResult() {
-        if (this.checkResult == null) return Optional.empty();
-        return Optional.of(this.checkResult);
+    public Event getSuccessfulEvent() {
+        return this.event;
     }
 
     @Override
     public Cause getCause() {
-        return null;
+        return this.cause;
     }
 }

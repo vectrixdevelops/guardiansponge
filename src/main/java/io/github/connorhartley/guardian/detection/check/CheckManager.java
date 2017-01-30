@@ -23,8 +23,8 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
-import io.github.connorhartley.guardian.event.check.CheckStartEvent;
-import io.github.connorhartley.guardian.event.check.CheckStopEvent;
+import io.github.connorhartley.guardian.event.check.CheckBeginEvent;
+import io.github.connorhartley.guardian.event.check.CheckEndEvent;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
@@ -46,7 +46,7 @@ public class CheckManager {
     public void post(CheckProvider checkProvider, Sequence sequence, User user, Cause cause) {
         Check check = checkProvider.createInstance(this, sequence, user);
 
-        CheckStartEvent attempt = new CheckStartEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
+        CheckBeginEvent attempt = new CheckBeginEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
         Sponge.getEventManager().post(attempt);
         if (attempt.isCancelled()) {
             return;
@@ -69,11 +69,11 @@ public class CheckManager {
                return false;
            }
 
-           CheckStopEvent attempt = new CheckStopEvent(check, Cause.of(NamedCause.source(this.plugin)));
+           CheckEndEvent attempt = new CheckEndEvent(check, Cause.of(NamedCause.source(this.plugin)));
            Sponge.getEventManager().post(attempt);
 
            Sponge.getEventManager().unregisterListeners(check);
-           if (!check.hasFinished()) {
+           if (!check.isChecking()) {
                check.finish();
            }
 
@@ -86,7 +86,7 @@ public class CheckManager {
 
         User user = check.getUser().get();
 
-        CheckStopEvent attempt = new CheckStopEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
+        CheckEndEvent attempt = new CheckEndEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
         Sponge.getEventManager().post(attempt);
 
         Sponge.getEventManager().unregisterListeners(check);

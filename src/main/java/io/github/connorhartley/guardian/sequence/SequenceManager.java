@@ -27,10 +27,13 @@ import io.github.connorhartley.guardian.data.Keys;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.detection.check.CheckManager;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.event.sequence.SequenceBeginEvent;
+import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.service.user.UserStorageService;
 
 import java.util.ArrayList;
@@ -49,7 +52,7 @@ public class SequenceManager implements SequenceInvoker {
 
     @Override
     public void invoke(User user, Event event, Cause cause) {
-        if (!user.get(Keys.GUARDIAN_SEQUENCE_HANDLE).isPresent()) user.offer(Keys.GUARDIAN_SEQUENCE_HANDLE, new ArrayList<>());
+        if (!user.get(Keys.GUARDIAN_SEQUENCE_HANDLE).isPresent()) user.offer((Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).create());
 
         user.get(Keys.GUARDIAN_SEQUENCE_HANDLE).ifPresent(sequences -> {
             sequences.forEach(sequence -> sequence.pass(user, event, cause));
@@ -60,7 +63,12 @@ public class SequenceManager implements SequenceInvoker {
                    return false;
                }
 
-                // TODO: Post sequence finish event.
+               SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, user, sequence.getCheckResult(), Cause.of(NamedCause.source(this.plugin)));
+               Sponge.getEventManager().post(attempt);
+
+               if (attempt.isCancelled()) {
+                   return true;
+               }
 
                CheckProvider checkProvider = sequence.getProvider();
                this.checkManager.post(checkProvider, sequence, user, cause);
@@ -72,7 +80,12 @@ public class SequenceManager implements SequenceInvoker {
                     .forEach(blueprint -> {
                         Sequence sequence = blueprint.create(user);
 
-                        // TODO: Post sequence begin event.
+                        SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, user, sequence.getCheckResult(), Cause.of(NamedCause.source(this.plugin)));
+                        Sponge.getEventManager().post(attempt);
+
+                        if (attempt.isCancelled()) {
+                            return;
+                        }
 
                         if (sequence.pass(user, event, cause)) {
                             if (sequence.isCancelled()) {

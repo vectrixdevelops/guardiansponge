@@ -21,38 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.event.sequence;
 
+import io.github.connorhartley.guardian.detection.check.CheckResult;
+import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.network.PlayerConnection;
+import org.spongepowered.api.event.Cancellable;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.impl.AbstractEvent;
 
-import java.util.Optional;
+public class SequenceFinishEvent extends AbstractEvent implements Cancellable {
 
-public abstract class Check {
-
-    private final CheckProvider checkProvider;
+    private final Sequence sequence;
     private final User user;
+    private final CheckResult checkResult;
+    private final Cause cause;
 
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
+    private boolean cancelled = false;
+
+    public SequenceFinishEvent(Sequence sequence, User user, CheckResult checkResult, Cause cause) {
+        this.sequence = sequence;
         this.user = user;
+        this.checkResult = checkResult;
+        this.cause = cause;
     }
 
-    abstract void update();
-
-    abstract void finish();
-
-    abstract boolean isChecking();
-
-    public CheckProvider getProvider() {
-        return this.checkProvider;
+    public Sequence getSequence() {
+        return this.sequence;
     }
 
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
+    public User getUser() {
+        return this.user;
     }
 
+    public CheckResult getResult() {
+        return this.checkResult;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.cancelled = cancel;
+    }
+
+    @Override
+    public Cause getCause() {
+        return this.cause;
+    }
 }

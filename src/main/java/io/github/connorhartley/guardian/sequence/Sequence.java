@@ -25,7 +25,10 @@ package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.detection.check.CheckResult;
+import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
+import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
@@ -70,21 +73,21 @@ public class Sequence {
 
             if (!action.getEvent().equals(event.getClass())) {
                 action.updateResult(this.checkResult);
-                return fail(user, event, action, Cause.builder().named("INVALID", action).build());
+                return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
 
             this.checkResult = action.getCheckResult();
 
             if (this.last + ((action.getDelay() / 20) * 1000) > now) {
                 action.updateResult(this.checkResult);
-                return fail(user, event, action, Cause.builder().named("DELAY_FAILED", action.getDelay()).build());
+                return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
             }
 
             this.checkResult = action.getCheckResult();
 
             if (this.last + ((action.getExpire() / 20) * 1000) < now) {
                 action.updateResult(this.checkResult);
-                return fail(user, event, action, Cause.builder().named("EXPIRE_FAILED", action.getExpire()).build());
+                return fail(user, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
 
             this.checkResult = action.getCheckResult();
@@ -93,13 +96,13 @@ public class Sequence {
 
             if (!typeAction.testConditions(user, event)) {
                 action.updateResult(this.checkResult);
-                return fail(user, event, action, Cause.builder().named("CONDITION_FAILED", action.getConditions()).build());
+                return fail(user, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
             this.iterator.remove();
 
             typeAction.updateResult(this.checkResult);
-            pass(user, event, Cause.builder().named("ACTIONS_COMPLETE", true).build());
+            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getCheckResult())));
             typeAction.succeed(user, event);
 
             this.checkResult = action.getCheckResult();
@@ -117,7 +120,8 @@ public class Sequence {
     boolean pass(User user, Event event, Cause cause) {
         this.last = System.currentTimeMillis();
 
-        // TODO: Post sequence success event.
+        SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, user, event, cause);
+        Sponge.getEventManager().post(attempt);
 
         this.completeEvents.add(event);
         return true;
@@ -127,7 +131,8 @@ public class Sequence {
     boolean fail(User user, Event event, Action action, Cause cause) {
         this.cancelled = action.fail(user, event);
 
-        // TODO: Post sequence fail event.
+        SequenceFailEvent attempt = new SequenceFailEvent(this, user, event, cause);
+        Sponge.getEventManager().post(attempt);
 
         this.incompleteEvents.add(event);
         return false;

@@ -21,38 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.event.sequence;
 
+import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.network.PlayerConnection;
+import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.impl.AbstractEvent;
 
-import java.util.Optional;
+public class SequenceFailEvent extends AbstractEvent {
 
-public abstract class Check {
-
-    private final CheckProvider checkProvider;
+    private final Sequence sequence;
     private final User user;
+    private final Event event;
+    private final Cause cause;
 
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
+    public SequenceFailEvent(Sequence sequence, User user, Event event,  Cause cause) {
+        this.sequence = sequence;
         this.user = user;
+        this.event = event;
+        this.cause = cause;
     }
 
-    abstract void update();
-
-    abstract void finish();
-
-    abstract boolean isChecking();
-
-    public CheckProvider getProvider() {
-        return this.checkProvider;
+    public Sequence getSequence() {
+        return this.sequence;
     }
 
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
+    public User getUser() {
+        return this.user;
     }
 
+    public Event getFailedEvent() {
+        return this.event;
+    }
+
+    @Override
+    public Cause getCause() {
+        return this.cause;
+    }
 }

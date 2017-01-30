@@ -21,38 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.event.check;
 
+import io.github.connorhartley.guardian.detection.check.Check;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.network.PlayerConnection;
+import org.spongepowered.api.event.Cancellable;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.impl.AbstractEvent;
 
-import java.util.Optional;
+public class CheckBeginEvent extends AbstractEvent implements Cancellable {
 
-public abstract class Check {
-
-    private final CheckProvider checkProvider;
+    private final Check check;
     private final User user;
+    private final Cause cause;
 
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
+    private boolean cancelled = false;
+
+    public CheckBeginEvent(Check check, User user, Cause cause) {
+        this.check = check;
         this.user = user;
+        this.cause = cause;
     }
 
-    abstract void update();
-
-    abstract void finish();
-
-    abstract boolean isChecking();
-
-    public CheckProvider getProvider() {
-        return this.checkProvider;
+    public User getUser() {
+        return this.user;
     }
 
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
+    public Check getCheck() {
+        return this.check;
     }
 
+    @Override
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.cancelled = cancel;
+    }
+
+    @Override
+    public Cause getCause() {
+        return this.cause;
+    }
 }
