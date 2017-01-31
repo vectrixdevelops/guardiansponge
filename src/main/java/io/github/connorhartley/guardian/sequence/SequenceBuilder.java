@@ -34,10 +34,15 @@ import org.spongepowered.api.event.Event;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Sequence Builder
+ *
+ * A {@link SequenceBlueprint} builder giving the ability to chain
+ * actions for a {@link Sequence}.
+ */
 public class SequenceBuilder {
 
-    private final SequenceResult.Builder sequenceResult;
-
+    private SequenceResult.Builder sequenceResult;
     private List<Action> actions = new ArrayList<>();
 
     public SequenceBuilder() {

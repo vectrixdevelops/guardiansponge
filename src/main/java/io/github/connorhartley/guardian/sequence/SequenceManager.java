@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.data.Keys;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckManager;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceBeginEvent;
@@ -39,6 +40,11 @@ import org.spongepowered.api.service.user.UserStorageService;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Sequence Manager
+ *
+ * Manages all the sequences for each {@link Check}.
+ */
 public class SequenceManager implements SequenceInvoker {
 
     private final Object plugin;
@@ -51,11 +57,11 @@ public class SequenceManager implements SequenceInvoker {
     }
 
     @Override
-    public void invoke(User user, Event event, Cause cause) {
+    public void invoke(User user, Event event) {
         if (!user.get(Keys.GUARDIAN_SEQUENCE_HANDLE).isPresent()) user.offer((Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).create());
 
         user.get(Keys.GUARDIAN_SEQUENCE_HANDLE).ifPresent(sequences -> {
-            sequences.forEach(sequence -> sequence.pass(user, event, cause));
+            sequences.forEach(sequence -> sequence.check(user, event));
             sequences.removeIf(Sequence::isCancelled);
             sequences.removeIf(Sequence::hasExpired);
             sequences.removeIf(sequence -> {
@@ -71,7 +77,7 @@ public class SequenceManager implements SequenceInvoker {
                }
 
                CheckProvider checkProvider = sequence.getProvider();
-               this.checkManager.post(checkProvider, sequence, user, cause);
+               this.checkManager.post(checkProvider, sequence, user);
                return true;
             });
 
@@ -87,14 +93,14 @@ public class SequenceManager implements SequenceInvoker {
                             return;
                         }
 
-                        if (sequence.pass(user, event, cause)) {
+                        if (sequence.check(user, event)) {
                             if (sequence.isCancelled()) {
                                 return;
                             }
 
                             if (sequence.isFinished()) {
                                 CheckProvider checkProvider = sequence.getProvider();
-                                this.checkManager.post(checkProvider, sequence, user, cause);
+                                this.checkManager.post(checkProvider, sequence, user);
                                 return;
                             }
 
@@ -105,10 +111,22 @@ public class SequenceManager implements SequenceInvoker {
         });
     }
 
+    /**
+     * Clean Up
+     *
+     * <p>Removes the {@link User}'s data for {@link SequenceHandlerData}.</p>
+     *
+     * @param user {@link User} to remove data from
+     */
     public void cleanup(User user) {
         user.remove(Keys.GUARDIAN_SEQUENCE_HANDLE);
     }
 
+    /**
+     * Clean Up All
+     *
+     * <p>Removes data for {@link SequenceHandlerData} from all of the players online.</p>
+     */
     public void cleanupAll() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
             Sponge.getServiceManager().provide(UserStorageService.class).ifPresent(userStorageService -> {
@@ -117,6 +135,13 @@ public class SequenceManager implements SequenceInvoker {
         });
     }
 
+    /**
+     * Register
+     *
+     * <p>Registers a {@link Sequence} from a {@link CheckProvider}.</p>
+     *
+     * @param checkProvider Provider of a {@link Sequence}
+     */
     public void register(CheckProvider checkProvider) {
         this.blueprints.add(checkProvider.getSequence());
     }

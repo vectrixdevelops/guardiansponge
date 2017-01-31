@@ -23,10 +23,12 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
+import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.report.SequenceResult;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
@@ -38,6 +40,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Sequence
+ *
+ * Represents a chain of actions and conditions
+ * that get run in order, supplying conditions with
+ * heuristic reporting.
+ */
 public class Sequence {
 
     private final User user;
@@ -63,6 +72,19 @@ public class Sequence {
         this.sequenceResult = sequenceResult;
     }
 
+    /**
+     * Check
+     *
+     * <p>Runs through the list of {@link Action}s and their {@link Condition}s and
+     * carries the {@link SequenceResult.Builder} through each allowing it to be
+     * updated through the chain. {@link Action}s that fail will fire the {@link SequenceFailEvent}.
+     * {@link Action}s that succeed will fire the {@link SequenceSucceedEvent}.</p>
+     *
+     * @param user The {@link User} in the sequence
+     * @param event The {@link Event} that triggered the sequence
+     * @param <T> The {@link Event} type
+     * @return True if the sequence should continue, false if the sequence should stop
+     */
     <T extends Event> boolean check(User user, T event) {
         this.iterator = this.actions.iterator();
 
@@ -138,10 +160,25 @@ public class Sequence {
         return false;
     }
 
+    /**
+     * Get Sequence Result
+     *
+     * <p>Returns the current {@link SequenceResult.Builder} for this {@link Sequence}.</p>
+     *
+     * @return This {@link SequenceResult.Builder}
+     */
     SequenceResult.Builder getSequenceResult() {
         return this.sequenceResult;
     }
 
+    /**
+     * Has Expired
+     *
+     * <p>Returns true if the {@link Sequence} had an {@link Action} expire. False if
+     * it has not.</p>
+     *
+     * @return True if the {@link Sequence} has expired
+     */
     boolean hasExpired() {
         if (this.actions.isEmpty()) {
             return false;
@@ -153,22 +190,60 @@ public class Sequence {
         return action != null && this.last + ((action.getExpire() / 20) * 1000) < now;
     }
 
+    /**
+     * Is Cancelled
+     *
+     * <p>Returns true if the {@link Sequence} had an {@link Action} event cancel. False
+     * if it has not.</p>
+     *
+     * @return True if the {@link Sequence} is cancelled
+     */
     boolean isCancelled() {
         return this.cancelled;
     }
 
+    /**
+     * Is Finished
+     *
+     * <p>Returns true of the {@link Sequence} has completed all it's {@link Action}s successfully.
+     * False if it has not.</p>
+     *
+     * @return True if the {@link Sequence} is completed successfully
+     */
     boolean isFinished() {
         return this.finished;
     }
 
+    /**
+     * Get User
+     *
+     * <p>Returns the {@link User} in the sequence.</p>
+     *
+     * @return The {@link User} in the sequence
+     */
     public User getUser() {
         return this.user;
     }
 
+    /**
+     * Get Provider
+     *
+     * <p>Returns the {@link CheckProvider} providing the {@link Check} containing
+     * this {@link Sequence}.</p>
+     *
+     * @return This {@link Sequence}s {@link CheckProvider}
+     */
     public CheckProvider getProvider() {
         return this.checkProvider;
     }
 
+    /**
+     * Get Complete Events
+     *
+     * <p>Returns a {@link List} of {@link Event}s that have been successfully completed.</p>
+     *
+     * @return A {@link List} of successful {@link Event}s
+     */
     public List<Event> getCompleteEvents() {
         return this.completeEvents;
     }

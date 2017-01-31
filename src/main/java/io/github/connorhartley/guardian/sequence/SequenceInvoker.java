@@ -25,10 +25,22 @@ package io.github.connorhartley.guardian.sequence;
 
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.cause.Cause;
 
+/**
+ * Sequence Invoker
+ *
+ * Represents a way to invoke a {@link Sequence}.
+ */
 public interface SequenceInvoker {
 
-    void invoke(User user, Event event, Cause cause);
+    /**
+     * Invoke
+     *
+     * Invokes an {@link Sequence}.
+     *
+     * @param user A {@link User} to put into the sequence
+     * @param event An {@link Event} to put into the sequence
+     */
+    void invoke(User user, Event event);
 
 }

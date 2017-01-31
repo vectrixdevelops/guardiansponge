@@ -26,6 +26,12 @@ package io.github.connorhartley.guardian.sequence;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import org.spongepowered.api.entity.living.player.User;
 
+/**
+ * Sequence Blueprint
+ *
+ * Represents an abstract way to create a {@link Sequence}
+ * from a {@link SequenceBuilder}.
+ */
 public abstract class SequenceBlueprint {
 
     protected final CheckProvider provider;
@@ -34,8 +40,23 @@ public abstract class SequenceBlueprint {
         this.provider = checkProvider;
     }
 
+    /**
+     * Create
+     *
+     * <p>An abstract method to create a {@link Sequence}.</p>
+     *
+     * @param user The {@link User} to create the sequence for
+     * @return The {@link Sequence} for the {@link User}.
+     */
     public abstract Sequence create(User user);
 
+    /**
+     * Get Check Provider
+     *
+     * <p>Returns the {@link CheckProvider} providing this {@link SequenceBlueprint}.</p>
+     *
+     * @return The {@link CheckProvider}
+     */
     public CheckProvider getCheckProvider() {
         return this.provider;
     }
