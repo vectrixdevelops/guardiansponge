@@ -23,8 +23,8 @@
  */
 package io.github.connorhartley.guardian.event.sequence;
 
-import io.github.connorhartley.guardian.detection.check.CheckResult;
 import io.github.connorhartley.guardian.sequence.Sequence;
+import io.github.connorhartley.guardian.sequence.report.SequenceResult;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;
@@ -34,15 +34,15 @@ public class SequenceBeginEvent extends AbstractEvent implements Cancellable {
 
     private final Sequence sequence;
     private final User user;
-    private final CheckResult checkResult;
+    private final SequenceResult sequenceResult;
     private final Cause cause;
 
     private boolean cancelled = false;
 
-    public SequenceBeginEvent(Sequence sequence, User user, CheckResult checkResult, Cause cause) {
+    public SequenceBeginEvent(Sequence sequence, User user, SequenceResult sequenceResult, Cause cause) {
         this.sequence = sequence;
         this.user = user;
-        this.checkResult = checkResult;
+        this.sequenceResult = sequenceResult;
         this.cause = cause;
     }
 
@@ -54,8 +54,8 @@ public class SequenceBeginEvent extends AbstractEvent implements Cancellable {
         return this.user;
     }
 
-    public CheckResult getResult() {
-        return this.checkResult;
+    public SequenceResult getResult() {
+        return this.sequenceResult;
     }
 
     @Override

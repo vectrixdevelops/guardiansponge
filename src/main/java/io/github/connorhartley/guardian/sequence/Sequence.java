@@ -24,10 +24,10 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
-import io.github.connorhartley.guardian.detection.check.CheckResult;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
+import io.github.connorhartley.guardian.sequence.report.SequenceResult;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
@@ -43,7 +43,7 @@ public class Sequence {
     private final User user;
     private final CheckProvider checkProvider;
 
-    private CheckResult checkResult;
+    private SequenceResult.Builder sequenceResult;
 
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
@@ -56,11 +56,11 @@ public class Sequence {
 
     private Iterator<Action> iterator;
 
-    public Sequence(User user, CheckProvider checkProvider, List<Action> actions, CheckResult checkResult) {
+    public Sequence(User user, CheckProvider checkProvider, List<Action> actions, SequenceResult.Builder sequenceResult) {
         this.user = user;
         this.checkProvider = checkProvider;
         this.actions.addAll(actions);
-        this.checkResult = checkResult;
+        this.sequenceResult = sequenceResult;
     }
 
     <T extends Event> boolean check(User user, T event) {
@@ -72,40 +72,40 @@ public class Sequence {
             long now = System.currentTimeMillis();
 
             if (!action.getEvent().equals(event.getClass())) {
-                action.updateResult(this.checkResult);
+                action.updateResult(this.sequenceResult);
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
 
-            this.checkResult = action.getCheckResult();
+            this.sequenceResult = action.getSequenceResult();
 
             if (this.last + ((action.getDelay() / 20) * 1000) > now) {
-                action.updateResult(this.checkResult);
+                action.updateResult(this.sequenceResult);
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
             }
 
-            this.checkResult = action.getCheckResult();
+            this.sequenceResult = action.getSequenceResult();
 
             if (this.last + ((action.getExpire() / 20) * 1000) < now) {
-                action.updateResult(this.checkResult);
+                action.updateResult(this.sequenceResult);
                 return fail(user, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
 
-            this.checkResult = action.getCheckResult();
+            this.sequenceResult = action.getSequenceResult();
 
             Action<T> typeAction = (Action<T>) action;
 
             if (!typeAction.testConditions(user, event)) {
-                action.updateResult(this.checkResult);
+                action.updateResult(this.sequenceResult);
                 return fail(user, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
             this.iterator.remove();
 
-            typeAction.updateResult(this.checkResult);
-            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getCheckResult())));
+            typeAction.updateResult(this.sequenceResult);
+            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getSequenceResult().build())));
             typeAction.succeed(user, event);
 
-            this.checkResult = action.getCheckResult();
+            this.sequenceResult = action.getSequenceResult();
 
             if (!iterator.hasNext()) {
                 this.finished = true;
@@ -138,8 +138,8 @@ public class Sequence {
         return false;
     }
 
-    CheckResult getCheckResult() {
-        return this.checkResult;
+    SequenceResult.Builder getSequenceResult() {
+        return this.sequenceResult;
     }
 
     boolean hasExpired() {

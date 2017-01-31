@@ -63,7 +63,7 @@ public class SequenceManager implements SequenceInvoker {
                    return false;
                }
 
-               SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, user, sequence.getCheckResult(), Cause.of(NamedCause.source(this.plugin)));
+               SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, user, sequence.getSequenceResult().build(), Cause.of(NamedCause.source(this.plugin)));
                Sponge.getEventManager().post(attempt);
 
                if (attempt.isCancelled()) {
@@ -80,7 +80,7 @@ public class SequenceManager implements SequenceInvoker {
                     .forEach(blueprint -> {
                         Sequence sequence = blueprint.create(user);
 
-                        SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, user, sequence.getCheckResult(), Cause.of(NamedCause.source(this.plugin)));
+                        SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, user, sequence.getSequenceResult().build(), Cause.of(NamedCause.source(this.plugin)));
                         Sponge.getEventManager().post(attempt);
 
                         if (attempt.isCancelled()) {

@@ -21,34 +21,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence;
+package io.github.connorhartley.guardian.sequence.report;
 
-import io.github.connorhartley.guardian.detection.check.CheckResult;
+import java.util.List;
 
 public class SequencePoint {
 
-    // TODO: This may be modified soon to be nicer.
-
-    private final CheckResult checkResult;
-    private final String task;
+    private final List<String> lines;
     private final boolean pass;
 
-    public SequencePoint(CheckResult checkResult, String task, boolean pass) {
-        this.checkResult = checkResult;
-        this.task = task;
-        this.pass = pass;
+    public SequencePoint(Builder builder) {
+        this.lines = builder.lines;
+        this.pass = builder.pass;
     }
 
     public boolean hasPassed() {
         return this.pass;
     }
 
-    public String getTask() {
-        return this.task;
+    public List<String> getDescription() {
+        return this.lines;
     }
 
-    public CheckResult getCheckResult() {
-        return this.checkResult;
+    public static class Builder {
+
+        private List<String> lines;
+        private boolean pass;
+
+        public Builder() {}
+
+        public Builder of(SequencePoint sequencePoint) {
+            this.lines = sequencePoint.lines;
+            this.pass = sequencePoint.pass;
+            return this;
+        }
+
+        public Builder setPass(boolean pass) {
+            this.pass = pass;
+            return this;
+        }
+
+        public Builder addDescriptions(List<String> lines) {
+            this.lines.addAll(lines);
+            return this;
+        }
+
+        public Builder addDescription(String line) {
+            this.lines.add(line);
+            return this;
+        }
+
+        public SequencePoint build() {
+            return new SequencePoint(this);
+        }
+
     }
 
 }

@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.event.check;
 
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckResult;
+import io.github.connorhartley.guardian.sequence.report.SequenceResult;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.impl.AbstractEvent;
@@ -36,7 +36,7 @@ public class CheckEndEvent extends AbstractEvent {
     private final Check check;
     private final User user;
     private final Cause cause;
-    private final CheckResult checkResult;
+    private final SequenceResult sequenceResult;
 
     public CheckEndEvent(Check check, Cause cause) {
         this(check, null, cause);
@@ -46,10 +46,10 @@ public class CheckEndEvent extends AbstractEvent {
         this(check, user, null, cause);
     }
 
-    public CheckEndEvent(Check check, User user, CheckResult checkResult, Cause cause) {
+    public CheckEndEvent(Check check, User user, SequenceResult sequenceResult, Cause cause) {
         this.check = check;
         this.user = user;
-        this.checkResult = checkResult;
+        this.sequenceResult = sequenceResult;
         this.cause = cause;
     }
 
@@ -62,9 +62,9 @@ public class CheckEndEvent extends AbstractEvent {
         return Optional.of(this.user);
     }
 
-    public Optional<CheckResult> getCheckResult() {
-        if (this.checkResult == null) return Optional.empty();
-        return Optional.of(this.checkResult);
+    public Optional<SequenceResult> getResult() {
+        if (this.sequenceResult == null) return Optional.empty();
+        return Optional.of(this.sequenceResult);
     }
 
     @Override

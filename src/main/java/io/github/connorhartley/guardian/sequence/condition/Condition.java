@@ -23,13 +23,13 @@
  */
 package io.github.connorhartley.guardian.sequence.condition;
 
-import io.github.connorhartley.guardian.detection.check.CheckResult;
-import io.github.connorhartley.guardian.sequence.SequencePoint;
+import io.github.connorhartley.guardian.sequence.report.SequencePoint;
+import io.github.connorhartley.guardian.sequence.report.SequenceResult;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
 public interface Condition<T extends Event> {
 
-    SequencePoint test(User user, T event, CheckResult checkResult);
+    SequencePoint test(User user, T event, SequenceResult.Builder checkResult);
 
 }
