@@ -21,37 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.module;
+package io.github.connorhartley.guardian.detection.check;
 
-import com.me4502.modularframework.module.Module;
-import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.check.Check;
+import io.github.connorhartley.guardian.sequence.Sequence;
+import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
+import org.spongepowered.api.entity.living.player.User;
 
-import java.util.List;
+public interface CheckProvider {
 
-@Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection extends Detection {
+    SequenceBlueprint getSequence();
 
-    // TODO: Test stuff should go in here.
-
-    @Override
-    public void onConstruction() {
-
-    }
-
-    @Override
-    public void onDeconstruction() {
-
-    }
-
-    @Override
-    public boolean isReady() {
-        return false;
-    }
-
-    @Override
-    public List<Check> getChecks() {
-        return null;
-    }
+    Check createInstance(CheckManager checkManager, Sequence sequence, User user);
 
 }

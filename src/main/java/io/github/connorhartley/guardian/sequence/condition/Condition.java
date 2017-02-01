@@ -21,37 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.module;
+package io.github.connorhartley.guardian.sequence.condition;
 
-import com.me4502.modularframework.module.Module;
-import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.check.Check;
+import io.github.connorhartley.guardian.sequence.report.SequencePoint;
+import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
 
-import java.util.List;
+public interface Condition<T extends Event> {
 
-@Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection extends Detection {
-
-    // TODO: Test stuff should go in here.
-
-    @Override
-    public void onConstruction() {
-
-    }
-
-    @Override
-    public void onDeconstruction() {
-
-    }
-
-    @Override
-    public boolean isReady() {
-        return false;
-    }
-
-    @Override
-    public List<Check> getChecks() {
-        return null;
-    }
+    SequencePoint test(User user, T event, SequenceResult.Builder checkResult);
 
 }

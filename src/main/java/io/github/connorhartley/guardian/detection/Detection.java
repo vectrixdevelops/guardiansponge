@@ -23,6 +23,10 @@
  */
 package io.github.connorhartley.guardian.detection;
 
+import io.github.connorhartley.guardian.detection.check.Check;
+
+import java.util.List;
+
 /**
  * Detection
  *
@@ -40,5 +44,7 @@ public abstract class Detection {
     // MODULE : Status
 
     public abstract boolean isReady();
+
+    public abstract List<Check> getChecks();
 
 }

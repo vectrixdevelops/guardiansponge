@@ -29,6 +29,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.data.manipulator.DataManipulatorBuilder;
 import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableSingleData;
 import org.spongepowered.api.data.manipulator.mutable.common.AbstractSingleData;
@@ -41,16 +42,14 @@ import org.spongepowered.api.data.value.mutable.Value;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public class OffenseData extends AbstractSingleData<Offense, OffenseData, OffenseData.Immutable> {
+public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, OffenseTagData.Immutable> {
 
-    // TODO: Work in progress. This may be removed after consideration.
-
-    protected OffenseData(Offense value) {
+    protected OffenseTagData(Offense value) {
         super(value, Keys.GUARDIAN_OFFENSE_TAG);
     }
 
     public Value<Offense> getOffense() {
-        return getValueGetter();
+        return this.getValueGetter();
     }
 
     @Override
@@ -59,26 +58,32 @@ public class OffenseData extends AbstractSingleData<Offense, OffenseData, Offens
     }
 
     @Override
-    public Optional<OffenseData> fill(DataHolder dataHolder, MergeFunction overlap) {
-        Optional<OffenseData> offenseOptional = dataHolder.get(OffenseData.class);
+    public Optional<OffenseTagData> fill(DataHolder dataHolder, MergeFunction overlap) {
+        Optional<OffenseTagData> offenseOptional = dataHolder.get(OffenseTagData.class);
         if (offenseOptional.isPresent()) {
-            OffenseData offenseData = offenseOptional.get();
-            OffenseData finalOffenseData = overlap.merge(this, offenseData);
+            OffenseTagData offenseTagData = offenseOptional.get();
+            OffenseTagData finalOffenseTagData = overlap.merge(this, offenseTagData);
+            setValue(finalOffenseTagData.getValue());
         }
         return Optional.of(this);
     }
 
     @Override
-    public Optional<OffenseData> from(DataContainer container) {
+    public OffenseTagData copy() {
+        return new OffenseTagData(this.getValue());
+    }
+
+    @Override
+    public Optional<OffenseTagData> from(DataContainer container) {
         if (container.contains(Keys.GUARDIAN_OFFENSE_TAG.getQuery())) {
-            return Optional.of(set(Keys.GUARDIAN_OFFENSE_TAG, (Offense) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(getValue())));
+            return Optional.of(set(Keys.GUARDIAN_OFFENSE_TAG, (Offense) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(this.getValue())));
         }
         return Optional.empty();
     }
 
     @Override
-    public OffenseData copy() {
-        return new OffenseData(this.getValue());
+    public DataContainer toContainer() {
+        return new MemoryDataContainer().set(Keys.GUARDIAN_OFFENSE_TAG, this.getValue());
     }
 
     @Override
@@ -91,24 +96,24 @@ public class OffenseData extends AbstractSingleData<Offense, OffenseData, Offens
         return 1;
     }
 
-    public static class Immutable extends AbstractImmutableSingleData<Offense, Immutable, OffenseData> {
+    public static class Immutable extends AbstractImmutableSingleData<Offense, Immutable, OffenseTagData> {
 
         protected Immutable(Offense value) {
             super(value, Keys.GUARDIAN_OFFENSE_TAG);
         }
 
         public ImmutableValue<Offense> getOffense() {
-            return getValueGetter();
+            return this.getValueGetter();
         }
 
         @Override
         protected ImmutableValue<Offense> getValueGetter() {
-            return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_OFFENSE_TAG, getValue()).asImmutable();
+            return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_OFFENSE_TAG, this.getValue()).asImmutable();
         }
 
         @Override
-        public OffenseData asMutable() {
-            return new OffenseData(this.getValue());
+        public OffenseTagData asMutable() {
+            return new OffenseTagData(this.getValue());
         }
 
         @Override
@@ -117,42 +122,42 @@ public class OffenseData extends AbstractSingleData<Offense, OffenseData, Offens
         }
     }
 
-    public static class Builder extends AbstractDataBuilder<OffenseData> implements DataManipulatorBuilder<OffenseData, Immutable> {
+    public static class Builder extends AbstractDataBuilder<OffenseTagData> implements DataManipulatorBuilder<OffenseTagData, Immutable> {
 
 
         public Builder() {
-            super(OffenseData.class, 1);
+            super(OffenseTagData.class, 1);
         }
 
         @Override
-        public OffenseData create() {
+        public OffenseTagData create() {
             Offense emptyOffense = null;
             try {
-                emptyOffense = new Offense.Builder().dateAndTime(LocalDateTime.now()).detection(null).severity(0).build();
+                emptyOffense = new Offense.Builder().dateAndTime(LocalDateTime.now()).severity(0).build();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return new OffenseData(emptyOffense);
+            return new OffenseTagData(emptyOffense);
         }
 
-        public Optional<OffenseData> createFrom(Offense offense) {
-            return Optional.of(new OffenseData(offense));
-        }
-
-        @Override
-        public Optional<OffenseData> createFrom(DataHolder dataHolder) {
-            return create().fill(dataHolder);
+        public OffenseTagData createFrom(Offense offense) {
+            return new OffenseTagData(offense);
         }
 
         @Override
-        protected Optional<OffenseData> buildContent(DataView container) throws InvalidDataException {
+        public Optional<OffenseTagData> createFrom(DataHolder dataHolder) {
+            return this.create().fill(dataHolder);
+        }
+
+        @Override
+        protected Optional<OffenseTagData> buildContent(DataView container) throws InvalidDataException {
             if (!container.contains(Keys.GUARDIAN_OFFENSE_TAG.getQuery())) {
                 return Optional.empty();
             }
 
-            Offense offense = (Offense) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).get();
+            Offense offense = container.getObject(Keys.GUARDIAN_OFFENSE_TAG.getQuery(), Offense.class).get();
 
-            return Optional.of(new OffenseData(offense));
+            return Optional.of(new OffenseTagData(offense));
         }
     }
 

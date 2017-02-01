@@ -23,17 +23,16 @@
  */
 package io.github.connorhartley.guardian.detection;
 
-import io.github.connorhartley.guardian.module.DummyDetection;
+import java.util.Optional;
 
 /**
  * Detection Types
  *
  * Contains registry variables of Guardians built in {@link Detection} modules,
- * from the {@link DetectionProvider}.
+ * from an {@link Optional}.
  */
 public final class DetectionTypes {
 
-    /* Temporary example */
-    public static DetectionProvider DUMMY_DETECTION = new DetectionProvider(DummyDetection.class);
+    public static Optional<Detection> DUMMY_DETECTION = Optional.empty();
 
 }

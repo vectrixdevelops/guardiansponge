@@ -21,37 +21,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.module;
-
-import com.me4502.modularframework.module.Module;
-import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.check.Check;
+package io.github.connorhartley.guardian.sequence.report;
 
 import java.util.List;
 
-@Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection extends Detection {
+public class SequencePoint {
 
-    // TODO: Test stuff should go in here.
+    private final List<String> lines;
+    private final boolean pass;
 
-    @Override
-    public void onConstruction() {
-
+    public SequencePoint(Builder builder) {
+        this.lines = builder.lines;
+        this.pass = builder.pass;
     }
 
-    @Override
-    public void onDeconstruction() {
-
+    public boolean hasPassed() {
+        return this.pass;
     }
 
-    @Override
-    public boolean isReady() {
-        return false;
+    public List<String> getDescription() {
+        return this.lines;
     }
 
-    @Override
-    public List<Check> getChecks() {
-        return null;
+    public static class Builder {
+
+        private List<String> lines;
+        private boolean pass;
+
+        public Builder() {}
+
+        public Builder of(SequencePoint sequencePoint) {
+            this.lines = sequencePoint.lines;
+            this.pass = sequencePoint.pass;
+            return this;
+        }
+
+        public Builder setPass(boolean pass) {
+            this.pass = pass;
+            return this;
+        }
+
+        public Builder addDescriptions(List<String> lines) {
+            this.lines.addAll(lines);
+            return this;
+        }
+
+        public Builder addDescription(String line) {
+            this.lines.add(line);
+            return this;
+        }
+
+        public SequencePoint build() {
+            return new SequencePoint(this);
+        }
+
     }
 
 }

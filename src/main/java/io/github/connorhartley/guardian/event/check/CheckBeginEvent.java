@@ -21,37 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.module;
+package io.github.connorhartley.guardian.event.check;
 
-import com.me4502.modularframework.module.Module;
-import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Cancellable;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.impl.AbstractEvent;
 
-import java.util.List;
+public class CheckBeginEvent extends AbstractEvent implements Cancellable {
 
-@Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection extends Detection {
+    private final Check check;
+    private final User user;
+    private final Cause cause;
 
-    // TODO: Test stuff should go in here.
+    private boolean cancelled = false;
 
-    @Override
-    public void onConstruction() {
+    public CheckBeginEvent(Check check, User user, Cause cause) {
+        this.check = check;
+        this.user = user;
+        this.cause = cause;
+    }
 
+    public User getUser() {
+        return this.user;
+    }
+
+    public Check getCheck() {
+        return this.check;
     }
 
     @Override
-    public void onDeconstruction() {
-
+    public boolean isCancelled() {
+        return this.cancelled;
     }
 
     @Override
-    public boolean isReady() {
-        return false;
+    public void setCancelled(boolean cancel) {
+        this.cancelled = cancel;
     }
 
     @Override
-    public List<Check> getChecks() {
-        return null;
+    public Cause getCause() {
+        return this.cause;
     }
-
 }

@@ -25,7 +25,8 @@ package io.github.connorhartley.guardian;
 
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.data.tag.OffenseData;
+import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
+import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -98,7 +99,8 @@ public class Guardian {
     public void onGameInitialize(GameInitializationEvent event) {
         getLogger().info("Starting Guardian AntiCheat.");
 
-        Sponge.getDataManager().register(OffenseData.class, OffenseData.Immutable.class, new OffenseData.Builder());
+        Sponge.getDataManager().register(OffenseTagData.class, OffenseTagData.Immutable.class, new OffenseTagData.Builder());
+        Sponge.getDataManager().register(SequenceHandlerData.class, SequenceHandlerData.Immutable.class, new SequenceHandlerData.Builder());
     }
 
     @Listener

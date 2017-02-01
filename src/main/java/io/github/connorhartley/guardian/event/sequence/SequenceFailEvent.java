@@ -21,37 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.module;
+package io.github.connorhartley.guardian.event.sequence;
 
-import com.me4502.modularframework.module.Module;
-import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.check.Check;
+import io.github.connorhartley.guardian.sequence.Sequence;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.impl.AbstractEvent;
 
-import java.util.List;
+public class SequenceFailEvent extends AbstractEvent {
 
-@Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection extends Detection {
+    private final Sequence sequence;
+    private final User user;
+    private final Event event;
+    private final Cause cause;
 
-    // TODO: Test stuff should go in here.
+    public SequenceFailEvent(Sequence sequence, User user, Event event,  Cause cause) {
+        this.sequence = sequence;
+        this.user = user;
+        this.event = event;
+        this.cause = cause;
+    }
 
-    @Override
-    public void onConstruction() {
+    public Sequence getSequence() {
+        return this.sequence;
+    }
 
+    public User getUser() {
+        return this.user;
+    }
+
+    public Event getFailedEvent() {
+        return this.event;
     }
 
     @Override
-    public void onDeconstruction() {
-
+    public Cause getCause() {
+        return this.cause;
     }
-
-    @Override
-    public boolean isReady() {
-        return false;
-    }
-
-    @Override
-    public List<Check> getChecks() {
-        return null;
-    }
-
 }

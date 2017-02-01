@@ -21,30 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian.sequence.action;
 
-import java.util.Optional;
+import org.spongepowered.api.event.Event;
 
-public class DetectionProvider {
+public interface ActionBlueprint<T extends Event> {
 
-    private Class clazz;
-    private Detection detection;
-
-    public DetectionProvider(Class clazz) {
-        this.clazz = clazz;
-    }
-
-    public void provideWith(Detection detection) {
-        if (clazz.equals(detection.getClass())) {
-            this.detection = detection;
-        }
-    }
-
-    public Optional<Detection> getDetection() {
-        if (this.detection != null) {
-            return Optional.of(this.detection);
-        }
-        return Optional.empty();
-    }
+    Action<T> create();
 
 }

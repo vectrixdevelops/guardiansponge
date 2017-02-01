@@ -30,7 +30,7 @@ import org.spongepowered.api.entity.living.player.Player;
  * Offense
  *
  * Represents information about the time and severity of
- * a {@link Player}'s valid {@link Detection} result.
+ * a {@link Player}'s valid {@link Detection} report.
  */
 public class Offense {
 

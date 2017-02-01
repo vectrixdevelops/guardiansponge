@@ -21,37 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.module;
+package io.github.connorhartley.guardian.sequence;
 
-import com.me4502.modularframework.module.Module;
-import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.check.Check;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
 
-import java.util.List;
+/**
+ * Sequence Invoker
+ *
+ * Represents a way to invoke a {@link Sequence}.
+ */
+public interface SequenceInvoker {
 
-@Module(moduleId = "dummydetection", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection extends Detection {
-
-    // TODO: Test stuff should go in here.
-
-    @Override
-    public void onConstruction() {
-
-    }
-
-    @Override
-    public void onDeconstruction() {
-
-    }
-
-    @Override
-    public boolean isReady() {
-        return false;
-    }
-
-    @Override
-    public List<Check> getChecks() {
-        return null;
-    }
+    /**
+     * Invoke
+     *
+     * Invokes an {@link Sequence}.
+     *
+     * @param user A {@link User} to put into the sequence
+     * @param event An {@link Event} to put into the sequence
+     */
+    void invoke(User user, Event event);
 
 }
