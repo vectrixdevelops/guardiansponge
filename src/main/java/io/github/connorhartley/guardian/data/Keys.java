@@ -38,8 +38,8 @@ public class Keys {
 
     /* Handler : Attached to the user to represent handler data. Used internally only. */
 
-    public static Key<Value<List<Sequence>>> GUARDIAN_SEQUENCE_HANDLE = makeSingleKey(new TypeToken<List<Sequence>>() {},
-            new TypeToken<Value<List<Sequence>>>() {}, of("GuardianSequenceHandle"), "guardian:guardiansequencehandle", "GuardianSequenceHandle");
+    public static Key<Value<List<Sequence>>> GUARDIAN_SEQUENCE_HANDLER = makeSingleKey(new TypeToken<List<Sequence>>() {},
+            new TypeToken<Value<List<Sequence>>>() {}, of("GuardianSequenceHandler"), "guardian:guardiansequencehandler", "GuardianSequenceHandler");
 
     /* Tags : Attached to the player to represent some "type" data. */
 

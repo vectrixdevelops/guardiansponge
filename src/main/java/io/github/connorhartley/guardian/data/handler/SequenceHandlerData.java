@@ -46,7 +46,7 @@ import java.util.Optional;
 public class SequenceHandlerData extends AbstractSingleData<List<Sequence>, SequenceHandlerData, SequenceHandlerData.Immutable> {
 
     protected SequenceHandlerData(List<Sequence> value) {
-        super(value, Keys.GUARDIAN_SEQUENCE_HANDLE);
+        super(value, Keys.GUARDIAN_SEQUENCE_HANDLER);
     }
 
     public Value<List<Sequence>> getHandledSequences() {
@@ -55,7 +55,7 @@ public class SequenceHandlerData extends AbstractSingleData<List<Sequence>, Sequ
 
     @Override
     protected Value<List<Sequence>> getValueGetter() {
-        return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_SEQUENCE_HANDLE, this.getValue());
+        return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_SEQUENCE_HANDLER, this.getValue());
     }
 
     @Override
@@ -76,15 +76,15 @@ public class SequenceHandlerData extends AbstractSingleData<List<Sequence>, Sequ
 
     @Override
     public Optional<SequenceHandlerData> from(DataContainer container) {
-        if (container.contains(Keys.GUARDIAN_SEQUENCE_HANDLE.getQuery())) {
-            return Optional.of(set(Keys.GUARDIAN_SEQUENCE_HANDLE, container.getObjectList(Keys.GUARDIAN_SEQUENCE_HANDLE.getQuery(), Sequence.class).orElse(this.getValue())));
+        if (container.contains(Keys.GUARDIAN_SEQUENCE_HANDLER.getQuery())) {
+            return Optional.of(set(Keys.GUARDIAN_SEQUENCE_HANDLER, container.getObjectList(Keys.GUARDIAN_SEQUENCE_HANDLER.getQuery(), Sequence.class).orElse(this.getValue())));
         }
         return Optional.empty();
     }
 
     @Override
     public DataContainer toContainer() {
-        return new MemoryDataContainer().set(Keys.GUARDIAN_SEQUENCE_HANDLE, this.getValue());
+        return new MemoryDataContainer().set(Keys.GUARDIAN_SEQUENCE_HANDLER, this.getValue());
     }
 
     @Override
@@ -100,7 +100,7 @@ public class SequenceHandlerData extends AbstractSingleData<List<Sequence>, Sequ
     public static class Immutable extends AbstractImmutableSingleData<List<Sequence>, Immutable, SequenceHandlerData> {
 
         protected Immutable(List<Sequence> value) {
-            super(value, Keys.GUARDIAN_SEQUENCE_HANDLE);
+            super(value, Keys.GUARDIAN_SEQUENCE_HANDLER);
         }
 
         public ImmutableValue<List<Sequence>> getImmutableHandledSequences() {
@@ -109,7 +109,7 @@ public class SequenceHandlerData extends AbstractSingleData<List<Sequence>, Sequ
 
         @Override
         protected ImmutableValue<List<Sequence>> getValueGetter() {
-            return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_SEQUENCE_HANDLE, this.getValue()).asImmutable();
+            return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_SEQUENCE_HANDLER, this.getValue()).asImmutable();
         }
 
         @Override
@@ -145,13 +145,12 @@ public class SequenceHandlerData extends AbstractSingleData<List<Sequence>, Sequ
 
         @Override
         protected Optional<SequenceHandlerData> buildContent(DataView container) throws InvalidDataException {
-            if (!container.contains(Keys.GUARDIAN_SEQUENCE_HANDLE.getQuery())) {
+            if (!container.contains(Keys.GUARDIAN_SEQUENCE_HANDLER.getQuery())) {
                 return Optional.empty();
             }
 
-            List<Sequence> sequences = container.getObjectList(Keys.GUARDIAN_SEQUENCE_HANDLE.getQuery(), Sequence.class).get();
-
-            return Optional.of(new SequenceHandlerData(sequences));
+            Optional<List<Sequence>> sequences = container.getObjectList(Keys.GUARDIAN_SEQUENCE_HANDLER.getQuery(), Sequence.class);
+            return sequences.map(SequenceHandlerData::new);
         }
     }
 }

@@ -58,9 +58,9 @@ public class SequenceManager implements SequenceInvoker {
 
     @Override
     public void invoke(User user, Event event) {
-        if (!user.get(Keys.GUARDIAN_SEQUENCE_HANDLE).isPresent()) user.offer((Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).create());
+        if (!user.get(Keys.GUARDIAN_SEQUENCE_HANDLER).isPresent()) user.offer((Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).create());
 
-        user.get(Keys.GUARDIAN_SEQUENCE_HANDLE).ifPresent(sequences -> {
+        user.get(Keys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> {
             sequences.forEach(sequence -> sequence.check(user, event));
             sequences.removeIf(Sequence::isCancelled);
             sequences.removeIf(Sequence::hasExpired);
@@ -119,7 +119,7 @@ public class SequenceManager implements SequenceInvoker {
      * @param user {@link User} to remove data from
      */
     public void cleanup(User user) {
-        user.remove(Keys.GUARDIAN_SEQUENCE_HANDLE);
+        user.remove(Keys.GUARDIAN_SEQUENCE_HANDLER);
     }
 
     /**
@@ -130,7 +130,7 @@ public class SequenceManager implements SequenceInvoker {
     public void cleanupAll() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
             Sponge.getServiceManager().provide(UserStorageService.class).ifPresent(userStorageService -> {
-                userStorageService.get(player.getUniqueId()).ifPresent(user -> user.remove(Keys.GUARDIAN_SEQUENCE_HANDLE));
+                userStorageService.get(player.getUniqueId()).ifPresent(user -> user.remove(Keys.GUARDIAN_SEQUENCE_HANDLER));
             });
         });
     }
