@@ -47,7 +47,7 @@ import java.io.File;
 @Plugin(
         id = "guardian",
         name = "Guardian",
-        version = "0.1.0-SNAPSHOT-01",
+        version = "6.0.0-0.1.0-01",
         description = "An experimental Sponge anticheat.",
         authors = {
                 "ConnorHartley"

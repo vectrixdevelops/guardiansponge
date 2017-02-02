@@ -1,8 +1,11 @@
 plugins {
     id 'java'
     id 'maven'
+    id 'maven-publish'
     id 'idea'
     id 'eclipse'
+    id 'signing'
+    id 'com.jfrog.bintray' version '1.7.3'
     id 'com.github.hierynomus.license' version '0.12.1'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'org.spongepowered.plugin' version '0.8.1'
@@ -25,8 +28,8 @@ repositories {
 
 dependencies {
     compile 'org.apache.commons:commons-math3:3.6.1'
-    compile "org.spongepowered:spongeapi:6.0.0-SNAPSHOT"
-    compile 'com.zaxxer:HikariCP:2.5.1'
+    compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
+    compile 'com.zaxxer:HikariCP:2.6.0'
     compile 'com.me4502:ModularFramework:1.6'
 }
 
@@ -34,6 +37,11 @@ if (JavaVersion.current().isJava8Compatible()) {
     tasks.withType(Javadoc) {
         options.addStringOption('Xdoclint:none', '-quiet')
     }
+}
+
+signing {
+    required false
+    sign configurations.archives
 }
 
 license {
@@ -80,3 +88,31 @@ build.dependsOn(shadowJar)
 build.dependsOn(sourceJar)
 build.dependsOn(javadocJar)
 build.dependsOn(jar)
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.shadow
+            groupId pluginGroup
+            artifactId pluginId
+            version "${spongeVersion}-${pluginVersion}"
+        }
+    }
+}
+
+bintray {
+    user = System.getProperty('BIN_USER')
+    key = System.getProperty('BIN_KEY')
+    publications = [ 'MyPublication' ]
+    pkg {
+        repo = 'maven'
+        name = pluginId
+        licenses = [ 'MIT' ]
+        vcsUrl = 'https://github.com/connorhartley/guardian.git'
+        publicDownloadNumbers = true
+        version {
+            name = 'Guardian-' + spongeVersion + '-' + pluginVersion
+            desc = pluginId
+        }
+    }
+}
