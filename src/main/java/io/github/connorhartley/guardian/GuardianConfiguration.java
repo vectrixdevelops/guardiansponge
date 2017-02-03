@@ -31,6 +31,8 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 public class GuardianConfiguration implements StorageProvider<File> {
 
@@ -41,26 +43,48 @@ public class GuardianConfiguration implements StorageProvider<File> {
 
     private CommentedConfigurationNode configurationNode;
 
-    public StorageValue<CommentedConfigurationNode, String, String> configurationVersion;
+    public StorageValue<CommentedConfigurationNode, String, String> configVersion;
+    public StorageValue<CommentedConfigurationNode, String, List<String>> configEnabledDetections;
 
-    public GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
+    protected GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
         this.configFile = configFile;
         this.configManager = configManager;
     }
 
     @Override
-    public void load() {
+    public void create() {
         try {
-            if (!this.configFile.exists()) {
+            if (!this.exists()) {
                 this.configFile.getParentFile().mkdirs();
                 this.configFile.createNewFile();
+
+                this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
+
+                this.configVersion = new StorageValue<CommentedConfigurationNode, String, String>("version", this.plugin.getPluginContainer().getVersion().get(),
+                        "Do not edit this!", null).load(this.configurationNode);
+                this.configEnabledDetections = new StorageValue<CommentedConfigurationNode, String, List<String>>("enabled", Collections.emptyList(),
+                        "Detections in this list will be enabled.", null).load(this.configurationNode);
+
+                this.configManager.save(this.configurationNode);
+            }
+        } catch (IOException e) {
+            this.plugin.getLogger().error("A problem occurred attempting to create Guardians global configuration!", e);
+        }
+    }
+
+    @Override
+    public void load() {
+        try {
+            if (!exists()) {
+                this.create();
+                return;
             }
 
-            this.configurationNode = configManager.load(this.plugin.configurationOptions);
+            this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
-            this.configurationVersion = new StorageValue<CommentedConfigurationNode, String, String>("version", this.plugin.getPluginContainer().getVersion().get(),
-                    null, null).load(this.configurationNode);
+            this.configVersion.load(this.configurationNode);
+            this.configEnabledDetections.load(this.configurationNode);
 
             this.configManager.save(this.configurationNode);
         } catch (IOException e) {
@@ -71,9 +95,10 @@ public class GuardianConfiguration implements StorageProvider<File> {
     @Override
     public void update() {
         try {
-            this.configurationNode = this.configManager.load(this.plugin.configurationOptions);
+            this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
-            this.configurationVersion.save(this.configurationNode);
+            this.configVersion.save(this.configurationNode);
+            this.configEnabledDetections.save(this.configurationNode);
 
             this.configManager.save(this.configurationNode);
         } catch (IOException e) {
@@ -82,12 +107,17 @@ public class GuardianConfiguration implements StorageProvider<File> {
     }
 
     @Override
+    public boolean exists() {
+        return this.configFile.exists();
+    }
+
+    @Override
     public File getLocation() {
         return this.configFile;
     }
 
     public StorageValue<?, ?, ?>[] getConfigurationNodes() {
-        return new StorageValue<?, ?, ?>[]{ this.configurationVersion };
+        return new StorageValue<?, ?, ?>[]{ this.configVersion };
     }
 
 }

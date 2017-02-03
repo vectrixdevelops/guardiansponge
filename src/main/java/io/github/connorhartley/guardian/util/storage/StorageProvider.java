@@ -25,9 +25,13 @@ package io.github.connorhartley.guardian.util.storage;
 
 public interface StorageProvider<T> {
 
+    void create();
+
     void load();
 
     void update();
+
+    boolean exists();
 
     T getLocation();
 

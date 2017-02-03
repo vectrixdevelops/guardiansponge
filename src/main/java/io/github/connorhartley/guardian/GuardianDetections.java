@@ -23,8 +23,32 @@
  */
 package io.github.connorhartley.guardian;
 
+import com.me4502.modularframework.ModuleController;
+import io.github.connorhartley.guardian.detection.DetectionTypes;
+
 public class GuardianDetections {
 
-    // TODO: Built in detection registration here.
+    private final Guardian plugin;
+    private final ModuleController moduleController;
+
+    private DetectionTypes detectionTypes;
+
+    protected GuardianDetections(Guardian plugin, ModuleController moduleController) {
+        this.plugin = plugin;
+        this.moduleController = moduleController;
+        this.detectionTypes = new DetectionTypes();
+    }
+
+    public void registerInternalModules() {
+        // Register detections here.
+    }
+
+    public void registerModule(String modulePath) {
+        this.moduleController.registerModule(modulePath);
+    }
+
+    public DetectionTypes getDetectionTypes() {
+        return this.detectionTypes;
+    }
 
 }

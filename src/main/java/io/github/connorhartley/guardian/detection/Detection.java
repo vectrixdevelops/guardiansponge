@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.detection;
 
-import io.github.connorhartley.guardian.detection.check.Check;
+import io.github.connorhartley.guardian.detection.check.CheckProvider;
 
 import java.util.List;
 
@@ -31,20 +31,31 @@ import java.util.List;
  * Detection
  *
  * Represents a cheat / hack / exploit module that is loaded
- * by the module registry.
+ * by the global detection manager.
  */
 public abstract class Detection {
 
-    // MODULE : Loading
-
+    /**
+     * On Construction
+     *
+     * <p>Invoked when the module is enabled.</p>
+     */
     public abstract void onConstruction();
 
+    /**
+     * On Deconstruction
+     *
+     * <p>Invoked when the module is disabled.</p>
+     */
     public abstract void onDeconstruction();
 
-    // MODULE : Status
-
-    public abstract boolean isReady();
-
-    public abstract List<Check> getChecks();
+    /**
+     * Get Checks
+     *
+     * <p>Returns the {@link CheckProvider}s that this {@link Detection} uses.</p>
+     *
+     * @return
+     */
+    public abstract List<CheckProvider> getChecks();
 
 }

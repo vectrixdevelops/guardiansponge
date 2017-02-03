@@ -25,8 +25,15 @@ package io.github.connorhartley.guardian;
 
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
+import com.me4502.modularframework.ShadedModularFramework;
+import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
+import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.check.Check;
+import io.github.connorhartley.guardian.detection.check.CheckManager;
+import io.github.connorhartley.guardian.sequence.Sequence;
+import io.github.connorhartley.guardian.sequence.SequenceManager;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -83,15 +90,34 @@ public class Guardian {
     @DefaultConfig(sharedRoot = false)
     private ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager;
 
-    ConfigurationOptions configurationOptions;
+    private ConfigurationOptions configurationOptions;
+
+    public ConfigurationOptions getConfigurationOptions() {
+        return this.configurationOptions;
+    }
+
+    private File pluginConfigDirectory = this.pluginConfig.getParentFile();
 
     /* Module System */
 
-    public ModuleController moduleController;
+    private ModuleController moduleController;
+
+    public ModuleController getModuleController() {
+        return this.moduleController;
+    }
 
     /* Configuration */
 
     protected GuardianConfiguration globalConfiguration;
+
+    /* Detections */
+
+    protected GuardianDetections internalDetections;
+
+    /* Check / Sequence */
+
+    private CheckManager checkManager;
+    private SequenceManager sequenceManager;
 
     /* Game Events */
 
@@ -105,13 +131,53 @@ public class Guardian {
 
     @Listener
     public void onServerStarting(GameStartingServerEvent event) {
-        getLogger().info("Loading Global Configuration.");
+        this.checkManager = new CheckManager(this);
+        this.sequenceManager = new SequenceManager(this, this.checkManager);
+
+        getLogger().info("Loading global configuration.");
 
         this.globalConfiguration = new GuardianConfiguration(this, this.pluginConfig, this.pluginConfigManager);
-
         this.configurationOptions = ConfigurationOptions.defaults();
-
         this.globalConfiguration.load();
+
+        getLogger().info("Discovering internal detections.");
+
+        this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
+        this.moduleController.setConfigurationDirectory(this.pluginConfigDirectory);
+        this.moduleController.setConfigurationOptions(this.configurationOptions);
+        this.internalDetections = new GuardianDetections(this, this.moduleController);
+
+        if (System.getProperty("TEST_GUARDIAN").contains("TRUE")) this.internalDetections
+                .registerModule("io.github.connorhartley.guardian.module.DummyDetection");
+
+        this.internalDetections.registerInternalModules();
+
+        getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
+
+        this.moduleController.enableModules(moduleWrapper -> {
+            if (this.globalConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
+                getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                return true;
+            }
+            return false;
+        });
+
+        this.moduleController.getModules().stream()
+                .filter(moduleWrapper -> !moduleWrapper.isEnabled())
+                .forEach(moduleWrapper -> {
+                    try {
+                        if (moduleWrapper.getModule() instanceof Detection) {
+                            Detection detection = (Detection) moduleWrapper.getModule();
+
+                            detection.getChecks().forEach(check -> this.getSequenceManager().register(check));
+                        }
+                    } catch(ModuleNotInstantiatedException e) {
+                        getLogger().error("Failed to load module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                    }
+                });
+
+        this.globalConfiguration.update();
+
     }
 
     @Listener
@@ -122,5 +188,49 @@ public class Guardian {
 
     @Listener
     public void onReload(GameReloadEvent event) {}
+
+    /**
+     * Get Global Configuration
+     *
+     * <p>Returns the configuration used by Guardian.</p>
+     *
+     * @return The guardian configuration
+     */
+    public GuardianConfiguration getGlobalConfiguration() {
+        return this.globalConfiguration;
+    }
+
+    /**
+     * Get Global Detections
+     *
+     * <p>Returns the built-in {@link Detection}s by Guardian.</p>
+     *
+     * @return The guardian built-in detections
+     */
+    public GuardianDetections getGlobalDetections() {
+        return this.internalDetections;
+    }
+
+    /**
+     * Get Check Manager
+     *
+     * <p>Returns the {@link CheckManager} for managing loaded {@link Detection} {@link Check}s.</p>
+     *
+     * @return The check manager
+     */
+    public CheckManager getCheckManager() {
+        return this.checkManager;
+    }
+
+    /**
+     * Get Sequence Manager
+     *
+     * <p>Returns the {@link SequenceManager} for managing running {@link Sequence}s for {@link Check}s.</p>
+     *
+     * @return The sequence manager
+     */
+    public SequenceManager getSequenceManager() {
+        return this.sequenceManager;
+    }
 
 }
