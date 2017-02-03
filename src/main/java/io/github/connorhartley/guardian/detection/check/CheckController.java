@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
+import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.event.check.CheckBeginEvent;
 import io.github.connorhartley.guardian.event.check.CheckEndEvent;
 import io.github.connorhartley.guardian.sequence.Sequence;
@@ -30,16 +31,18 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.scheduler.Task;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
-public class CheckManager {
+public class CheckController {
 
     private final List<Check> checks = new CopyOnWriteArrayList<>();
     private final Object plugin;
 
-    public CheckManager(Object plugin) {
+    public CheckController(Object plugin) {
         this.plugin = plugin;
     }
 
@@ -95,6 +98,32 @@ public class CheckManager {
         this.checks.remove(check);
 
         // TODO: Note that the player is no longer being checked.
+    }
+
+    public static class CheckControllerTask {
+
+        private final Guardian plugin;
+        private final CheckController checkController;
+
+        private Task.Builder taskBuilder = Task.builder();
+        private Task task;
+
+        public CheckControllerTask(Guardian plugin, CheckController checkController) {
+            this.plugin = plugin;
+            this.checkController = checkController;
+        }
+
+        public void start() {
+            this.task = this.taskBuilder.execute(() -> {
+                this.checkController.cleanup();
+                this.checkController.tick();
+            }).intervalTicks(1).name("Guardian - Check Controller Task").submit(this.plugin);
+        }
+
+        public void stop() {
+            if (this.task != null) this.task.cancel();
+        }
+
     }
 
 }

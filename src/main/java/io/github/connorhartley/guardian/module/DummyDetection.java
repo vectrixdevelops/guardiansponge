@@ -23,16 +23,21 @@
  */
 package io.github.connorhartley.guardian.module;
 
+import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
+import com.me4502.modularframework.module.guice.ModuleConfiguration;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import ninja.leaping.configurate.ConfigurationNode;
 
 import java.util.List;
 
 @Module(moduleId = "dummydetection", moduleName = "DummyDetection", moduleVersion = "0.0.1", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection extends Detection {
+public class DummyDetection implements Detection {
 
-    // TODO: Test stuff should go in here.
+    @Inject
+    @ModuleConfiguration
+    public ConfigurationNode configurationNode;
 
     @Override
     public void onConstruction() {

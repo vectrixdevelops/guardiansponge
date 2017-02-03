@@ -33,29 +33,29 @@ import java.util.List;
  * Represents a cheat / hack / exploit module that is loaded
  * by the global detection manager.
  */
-public abstract class Detection {
+public interface Detection {
 
     /**
      * On Construction
      *
      * <p>Invoked when the module is enabled.</p>
      */
-    public abstract void onConstruction();
+    void onConstruction();
 
     /**
      * On Deconstruction
      *
      * <p>Invoked when the module is disabled.</p>
      */
-    public abstract void onDeconstruction();
+    void onDeconstruction();
 
     /**
      * Get Checks
      *
      * <p>Returns the {@link CheckProvider}s that this {@link Detection} uses.</p>
      *
-     * @return
+     * @return Check providers for this detection
      */
-    public abstract List<CheckProvider> getChecks();
+    List<CheckProvider> getChecks();
 
 }

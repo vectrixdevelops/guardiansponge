@@ -27,25 +27,29 @@ import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
 import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
+import com.me4502.modularframework.module.ModuleWrapper;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckManager;
+import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.sequence.Sequence;
-import io.github.connorhartley.guardian.sequence.SequenceManager;
+import io.github.connorhartley.guardian.sequence.SequenceController;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
@@ -55,9 +59,9 @@ import java.io.File;
         id = "guardian",
         name = "Guardian",
         version = "6.0.0-0.1.0-01",
-        description = "An experimental Sponge anticheat.",
+        description = "An extensible anticheat plugin for Sponge.",
         authors = {
-                "ConnorHartley"
+                "Connor Hartley (vectrix)"
         }
 )
 public class Guardian {
@@ -108,16 +112,19 @@ public class Guardian {
 
     /* Configuration */
 
-    protected GuardianConfiguration globalConfiguration;
+    private GuardianConfiguration globalConfiguration;
 
     /* Detections */
 
-    protected GuardianDetections internalDetections;
+    private GuardianDetections internalDetections;
 
     /* Check / Sequence */
 
-    private CheckManager checkManager;
-    private SequenceManager sequenceManager;
+    private CheckController checkController;
+    private SequenceController sequenceController;
+
+    private CheckController.CheckControllerTask checkControllerTask;
+    private SequenceController.SequenceControllerTask sequenceControllerTask;
 
     /* Game Events */
 
@@ -131,8 +138,11 @@ public class Guardian {
 
     @Listener
     public void onServerStarting(GameStartingServerEvent event) {
-        this.checkManager = new CheckManager(this);
-        this.sequenceManager = new SequenceManager(this, this.checkManager);
+        this.checkController = new CheckController(this);
+        this.sequenceController = new SequenceController(this, this.checkController);
+
+        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
+        this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
 
         getLogger().info("Loading global configuration.");
 
@@ -169,10 +179,10 @@ public class Guardian {
                         if (moduleWrapper.getModule() instanceof Detection) {
                             Detection detection = (Detection) moduleWrapper.getModule();
 
-                            detection.getChecks().forEach(check -> this.getSequenceManager().register(check));
+                            detection.getChecks().forEach(check -> this.getSequenceController().register(check));
                         }
                     } catch(ModuleNotInstantiatedException e) {
-                        getLogger().error("Failed to load module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                        getLogger().error("Failed to get module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
                     }
                 });
 
@@ -181,13 +191,53 @@ public class Guardian {
     }
 
     @Listener
-    public void onServerStarted(GameStartedServerEvent event) {}
+    public void onServerStarted(GameStartedServerEvent event) {
+        this.checkControllerTask.start();
+        this.sequenceControllerTask.start();
+
+        getLogger().info("Guardian AntiCheat is ready.");
+    }
 
     @Listener
-    public void onServerStop(GameStoppingEvent event) {}
+    public void onServerStopping(GameStoppingEvent event) {
+        getLogger().info("Stopping Guardian AntiCheat.");
+
+        this.sequenceControllerTask.stop();
+        this.checkControllerTask.stop();
+
+        this.sequenceController.forceCleanup();
+
+        this.moduleController.getModules().stream()
+                .filter(ModuleWrapper::isEnabled)
+                .forEach(moduleWrapper -> {
+                    try {
+                        if (moduleWrapper.getModule() instanceof Detection) {
+                            Detection detection = (Detection) moduleWrapper.getModule();
+
+                            detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
+                        }
+                    } catch(ModuleNotInstantiatedException e) {
+                        getLogger().error("Failed to get module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                    }
+                });
+
+        this.moduleController.disableModules(moduleWrapper -> {
+            getLogger().info("Disabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+            return true;
+        });
+
+        getLogger().info("Stopped Guardian AntiCheat.");
+    }
 
     @Listener
     public void onReload(GameReloadEvent event) {}
+
+    /* Player Events */
+
+    @Listener
+    public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First User user) {
+        this.sequenceController.forceCleanup(user);
+    }
 
     /**
      * Get Global Configuration
@@ -212,25 +262,14 @@ public class Guardian {
     }
 
     /**
-     * Get Check Manager
+     * Get Sequence Controller
      *
-     * <p>Returns the {@link CheckManager} for managing loaded {@link Detection} {@link Check}s.</p>
+     * <p>Returns the {@link SequenceController} for controlling the running of {@link Sequence}s for {@link Check}s.</p>
      *
-     * @return The check manager
+     * @return The sequence controller
      */
-    public CheckManager getCheckManager() {
-        return this.checkManager;
-    }
-
-    /**
-     * Get Sequence Manager
-     *
-     * <p>Returns the {@link SequenceManager} for managing running {@link Sequence}s for {@link Check}s.</p>
-     *
-     * @return The sequence manager
-     */
-    public SequenceManager getSequenceManager() {
-        return this.sequenceManager;
+    public SequenceController getSequenceController() {
+        return this.sequenceController;
     }
 
 }
