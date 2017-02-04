@@ -186,7 +186,7 @@ public class SequenceController implements SequenceInvoker {
         public SequenceControllerTask(Guardian plugin, SequenceController sequenceController) {
             this.plugin = plugin;
             this.sequenceController = sequenceController;
-            this.sequenceListener = new SequenceListener();
+            this.sequenceListener = new SequenceListener(this.sequenceController);
 
             Sponge.getEventManager().registerListeners(this.plugin, this.sequenceListener);
         }

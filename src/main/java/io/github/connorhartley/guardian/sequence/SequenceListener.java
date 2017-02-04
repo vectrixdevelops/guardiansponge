@@ -23,5 +23,27 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.service.user.UserStorageService;
+
 public class SequenceListener {
+
+    private final SequenceController sequenceController;
+    private final UserStorageService userStorageService;
+
+    public SequenceListener(SequenceController sequenceController) {
+        this.sequenceController = sequenceController;
+        this.userStorageService = Sponge.getServiceManager().provide(UserStorageService.class).orElseThrow(() ->
+                new IllegalStateException("SequenceListener was attempted to be loaded before UserStorageService object was provided."));
+    }
+
+    /*
+     * Listeners will go here. For example:
+     *
+     * @Listener
+     * public void onEntityCollide(CollideEntityEvent event, @First Player player) {
+     *     this.userStorageService.get(player.getUniqueId()).ifPresent(user -> this.sequenceController.invoke(user, event));
+     * }
+     */
+
 }
