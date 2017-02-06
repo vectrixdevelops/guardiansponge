@@ -26,27 +26,47 @@ package io.github.connorhartley.guardian.internal.detections;
 import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleConfiguration;
+import com.me4502.modularframework.module.guice.ModuleContainer;
+import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.List;
+import java.util.Optional;
 
-@Module(moduleId = "dummydetection", moduleName = "DummyDetection", moduleVersion = "0.0.1", onEnable = "onConstruction", onDisable = "onDeconstruction")
+@Module(id = "dummydetection", name = "DummyDetection", version = "0.0.1", onEnable = "onConstruction", onDisable = "onDeconstruction")
 public class DummyDetection implements Detection {
 
     @Inject
-    @ModuleConfiguration
-    public ConfigurationNode configurationNode;
+    @ModuleContainer
+    private PluginContainer moduleContainer;
+
+    private Guardian plugin;
+    private ConfigurationNode globalConfigurationNode;
+
+    private boolean ready = false;
 
     @Override
     public void onConstruction() {
+        if (!this.moduleContainer.getInstance().isPresent());
+        this.plugin = (Guardian) this.moduleContainer.getInstance().get();
 
+        DetectionTypes.SPEED_DETECTION = Optional.of(this);
+
+        this.ready = true;
     }
 
     @Override
     public void onDeconstruction() {
+        this.ready = false;
+    }
 
+    @Override
+    public boolean isReady() {
+        return this.ready;
     }
 
     @Override

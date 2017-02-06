@@ -104,9 +104,9 @@ public class Guardian {
 
     /* Module System */
 
-    private ModuleController moduleController;
+    private ModuleController<Guardian> moduleController;
 
-    public ModuleController getModuleController() {
+    public ModuleController<Guardian> getModuleController() {
         return this.moduleController;
     }
 
@@ -153,8 +153,7 @@ public class Guardian {
         getLogger().info("Discovering internal detections.");
 
         this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
-        this.moduleController.setConfigurationDirectory(this.pluginConfigDirectory);
-        this.moduleController.setConfigurationOptions(this.configurationOptions);
+        this.moduleController.setPluginContainer(this.pluginContainer);
         this.internalDetections = new GuardianDetections(this, this.moduleController);
 
         if (System.getProperty("TEST_GUARDIAN").contains("TRUE")) this.internalDetections
@@ -175,14 +174,11 @@ public class Guardian {
         this.moduleController.getModules().stream()
                 .filter(moduleWrapper -> !moduleWrapper.isEnabled())
                 .forEach(moduleWrapper -> {
-                    try {
-                        if (moduleWrapper.getModule() instanceof Detection) {
-                            Detection detection = (Detection) moduleWrapper.getModule();
+                    if (!moduleWrapper.getModule().isPresent()) return;
+                    if (moduleWrapper.getModule().get() instanceof Detection) {
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
-                            detection.getChecks().forEach(check -> this.getSequenceController().register(check));
-                        }
-                    } catch(ModuleNotInstantiatedException e) {
-                        getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
+                        detection.getChecks().forEach(check -> this.getSequenceController().register(check));
                     }
                 });
 
@@ -210,14 +206,11 @@ public class Guardian {
         this.moduleController.getModules().stream()
                 .filter(ModuleWrapper::isEnabled)
                 .forEach(moduleWrapper -> {
-                    try {
-                        if (moduleWrapper.getModule() instanceof Detection) {
-                            Detection detection = (Detection) moduleWrapper.getModule();
+                    if (!moduleWrapper.getModule().isPresent()) return;
+                    if (moduleWrapper.getModule().get() instanceof Detection) {
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
-                            detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
-                        }
-                    } catch(ModuleNotInstantiatedException e) {
-                        getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
+                        detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
                     }
                 });
 

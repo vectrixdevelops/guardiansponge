@@ -50,6 +50,16 @@ public interface Detection {
     void onDeconstruction();
 
     /**
+     * Is Ready
+     *
+     * <p>True when the detection has finished loading and false when it is not,
+     * or being deconstructed.</p>
+     *
+     * @return True when ready, false when not
+     */
+    boolean isReady();
+
+    /**
      * Get Checks
      *
      * <p>Returns the {@link CheckProvider}s that this {@link Detection} uses.</p>

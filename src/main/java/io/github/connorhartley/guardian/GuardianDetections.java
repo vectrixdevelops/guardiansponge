@@ -47,8 +47,4 @@ public class GuardianDetections {
         this.moduleController.registerModule(modulePath);
     }
 
-    public DetectionTypes getDetectionTypes() {
-        return this.detectionTypes;
-    }
-
 }
