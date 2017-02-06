@@ -23,7 +23,11 @@
  */
 package io.github.connorhartley.guardian;
 
+import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
+import com.me4502.modularframework.module.ModuleWrapper;
+import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.util.StorageValue;
+import io.github.connorhartley.guardian.util.storage.StorageConsumer;
 import io.github.connorhartley.guardian.util.storage.StorageProvider;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -34,7 +38,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-public class GuardianConfiguration implements StorageProvider<File> {
+public class GuardianConfiguration implements StorageProvider<File>, StorageConsumer {
 
     private Guardian plugin;
 
@@ -86,6 +90,22 @@ public class GuardianConfiguration implements StorageProvider<File> {
             this.configVersion.load(this.configurationNode);
             this.configEnabledDetections.load(this.configurationNode);
 
+            this.plugin.getModuleController().getModules().stream()
+                    .filter(ModuleWrapper::isEnabled)
+                    .forEach(moduleWrapper -> {
+                        try {
+                            Detection detection = (Detection) moduleWrapper.getModule();
+
+                            if (detection instanceof StorageConsumer) {
+                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
+                                    storageValue.load(this.configurationNode);
+                                }
+                            }
+                        } catch (ModuleNotInstantiatedException e) {
+                            this.plugin.getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
+                        }
+                    });
+
             this.configManager.save(this.configurationNode);
         } catch (IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
@@ -100,10 +120,30 @@ public class GuardianConfiguration implements StorageProvider<File> {
             this.configVersion.save(this.configurationNode);
             this.configEnabledDetections.save(this.configurationNode);
 
+            this.plugin.getModuleController().getModules().stream()
+                    .filter(ModuleWrapper::isEnabled)
+                    .forEach(moduleWrapper -> {
+                        try {
+                            Detection detection = (Detection) moduleWrapper.getModule();
+
+                            if (detection instanceof StorageConsumer) {
+                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
+                                    storageValue.save(this.configurationNode);
+                                }
+                            }
+                        } catch (ModuleNotInstantiatedException e) {
+                            this.plugin.getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
+                        }
+                    });
+
             this.configManager.save(this.configurationNode);
         } catch (IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to update Guardians global configuration!", e);
         }
+    }
+
+    public ConfigurationNode getConfigurationNode()  {
+        return this.configurationNode;
     }
 
     @Override
@@ -116,8 +156,9 @@ public class GuardianConfiguration implements StorageProvider<File> {
         return this.configFile;
     }
 
-    public StorageValue<?, ?, ?>[] getConfigurationNodes() {
-        return new StorageValue<?, ?, ?>[]{ this.configVersion };
+    @Override
+    public StorageValue[] getStorageNodes() {
+        return new StorageValue[]{ this.configVersion, this.configEnabledDetections };
     }
 
 }

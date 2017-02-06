@@ -30,6 +30,6 @@ import org.spongepowered.api.event.Event;
 
 public interface Condition<T extends Event> {
 
-    SequencePoint test(User user, T event, SequenceResult.Builder checkResult);
+    SequencePoint test(User user, T event, SequenceResult.Builder sequenceResult);
 
 }

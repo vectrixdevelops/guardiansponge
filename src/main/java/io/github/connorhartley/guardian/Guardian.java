@@ -158,7 +158,7 @@ public class Guardian {
         this.internalDetections = new GuardianDetections(this, this.moduleController);
 
         if (System.getProperty("TEST_GUARDIAN").contains("TRUE")) this.internalDetections
-                .registerModule("io.github.connorhartley.guardian.module.DummyDetection");
+                .registerModule("io.github.connorhartley.guardian.internal.detections.DummyDetection");
 
         this.internalDetections.registerInternalModules();
 
@@ -182,7 +182,7 @@ public class Guardian {
                             detection.getChecks().forEach(check -> this.getSequenceController().register(check));
                         }
                     } catch(ModuleNotInstantiatedException e) {
-                        getLogger().error("Failed to get module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                        getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
                     }
                 });
 
@@ -217,7 +217,7 @@ public class Guardian {
                             detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
                         }
                     } catch(ModuleNotInstantiatedException e) {
-                        getLogger().error("Failed to get module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                        getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
                     }
                 });
 
