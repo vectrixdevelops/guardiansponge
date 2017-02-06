@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Detection
  *
- * Represents a cheat / hack / exploit module that is loaded
+ * Represents a cheat / hack / exploit internal that is loaded
  * by the global detection manager.
  */
 public interface Detection {
@@ -38,14 +38,14 @@ public interface Detection {
     /**
      * On Construction
      *
-     * <p>Invoked when the module is enabled.</p>
+     * <p>Invoked when the internal is enabled.</p>
      */
     void onConstruction();
 
     /**
      * On Deconstruction
      *
-     * <p>Invoked when the module is disabled.</p>
+     * <p>Invoked when the internal is disabled.</p>
      */
     void onDeconstruction();
 

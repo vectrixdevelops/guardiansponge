@@ -33,16 +33,24 @@ public abstract class Check {
     private final CheckProvider checkProvider;
     private final User user;
 
+    private boolean checking;
+
     public Check(CheckProvider checkProvider, User user) {
         this.checkProvider = checkProvider;
         this.user = user;
     }
 
-    abstract void update();
+    public abstract void update();
 
-    abstract void finish();
+    public abstract void finish();
 
-    abstract boolean isChecking();
+    public void setChecking(boolean checking) {
+        this.checking = checking;
+    }
+
+    public boolean isChecking() {
+        return this.checking;
+    }
 
     public CheckProvider getProvider() {
         return this.checkProvider;
