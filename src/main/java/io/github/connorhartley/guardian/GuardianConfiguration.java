@@ -93,16 +93,13 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
             this.plugin.getModuleController().getModules().stream()
                     .filter(ModuleWrapper::isEnabled)
                     .forEach(moduleWrapper -> {
-                        try {
-                            Detection detection = (Detection) moduleWrapper.getModule();
+                        if (!moduleWrapper.getModule().isPresent()) return;
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
-                            if (detection instanceof StorageConsumer) {
-                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
-                                    storageValue.load(this.configurationNode);
-                                }
+                        if (detection instanceof StorageConsumer) {
+                            for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
+                                storageValue.load(this.configurationNode);
                             }
-                        } catch (ModuleNotInstantiatedException e) {
-                            this.plugin.getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
                         }
                     });
 
@@ -123,16 +120,13 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
             this.plugin.getModuleController().getModules().stream()
                     .filter(ModuleWrapper::isEnabled)
                     .forEach(moduleWrapper -> {
-                        try {
-                            Detection detection = (Detection) moduleWrapper.getModule();
+                        if (!moduleWrapper.getModule().isPresent()) return;
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
-                            if (detection instanceof StorageConsumer) {
-                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
-                                    storageValue.save(this.configurationNode);
-                                }
+                        if (detection instanceof StorageConsumer) {
+                            for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
+                                storageValue.save(this.configurationNode);
                             }
-                        } catch (ModuleNotInstantiatedException e) {
-                            this.plugin.getLogger().error("Failed to get internal: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion(), e);
                         }
                     });
 
