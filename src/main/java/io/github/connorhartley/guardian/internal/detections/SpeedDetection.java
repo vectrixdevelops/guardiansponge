@@ -30,12 +30,13 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.internal.checks.MovementSpeedCheck;
 import io.github.connorhartley.guardian.util.StorageValue;
 import io.github.connorhartley.guardian.util.storage.StorageConsumer;
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,6 +57,8 @@ public class SpeedDetection implements Detection, StorageConsumer {
         if (!this.moduleContainer.getInstance().isPresent());
         this.plugin = (Guardian) this.moduleContainer.getInstance().get();
 
+        this.globalConfigurationNode = this.plugin.getGlobalConfiguration().getConfigurationNode();
+
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
 
         this.ready = true;
@@ -73,7 +76,7 @@ public class SpeedDetection implements Detection, StorageConsumer {
 
     @Override
     public List<CheckProvider> getChecks() {
-        return null;
+        return Collections.singletonList(new MovementSpeedCheck.Provider());
     }
 
     @Override
