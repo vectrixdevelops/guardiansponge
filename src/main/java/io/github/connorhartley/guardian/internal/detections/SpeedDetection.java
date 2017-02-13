@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Module(id = "speed_detection", name = "Speed Detection", version = "0.0.1", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class SpeedDetection implements Detection, StorageConsumer {
+public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Inject
     @ModuleContainer

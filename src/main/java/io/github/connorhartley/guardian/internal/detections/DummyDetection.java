@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Module(id = "dummydetection", name = "DummyDetection", version = "0.0.1", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection implements Detection {
+public class DummyDetection extends Detection {
 
     @Inject
     @ModuleContainer

@@ -28,6 +28,7 @@ import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
 import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
 import com.me4502.modularframework.module.ModuleWrapper;
+import com.me4502.precogs.service.AntiCheatService;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -35,6 +36,7 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
+import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -46,10 +48,12 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
@@ -62,7 +66,10 @@ import java.io.File;
         description = "An extensible anticheat plugin for Sponge.",
         authors = {
                 "Connor Hartley (vectrix)"
-        }
+        },
+        dependencies = @Dependency(
+                id = "precogs"
+        )
 )
 public class Guardian {
 
@@ -127,6 +134,13 @@ public class Guardian {
     private SequenceController.SequenceControllerTask sequenceControllerTask;
 
     /* Game Events */
+
+    @Listener
+    public void onGamePreInitialize(GamePreInitializationEvent event) {
+        Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
+
+        // TODO Register all of the DetectionType to GameRegistry.
+    }
 
     @Listener
     public void onGameInitialize(GameInitializationEvent event) {
