@@ -49,6 +49,10 @@ public class DummyDetection extends Detection {
 
     private boolean ready = false;
 
+    public DummyDetection(String id, String name) {
+        super(id, name);
+    }
+
     @Override
     public void onConstruction() {
         if (!this.moduleContainer.getInstance().isPresent());

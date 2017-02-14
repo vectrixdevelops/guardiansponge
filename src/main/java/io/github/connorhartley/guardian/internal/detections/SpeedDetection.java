@@ -52,6 +52,10 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
     private boolean ready = false;
 
+    public SpeedDetection(String id, String name) {
+        super(id, name);
+    }
+
     @Override
     public void onConstruction() {
         if (!this.moduleContainer.getInstance().isPresent());
