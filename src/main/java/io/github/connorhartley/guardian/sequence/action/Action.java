@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.report.SequencePoint;
 import io.github.connorhartley.guardian.sequence.report.SequenceResult;
@@ -44,21 +45,23 @@ public class Action<T extends Event> {
     private int delay;
     private int expire;
     private SequenceResult.Builder sequenceResult;
+    private ContextTracker contextTracker;
 
     @SafeVarargs
-    Action(Class<T> event, SequenceResult.Builder sequenceResult, Condition<T>... conditions) {
-        this(event, sequenceResult);
+    Action(Class<T> event, SequenceResult.Builder sequenceResult, ContextTracker contextTracker, Condition<T>... conditions) {
+        this(event, sequenceResult, contextTracker);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(Class<T> event, SequenceResult.Builder sequenceResult, List<Condition<T>> conditions) {
-        this(event, sequenceResult);
+    public Action(Class<T> event, SequenceResult.Builder sequenceResult, ContextTracker contextTracker, List<Condition<T>> conditions) {
+        this(event, sequenceResult,contextTracker);
         this.conditions.addAll(conditions);
     }
 
-    public Action(Class<T> event, SequenceResult.Builder sequenceResult) {
+    public Action(Class<T> event, SequenceResult.Builder sequenceResult, ContextTracker contextTracker) {
         this.event = event;
         this.sequenceResult = sequenceResult;
+        this.contextTracker = contextTracker;
     }
 
     void addCondition(Condition<T> condition) {
@@ -78,13 +81,13 @@ public class Action<T extends Event> {
     }
 
     public void succeed(User user, Event event) {
-        this.successfulListeners.forEach(callback -> this.sequenceResult.addPoint(callback.test(user, event, this.sequenceResult)));
+        this.successfulListeners.forEach(callback -> this.sequenceResult.addPoint(callback.test(user, event, this.contextTracker, this.sequenceResult)));
     }
 
     public boolean fail(User user, Event event) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    SequencePoint sequencePoint = callback.test(user, event, this.sequenceResult);
+                    SequencePoint sequencePoint = callback.test(user, event, this.contextTracker, this.sequenceResult);
 
                     this.sequenceResult.addPoint(sequencePoint);
                     return sequencePoint.hasPassed();
@@ -94,7 +97,7 @@ public class Action<T extends Event> {
     public boolean testConditions(User user, T event) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    SequencePoint sequencePoint = condition.test(user, event, this.sequenceResult);
+                    SequencePoint sequencePoint = condition.test(user, event, this.contextTracker, this.sequenceResult);
 
                     this.sequenceResult.addPoint(sequencePoint);
                     return !sequencePoint.hasPassed();
@@ -112,6 +115,8 @@ public class Action<T extends Event> {
     public Class<T> getEvent() {
         return this.event;
     }
+
+    public ContextTracker getContextTracker() { return this.contextTracker; }
 
     public List<Condition<T>> getConditions() {
         return this.conditions;

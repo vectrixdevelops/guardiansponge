@@ -50,22 +50,25 @@ public class MovementSpeedCheck extends Check {
         @Override
         public SequenceBlueprint getSequence() {
             return new SequenceBuilder()
-                    .action(MoveEntityEvent.class)
-                    .delay(20 * 2)
-                    .condition((user, event, sequenceResult) -> {
+
+                    .action(MoveEntityEvent.class, null)
+                    .condition((user, event, contextTracker, sequenceResult) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
 
                             return new SequencePoint.Builder().setPass(true).build();
                         }
                         return new SequencePoint.Builder().setPass(false).build();
                     })
+                    .delay(20 * 2)
+
                     .action(MoveEntityEvent.class)
-                    .condition((user, event, sequenceResult) -> {
+                    .condition((user, event, contextTracker, sequenceResult) -> {
 
                         // TODO: Juice'y movement speed check here.
 
                         return new SequencePoint.Builder().build();
                     })
+                    
                     .build(this);
         }
 
