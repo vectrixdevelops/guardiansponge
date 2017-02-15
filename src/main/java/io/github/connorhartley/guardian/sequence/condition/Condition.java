@@ -24,13 +24,12 @@
 package io.github.connorhartley.guardian.sequence.condition;
 
 import io.github.connorhartley.guardian.context.ContextTracker;
-import io.github.connorhartley.guardian.sequence.report.SequencePoint;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
 public interface Condition<T extends Event> {
 
-    SequencePoint test(User user, T event, ContextTracker contextTracker, SequenceResult.Builder sequenceResult);
+    boolean test(User user, T event, ContextTracker contextTracker, SequenceReport sequenceReport);
 
 }

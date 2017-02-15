@@ -23,14 +23,13 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
@@ -53,7 +52,7 @@ public class Sequence {
     private final User user;
     private final CheckProvider checkProvider;
 
-    private SequenceResult.Builder sequenceResult;
+    private SequenceReport sequenceReport;
 
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
@@ -66,18 +65,18 @@ public class Sequence {
 
     private Iterator<Action> iterator;
 
-    public Sequence(User user, CheckProvider checkProvider, List<Action> actions, SequenceResult.Builder sequenceResult) {
+    public Sequence(User user, CheckProvider checkProvider, List<Action> actions, SequenceReport sequenceReport) {
         this.user = user;
         this.checkProvider = checkProvider;
         this.actions.addAll(actions);
-        this.sequenceResult = sequenceResult;
+        this.sequenceReport = sequenceReport;
     }
 
     /**
      * Check
      *
      * <p>Runs through the list of {@link Action}s and their {@link Condition}s and
-     * carries the {@link SequenceResult.Builder} through each allowing it to be
+     * carries the {@link SequenceReport} through each allowing it to be
      * updated through the chain. {@link Action}s that fail will fire the {@link SequenceFailEvent}.
      * {@link Action}s that succeed will fire the {@link SequenceSucceedEvent}.</p>
      *
@@ -95,42 +94,42 @@ public class Sequence {
             long now = System.currentTimeMillis();
 
             if (!action.getEvent().equals(event.getClass())) {
-                action.updateResult(this.sequenceResult);
+                action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
 
-            this.sequenceResult = action.getSequenceResult();
+            this.sequenceReport = action.getSequenceReport();
 
             if (this.last + ((action.getDelay() / 20) * 1000) > now) {
-                action.updateResult(this.sequenceResult);
+                action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
             }
 
-            this.sequenceResult = action.getSequenceResult();
+            this.sequenceReport = action.getSequenceReport();
 
             if (this.last + ((action.getExpire() / 20) * 1000) < now) {
-                action.updateResult(this.sequenceResult);
+                action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
 
-            this.sequenceResult = action.getSequenceResult();
+            this.sequenceReport = action.getSequenceReport();
 
             Action<T> typeAction = (Action<T>) action;
 
             // TODO: Context Stuff.
 
             if (!typeAction.testConditions(user, event)) {
-                action.updateResult(this.sequenceResult);
+                action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
             this.iterator.remove();
 
-            typeAction.updateResult(this.sequenceResult);
-            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getSequenceResult().build())));
+            typeAction.updateReport(this.sequenceReport);
+            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getSequenceReport())));
             typeAction.succeed(user, event);
 
-            this.sequenceResult = action.getSequenceResult();
+            this.sequenceReport = action.getSequenceReport();
 
             if (!iterator.hasNext()) {
                 this.finished = true;
@@ -166,12 +165,12 @@ public class Sequence {
     /**
      * Get Sequence Result
      *
-     * <p>Returns the current {@link SequenceResult.Builder} for this {@link Sequence}.</p>
+     * <p>Returns the current {@link SequenceReport} for this {@link Sequence}.</p>
      *
-     * @return This {@link SequenceResult.Builder}
+     * @return This {@link SequenceReport}
      */
-    SequenceResult.Builder getSequenceResult() {
-        return this.sequenceResult;
+    SequenceReport getSequenceReport() {
+        return this.sequenceReport;
     }
 
     /**
