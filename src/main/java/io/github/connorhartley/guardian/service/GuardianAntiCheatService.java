@@ -21,56 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian.service;
 
 import com.me4502.precogs.detection.DetectionType;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import com.me4502.precogs.service.AntiCheatService;
+import com.me4502.precogs.service.BypassTicket;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 
 import java.util.List;
+import java.util.Optional;
 
-/**
- * Detection
- *
- * Represents a cheat / hack / exploit internal that is loaded
- * by the global detection manager.
- */
-public abstract class Detection extends DetectionType {
+public class GuardianAntiCheatService implements AntiCheatService {
 
-    public Detection(String id, String name) {
-        super(id, name);
+    @Override
+    public Optional<BypassTicket> requestBypassTicket(Player player, List<DetectionType> list) {
+        return Optional.of(new GuardianBypassTicket(player, list));
     }
 
-    /**
-     * On Construction
-     *
-     * <p>Invoked when the internal is enabled.</p>
-     */
-    public abstract void onConstruction();
+    @Override
+    public double getViolationLevel(User user, DetectionType detectionType) {
+        // TODO
+        return 0;
+    }
 
-    /**
-     * On Deconstruction
-     *
-     * <p>Invoked when the internal is disabled.</p>
-     */
-    public abstract void onDeconstruction();
-
-    /**
-     * Is Ready
-     *
-     * <p>True when the detection has finished loading and false when it is not,
-     * or being deconstructed.</p>
-     *
-     * @return True when ready, false when not
-     */
-    public abstract boolean isReady();
-
-    /**
-     * Get Checks
-     *
-     * <p>Returns the {@link CheckProvider}s that this {@link Detection} uses.</p>
-     *
-     * @return Check providers for this detection
-     */
-    public abstract List<CheckProvider> getChecks();
-
+    @Override
+    public void logViolation(User user, DetectionType detectionType, double v) {
+        // TODO
+    }
 }

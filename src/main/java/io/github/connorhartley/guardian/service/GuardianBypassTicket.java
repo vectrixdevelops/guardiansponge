@@ -21,56 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian.service;
 
 import com.me4502.precogs.detection.DetectionType;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import com.me4502.precogs.service.BypassTicket;
+import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.List;
 
-/**
- * Detection
- *
- * Represents a cheat / hack / exploit internal that is loaded
- * by the global detection manager.
- */
-public abstract class Detection extends DetectionType {
+public class GuardianBypassTicket implements BypassTicket {
 
-    public Detection(String id, String name) {
-        super(id, name);
+    private Player player;
+    private List<DetectionType> detectionTypes;
+
+    public GuardianBypassTicket(Player player, List<DetectionType> detectionTypes) {
+        this.player = player;
+        this.detectionTypes = detectionTypes;
+        // TODO Disable the detections.
     }
 
-    /**
-     * On Construction
-     *
-     * <p>Invoked when the internal is enabled.</p>
-     */
-    public abstract void onConstruction();
+    @Override
+    public Player getPlayer() {
+        return this.player;
+    }
 
-    /**
-     * On Deconstruction
-     *
-     * <p>Invoked when the internal is disabled.</p>
-     */
-    public abstract void onDeconstruction();
+    @Override
+    public List<DetectionType> getDetectionTypes() {
+        return this.detectionTypes;
+    }
 
-    /**
-     * Is Ready
-     *
-     * <p>True when the detection has finished loading and false when it is not,
-     * or being deconstructed.</p>
-     *
-     * @return True when ready, false when not
-     */
-    public abstract boolean isReady();
-
-    /**
-     * Get Checks
-     *
-     * <p>Returns the {@link CheckProvider}s that this {@link Detection} uses.</p>
-     *
-     * @return Check providers for this detection
-     */
-    public abstract List<CheckProvider> getChecks();
-
+    @Override
+    public void close() {
+        // TODO Enable the detections.
+    }
 }
