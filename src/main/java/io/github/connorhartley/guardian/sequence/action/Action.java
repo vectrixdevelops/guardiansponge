@@ -25,8 +25,8 @@ package io.github.connorhartley.guardian.sequence.action;
 
 import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.report.SequencePoint;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import io.github.connorhartley.guardian.sequence.report.ReportType;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
@@ -44,23 +44,23 @@ public class Action<T extends Event> {
 
     private int delay;
     private int expire;
-    private SequenceResult.Builder sequenceResult;
+    private SequenceReport sequenceReport;
     private ContextTracker contextTracker;
 
     @SafeVarargs
-    Action(Class<T> event, SequenceResult.Builder sequenceResult, ContextTracker contextTracker, Condition<T>... conditions) {
-        this(event, sequenceResult, contextTracker);
+    Action(Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker, Condition<T>... conditions) {
+        this(event, sequenceReport, contextTracker);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(Class<T> event, SequenceResult.Builder sequenceResult, ContextTracker contextTracker, List<Condition<T>> conditions) {
-        this(event, sequenceResult,contextTracker);
+    public Action(Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker, List<Condition<T>> conditions) {
+        this(event, sequenceReport,contextTracker);
         this.conditions.addAll(conditions);
     }
 
-    public Action(Class<T> event, SequenceResult.Builder sequenceResult, ContextTracker contextTracker) {
+    public Action(Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker) {
         this.event = event;
-        this.sequenceResult = sequenceResult;
+        this.sequenceReport = sequenceReport;
         this.contextTracker = contextTracker;
     }
 
@@ -76,31 +76,37 @@ public class Action<T extends Event> {
         this.expire = expire;
     }
 
-    public void updateResult(SequenceResult.Builder sequenceResult) {
-        this.sequenceResult = sequenceResult;
+    public void updateReport(SequenceReport sequenceReport) {
+        this.sequenceReport = sequenceReport;
     }
 
     public void succeed(User user, Event event) {
-        this.successfulListeners.forEach(callback -> this.sequenceResult.addPoint(callback.test(user, event, this.contextTracker, this.sequenceResult)));
+        this.successfulListeners.forEach(callback -> this.sequenceReport =
+                SequenceReport.of(this.sequenceReport).append(ReportType.TEST,
+                        callback.test(user, event, this.contextTracker, this.sequenceReport)).build());
     }
 
     public boolean fail(User user, Event event) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    SequencePoint sequencePoint = callback.test(user, event, this.contextTracker, this.sequenceResult);
+                    boolean testResult = callback.test(user, event, this.contextTracker, this.sequenceReport);
 
-                    this.sequenceResult.addPoint(sequencePoint);
-                    return sequencePoint.hasPassed();
+                    this.sequenceReport = SequenceReport.of(this.sequenceReport).append(ReportType.TEST,
+                            testResult).build();
+
+                    return testResult;
                 });
     }
 
     public boolean testConditions(User user, T event) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    SequencePoint sequencePoint = condition.test(user, event, this.contextTracker, this.sequenceResult);
+                    boolean testResult = condition.test(user, event, this.contextTracker, this.sequenceReport);
 
-                    this.sequenceResult.addPoint(sequencePoint);
-                    return !sequencePoint.hasPassed();
+                    this.sequenceReport = SequenceReport.of(this.sequenceReport).append(ReportType.TEST,
+                            testResult).build();
+
+                    return !testResult;
                 });
     }
 
@@ -122,8 +128,8 @@ public class Action<T extends Event> {
         return this.conditions;
     }
 
-    public SequenceResult.Builder getSequenceResult() {
-        return this.sequenceResult;
+    public SequenceReport getSequenceReport() {
+        return this.sequenceReport;
     }
 
     void onSuccess(Condition condition) {

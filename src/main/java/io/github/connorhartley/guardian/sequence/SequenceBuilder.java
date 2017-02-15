@@ -28,7 +28,7 @@ import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class SequenceBuilder {
 
-    private SequenceResult.Builder sequenceResult;
+    private SequenceReport sequenceReport;
     private ContextTracker contextTracker;
     private List<Action> actions = new ArrayList<>();
 
@@ -55,13 +55,13 @@ public class SequenceBuilder {
         this(contextTracker, null);
     }
 
-    public SequenceBuilder(ContextTracker contextTracker, SequenceResult.Builder sequenceResult) {
-        this.sequenceResult = (sequenceResult == null) ? new SequenceResult.Builder() : sequenceResult;
+    public SequenceBuilder(ContextTracker contextTracker, SequenceReport sequenceReport) {
+        this.sequenceReport = (sequenceReport == null) ? SequenceReport.builder().build() : sequenceReport;
         this.contextTracker = (contextTracker == null) ? new ContextTracker.Builder().build() : contextTracker;
     }
 
     public <T extends Event> ActionBuilder<T> action(Class<T> clazz, ContextTracker contextTracker) {
-        return action(new Action<>(clazz, this.sequenceResult, contextTracker));
+        return action(new Action<>(clazz, this.sequenceReport, contextTracker));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
@@ -71,14 +71,14 @@ public class SequenceBuilder {
     public <T extends Event> ActionBuilder<T> action(Action<T> action) {
         this.actions.add(action);
 
-        return new ActionBuilder<>(this, action, action.getContextTracker(), this.sequenceResult);
+        return new ActionBuilder<>(this, action, action.getContextTracker(), this.sequenceReport);
     }
 
     public SequenceBlueprint build(CheckProvider provider) {
         return new SequenceBlueprint(provider) {
             @Override
             public Sequence create(User user) {
-                return new Sequence(user, provider, actions, sequenceResult);
+                return new Sequence(user, provider, actions, sequenceReport);
             }
         };
     }
