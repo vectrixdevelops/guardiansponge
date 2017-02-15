@@ -23,13 +23,25 @@
  */
 package io.github.connorhartley.guardian.sequence.condition;
 
-import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
-import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.Event;
 
-public interface Condition<T extends Event> {
+public class ConditionResult {
 
-    ConditionResult test(User user, T event, ContextTracker contextTracker, SequenceReport sequenceReport);
+    private final boolean pass;
+    private final SequenceReport sequenceReport;
+
+
+    public ConditionResult(Boolean pass, SequenceReport sequenceReport) {
+        this.pass = pass;
+        this.sequenceReport = sequenceReport;
+    }
+
+    public boolean hasPassed() {
+        return this.pass;
+    }
+
+    public SequenceReport getSequenceReport() {
+        return this.sequenceReport;
+    }
 
 }
