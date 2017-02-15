@@ -21,16 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence.condition;
+package io.github.connorhartley.guardian.context.type;
 
 import io.github.connorhartley.guardian.context.ContextTracker;
-import io.github.connorhartley.guardian.sequence.report.SequencePoint;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.Cause;
 
-public interface Condition<T extends Event> {
+/**
+ * Action Context
+ */
+public interface ActionContext {
 
-    SequencePoint test(User user, T event, ContextTracker contextTracker, SequenceResult.Builder sequenceResult);
+    Cause invoke(User user, ContextTracker.Builder contextTracker);
 
 }

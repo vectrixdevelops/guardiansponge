@@ -29,6 +29,7 @@ import com.me4502.modularframework.ShadedModularFramework;
 import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
 import com.me4502.modularframework.module.ModuleWrapper;
 import com.me4502.precogs.service.AntiCheatService;
+import io.github.connorhartley.guardian.context.ContextController;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -125,6 +126,10 @@ public class Guardian {
 
     private GuardianDetections internalDetections;
 
+    /* Cause Context */
+
+    private ContextController contextController;
+
     /* Check / Sequence */
 
     private CheckController checkController;
@@ -152,6 +157,8 @@ public class Guardian {
 
     @Listener
     public void onServerStarting(GameStartingServerEvent event) {
+        this.contextController = new ContextController(this);
+
         this.checkController = new CheckController(this);
         this.sequenceController = new SequenceController(this, this.checkController);
 

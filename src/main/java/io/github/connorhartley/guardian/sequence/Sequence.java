@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
@@ -115,6 +116,8 @@ public class Sequence {
             this.sequenceResult = action.getSequenceResult();
 
             Action<T> typeAction = (Action<T>) action;
+
+            // TODO: Context Stuff.
 
             if (!typeAction.testConditions(user, event)) {
                 action.updateResult(this.sequenceResult);

@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
@@ -43,22 +44,24 @@ import java.util.List;
 public class SequenceBuilder {
 
     private SequenceResult.Builder sequenceResult;
+    private ContextTracker contextTracker;
     private List<Action> actions = new ArrayList<>();
 
     public SequenceBuilder() {
         this(null);
     }
 
-    public SequenceBuilder(SequenceResult.Builder sequenceResult) {
-        if (sequenceResult == null) {
-            this.sequenceResult = new SequenceResult.Builder();
-        } else {
-            this.sequenceResult = sequenceResult;
-        }
+    public SequenceBuilder(ContextTracker contextTracker) {
+        this(contextTracker, null);
     }
 
-    public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(clazz, this.sequenceResult));
+    public SequenceBuilder(ContextTracker contextTracker, SequenceResult.Builder sequenceResult) {
+        this.sequenceResult = (sequenceResult == null) ? new SequenceResult.Builder() : sequenceResult;
+        this.contextTracker = (contextTracker == null) ? new ContextTracker.Builder().build() : contextTracker;
+    }
+
+    public <T extends Event> ActionBuilder<T> action(Class<T> clazz, ContextTracker contextTracker) {
+        return action(new Action<>(clazz, this.sequenceResult, contextTracker));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
@@ -68,7 +71,7 @@ public class SequenceBuilder {
     public <T extends Event> ActionBuilder<T> action(Action<T> action) {
         this.actions.add(action);
 
-        return new ActionBuilder<>(this, action, this.sequenceResult);
+        return new ActionBuilder<>(this, action, action.getContextTracker(), this.sequenceResult);
     }
 
     public SequenceBlueprint build(CheckProvider provider) {
