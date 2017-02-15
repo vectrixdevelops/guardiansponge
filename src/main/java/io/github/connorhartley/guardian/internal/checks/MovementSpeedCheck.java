@@ -29,6 +29,7 @@ import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
+import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 
@@ -54,9 +55,9 @@ public class MovementSpeedCheck extends Check {
                     .condition((user, event, contextTracker, sequenceResult) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
 
-                            return true;
+                            return new ConditionResult(true, sequenceResult);
                         }
-                        return false;
+                        return new ConditionResult(false, sequenceResult);
                     })
                     .delay(20 * 2)
 
@@ -65,7 +66,7 @@ public class MovementSpeedCheck extends Check {
 
                         // TODO: Juice'y movement speed check here.
 
-                        return false;
+                        return new ConditionResult(false, sequenceResult);
                     })
 
                     .build(this);

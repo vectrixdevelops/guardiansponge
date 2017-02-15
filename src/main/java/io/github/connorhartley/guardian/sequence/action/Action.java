@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.sequence.action;
 
 import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
+import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
@@ -81,32 +82,35 @@ public class Action<T extends Event> {
     }
 
     public void succeed(User user, Event event) {
-        this.successfulListeners.forEach(callback -> this.sequenceReport =
-                SequenceReport.of(this.sequenceReport).append(ReportType.TEST,
-                        callback.test(user, event, this.contextTracker, this.sequenceReport)).build());
+        this.successfulListeners.forEach(callback -> {
+            ConditionResult testResult = callback.test(user, event, this.contextTracker, this.sequenceReport);
+
+            this.sequenceReport =
+                SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
+        });
     }
 
     public boolean fail(User user, Event event) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    boolean testResult = callback.test(user, event, this.contextTracker, this.sequenceReport);
+                    ConditionResult testResult = callback.test(user, event, this.contextTracker, this.sequenceReport);
 
-                    this.sequenceReport = SequenceReport.of(this.sequenceReport).append(ReportType.TEST,
-                            testResult).build();
+                    this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
+                            testResult.hasPassed()).build();
 
-                    return testResult;
+                    return testResult.hasPassed();
                 });
     }
 
     public boolean testConditions(User user, T event) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    boolean testResult = condition.test(user, event, this.contextTracker, this.sequenceReport);
+                    ConditionResult testResult = condition.test(user, event, this.contextTracker, this.sequenceReport);
 
-                    this.sequenceReport = SequenceReport.of(this.sequenceReport).append(ReportType.TEST,
-                            testResult).build();
+                    this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
+                            testResult.hasPassed()).build();
 
-                    return !testResult;
+                    return !testResult.hasPassed();
                 });
     }
 

@@ -123,6 +123,8 @@ public class Sequence {
                 return fail(user, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
+            this.sequenceReport = action.getSequenceReport();
+
             this.iterator.remove();
 
             typeAction.updateReport(this.sequenceReport);
