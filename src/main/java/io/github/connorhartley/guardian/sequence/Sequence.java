@@ -52,6 +52,8 @@ public class Sequence {
     private final User user;
     private final CheckProvider checkProvider;
 
+    private List<NamedCause> contextResult;
+
     private SequenceReport sequenceReport;
 
     private final List<Action> actions = new ArrayList<>();
@@ -91,6 +93,8 @@ public class Sequence {
         if (iterator.hasNext()) {
             Action action = iterator.next();
 
+            action.testContext(user, event);
+
             long now = System.currentTimeMillis();
 
             if (!action.getEvent().equals(event.getClass())) {
@@ -113,6 +117,8 @@ public class Sequence {
             }
 
             this.sequenceReport = action.getSequenceReport();
+
+            this.contextResult = action.getContextResult();
 
             Action<T> typeAction = (Action<T>) action;
 
@@ -162,6 +168,17 @@ public class Sequence {
 
         this.incompleteEvents.add(event);
         return false;
+    }
+
+    /**
+     * Get Context Results
+     *
+     * <p>Returns a list of {@link Cause}s that have been analysed.</p>
+     *
+     * @return A list of causes
+     */
+    List<NamedCause> getContextResults() {
+        return this.contextResult;
     }
 
     /**

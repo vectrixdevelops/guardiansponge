@@ -21,20 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence.condition;
+package io.github.connorhartley.guardian.context;
 
-import io.github.connorhartley.guardian.context.ContextTracker;
-import io.github.connorhartley.guardian.context.type.ActionContext;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
-import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.NamedCause;
+import io.github.connorhartley.guardian.sequence.Sequence;
+import io.github.connorhartley.guardian.sequence.action.Action;
 
-import java.util.List;
+public interface ContextProvider {
 
-public interface Condition<T extends Event> {
-
-    ConditionResult test(User user, T event, ContextTracker<ActionContext> contextTracker, Cause contextResult, SequenceReport sequenceReport);
+    /**
+     * Get Context Controller
+     *
+     * <p>Returns the {@link ContextController} for controlling the action context system for each {@link Action} in a {@link Sequence}.</p>
+     *
+     * @return The context controller
+     */
+    ContextController getContextController();
 
 }

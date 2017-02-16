@@ -27,6 +27,7 @@ import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
@@ -74,13 +75,18 @@ public class SpeedDetection extends Detection implements StorageConsumer {
     }
 
     @Override
+    public ContextProvider getContextProvider() {
+        return this.plugin;
+    }
+
+    @Override
     public boolean isReady() {
         return this.ready;
     }
 
     @Override
     public List<CheckProvider> getChecks() {
-        return Collections.singletonList(new MovementSpeedCheck.Provider());
+        return Collections.singletonList(new MovementSpeedCheck.Provider(this));
     }
 
     @Override

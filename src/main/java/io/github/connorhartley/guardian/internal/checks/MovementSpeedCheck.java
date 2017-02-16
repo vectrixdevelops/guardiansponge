@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
@@ -47,12 +48,23 @@ public class MovementSpeedCheck extends Check {
 
     public static class Provider implements CheckProvider {
 
+        private final Detection detection;
+
+        public Provider(Detection detection) {
+            this.detection = detection;
+        }
+
+        @Override
+        public Detection getDetection() {
+            return this.detection;
+        }
+
         @Override
         public SequenceBlueprint getSequence() {
-            return new SequenceBuilder()
+            return new SequenceBuilder(this.getDetection().getContextProvider())
 
                     .action(MoveEntityEvent.class, null)
-                    .condition((user, event, contextTracker, sequenceResult) -> {
+                    .condition((user, event, contextTracker, contextResult, sequenceResult) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
 
                             return new ConditionResult(true, sequenceResult);
@@ -62,7 +74,7 @@ public class MovementSpeedCheck extends Check {
                     .delay(20 * 2)
 
                     .action(MoveEntityEvent.class)
-                    .condition((user, event, contextTracker, sequenceResult) -> {
+                    .condition((user, event, contextTracker, contextResult, sequenceResult) -> {
 
                         // TODO: Juice'y movement speed check here.
 

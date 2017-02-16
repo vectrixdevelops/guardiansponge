@@ -23,7 +23,10 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextTracker;
+import io.github.connorhartley.guardian.context.type.ActionContext;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
@@ -33,12 +36,14 @@ import org.spongepowered.api.event.Event;
 
 public class ActionBuilder<T extends Event> {
 
+    private final ContextProvider contextProvider;
     private final SequenceBuilder builder;
     private final Action action;
-    private final ContextTracker contextTracker;
+    private final ContextTracker<ActionContext> contextTracker;
     private final SequenceReport sequenceReport;
 
-    public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action, ContextTracker contextTracker, SequenceReport sequenceReport) {
+    public ActionBuilder(ContextProvider contextProvider, SequenceBuilder sequenceBuilder, Action<T> action, ContextTracker<ActionContext> contextTracker, SequenceReport sequenceReport) {
+        this.contextProvider = contextProvider;
         this.builder = sequenceBuilder;
         this.action = action;
         this.contextTracker = contextTracker;
@@ -71,7 +76,7 @@ public class ActionBuilder<T extends Event> {
     }
 
     public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(clazz, this.sequenceReport, this.contextTracker));
+        return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, this.contextTracker));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> blueprint) {

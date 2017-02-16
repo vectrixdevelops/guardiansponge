@@ -23,17 +23,23 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextTracker;
+import io.github.connorhartley.guardian.context.type.ActionContext;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class Action<T extends Event> {
 
@@ -41,28 +47,41 @@ public class Action<T extends Event> {
     private final List<Condition> successfulListeners = new ArrayList<>();
     private final List<Condition> failedListeners = new ArrayList<>();
 
+    private final ContextProvider contextProvider;
+
     private final Class<T> event;
 
     private int delay;
     private int expire;
+
+    private List<NamedCause> contextResult;
+
     private SequenceReport sequenceReport;
-    private ContextTracker contextTracker;
+    private ContextTracker<ActionContext> contextTracker;
 
     @SafeVarargs
-    Action(Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker, Condition<T>... conditions) {
-        this(event, sequenceReport, contextTracker);
+    Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker<ActionContext> contextTracker, Condition<T>... conditions) {
+        this(contextProvider, event, sequenceReport, contextTracker);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker, List<Condition<T>> conditions) {
-        this(event, sequenceReport,contextTracker);
+    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker<ActionContext> contextTracker, List<Condition<T>> conditions) {
+        this(contextProvider, event, sequenceReport,contextTracker);
         this.conditions.addAll(conditions);
     }
 
-    public Action(Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker) {
+    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker<ActionContext> contextTracker) {
+        this.contextProvider = contextProvider;
         this.event = event;
         this.sequenceReport = sequenceReport;
         this.contextTracker = contextTracker;
+    }
+
+    public void testContext(User user, T event) {
+        this.contextResult = new ArrayList<>();
+        this.contextTracker.getContexts().forEach(actionContextClass -> {
+            this.contextProvider.getContextController().invokeAction(actionContextClass, user, event).ifPresent(cause -> this.contextResult.add(cause));
+        });
     }
 
     void addCondition(Condition<T> condition) {
@@ -83,7 +102,7 @@ public class Action<T extends Event> {
 
     public void succeed(User user, Event event) {
         this.successfulListeners.forEach(callback -> {
-            ConditionResult testResult = callback.test(user, event, this.contextTracker, this.sequenceReport);
+            ConditionResult testResult = callback.test(user, event, this.contextTracker, Cause.of(this.contextResult), this.sequenceReport);
 
             this.sequenceReport =
                 SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
@@ -93,7 +112,7 @@ public class Action<T extends Event> {
     public boolean fail(User user, Event event) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    ConditionResult testResult = callback.test(user, event, this.contextTracker, this.sequenceReport);
+                    ConditionResult testResult = callback.test(user, event, this.contextTracker, Cause.of(this.contextResult), this.sequenceReport);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -105,7 +124,7 @@ public class Action<T extends Event> {
     public boolean testConditions(User user, T event) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    ConditionResult testResult = condition.test(user, event, this.contextTracker, this.sequenceReport);
+                    ConditionResult testResult = condition.test(user, event, this.contextTracker, Cause.of(this.contextResult), this.sequenceReport);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -126,7 +145,11 @@ public class Action<T extends Event> {
         return this.event;
     }
 
-    public ContextTracker getContextTracker() { return this.contextTracker; }
+    public List<NamedCause> getContextResult() {
+        return this.contextResult;
+    }
+
+    public ContextTracker<ActionContext> getContextTracker() { return this.contextTracker; }
 
     public List<Condition<T>> getConditions() {
         return this.conditions;

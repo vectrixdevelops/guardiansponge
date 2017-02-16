@@ -23,7 +23,10 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextTracker;
+import io.github.connorhartley.guardian.context.type.ActionContext;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
@@ -43,25 +46,28 @@ import java.util.List;
  */
 public class SequenceBuilder {
 
+    private final ContextProvider contextProvider;
+
     private SequenceReport sequenceReport;
-    private ContextTracker contextTracker;
+    private ContextTracker<ActionContext> contextTracker;
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder() {
-        this(null);
+    public SequenceBuilder(ContextProvider contextProvider) {
+        this(contextProvider,null);
     }
 
-    public SequenceBuilder(ContextTracker contextTracker) {
-        this(contextTracker, null);
+    public SequenceBuilder(ContextProvider contextProvider, ContextTracker contextTracker) {
+        this(contextProvider, contextTracker, null);
     }
 
-    public SequenceBuilder(ContextTracker contextTracker, SequenceReport sequenceReport) {
+    public SequenceBuilder(ContextProvider contextProvider, ContextTracker<ActionContext> contextTracker, SequenceReport sequenceReport) {
+        this.contextProvider = contextProvider;
         this.sequenceReport = (sequenceReport == null) ? SequenceReport.builder().build() : sequenceReport;
         this.contextTracker = (contextTracker == null) ? new ContextTracker.Builder().build() : contextTracker;
     }
 
-    public <T extends Event> ActionBuilder<T> action(Class<T> clazz, ContextTracker contextTracker) {
-        return action(new Action<>(clazz, this.sequenceReport, contextTracker));
+    public <T extends Event> ActionBuilder<T> action(Class<T> clazz, ContextTracker<ActionContext> contextTracker) {
+        return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, contextTracker));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
@@ -71,7 +77,7 @@ public class SequenceBuilder {
     public <T extends Event> ActionBuilder<T> action(Action<T> action) {
         this.actions.add(action);
 
-        return new ActionBuilder<>(this, action, action.getContextTracker(), this.sequenceReport);
+        return new ActionBuilder<>(this.contextProvider, this, action, action.getContextTracker(), this.sequenceReport);
     }
 
     public SequenceBlueprint build(CheckProvider provider) {

@@ -26,7 +26,9 @@ package io.github.connorhartley.guardian.context;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.type.ActionContext;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,10 +65,10 @@ public class ContextController {
         this.contexts = new ArrayList<>();
     }
 
-    public <T extends ActionContext> Optional<Cause> invoke(Class<? extends T> context, User user, ContextTracker.Builder contextTracker) {
+    public <T extends ActionContext> Optional<NamedCause> invokeAction(Class<T> context, User user, Event event) {
         for(Object contextObject : this.contexts) {
-            if (context == contextObject) {
-                return Optional.of(((ActionContext) contextObject).invoke(user, contextTracker));
+            if (context.isAssignableFrom(contextObject.getClass())) {
+                return Optional.of(((ActionContext) contextObject).invoke(user, event));
             }
         }
         return Optional.empty();
