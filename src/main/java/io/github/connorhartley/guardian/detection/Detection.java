@@ -24,6 +24,8 @@
 package io.github.connorhartley.guardian.detection;
 
 import com.me4502.precogs.detection.DetectionType;
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 
 import java.util.List;
@@ -53,6 +55,15 @@ public abstract class Detection extends DetectionType {
      * <p>Invoked when the internal is disabled.</p>
      */
     public abstract void onDeconstruction();
+
+    /**
+     * Get Context Provider
+     *
+     * <p>Returns the {@link ContextProvider} that this detection manages.</p>
+     *
+     * @return The detection context provider
+     */
+    public abstract ContextProvider getContextProvider();
 
     /**
      * Is Ready

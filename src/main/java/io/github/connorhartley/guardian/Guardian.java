@@ -26,10 +26,10 @@ package io.github.connorhartley.guardian;
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
-import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
 import com.me4502.modularframework.module.ModuleWrapper;
 import com.me4502.precogs.service.AntiCheatService;
 import io.github.connorhartley.guardian.context.ContextController;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -37,6 +37,7 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
+import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -72,7 +73,7 @@ import java.io.File;
                 id = "precogs"
         )
 )
-public class Guardian {
+public class Guardian implements ContextProvider {
 
     /* Logger */
 
@@ -284,6 +285,12 @@ public class Guardian {
      */
     public SequenceController getSequenceController() {
         return this.sequenceController;
+    }
+
+
+    @Override
+    public ContextController getContextController() {
+        return this.contextController;
     }
 
 }

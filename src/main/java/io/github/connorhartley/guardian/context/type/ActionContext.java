@@ -23,15 +23,15 @@
  */
 package io.github.connorhartley.guardian.context.type;
 
-import io.github.connorhartley.guardian.context.ContextTracker;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.NamedCause;
 
 /**
  * Action Context
  */
 public interface ActionContext {
 
-    Cause invoke(User user, ContextTracker.Builder contextTracker);
+    NamedCause invoke(User user, Event event);
 
 }

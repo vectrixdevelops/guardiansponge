@@ -28,6 +28,7 @@ import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleConfiguration;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
@@ -66,6 +67,11 @@ public class DummyDetection extends Detection {
     @Override
     public void onDeconstruction() {
         this.ready = false;
+    }
+
+    @Override
+    public ContextProvider getContextProvider() {
+        return this.plugin;
     }
 
     @Override

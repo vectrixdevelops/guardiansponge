@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian.detection.check;
 
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.event.check.CheckBeginEvent;
 import io.github.connorhartley.guardian.event.check.CheckEndEvent;
 import io.github.connorhartley.guardian.sequence.Sequence;
