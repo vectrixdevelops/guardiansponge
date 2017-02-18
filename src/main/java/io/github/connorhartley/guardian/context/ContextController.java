@@ -24,13 +24,12 @@
 package io.github.connorhartley.guardian.context;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.type.ActionContext;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.scheduler.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,35 +42,81 @@ public class ContextController {
 
     private final Guardian plugin;
 
+    private HashMap<String, Class> registry = new HashMap<>();
+    private HashMap<User, List<Class>> runningContexts = new HashMap<>();
     private List<Object> contexts = new ArrayList<>();
 
     public ContextController(Guardian plugin) {
         this.plugin = plugin;
     }
 
-    public <T> void registerContext(Class<? extends T> context) {
-        try {
-            this.contexts.add(context.newInstance());
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+    public void registerContext(String id, Class<? extends Context> context) {
+        this.registry.put(id, context);
     }
 
-    public <T> void unregisterContext(Class<? extends T> context) {
-        this.contexts.removeIf(context::isInstance);
+    public void unregisterContext(String id) {
+        this.registry.remove(id);
     }
 
     public void unregisterContexts() {
-        this.contexts = new ArrayList<>();
+        this.registry.clear();
     }
 
-    public <T extends ActionContext> Optional<NamedCause> invokeAction(Class<T> context, User user, Event event) {
-        for(Object contextObject : this.contexts) {
-            if (context.isAssignableFrom(contextObject.getClass())) {
-                return Optional.of(((ActionContext) contextObject).invoke(user, event));
+    public Optional<Object> construct(String id, User user, Event event) throws IllegalAccessException, InstantiationException {
+        if (this.registry.containsKey(id)) {
+            Object context = this.registry.get(id).newInstance();
+            if (context != null && this.runningContexts.get(user) == null) {
+                List<Class> contextClasses = new ArrayList<>();
+                contextClasses.add(context.getClass());
+                this.runningContexts.put(user, contextClasses);
+                this.contexts.add(context);
+                return Optional.of(context);
+            } else if (context != null && !this.runningContexts.get(user).contains(context.getClass())) {
+                List<Class> contextClasses = this.runningContexts.get(user);
+                contextClasses.add(context.getClass());
+                this.runningContexts.replace(user, contextClasses);
+                this.contexts.add(context);
+                return Optional.of(context);
             }
         }
         return Optional.empty();
+    }
+
+    public void updateAll() {
+        this.contexts.stream()
+                .filter(context -> ((Context) context).asTimed().isPresent())
+                .filter(context -> !((TimeContext) context).isReady())
+                .forEach(context -> ((TimeContext) context).update());
+    }
+
+    public void suspend(Context context) {
+        if (context.getClass().isAssignableFrom(TimeContext.class)) {
+            ((TimeContext) context).stop();
+        }
+    }
+
+    public static class ContextControllerTask {
+
+        private final Guardian plugin;
+        private final ContextController contextController;
+
+        private Task.Builder taskBuilder = Task.builder();
+        private Task task;
+
+        public ContextControllerTask(Guardian plugin, ContextController contextController) {
+            this.plugin = plugin;
+            this.contextController = contextController;
+        }
+
+        public void start() {
+            this.task = this.taskBuilder.execute(this.contextController::updateAll).intervalTicks(1)
+                    .name("Guardian - Context Controller Task").submit(this.plugin);
+        }
+
+        public void stop() {
+            if (this.task != null) this.task.cancel();
+        }
+
     }
 
 }

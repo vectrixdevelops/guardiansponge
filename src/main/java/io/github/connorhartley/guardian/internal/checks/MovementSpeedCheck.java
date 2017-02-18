@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
@@ -60,21 +61,33 @@ public class MovementSpeedCheck extends Check {
         }
 
         @Override
+        public ContextTracker getContextTracker() {
+            return null;
+        }
+
+        @Override
         public SequenceBlueprint getSequence() {
-            return new SequenceBuilder(this.getDetection().getContextProvider())
+            return new SequenceBuilder(this.getDetection().getContextProvider(), this.getContextTracker())
+
+                    // Trigger : Move Entity Event
 
                     .action(MoveEntityEvent.class, null)
-                    .condition((user, event, contextTracker, contextResult, sequenceResult) -> {
+                    .condition((user, event, contexts, sequenceResult) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
-
                             return new ConditionResult(true, sequenceResult);
                         }
                         return new ConditionResult(false, sequenceResult);
                     })
-                    .delay(20 * 2)
+                    .success((user, event, contexts, sequenceResult) -> {
+                        // Net timing starts here.
+
+                        return new ConditionResult(false, sequenceResult);
+                    })
+                    .after(20 * 2)
+                    .expire(20 * 3)
 
                     .action(MoveEntityEvent.class)
-                    .condition((user, event, contextTracker, contextResult, sequenceResult) -> {
+                    .condition((user, event, contexts, sequenceResult) -> {
 
                         // TODO: Juice'y movement speed check here.
 

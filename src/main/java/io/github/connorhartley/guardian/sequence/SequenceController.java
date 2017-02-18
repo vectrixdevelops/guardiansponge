@@ -38,6 +38,7 @@ import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.user.UserStorageService;
+import org.spongepowered.api.util.Tristate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +72,11 @@ public class SequenceController implements SequenceInvoker {
                    return false;
                }
 
-               SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, user, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin)).with(sequence.getContextResults()));
+               if (sequence.isWaiting()) {
+                   return false;
+               }
+
+               SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, user, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
                Sponge.getEventManager().post(attempt);
 
                if (attempt.isCancelled()) {
@@ -88,14 +93,16 @@ public class SequenceController implements SequenceInvoker {
                     .forEach(blueprint -> {
                         Sequence sequence = blueprint.create(user);
 
-                        SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, user, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin)).with(sequence.getContextResults()));
+                        SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, user, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
                         Sponge.getEventManager().post(attempt);
 
                         if (attempt.isCancelled()) {
                             return;
                         }
 
-                        if (sequence.check(user, event)) {
+                        Tristate check = sequence.check(user, event);
+
+                        if (check.asBoolean() || check == Tristate.UNDEFINED) {
                             if (sequence.isCancelled()) {
                                 return;
                             }
@@ -110,6 +117,8 @@ public class SequenceController implements SequenceInvoker {
                             user.offer(((SequenceHandlerData.Builder) Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).createFrom(sequences));
                         }
                     });
+
+            user.offer(((SequenceHandlerData.Builder) (Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get())).createFrom(sequences));
         });
     }
 

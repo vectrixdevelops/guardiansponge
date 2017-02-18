@@ -37,7 +37,6 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
-import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -131,6 +130,8 @@ public class Guardian implements ContextProvider {
 
     private ContextController contextController;
 
+    private ContextController.ContextControllerTask contextControllerTask;
+
     /* Check / Sequence */
 
     private CheckController checkController;
@@ -159,10 +160,10 @@ public class Guardian implements ContextProvider {
     @Listener
     public void onServerStarting(GameStartingServerEvent event) {
         this.contextController = new ContextController(this);
-
         this.checkController = new CheckController(this);
         this.sequenceController = new SequenceController(this, this.checkController);
 
+        this.contextControllerTask = new ContextController.ContextControllerTask(this, this.contextController);
         this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
         this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
 
