@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
@@ -35,10 +36,9 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.util.Tristate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Sequence
@@ -52,7 +52,7 @@ public class Sequence {
     private final User user;
     private final CheckProvider checkProvider;
 
-    private List<NamedCause> contextResult;
+    private ArrayList<Context> contexts = new ArrayList<>();
 
     private SequenceReport sequenceReport;
 
@@ -62,6 +62,7 @@ public class Sequence {
 
     private long last = System.currentTimeMillis();
 
+    private boolean wait = false;
     private boolean cancelled = false;
     private boolean finished = false;
 
@@ -87,11 +88,16 @@ public class Sequence {
      * @param <T> The {@link Event} type
      * @return True if the sequence should continue, false if the sequence should stop
      */
-    <T extends Event> boolean check(User user, T event) {
+    <T extends Event> Tristate check(User user, T event) {
         this.iterator = this.actions.iterator();
 
         if (iterator.hasNext()) {
             Action action = iterator.next();
+
+            for (ListIterator iterator = this.contexts.listIterator(this.contexts.size()); iterator.hasPrevious();) {
+                final Object uncastContext = iterator.previous();
+                action.addContext(((Context) uncastContext));
+            }
 
             action.testContext(user, event);
 
@@ -100,6 +106,20 @@ public class Sequence {
             if (!action.getEvent().equals(event.getClass())) {
                 action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
+            }
+
+            if (this.last + ((action.getAfter() / 20) * 1000) > now) {
+                this.wait = true;
+                return Tristate.UNDEFINED;
+            } else {
+                this.wait = false;
+            }
+
+            if (this.last + ((action.getBefore() / 20) * 1000) < now) {
+                this.wait = true;
+                return Tristate.UNDEFINED;
+            } else {
+                this.wait = false;
             }
 
             this.sequenceReport = action.getSequenceReport();
@@ -118,11 +138,9 @@ public class Sequence {
 
             this.sequenceReport = action.getSequenceReport();
 
-            this.contextResult = action.getContextResult();
-
             Action<T> typeAction = (Action<T>) action;
 
-            // TODO: Context Stuff.
+            this.contexts.addAll(typeAction.getContext());
 
             if (!typeAction.testConditions(user, event)) {
                 action.updateReport(this.sequenceReport);
@@ -143,42 +161,45 @@ public class Sequence {
                 this.finished = true;
             }
 
-            return true;
+            return Tristate.TRUE;
         }
-        return true;
+
+        this.actions.forEach(action -> action.suspendContext());
+
+        return Tristate.TRUE;
     }
 
     // Called when the player meets the action requirements.
-    boolean pass(User user, Event event, Cause cause) {
+    Tristate pass(User user, Event event, Cause cause) {
         this.last = System.currentTimeMillis();
 
         SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, user, event, cause);
         Sponge.getEventManager().post(attempt);
 
         this.completeEvents.add(event);
-        return true;
+        return Tristate.TRUE;
     }
 
     // Called when the player does not meet the requirements.
-    boolean fail(User user, Event event, Action action, Cause cause) {
+    Tristate fail(User user, Event event, Action action, Cause cause) {
         this.cancelled = action.fail(user, event);
 
         SequenceFailEvent attempt = new SequenceFailEvent(this, user, event, cause);
         Sponge.getEventManager().post(attempt);
 
         this.incompleteEvents.add(event);
-        return false;
+        return Tristate.FALSE;
     }
 
     /**
-     * Get Context Results
+     * Get Context
      *
-     * <p>Returns a list of {@link Cause}s that have been analysed.</p>
+     * <p>Returns a list of {@link Context}s that have been analysed.</p>
      *
-     * @return A list of causes
+     * @return A list of contexts
      */
-    List<NamedCause> getContextResults() {
-        return this.contextResult;
+    List<Context> getContext() {
+        return this.contexts;
     }
 
     /**
@@ -190,6 +211,10 @@ public class Sequence {
      */
     SequenceReport getSequenceReport() {
         return this.sequenceReport;
+    }
+
+    boolean isWaiting() {
+        return this.wait;
     }
 
     /**

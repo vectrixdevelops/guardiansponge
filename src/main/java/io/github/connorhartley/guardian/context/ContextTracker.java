@@ -24,7 +24,6 @@
 package io.github.connorhartley.guardian.context;
 
 import org.spongepowered.api.event.cause.Cause;
-import io.github.connorhartley.guardian.context.type.ActionContext;
 import io.github.connorhartley.guardian.sequence.action.Action;
 
 import java.util.ArrayList;
@@ -37,35 +36,35 @@ import java.util.List;
  * have been analysed by the added contexts to ensure validity in
  * {@link Action}s and represent how it happened.
  */
-public class ContextTracker<T> {
+public class ContextTracker {
 
-    private final List<Class<T>> actionContexts;
+    private final List<String> contexts;
 
     private ContextTracker(Builder builder) {
-        this.actionContexts = builder.actionContexts;
+        this.contexts = builder.contexts;
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public List<Class<T>> getContexts() {
-        return this.actionContexts;
+    public List<String> getContexts() {
+        return this.contexts;
     }
 
-    public static class Builder<T> {
+    public static class Builder {
 
-        private List<Class<T>> actionContexts = new ArrayList<>();
+        private List<String> contexts = new ArrayList<>();
 
         public Builder() {}
 
         public Builder of(ContextTracker contextTracker) {
-            this.actionContexts = contextTracker.actionContexts;
+            this.contexts = contextTracker.contexts;
             return this;
         }
 
-        public Builder append(Class<T> context) {
-            this.actionContexts.add(context);
+        public Builder append(String id) {
+            this.contexts.add(id);
             return this;
         }
 

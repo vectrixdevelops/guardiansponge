@@ -23,10 +23,8 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
-import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextTracker;
-import io.github.connorhartley.guardian.context.type.ActionContext;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
@@ -39,10 +37,10 @@ public class ActionBuilder<T extends Event> {
     private final ContextProvider contextProvider;
     private final SequenceBuilder builder;
     private final Action action;
-    private final ContextTracker<ActionContext> contextTracker;
+    private final ContextTracker contextTracker;
     private final SequenceReport sequenceReport;
 
-    public ActionBuilder(ContextProvider contextProvider, SequenceBuilder sequenceBuilder, Action<T> action, ContextTracker<ActionContext> contextTracker, SequenceReport sequenceReport) {
+    public ActionBuilder(ContextProvider contextProvider, SequenceBuilder sequenceBuilder, Action<T> action, ContextTracker contextTracker, SequenceReport sequenceReport) {
         this.contextProvider = contextProvider;
         this.builder = sequenceBuilder;
         this.action = action;
@@ -52,6 +50,16 @@ public class ActionBuilder<T extends Event> {
 
     public ActionBuilder<T> condition(Condition<T> condition) {
         this.action.addCondition(condition);
+        return this;
+    }
+
+    public ActionBuilder<T> after(int after) {
+        this.action.waitAfter(after);
+        return this;
+    }
+
+    public ActionBuilder<T> before(int before) {
+        this.action.waitBefore(before);
         return this;
     }
 

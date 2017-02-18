@@ -21,17 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context.type;
+package io.github.connorhartley.guardian.context;
 
-import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.cause.NamedCause;
+import io.github.connorhartley.guardian.util.ContextValue;
 
-/**
- * Action Context
- */
-public interface ActionContext {
+import java.util.HashMap;
+import java.util.Optional;
 
-    NamedCause invoke(User user, Event event);
+public interface Context<E> {
+
+
+
+    HashMap<String, ContextValue<E>> getValues();
+
+    Optional<TimeContext> asTimed();
 
 }

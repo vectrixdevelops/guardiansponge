@@ -23,10 +23,9 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
-import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextTracker;
-import io.github.connorhartley.guardian.context.type.ActionContext;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
@@ -39,7 +38,6 @@ import org.spongepowered.api.event.cause.NamedCause;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class Action<T extends Event> {
 
@@ -51,42 +49,65 @@ public class Action<T extends Event> {
 
     private final Class<T> event;
 
+    private int after;
+    private int before;
+
     private int delay;
     private int expire;
 
-    private List<NamedCause> contextResult;
+    private List<Context> contexts;
 
     private SequenceReport sequenceReport;
-    private ContextTracker<ActionContext> contextTracker;
+    private ContextTracker contextTracker;
 
     @SafeVarargs
-    Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker<ActionContext> contextTracker, Condition<T>... conditions) {
+    Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker, Condition<T>... conditions) {
         this(contextProvider, event, sequenceReport, contextTracker);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker<ActionContext> contextTracker, List<Condition<T>> conditions) {
+    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker, List<Condition<T>> conditions) {
         this(contextProvider, event, sequenceReport,contextTracker);
         this.conditions.addAll(conditions);
     }
 
-    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker<ActionContext> contextTracker) {
+    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextTracker contextTracker) {
         this.contextProvider = contextProvider;
         this.event = event;
         this.sequenceReport = sequenceReport;
         this.contextTracker = contextTracker;
+
+        this.contexts = new ArrayList<>();
+    }
+
+    public void addContext(Context context) {
+        this.contexts.add(context);
     }
 
     public void testContext(User user, T event) {
-        this.contextResult = new ArrayList<>();
         this.contextTracker.getContexts().forEach(actionContextClass -> {
-            this.contextProvider.getContextController().invokeAction(actionContextClass, user, event).ifPresent(cause -> this.contextResult.add(cause));
+            try {
+                this.contextProvider.getContextController().construct(actionContextClass, user, event).ifPresent(object -> {
+                    ((Context<?>) object).asTimed().ifPresent(timed -> timed.start(user, event));
+                    this.contexts.add((Context) object);
+                });
+            } catch (IllegalAccessException | InstantiationException e) {
+                e.printStackTrace();
+            }
         });
+    }
+
+    public void suspendContext() {
+        this.contexts.forEach(context -> this.contextProvider.getContextController().suspend(context));
     }
 
     void addCondition(Condition<T> condition) {
         this.conditions.add(condition);
     }
+
+    void waitAfter(int after) { this.after = after; }
+
+    void waitBefore(int before) { this.before = before; }
 
     void setDelay(int delay) {
         this.delay = delay;
@@ -102,7 +123,7 @@ public class Action<T extends Event> {
 
     public void succeed(User user, Event event) {
         this.successfulListeners.forEach(callback -> {
-            ConditionResult testResult = callback.test(user, event, this.contextTracker, Cause.of(this.contextResult), this.sequenceReport);
+            ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport);
 
             this.sequenceReport =
                 SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
@@ -112,7 +133,7 @@ public class Action<T extends Event> {
     public boolean fail(User user, Event event) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    ConditionResult testResult = callback.test(user, event, this.contextTracker, Cause.of(this.contextResult), this.sequenceReport);
+                    ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -124,7 +145,7 @@ public class Action<T extends Event> {
     public boolean testConditions(User user, T event) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    ConditionResult testResult = condition.test(user, event, this.contextTracker, Cause.of(this.contextResult), this.sequenceReport);
+                    ConditionResult testResult = condition.test(user, event, this.contexts, this.sequenceReport);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -132,6 +153,10 @@ public class Action<T extends Event> {
                     return !testResult.hasPassed();
                 });
     }
+
+    public int getAfter() { return this.after; }
+
+    public int getBefore() { return this.before; }
 
     public int getDelay() {
         return this.delay;
@@ -145,11 +170,11 @@ public class Action<T extends Event> {
         return this.event;
     }
 
-    public List<NamedCause> getContextResult() {
-        return this.contextResult;
+    public List<Context> getContext() {
+        return this.contexts;
     }
 
-    public ContextTracker<ActionContext> getContextTracker() { return this.contextTracker; }
+    public ContextTracker getContextTracker() { return this.contextTracker; }
 
     public List<Condition<T>> getConditions() {
         return this.conditions;
