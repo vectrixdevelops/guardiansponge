@@ -36,11 +36,11 @@ import java.util.List;
  * have been analysed by the added contexts to ensure validity in
  * {@link Action}s and represent how it happened.
  */
-public class ContextTracker {
+public class ContextBuilder {
 
     private final List<String> contexts;
 
-    private ContextTracker(Builder builder) {
+    private ContextBuilder(Builder builder) {
         this.contexts = builder.contexts;
     }
 
@@ -58,8 +58,8 @@ public class ContextTracker {
 
         public Builder() {}
 
-        public Builder of(ContextTracker contextTracker) {
-            this.contexts = contextTracker.contexts;
+        public Builder of(ContextBuilder contextBuilder) {
+            this.contexts = contextBuilder.contexts;
             return this;
         }
 
@@ -68,8 +68,8 @@ public class ContextTracker {
             return this;
         }
 
-        public ContextTracker build() {
-            return new ContextTracker(this);
+        public ContextBuilder build() {
+            return new ContextBuilder(this);
         }
 
     }

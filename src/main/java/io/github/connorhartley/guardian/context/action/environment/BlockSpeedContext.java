@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian.context.action.environment;
 
 import io.github.connorhartley.guardian.context.Context;
+import io.github.connorhartley.guardian.context.ContextKeys;
 import io.github.connorhartley.guardian.context.TimeContext;
 import io.github.connorhartley.guardian.util.ContextValue;
 import org.spongepowered.api.block.BlockTypes;
@@ -52,7 +53,7 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
         } else return;
 
 
-        this.values.put("BLOCK_SPEED_MODIFIER", new ContextValue<Double>().set(1.0));
+        this.values.put(ContextKeys.BLOCK_SPEED_MODIFIER, new ContextValue<Double>().set(1.0));
 
         this.ready = true;
     }
@@ -65,8 +66,8 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
 
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
-                        if (this.values.containsKey("BLOCK_SPEED_MODIFIER")) {
-                            this.values.replace("BLOCK_SPEED_MODIFIER", this.values.get("BLOCK_SPEED_MODIFIER").transform(oldValue -> oldValue *= 1.2));
+                        if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
+                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 1.2));
                         }
                     }
                 });
@@ -74,21 +75,21 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         // Walking on the floor.
-                        if (this.values.containsKey("BLOCK_SPEED_MODIFIER")) {
-                            this.values.replace("BLOCK_SPEED_MODIFIER", this.values.get("BLOCK_SPEED_MODIFIER").transform(oldValue -> oldValue *= 1.6));
+                        if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
+                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 1.6));
                         }
 
                         if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.ICE)) {
-                            if (this.values.containsKey("BLOCK_SPEED_MODIFIER")) {
-                                this.values.replace("BLOCK_SPEED_MODIFIER", this.values.get("BLOCK_SPEED_MODIFIER").transform(oldValue -> oldValue *= 1.6));
+                            if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
+                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 1.6));
                             }
                         }
 
                         if (this.player.getLocation().add(0, 1, 0).getBlockType().equals(BlockTypes.WEB) ||
                                 this.player.getLocation().add(0, 0, 0).getBlockType().equals(BlockTypes.WEB)) {
 
-                            if (this.values.containsKey("BLOCK_SPEED_MODIFIER")) {
-                                this.values.replace("BLOCK_SPEED_MODIFIER", this.values.get("BLOCK_SPEED_MODIFIER").transform(oldValue -> oldValue *= 0.14));
+                            if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
+                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 0.14));
                             }
                         }
                     }

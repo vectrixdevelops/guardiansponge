@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
-import io.github.connorhartley.guardian.context.ContextTracker;
+import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
@@ -61,7 +61,7 @@ public class MovementSpeedCheck extends Check {
         }
 
         @Override
-        public ContextTracker getContextTracker() {
+        public ContextBuilder getContextTracker() {
             return null;
         }
 

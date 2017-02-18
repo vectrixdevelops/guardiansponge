@@ -34,7 +34,7 @@ import java.util.List;
 import static org.spongepowered.api.data.DataQuery.of;
 import static org.spongepowered.api.data.key.KeyFactory.makeSingleKey;
 
-public class Keys {
+public class DataKeys {
 
     /* Handler : Attached to the user to represent handler data. Used internally only. */
 
