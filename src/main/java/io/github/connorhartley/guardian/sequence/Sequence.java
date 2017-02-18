@@ -66,8 +66,6 @@ public class Sequence {
     private boolean cancelled = false;
     private boolean finished = false;
 
-    private Iterator<Action> iterator;
-
     public Sequence(User user, CheckProvider checkProvider, List<Action> actions, SequenceReport sequenceReport) {
         this.user = user;
         this.checkProvider = checkProvider;
@@ -89,17 +87,15 @@ public class Sequence {
      * @return True if the sequence should continue, false if the sequence should stop
      */
     <T extends Event> Tristate check(User user, T event) {
-        this.iterator = this.actions.iterator();
+        Iterator<Action> iterator = this.actions.iterator();
 
         if (iterator.hasNext()) {
             Action action = iterator.next();
 
-            for (ListIterator iterator = this.contexts.listIterator(this.contexts.size()); iterator.hasPrevious();) {
-                final Object uncastContext = iterator.previous();
-                action.addContext(((Context) uncastContext));
+            for (ListIterator backIterator = this.contexts.listIterator(this.contexts.size()); backIterator.hasPrevious();) {
+                final Object unCastContext = backIterator.previous();
+                action.addContext(((Context) unCastContext));
             }
-
-            action.testContext(user, event);
 
             long now = System.currentTimeMillis();
 
@@ -107,6 +103,10 @@ public class Sequence {
                 action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
+
+            Action<T> typeAction = (Action<T>) action;
+
+            typeAction.testContext(user, event);
 
             if (this.last + ((action.getAfter() / 20) * 1000) > now) {
                 this.wait = true;
@@ -138,8 +138,6 @@ public class Sequence {
 
             this.sequenceReport = action.getSequenceReport();
 
-            Action<T> typeAction = (Action<T>) action;
-
             this.contexts.addAll(typeAction.getContext());
 
             if (!typeAction.testConditions(user, event)) {
@@ -149,7 +147,7 @@ public class Sequence {
 
             this.sequenceReport = action.getSequenceReport();
 
-            this.iterator.remove();
+            iterator.remove();
 
             typeAction.updateReport(this.sequenceReport);
             pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getSequenceReport())));
@@ -292,6 +290,17 @@ public class Sequence {
      */
     public List<Event> getCompleteEvents() {
         return this.completeEvents;
+    }
+
+    /**
+     * Get Incomplete Events
+     *
+     * <p>Returns a {@link List} of {@link Event}s that have failed to be completed.</p>
+     *
+     * @return A {@link List} of failed {@link Event}s
+     */
+    public List<Event> getIncompleteEvents() {
+        return this.incompleteEvents;
     }
 
 }

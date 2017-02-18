@@ -27,6 +27,8 @@ import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
 import com.me4502.modularframework.module.ModuleWrapper;
+import com.me4502.precogs.detection.DetectionType;
+import com.me4502.precogs.detection.DetectionTypeRegistryModule;
 import com.me4502.precogs.service.AntiCheatService;
 import io.github.connorhartley.guardian.context.ContextController;
 import io.github.connorhartley.guardian.context.ContextProvider;
@@ -42,6 +44,7 @@ import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
+import org.spongepowered.api.GameRegistry;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.User;
@@ -82,6 +85,8 @@ public class Guardian implements ContextProvider {
     public Logger getLogger() {
         return this.logger;
     }
+
+    private int loggingLevel = 2;
 
     /* Plugin Instance */
 
@@ -144,21 +149,15 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onGamePreInitialize(GamePreInitializationEvent event) {
+        getLogger().info("#---# Starting Guardian AntiCheat #---#");
+
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
-
-        // TODO Register all of the DetectionType to GameRegistry.
-    }
-
-    @Listener
-    public void onGameInitialize(GameInitializationEvent event) {
-        getLogger().info("Starting Guardian AntiCheat.");
 
         Sponge.getDataManager().register(OffenseTagData.class, OffenseTagData.Immutable.class, new OffenseTagData.Builder());
         Sponge.getDataManager().register(SequenceHandlerData.class, SequenceHandlerData.Immutable.class, new SequenceHandlerData.Builder());
-    }
 
-    @Listener
-    public void onServerStarting(GameStartingServerEvent event) {
+        getLogger().info("Registering controllers.");
+
         this.contextController = new ContextController(this);
         this.checkController = new CheckController(this);
         this.sequenceController = new SequenceController(this, this.checkController);
@@ -173,26 +172,27 @@ public class Guardian implements ContextProvider {
         this.configurationOptions = ConfigurationOptions.defaults();
         this.globalConfiguration.load();
 
+        this.loggingLevel = this.globalConfiguration.configLoggingLevel.getValue();
+
         getLogger().info("Discovering internal detections.");
 
         this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleController.setPluginContainer(this.pluginContainer);
         this.internalDetections = new GuardianDetections(this, this.moduleController);
 
-        if (System.getProperty("TEST_GUARDIAN").contains("TRUE")) this.internalDetections
-                .registerModule("io.github.connorhartley.guardian.internal.detections.DummyDetection");
-
         this.internalDetections.registerInternalModules();
 
-        getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
+        if (this.loggingLevel > 1) getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
 
         this.moduleController.enableModules(moduleWrapper -> {
             if (this.globalConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
-                getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                if (this.loggingLevel > 1) getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
                 return true;
             }
             return false;
         });
+
+        this.globalConfiguration.load();
 
         this.moduleController.getModules().stream()
                 .filter(moduleWrapper -> !moduleWrapper.isEnabled())
@@ -202,11 +202,12 @@ public class Guardian implements ContextProvider {
                         Detection detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
+
+                        Sponge.getRegistry().register(DetectionType.class, detection);
                     }
                 });
 
         this.globalConfiguration.update();
-
     }
 
     @Listener
@@ -214,7 +215,7 @@ public class Guardian implements ContextProvider {
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();
 
-        getLogger().info("Guardian AntiCheat is ready.");
+        getLogger().info(this.moduleController.getModules().size() + "detections are protecting you're server!");
     }
 
     @Listener
@@ -253,6 +254,30 @@ public class Guardian implements ContextProvider {
     @Listener
     public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First User user) {
         this.sequenceController.forceCleanup(user);
+    }
+
+    /**
+     * Get Logging Level
+     *
+     * <p>Returns the logging level.</p>
+     *
+     * @return The logging level
+     */
+    public int getLoggingLevel() {
+        return this.loggingLevel;
+    }
+
+    /**
+     * Set Logging Level
+     *
+     * <p>Sets the logging level.</p>
+     *
+     * @param level The logging level
+     */
+    public void setLoggingLevel(int level) {
+        if (level > 0 && level < 4) {
+            this.loggingLevel = level;
+        }
     }
 
     /**

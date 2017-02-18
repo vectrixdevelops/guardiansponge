@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.sequence.action;
 
 import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.context.ContextTracker;
+import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
@@ -36,19 +36,19 @@ public class ActionBuilder<T extends Event> {
 
     private final ContextProvider contextProvider;
     private final SequenceBuilder builder;
-    private final Action action;
-    private final ContextTracker contextTracker;
+    private final Action<T> action;
+    private final ContextBuilder contextBuilder;
     private final SequenceReport sequenceReport;
 
-    public ActionBuilder(ContextProvider contextProvider, SequenceBuilder sequenceBuilder, Action<T> action, ContextTracker contextTracker, SequenceReport sequenceReport) {
+    public ActionBuilder(ContextProvider contextProvider, SequenceBuilder sequenceBuilder, Action<T> action, ContextBuilder contextBuilder, SequenceReport sequenceReport) {
         this.contextProvider = contextProvider;
         this.builder = sequenceBuilder;
         this.action = action;
-        this.contextTracker = contextTracker;
+        this.contextBuilder = contextBuilder;
         this.sequenceReport = sequenceReport;
     }
 
-    public ActionBuilder<T> condition(Condition<T> condition) {
+    public ActionBuilder<T> condition(Condition condition) {
         this.action.addCondition(condition);
         return this;
     }
@@ -83,11 +83,11 @@ public class ActionBuilder<T extends Event> {
         return this;
     }
 
-    public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, this.contextTracker));
+    public ActionBuilder<T> action(Class<T> clazz) {
+        return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, this.contextBuilder));
     }
 
-    public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> blueprint) {
+    public ActionBuilder<T> action(ActionBlueprint<T> blueprint) {
         return action(blueprint.create());
     }
 

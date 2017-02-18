@@ -26,6 +26,8 @@ package io.github.connorhartley.guardian.internal.detections;
 import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
+import com.me4502.precogs.detection.CommonDetectionTypes;
+import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -46,21 +48,23 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Inject
     @ModuleContainer
-    private PluginContainer moduleContainer;
+    private static PluginContainer moduleContainer;
 
     private Guardian plugin;
     private ConfigurationNode globalConfigurationNode;
 
     private boolean ready = false;
 
-    public SpeedDetection(String id, String name) {
-        super(id, name);
+    // TODO: This may die... We will see what happens.
+
+    public SpeedDetection() {
+        super(moduleContainer.getId(), moduleContainer.getName());
     }
 
     @Override
     public void onConstruction() {
-        if (!this.moduleContainer.getInstance().isPresent());
-        this.plugin = (Guardian) this.moduleContainer.getInstance().get();
+        if (!moduleContainer.getInstance().isPresent());
+        this.plugin = (Guardian) moduleContainer.getInstance().get();
 
         this.globalConfigurationNode = this.plugin.getGlobalConfiguration().getConfigurationNode();
 
@@ -87,6 +91,11 @@ public class SpeedDetection extends Detection implements StorageConsumer {
     @Override
     public List<CheckProvider> getChecks() {
         return Collections.singletonList(new MovementSpeedCheck.Provider(this));
+    }
+
+    @Override
+    public CommonDetectionTypes.Category getCategory() {
+        return CommonDetectionTypes.Category.MOVEMENT;
     }
 
     @Override

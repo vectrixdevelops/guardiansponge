@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.data.Keys;
+import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
@@ -50,20 +50,20 @@ import java.util.List;
  */
 public class SequenceController implements SequenceInvoker {
 
-    private final Object plugin;
+    private final Guardian plugin;
     private final CheckController checkController;
     private final List<SequenceBlueprint> blueprints = new ArrayList<>();
 
-    public SequenceController(Object plugin, CheckController checkController) {
+    public SequenceController(Guardian plugin, CheckController checkController) {
         this.plugin = plugin;
         this.checkController = checkController;
     }
 
     @Override
     public void invoke(User user, Event event) {
-        if (!user.get(Keys.GUARDIAN_SEQUENCE_HANDLER).isPresent()) user.offer((Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).create());
+        if (!user.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).isPresent()) user.offer((Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).create());
 
-        user.get(Keys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> {
+        user.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> {
             sequences.forEach(sequence -> sequence.check(user, event));
             sequences.removeIf(Sequence::isCancelled);
             sequences.removeIf(Sequence::hasExpired);
@@ -131,7 +131,7 @@ public class SequenceController implements SequenceInvoker {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
             Sponge.getServiceManager().provide(UserStorageService.class).ifPresent(userStorageService -> {
                 userStorageService.get(player.getUniqueId()).ifPresent(user -> {
-                    user.get(Keys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> sequences.removeIf(Sequence::hasExpired));
+                    user.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> sequences.removeIf(Sequence::hasExpired));
                 });
             });
         });
@@ -145,7 +145,7 @@ public class SequenceController implements SequenceInvoker {
      * @param user {@link User} to remove data from
      */
     public void forceCleanup(User user) {
-        user.remove(Keys.GUARDIAN_SEQUENCE_HANDLER);
+        user.remove(DataKeys.GUARDIAN_SEQUENCE_HANDLER);
     }
 
     /**
@@ -156,7 +156,7 @@ public class SequenceController implements SequenceInvoker {
     public void forceCleanup() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
             Sponge.getServiceManager().provide(UserStorageService.class).ifPresent(userStorageService -> {
-                userStorageService.get(player.getUniqueId()).ifPresent(user -> user.remove(Keys.GUARDIAN_SEQUENCE_HANDLER));
+                userStorageService.get(player.getUniqueId()).ifPresent(user -> user.remove(DataKeys.GUARDIAN_SEQUENCE_HANDLER));
             });
         });
     }
@@ -177,7 +177,7 @@ public class SequenceController implements SequenceInvoker {
      *
      * <p>Unregisters a {@link Sequence} from a {@link CheckProvider}.</p>
      *
-     * @param checkProvider
+     * @param checkProvider Provider of a {@link Sequence}
      */
     public void unregister(CheckProvider checkProvider) {
         this.blueprints.removeIf(blueprint -> blueprint.getCheckProvider().equals(checkProvider));

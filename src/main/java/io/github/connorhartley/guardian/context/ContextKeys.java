@@ -23,15 +23,8 @@
  */
 package io.github.connorhartley.guardian.context;
 
-import io.github.connorhartley.guardian.util.ContextValue;
+public class ContextKeys {
 
-import java.util.HashMap;
-import java.util.Optional;
-
-public interface Context<E> {
-
-    HashMap<String, ContextValue<E>> getValues();
-
-    Optional<TimeContext> asTimed();
+    public static String BLOCK_SPEED_MODIFIER = "block_speed_modifier";
 
 }

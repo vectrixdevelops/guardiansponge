@@ -39,9 +39,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class CheckController {
 
     private final List<Check> checks = new CopyOnWriteArrayList<>();
-    private final Object plugin;
+    private final Guardian plugin;
 
-    public CheckController(Object plugin) {
+    public CheckController(Guardian plugin) {
         this.plugin = plugin;
     }
 

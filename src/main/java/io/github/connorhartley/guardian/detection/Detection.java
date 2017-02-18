@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.detection;
 
+import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
@@ -83,5 +84,14 @@ public abstract class Detection extends DetectionType {
      * @return Check providers for this detection
      */
     public abstract List<CheckProvider> getChecks();
+
+    /**
+     * Get Category
+     *
+     * <p>Returns the {@link CommonDetectionTypes.Category} for this {@link Detection}.</p>
+     *
+     * @return This detection category
+     */
+    public abstract CommonDetectionTypes.Category getCategory();
 
 }

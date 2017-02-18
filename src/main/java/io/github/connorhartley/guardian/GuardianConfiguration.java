@@ -49,6 +49,7 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
 
     public StorageValue<CommentedConfigurationNode, String, String> configVersion;
     public StorageValue<CommentedConfigurationNode, String, List<String>> configEnabledDetections;
+    public StorageValue<CommentedConfigurationNode, String, Integer> configLoggingLevel;
 
     protected GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
@@ -70,6 +71,9 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
                 this.configEnabledDetections = new StorageValue<CommentedConfigurationNode, String, List<String>>("enabled", Collections.emptyList(),
                         "Detections in this list will be enabled.", null).load(this.configurationNode);
 
+                this.configLoggingLevel = new StorageValue<CommentedConfigurationNode, String, Integer>("logging.level", 2,
+                        "1 for basic logging, 2 for more logging, 3 for detailed logging.", null).load(this.configurationNode);
+
                 this.configManager.save(this.configurationNode);
             }
         } catch (IOException e) {
@@ -89,6 +93,7 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
 
             this.configVersion.load(this.configurationNode);
             this.configEnabledDetections.load(this.configurationNode);
+            this.configLoggingLevel.load(this.configurationNode);
 
             this.plugin.getModuleController().getModules().stream()
                     .filter(ModuleWrapper::isEnabled)
@@ -116,6 +121,7 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
 
             this.configVersion.save(this.configurationNode);
             this.configEnabledDetections.save(this.configurationNode);
+            this.configLoggingLevel.save(this.configurationNode);
 
             this.plugin.getModuleController().getModules().stream()
                     .filter(ModuleWrapper::isEnabled)
@@ -152,7 +158,7 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
 
     @Override
     public StorageValue[] getStorageNodes() {
-        return new StorageValue[]{ this.configVersion, this.configEnabledDetections };
+        return new StorageValue[]{ this.configVersion, this.configEnabledDetections, this.configLoggingLevel };
     }
 
 }

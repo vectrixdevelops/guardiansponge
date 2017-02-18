@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian;
 
 import com.me4502.modularframework.ModuleController;
+import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 
 public class GuardianDetections {
@@ -40,7 +41,7 @@ public class GuardianDetections {
     }
 
     public void registerInternalModules() {
-        // Register detections here.
+        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
     }
 
     public void registerModule(String modulePath) {

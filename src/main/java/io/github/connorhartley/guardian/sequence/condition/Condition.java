@@ -24,17 +24,14 @@
 package io.github.connorhartley.guardian.sequence.condition;
 
 import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextTracker;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.cause.Cause;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-public interface Condition<T extends Event> {
+public interface Condition {
 
-    ConditionResult test(User user, T event, List<Context> contexts, SequenceReport sequenceReport);
+    ConditionResult test(User user, Event event, List<Context> contexts, SequenceReport sequenceReport);
 
 }
