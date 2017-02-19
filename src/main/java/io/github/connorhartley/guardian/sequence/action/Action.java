@@ -47,9 +47,6 @@ public class Action<T extends Event> {
 
     private final Class<T> event;
 
-    private int after;
-    private int before;
-
     private int delay;
     private int expire;
 
@@ -102,10 +99,6 @@ public class Action<T extends Event> {
         this.conditions.add(condition);
     }
 
-    void waitAfter(int after) { this.after = after; }
-
-    void waitBefore(int before) { this.before = before; }
-
     void setDelay(int delay) {
         this.delay = delay;
     }
@@ -150,10 +143,6 @@ public class Action<T extends Event> {
                     return !testResult.hasPassed();
                 });
     }
-
-    public int getAfter() { return this.after; }
-
-    public int getBefore() { return this.before; }
 
     public int getDelay() {
         return this.delay;

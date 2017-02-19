@@ -67,34 +67,32 @@ public class MovementSpeedCheck extends Check {
 
         @Override
         public SequenceBlueprint getSequence() {
-            return new SequenceBuilder(this.getDetection().getContextProvider(), this.getContextTracker())
+            return new SequenceBuilder()
+
+                    .context(this.getContextTracker())
 
                     // Trigger : Move Entity Event
 
-                    .action(MoveEntityEvent.class, null)
+                    .action(MoveEntityEvent.class)
                     .condition((user, event, contexts, sequenceResult) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
                             return new ConditionResult(true, sequenceResult);
                         }
                         return new ConditionResult(false, sequenceResult);
                     })
+
+                    // After 2 Seconds : Move Entity Event
+
+                    .action(MoveEntityEvent.class)
+                    .delay(20 * 2)
+                    .expire(20 * 3)
                     .success((user, event, contexts, sequenceResult) -> {
                         // Net timing starts here.
 
                         return new ConditionResult(false, sequenceResult);
                     })
-                    .after(20 * 2)
-                    .expire(20 * 3)
 
-                    .action(MoveEntityEvent.class)
-                    .condition((user, event, contexts, sequenceResult) -> {
-
-                        // TODO: Juice'y movement speed check here.
-
-                        return new ConditionResult(false, sequenceResult);
-                    })
-
-                    .build(this);
+                    .build(this, this.getDetection().getContextProvider());
         }
 
         @Override
