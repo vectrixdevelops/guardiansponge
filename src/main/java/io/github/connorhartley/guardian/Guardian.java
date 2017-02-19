@@ -28,8 +28,8 @@ import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
 import com.me4502.modularframework.module.ModuleWrapper;
 import com.me4502.precogs.detection.DetectionType;
-import com.me4502.precogs.detection.DetectionTypeRegistryModule;
 import com.me4502.precogs.service.AntiCheatService;
+import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextController;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
@@ -39,22 +39,20 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
+import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
-import org.spongepowered.api.GameRegistry;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Dependency;
@@ -127,21 +125,21 @@ public class Guardian implements ContextProvider {
 
     private GuardianConfiguration globalConfiguration;
 
+    /* Contexts */
+
+    private GuardianContexts globalContexts;
+
     /* Detections */
 
-    private GuardianDetections internalDetections;
+    private GuardianDetections globalDetections;
 
-    /* Cause Context */
+    /* Context / Check / Sequence */
 
     private ContextController contextController;
-
-    private ContextController.ContextControllerTask contextControllerTask;
-
-    /* Check / Sequence */
-
     private CheckController checkController;
     private SequenceController sequenceController;
 
+    private ContextController.ContextControllerTask contextControllerTask;
     private CheckController.CheckControllerTask checkControllerTask;
     private SequenceController.SequenceControllerTask sequenceControllerTask;
 
@@ -178,9 +176,12 @@ public class Guardian implements ContextProvider {
 
         this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleController.setPluginContainer(this.pluginContainer);
-        this.internalDetections = new GuardianDetections(this, this.moduleController);
 
-        this.internalDetections.registerInternalModules();
+        this.globalContexts = new GuardianContexts(this.contextController);
+        this.globalContexts.registerInternalContexts();
+
+        this.globalDetections = new GuardianDetections(this.moduleController);
+        this.globalDetections.registerInternalModules();
 
         if (this.loggingLevel > 1) getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
 
@@ -212,10 +213,11 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
+        this.contextControllerTask.start();
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();
 
-        getLogger().info(this.moduleController.getModules().size() + "detections are protecting you're server!");
+        getLogger().info(this.moduleController.getModules().size() + " detections are protecting you're server!");
     }
 
     @Listener
@@ -224,6 +226,7 @@ public class Guardian implements ContextProvider {
 
         this.sequenceControllerTask.stop();
         this.checkControllerTask.stop();
+        this.contextControllerTask.stop();
 
         this.sequenceController.forceCleanup();
 
@@ -239,9 +242,11 @@ public class Guardian implements ContextProvider {
                 });
 
         this.moduleController.disableModules(moduleWrapper -> {
-            getLogger().info("Disabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+            if (this.loggingLevel > 1) getLogger().info("Disabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
             return true;
         });
+
+        this.contextController.unregisterContexts();
 
         getLogger().info("Stopped Guardian AntiCheat.");
     }
@@ -299,7 +304,23 @@ public class Guardian implements ContextProvider {
      * @return The guardian built-in detections
      */
     public GuardianDetections getGlobalDetections() {
-        return this.internalDetections;
+        return this.globalDetections;
+    }
+
+    @Override
+    public ContextController getContextController() {
+        return this.contextController;
+    }
+
+    /**
+     * Get Context Controller
+     *
+     * <p>Returns the {@link ContextController} for controlling the running of {@link Context}s for {@link Action}s.</p>
+     *
+     * @return The context controller
+     */
+    public CheckController getCheckController() {
+        return this.checkController;
     }
 
     /**
@@ -311,12 +332,6 @@ public class Guardian implements ContextProvider {
      */
     public SequenceController getSequenceController() {
         return this.sequenceController;
-    }
-
-
-    @Override
-    public ContextController getContextController() {
-        return this.contextController;
     }
 
 }

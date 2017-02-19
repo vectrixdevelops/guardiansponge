@@ -23,31 +23,36 @@
  */
 package io.github.connorhartley.guardian.util;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.util.context.ValueTransform;
 
-public class ContextValue<E> {
+public class ContextValue {
 
-    private E value;
+    private Object value;
 
     public ContextValue() {}
 
-    public ContextValue<E> set(E value) {
+    public <E> ContextValue set(E value) {
         this.value = value;
         return this;
     }
 
-    public E get() {
-        return this.value;
+    public <E> E get() {
+        return ((E) this.value);
     }
 
-    public E modify(ValueTransform<E> valueTransform) {
-        this.value = valueTransform.transform(this.value);
-        return this.value;
+    public <E> E modify(ValueTransform<E> valueTransform) {
+        this.value = valueTransform.transform((E) this.value);
+        return (E) this.value;
     }
 
-    public ContextValue<E> transform(ValueTransform<E> valueTransform) {
-        this.value = valueTransform.transform(this.value);
+    public <E> ContextValue transform(ValueTransform<E> valueTransform) {
+        this.value = valueTransform.transform((E) this.value);
         return this;
+    }
+
+    public <E> TypeToken<E> getTypeToken() {
+        return TypeToken.of((Class<E>) this.value.getClass());
     }
 
 }

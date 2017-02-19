@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.context.action.environment;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextKeys;
 import io.github.connorhartley.guardian.context.TimeContext;
@@ -36,13 +37,16 @@ import org.spongepowered.api.event.Event;
 import java.util.HashMap;
 import java.util.Optional;
 
-public class BlockSpeedContext implements Context<Double>, TimeContext {
+public class BlockSpeedContext extends Context implements TimeContext {
 
-    public BlockSpeedContext() {}
+    public BlockSpeedContext(String id) {
+        super(id);
+    }
 
-    private HashMap<String, ContextValue<Double>> values = new HashMap<>();
+    private HashMap<String, ContextValue> values = new HashMap<>();
 
     private Player player;
+    private ContextValue startingValue = new ContextValue().set(1.0);
 
     private boolean ready = false;
 
@@ -53,7 +57,7 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
         } else return;
 
 
-        this.values.put(ContextKeys.BLOCK_SPEED_MODIFIER, new ContextValue<Double>().set(1.0));
+        this.values.put(ContextKeys.BLOCK_SPEED_MODIFIER, this.startingValue);
 
         this.ready = true;
     }
@@ -67,7 +71,7 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 1.2));
+                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 1.2));
                         }
                     }
                 });
@@ -76,12 +80,12 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         // Walking on the floor.
                         if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 1.6));
+                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 1.6));
                         }
 
                         if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.ICE)) {
                             if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 1.6));
+                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 1.6));
                             }
                         }
 
@@ -89,7 +93,7 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
                                 this.player.getLocation().add(0, 0, 0).getBlockType().equals(BlockTypes.WEB)) {
 
                             if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).transform(oldValue -> oldValue *= 0.14));
+                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.14));
                             }
                         }
                     }
@@ -109,12 +113,7 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
     }
 
     @Override
-    public String getName() {
-        return "block_speed_modifier";
-    }
-
-    @Override
-    public HashMap<String, ContextValue<Double>> getValues() {
+    public HashMap<String, ContextValue> getValues() {
         return this.values;
     }
 
@@ -122,4 +121,5 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
     public Optional<TimeContext> asTimed() {
         return Optional.of(this);
     }
+
 }

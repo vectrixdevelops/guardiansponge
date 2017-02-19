@@ -33,6 +33,7 @@ import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -81,11 +82,11 @@ public class Action<T extends Event> {
     public void testContext(User user, T event) {
         this.contextBuilder.getContexts().forEach(actionContextClass -> {
             try {
-                this.contextProvider.getContextController().construct(actionContextClass, user, event).ifPresent(object -> {
-                    ((Context<?>) object).asTimed().ifPresent(timed -> timed.start(user, event));
-                    this.contexts.add((Context) object);
+                this.contextProvider.getContextController().construct(actionContextClass, user, event).ifPresent(context -> {
+                    context.asTimed().ifPresent(timed -> timed.start(user, event));
+                    this.contexts.add(context);
                 });
-            } catch (IllegalAccessException | InstantiationException e) {
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         });

@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextKeys;
+import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
@@ -65,7 +66,7 @@ public class MovementSpeedCheck extends Check {
 
         @Override
         public ContextBuilder getContextTracker() {
-            return ContextBuilder.builder().append("block_speed_modifier").build();
+            return ContextBuilder.builder().append(ContextTypes.BLOCK_SPEED_CONTEXT).build();
         }
 
         @Override
@@ -94,9 +95,9 @@ public class MovementSpeedCheck extends Check {
                         contexts.forEach(context -> {
                             double blockModifier;
 
-                            if (context.getName().equals("block_speed_modifier")) {
-                                ContextValue value = (ContextValue) context.getValues().get(ContextKeys.BLOCK_SPEED_MODIFIER);
-                                blockModifier = (Double) value.get();
+                            if (context.getName().equals(ContextTypes.BLOCK_SPEED_CONTEXT)) {
+                                ContextValue value = context.getValues().get(ContextKeys.BLOCK_SPEED_MODIFIER);
+                                blockModifier = value.<Double>get();
                             }
                         });
 
