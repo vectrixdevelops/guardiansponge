@@ -44,26 +44,26 @@ import java.util.List;
  */
 public class SequenceBuilder {
 
-    private final ContextProvider contextProvider;
+    private ContextProvider contextProvider;
+    private ContextBuilder contextBuilder;
 
     private SequenceReport sequenceReport;
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder(ContextProvider contextProvider) {
-        this(contextProvider,null);
+    public SequenceBuilder() {}
+
+    public SequenceBuilder context(ContextBuilder contextBuilder) {
+        this.contextBuilder = contextBuilder;
+        return this;
     }
 
-    public SequenceBuilder(ContextProvider contextProvider, ContextBuilder contextBuilder) {
-        this(contextProvider, contextBuilder, null);
-    }
-
-    public SequenceBuilder(ContextProvider contextProvider, ContextBuilder contextBuilder, SequenceReport sequenceReport) {
-        this.contextProvider = contextProvider;
+    public SequenceBuilder report(SequenceReport sequenceReport) {
         this.sequenceReport = (sequenceReport == null) ? SequenceReport.builder().build() : sequenceReport;
+        return this;
     }
 
-    public <T extends Event> ActionBuilder<T> action(Class<T> clazz, ContextBuilder contextBuilder) {
-        return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, contextBuilder));
+    public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
+        return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, this.contextBuilder));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
@@ -73,14 +73,15 @@ public class SequenceBuilder {
     public <T extends Event> ActionBuilder<T> action(Action<T> action) {
         this.actions.add(action);
 
-        return new ActionBuilder<>(this.contextProvider, this, action, action.getContextBuilder(), this.sequenceReport);
+        return new ActionBuilder<>(this.contextProvider, this, action, action.getContextBuilder(), action.getSequenceReport());
     }
 
-    public SequenceBlueprint build(CheckProvider provider) {
-        return new SequenceBlueprint(provider) {
+    public SequenceBlueprint build(CheckProvider checkProvider, ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+        return new SequenceBlueprint(checkProvider) {
             @Override
             public Sequence create(User user) {
-                return new Sequence(user, provider, actions, sequenceReport);
+                return new Sequence(user, checkProvider, actions, sequenceReport);
             }
         };
     }

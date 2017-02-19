@@ -53,16 +53,6 @@ public class ActionBuilder<T extends Event> {
         return this;
     }
 
-    public ActionBuilder<T> after(int after) {
-        this.action.waitAfter(after);
-        return this;
-    }
-
-    public ActionBuilder<T> before(int before) {
-        this.action.waitBefore(before);
-        return this;
-    }
-
     public ActionBuilder<T> delay(int delay) {
         this.action.setDelay(delay);
         return this;
@@ -95,8 +85,8 @@ public class ActionBuilder<T extends Event> {
         return this.builder.action(action);
     }
 
-    public SequenceBlueprint build(CheckProvider provider) {
-        return this.builder.build(provider);
+    public SequenceBlueprint build(CheckProvider checkProvider, ContextProvider contextProvider) {
+        return this.builder.build(checkProvider, contextProvider);
     }
 
 }

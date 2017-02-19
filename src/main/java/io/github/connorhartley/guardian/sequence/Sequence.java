@@ -92,11 +92,6 @@ public class Sequence {
         if (iterator.hasNext()) {
             Action action = iterator.next();
 
-            for (ListIterator backIterator = this.contexts.listIterator(this.contexts.size()); backIterator.hasPrevious();) {
-                final Object unCastContext = backIterator.previous();
-                action.addContext(((Context) unCastContext));
-            }
-
             long now = System.currentTimeMillis();
 
             if (!action.getEvent().equals(event.getClass())) {
@@ -108,25 +103,16 @@ public class Sequence {
 
             typeAction.testContext(user, event);
 
-            if (this.last + ((action.getAfter() / 20) * 1000) > now) {
-                this.wait = true;
-                return Tristate.UNDEFINED;
-            } else {
-                this.wait = false;
-            }
-
-            if (this.last + ((action.getBefore() / 20) * 1000) < now) {
-                this.wait = true;
-                return Tristate.UNDEFINED;
-            } else {
-                this.wait = false;
-            }
-
             this.sequenceReport = action.getSequenceReport();
 
             if (this.last + ((action.getDelay() / 20) * 1000) > now) {
                 action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
+            }
+
+            for (ListIterator backIterator = this.contexts.listIterator(this.contexts.size()); backIterator.hasPrevious();) {
+                final Object unCastContext = backIterator.previous();
+                action.addContext(((Context) unCastContext));
             }
 
             this.sequenceReport = action.getSequenceReport();
@@ -162,7 +148,7 @@ public class Sequence {
             return Tristate.TRUE;
         }
 
-        this.actions.forEach(action -> action.suspendContext());
+        this.actions.forEach(Action::suspendContext);
 
         return Tristate.TRUE;
     }
