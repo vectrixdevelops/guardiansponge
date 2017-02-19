@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.ContextKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
@@ -32,6 +33,8 @@ import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
+import io.github.connorhartley.guardian.util.ContextValue;
+import org.spongepowered.api.data.value.mutable.Value;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 
@@ -62,7 +65,7 @@ public class MovementSpeedCheck extends Check {
 
         @Override
         public ContextBuilder getContextTracker() {
-            return null;
+            return ContextBuilder.builder().append("block_speed_modifier").build();
         }
 
         @Override
@@ -88,6 +91,14 @@ public class MovementSpeedCheck extends Check {
                     .expire(20 * 3)
                     .success((user, event, contexts, sequenceResult) -> {
                         // Net timing starts here.
+                        contexts.forEach(context -> {
+                            double blockModifier;
+
+                            if (context.getName().equals("block_speed_modifier")) {
+                                ContextValue value = (ContextValue) context.getValues().get(ContextKeys.BLOCK_SPEED_MODIFIER);
+                                blockModifier = (Double) value.get();
+                            }
+                        });
 
                         return new ConditionResult(false, sequenceResult);
                     })

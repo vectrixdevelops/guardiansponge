@@ -109,6 +109,11 @@ public class BlockSpeedContext implements Context<Double>, TimeContext {
     }
 
     @Override
+    public String getName() {
+        return "block_speed_modifier";
+    }
+
+    @Override
     public HashMap<String, ContextValue<Double>> getValues() {
         return this.values;
     }

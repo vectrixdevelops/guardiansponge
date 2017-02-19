@@ -30,6 +30,8 @@ import java.util.Optional;
 
 public interface Context<E> {
 
+    String getName();
+
     HashMap<String, ContextValue<E>> getValues();
 
     Optional<TimeContext> asTimed();
