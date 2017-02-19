@@ -28,10 +28,9 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.scheduler.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * Context Controller
@@ -42,9 +41,9 @@ public class ContextController {
 
     private final Guardian plugin;
 
-    private HashMap<String, Class> registry = new HashMap<>();
+    private HashMap<String, Class<? extends Context>> registry = new HashMap<>();
     private HashMap<User, List<Class>> runningContexts = new HashMap<>();
-    private List<Object> contexts = new ArrayList<>();
+    private List<Context> contexts = new ArrayList<>();
 
     public ContextController(Guardian plugin) {
         this.plugin = plugin;
@@ -55,23 +54,39 @@ public class ContextController {
     }
 
     public void unregisterContext(String id) {
+        this.contexts.forEach(context -> {
+            if (this.registry.get(id).equals(context.getClass())) {
+                context.asTimed().ifPresent(TimeContext::stop);
+                this.contexts.remove(context);
+            }
+        });
+
+        this.contexts.removeIf(context -> context.getName().equals(id));
+        this.runningContexts.forEach((user, contextList) -> {
+            contextList.removeIf(context -> this.registry.get(id).equals(context));
+            this.runningContexts.replace(user, contextList);
+        });
         this.registry.remove(id);
     }
 
     public void unregisterContexts() {
+        this.contexts.forEach(context -> context.asTimed().ifPresent(TimeContext::stop));
+        this.contexts.clear();
+        this.runningContexts.clear();
         this.registry.clear();
     }
 
-    public Optional<Object> construct(String id, User user, Event event) throws IllegalAccessException, InstantiationException {
+    public Optional<Context> construct(String id, User user, Event event) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         if (this.registry.containsKey(id)) {
-            Object context = this.registry.get(id).newInstance();
-            if (context != null && this.runningContexts.get(user) == null) {
+            Constructor<?> ctor = this.registry.get(id).getConstructor();
+            Context context = (Context) ctor.newInstance(id);
+            if (this.runningContexts.get(user) == null) {
                 List<Class> contextClasses = new ArrayList<>();
                 contextClasses.add(context.getClass());
                 this.runningContexts.put(user, contextClasses);
                 this.contexts.add(context);
                 return Optional.of(context);
-            } else if (context != null && !this.runningContexts.get(user).contains(context.getClass())) {
+            } else if (!this.runningContexts.get(user).contains(context.getClass())) {
                 List<Class> contextClasses = this.runningContexts.get(user);
                 contextClasses.add(context.getClass());
                 this.runningContexts.replace(user, contextClasses);
@@ -84,7 +99,7 @@ public class ContextController {
 
     public void updateAll() {
         this.contexts.stream()
-                .filter(context -> ((Context) context).asTimed().isPresent())
+                .filter(context -> context.asTimed().isPresent())
                 .filter(context -> !((TimeContext) context).isReady())
                 .forEach(context -> ((TimeContext) context).update());
     }

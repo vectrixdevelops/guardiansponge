@@ -28,12 +28,20 @@ import io.github.connorhartley.guardian.util.ContextValue;
 import java.util.HashMap;
 import java.util.Optional;
 
-public interface Context<E> {
+public abstract class Context {
 
-    String getName();
+    private final String id;
 
-    HashMap<String, ContextValue<E>> getValues();
+    public Context(String id) {
+        this.id = id;
+    }
 
-    Optional<TimeContext> asTimed();
+    public String getName() {
+        return this.id;
+    }
+
+    public abstract HashMap<String, ContextValue> getValues();
+
+    public abstract Optional<TimeContext> asTimed();
 
 }

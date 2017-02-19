@@ -23,23 +23,20 @@
  */
 package io.github.connorhartley.guardian;
 
-import com.me4502.modularframework.ModuleController;
-import com.me4502.precogs.detection.CommonDetectionTypes;
-import io.github.connorhartley.guardian.detection.DetectionTypes;
+import io.github.connorhartley.guardian.context.ContextController;
+import io.github.connorhartley.guardian.context.ContextTypes;
+import io.github.connorhartley.guardian.context.action.environment.BlockSpeedContext;
 
-public class GuardianDetections {
+public class GuardianContexts {
 
-    private final ModuleController moduleController;
+    private final ContextController contextController;
 
-    private DetectionTypes detectionTypes;
-
-    GuardianDetections(ModuleController moduleController) {
-        this.moduleController = moduleController;
-        this.detectionTypes = new DetectionTypes();
+    GuardianContexts(ContextController contextController) {
+        this.contextController = contextController;
     }
 
-    void registerInternalModules() {
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
+    void registerInternalContexts() {
+        this.contextController.registerContext(ContextTypes.BLOCK_SPEED_CONTEXT, BlockSpeedContext.class);
     }
 
 }

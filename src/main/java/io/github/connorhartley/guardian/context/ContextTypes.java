@@ -21,25 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian;
+package io.github.connorhartley.guardian.context;
 
-import com.me4502.modularframework.ModuleController;
-import com.me4502.precogs.detection.CommonDetectionTypes;
-import io.github.connorhartley.guardian.detection.DetectionTypes;
+public class ContextTypes {
 
-public class GuardianDetections {
-
-    private final ModuleController moduleController;
-
-    private DetectionTypes detectionTypes;
-
-    GuardianDetections(ModuleController moduleController) {
-        this.moduleController = moduleController;
-        this.detectionTypes = new DetectionTypes();
-    }
-
-    void registerInternalModules() {
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
-    }
+    public static String BLOCK_SPEED_CONTEXT = "block_speed_modifier";
 
 }
