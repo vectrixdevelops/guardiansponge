@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context.action.environment.block;
+package io.github.connorhartley.guardian.internal.contexts.environment.block;
 
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
@@ -56,7 +56,7 @@ public class BlockSpeedContext extends Context implements TimeContext {
         } else return;
 
 
-        this.values.put(ContextKeys.BLOCK_SPEED_MODIFIER, this.startingValue);
+        this.values.put(ContextKeys.SPEED_AMPLIFIER, this.startingValue);
 
         this.ready = true;
     }
@@ -69,8 +69,8 @@ public class BlockSpeedContext extends Context implements TimeContext {
 
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
-                        if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.06));
+                        if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
+                            this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 0.06));
                         }
                     }
                 });
@@ -78,21 +78,21 @@ public class BlockSpeedContext extends Context implements TimeContext {
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         // Walking on the floor.
-                        if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
+                        if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
+                            this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
                         }
 
                         if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.ICE)) {
-                            if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
+                            if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
+                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
                             }
                         }
 
                         if (this.player.getLocation().add(0, 1, 0).getBlockType().equals(BlockTypes.WEB) ||
                                 this.player.getLocation().add(0, 0, 0).getBlockType().equals(BlockTypes.WEB)) {
 
-                            if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.007));
+                            if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
+                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 0.007));
                             }
                         }
                     }

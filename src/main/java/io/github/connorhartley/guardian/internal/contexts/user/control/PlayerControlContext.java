@@ -21,14 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context.action.user.control;
+package io.github.connorhartley.guardian.internal.contexts.user.control;
 
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextKeys;
 import io.github.connorhartley.guardian.context.TimeContext;
 import io.github.connorhartley.guardian.util.ContextValue;
-import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
@@ -36,49 +34,32 @@ import org.spongepowered.api.event.Event;
 import java.util.HashMap;
 import java.util.Optional;
 
-public class PlayerControlSpeedContext extends Context implements TimeContext {
+public class PlayerControlContext extends Context implements TimeContext {
+
+    // TODO: Check for weird movement and control based things.
 
     private Player player;
-    private ContextValue startingValue = new ContextValue().set(1.0);
     private HashMap<String, ContextValue> values = new HashMap<>();
 
     private boolean ready = false;
-
-    public PlayerControlSpeedContext(Guardian plugin, String id) {
+    
+    public PlayerControlContext(Guardian plugin, String id) {
         super(plugin, id);
     }
 
     @Override
     public void start(User user, Event event) {
-        if (user.getPlayer().isPresent()) {
-            this.player = user.getPlayer().get();
-        } else return;
 
-        this.values.put(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER, this.startingValue);
-
-        this.ready = true;
     }
 
     @Override
     public void update() {
-        if (this.player.get(Keys.IS_SPRINTING).isPresent() && !this.player.get(Keys.IS_SNEAKING).isPresent()) {
-            if (this.values.containsKey(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER)) {
-                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.07));
-            }
-        } else if (this.player.get(Keys.IS_SNEAKING).isPresent()) {
-            if (this.values.containsKey(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER)) {
-                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.025));
-            }
-        } else {
-            if (this.values.containsKey(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER)) {
-                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.05));
-            }
-        }
+
     }
 
     @Override
     public void stop() {
-        this.ready = false;
+
     }
 
     @Override
@@ -88,11 +69,11 @@ public class PlayerControlSpeedContext extends Context implements TimeContext {
 
     @Override
     public HashMap<String, ContextValue> getValues() {
-        return this.values;
+        return null;
     }
 
     @Override
     public Optional<TimeContext> asTimed() {
-        return Optional.of(this);
+        return null;
     }
 }

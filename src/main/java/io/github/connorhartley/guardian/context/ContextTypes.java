@@ -31,6 +31,8 @@ public class ContextTypes {
 
     /* User Contexts */
 
+    public static String PLAYER_CONTROL = "player_control_context";
+
     public static String PLAYER_CONTROL_SPEED = "player_control_speed_context";
 
 }
