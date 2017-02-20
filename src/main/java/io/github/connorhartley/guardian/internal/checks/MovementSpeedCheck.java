@@ -67,8 +67,8 @@ public class MovementSpeedCheck extends Check {
 
         @Override
         public ContextBuilder getContextTracker() {
-            return ContextBuilder.builder().append(ContextTypes.PLAYER_CONTROL_SPEED_CONTEXT)
-                    .append(ContextTypes.BLOCK_SPEED_CONTEXT).build();
+            return ContextBuilder.builder().append(ContextTypes.PLAYER_CONTROL_SPEED)
+                    .append(ContextTypes.BLOCK_SPEED).build();
         }
 
         @Override
@@ -93,19 +93,19 @@ public class MovementSpeedCheck extends Check {
                     .delay(20 * 2)
                     .expire(20 * 3)
 
-                    .suspend(ContextTypes.PLAYER_CONTROL_SPEED_CONTEXT, ContextTypes.BLOCK_SPEED_CONTEXT)
+                    .suspend(ContextTypes.PLAYER_CONTROL_SPEED, ContextTypes.BLOCK_SPEED)
 
                     .success((user, event, contexts, sequenceResult) -> {
                         double playerControlSpeed;
                         double blockModifier;
 
                         for (Context context : contexts) {
-                            if (context.getName().equals(ContextTypes.PLAYER_CONTROL_SPEED_CONTEXT)) {
+                            if (context.getName().equals(ContextTypes.PLAYER_CONTROL_SPEED)) {
                                 ContextValue value = context.getValues().get(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER);
                                 playerControlSpeed = value.<Double>get();
                             }
 
-                            if (context.getName().equals(ContextTypes.BLOCK_SPEED_CONTEXT)) {
+                            if (context.getName().equals(ContextTypes.BLOCK_SPEED)) {
                                 ContextValue value = context.getValues().get(ContextKeys.BLOCK_SPEED_MODIFIER);
                                 blockModifier = value.<Double>get();
                             }

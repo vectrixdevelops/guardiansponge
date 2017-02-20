@@ -27,10 +27,10 @@ public class ContextTypes {
 
     /* Block Contexts */
 
-    public static String BLOCK_SPEED_CONTEXT = "block_speed_context";
+    public static String BLOCK_SPEED = "block_speed_context";
 
     /* User Contexts */
 
-    public static String PLAYER_CONTROL_SPEED_CONTEXT = "player_control_speed_context";
+    public static String PLAYER_CONTROL_SPEED = "player_control_speed_context";
 
 }
