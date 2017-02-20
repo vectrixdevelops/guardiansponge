@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context.action.environment;
+package io.github.connorhartley.guardian.context.action.environment.block;
 
-import com.google.common.reflect.TypeToken;
+import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextKeys;
 import io.github.connorhartley.guardian.context.TimeContext;
@@ -39,16 +39,15 @@ import java.util.Optional;
 
 public class BlockSpeedContext extends Context implements TimeContext {
 
-    public BlockSpeedContext(String id) {
-        super(id);
-    }
-
-    private HashMap<String, ContextValue> values = new HashMap<>();
-
     private Player player;
     private ContextValue startingValue = new ContextValue().set(1.0);
+    private HashMap<String, ContextValue> values = new HashMap<>();
 
     private boolean ready = false;
+
+    public BlockSpeedContext(Guardian plugin, String id) {
+        super(plugin, id);
+    }
 
     @Override
     public void start(User user, Event event) {
@@ -71,7 +70,7 @@ public class BlockSpeedContext extends Context implements TimeContext {
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 1.2));
+                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.06));
                         }
                     }
                 });
@@ -80,12 +79,12 @@ public class BlockSpeedContext extends Context implements TimeContext {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         // Walking on the floor.
                         if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 1.6));
+                            this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
                         }
 
                         if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.ICE)) {
                             if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 1.6));
+                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
                             }
                         }
 
@@ -93,7 +92,7 @@ public class BlockSpeedContext extends Context implements TimeContext {
                                 this.player.getLocation().add(0, 0, 0).getBlockType().equals(BlockTypes.WEB)) {
 
                             if (this.values.containsKey(ContextKeys.BLOCK_SPEED_MODIFIER)) {
-                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.14));
+                                this.values.replace(ContextKeys.BLOCK_SPEED_MODIFIER, this.values.get(ContextKeys.BLOCK_SPEED_MODIFIER).<Double>transform(oldValue -> oldValue *= 0.007));
                             }
                         }
                     }

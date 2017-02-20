@@ -26,6 +26,7 @@ package io.github.connorhartley.guardian.sequence.action;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
@@ -92,8 +93,18 @@ public class Action<T extends Event> {
         });
     }
 
-    public void suspendContext() {
+    public void suspendAllContexts() {
         this.contexts.forEach(context -> this.contextProvider.getContextController().suspend(context));
+    }
+
+    public void suspendContext(String... id) {
+        this.contexts.forEach(context -> {
+            for (String name : id) {
+                if (context.getName().equals(name)) {
+                    this.contextProvider.getContextController().suspend(context);
+                }
+            }
+        });
     }
 
     void addCondition(Condition condition) {

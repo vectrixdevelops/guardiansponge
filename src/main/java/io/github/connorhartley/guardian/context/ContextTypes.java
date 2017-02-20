@@ -25,6 +25,12 @@ package io.github.connorhartley.guardian.context;
 
 public class ContextTypes {
 
-    public static String BLOCK_SPEED_CONTEXT = "block_speed_modifier";
+    /* Block Contexts */
+
+    public static String BLOCK_SPEED_CONTEXT = "block_speed_context";
+
+    /* User Contexts */
+
+    public static String PLAYER_CONTROL_SPEED_CONTEXT = "player_control_speed_context";
 
 }

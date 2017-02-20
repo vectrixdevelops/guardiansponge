@@ -110,11 +110,6 @@ public class Sequence {
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
             }
 
-            for (ListIterator backIterator = this.contexts.listIterator(this.contexts.size()); backIterator.hasPrevious();) {
-                final Object unCastContext = backIterator.previous();
-                action.addContext(((Context) unCastContext));
-            }
-
             this.sequenceReport = action.getSequenceReport();
 
             if (this.last + ((action.getExpire() / 20) * 1000) < now) {
@@ -123,6 +118,11 @@ public class Sequence {
             }
 
             this.sequenceReport = action.getSequenceReport();
+
+            for (ListIterator backIterator = this.contexts.listIterator(this.contexts.size()); backIterator.hasPrevious();) {
+                final Object unCastContext = backIterator.previous();
+                action.addContext(((Context) unCastContext));
+            }
 
             this.contexts.addAll(typeAction.getContext());
 
@@ -144,11 +144,9 @@ public class Sequence {
             if (!iterator.hasNext()) {
                 this.finished = true;
             }
-
-            return Tristate.TRUE;
+        } else {
+            this.actions.forEach(Action::suspendAllContexts);
         }
-
-        this.actions.forEach(Action::suspendContext);
 
         return Tristate.TRUE;
     }

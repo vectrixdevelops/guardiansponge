@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.sequence.action;
 
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
@@ -46,6 +47,11 @@ public class ActionBuilder<T extends Event> {
         this.action = action;
         this.contextBuilder = contextBuilder;
         this.sequenceReport = sequenceReport;
+    }
+
+    public ActionBuilder<T> suspend(String... id) {
+        this.action.suspendContext(id);
+        return this;
     }
 
     public ActionBuilder<T> condition(Condition condition) {
