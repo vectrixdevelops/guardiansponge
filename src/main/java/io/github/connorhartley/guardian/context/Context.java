@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.context;
 
+import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.util.ContextValue;
 
 import java.util.HashMap;
@@ -30,10 +31,16 @@ import java.util.Optional;
 
 public abstract class Context {
 
+    private final Guardian plugin;
     private final String id;
 
-    public Context(String id) {
+    public Context(Guardian plugin, String id) {
+        this.plugin = plugin;
         this.id = id;
+    }
+
+    public Guardian getPlugin() {
+        return this.plugin;
     }
 
     public String getName() {

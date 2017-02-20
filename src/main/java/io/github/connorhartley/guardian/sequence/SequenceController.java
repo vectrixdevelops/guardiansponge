@@ -84,7 +84,7 @@ public class SequenceController implements SequenceInvoker {
                }
 
                CheckProvider checkProvider = sequence.getProvider();
-               this.checkController.post(checkProvider, sequence, user);
+               this.checkController.post(checkProvider, user);
                return true;
             });
 
@@ -109,7 +109,7 @@ public class SequenceController implements SequenceInvoker {
 
                             if (sequence.isFinished()) {
                                 CheckProvider checkProvider = sequence.getProvider();
-                                this.checkController.post(checkProvider, sequence, user);
+                                this.checkController.post(checkProvider, user);
                                 return;
                             }
 

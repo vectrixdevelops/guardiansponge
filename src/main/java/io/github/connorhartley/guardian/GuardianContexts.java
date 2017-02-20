@@ -25,7 +25,7 @@ package io.github.connorhartley.guardian;
 
 import io.github.connorhartley.guardian.context.ContextController;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.action.environment.BlockSpeedContext;
+import io.github.connorhartley.guardian.context.action.environment.block.BlockSpeedContext;
 
 public class GuardianContexts {
 

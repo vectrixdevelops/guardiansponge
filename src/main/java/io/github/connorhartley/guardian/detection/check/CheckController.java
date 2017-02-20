@@ -45,8 +45,8 @@ public class CheckController {
         this.plugin = plugin;
     }
 
-    public void post(CheckProvider checkProvider, Sequence sequence, User user) {
-        Check check = checkProvider.createInstance(this, sequence, user);
+    public void post(CheckProvider checkProvider, User user) {
+        Check check = checkProvider.createInstance(user);
 
         CheckBeginEvent attempt = new CheckBeginEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
         Sponge.getEventManager().post(attempt);

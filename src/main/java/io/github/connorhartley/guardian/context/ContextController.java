@@ -79,7 +79,7 @@ public class ContextController {
     public Optional<Context> construct(String id, User user, Event event) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         if (this.registry.containsKey(id)) {
             Constructor<?> ctor = this.registry.get(id).getConstructor();
-            Context context = (Context) ctor.newInstance(id);
+            Context context = (Context) ctor.newInstance(this.plugin, id);
             if (this.runningContexts.get(user) == null) {
                 List<Class> contextClasses = new ArrayList<>();
                 contextClasses.add(context.getClass());

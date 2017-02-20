@@ -37,6 +37,6 @@ public interface CheckProvider {
 
     SequenceBlueprint getSequence();
 
-    Check createInstance(CheckController checkController, Sequence sequence, User user);
+    Check createInstance(User user);
 
 }

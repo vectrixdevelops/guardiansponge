@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextKeys;
 import io.github.connorhartley.guardian.context.ContextTypes;
@@ -66,7 +67,8 @@ public class MovementSpeedCheck extends Check {
 
         @Override
         public ContextBuilder getContextTracker() {
-            return ContextBuilder.builder().append(ContextTypes.BLOCK_SPEED_CONTEXT).build();
+            return ContextBuilder.builder().append(ContextTypes.PLAYER_CONTROL_SPEED_CONTEXT)
+                    .append(ContextTypes.BLOCK_SPEED_CONTEXT).build();
         }
 
         @Override
@@ -90,16 +92,26 @@ public class MovementSpeedCheck extends Check {
                     .action(MoveEntityEvent.class)
                     .delay(20 * 2)
                     .expire(20 * 3)
+
+                    .suspend(ContextTypes.PLAYER_CONTROL_SPEED_CONTEXT, ContextTypes.BLOCK_SPEED_CONTEXT)
+
                     .success((user, event, contexts, sequenceResult) -> {
-                        // Net timing starts here.
-                        contexts.forEach(context -> {
-                            double blockModifier;
+                        double playerControlSpeed;
+                        double blockModifier;
+
+                        for (Context context : contexts) {
+                            if (context.getName().equals(ContextTypes.PLAYER_CONTROL_SPEED_CONTEXT)) {
+                                ContextValue value = context.getValues().get(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER);
+                                playerControlSpeed = value.<Double>get();
+                            }
 
                             if (context.getName().equals(ContextTypes.BLOCK_SPEED_CONTEXT)) {
                                 ContextValue value = context.getValues().get(ContextKeys.BLOCK_SPEED_MODIFIER);
                                 blockModifier = value.<Double>get();
                             }
-                        });
+                        }
+
+                        // TODO: Player control context.
 
                         return new ConditionResult(false, sequenceResult);
                     })
@@ -108,8 +120,8 @@ public class MovementSpeedCheck extends Check {
         }
 
         @Override
-        public Check createInstance(CheckController checkController, Sequence sequence, User user) {
-            return null;
+        public Check createInstance(User user) {
+            return new MovementSpeedCheck(this, user);
         }
     }
 
