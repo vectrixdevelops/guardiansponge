@@ -25,12 +25,16 @@ package io.github.connorhartley.guardian.context;
 
 public class ContextKeys {
 
-    /* Block Context Keys */
+    /* Control Speed | Used in: PlayerControlSpeedContext */
 
-    public static String BLOCK_SPEED_MODIFIER = "block_speed_modifier";
+    public static String CONTROL_SPEED = "control_speed";
 
-    /* User Context Keys */
+    public static String CONTROL_SPEED_STATE = "control_speed_state";
 
-    public static String PLAYER_CONTROL_SPEED_MODIFIER = "player_control_speed_modifier";
+    /* Speed Amplifier | Used in: BlockSpeedContext */
+
+    public static String SPEED_AMPLIFIER = "speed_amplifier";
+
+    public static String SPEED_AMPLIFIER_BLOCKS = "speed_amplifier_blocks";
 
 }

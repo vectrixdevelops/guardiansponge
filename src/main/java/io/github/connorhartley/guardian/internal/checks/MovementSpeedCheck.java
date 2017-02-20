@@ -101,12 +101,12 @@ public class MovementSpeedCheck extends Check {
 
                         for (Context context : contexts) {
                             if (context.getName().equals(ContextTypes.PLAYER_CONTROL_SPEED)) {
-                                ContextValue value = context.getValues().get(ContextKeys.PLAYER_CONTROL_SPEED_MODIFIER);
+                                ContextValue value = context.getValues().get(ContextKeys.CONTROL_SPEED);
                                 playerControlSpeed = value.<Double>get();
                             }
 
                             if (context.getName().equals(ContextTypes.BLOCK_SPEED)) {
-                                ContextValue value = context.getValues().get(ContextKeys.BLOCK_SPEED_MODIFIER);
+                                ContextValue value = context.getValues().get(ContextKeys.SPEED_AMPLIFIER);
                                 blockModifier = value.<Double>get();
                             }
                         }
