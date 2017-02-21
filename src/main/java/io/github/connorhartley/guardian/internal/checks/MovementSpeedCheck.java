@@ -31,14 +31,20 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.internal.contexts.user.control.PlayerControlSpeedContext;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
+import io.github.connorhartley.guardian.sequence.report.ReportType;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import io.github.connorhartley.guardian.util.ContextValue;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.value.mutable.Value;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 public class MovementSpeedCheck extends Check {
 
@@ -55,6 +61,9 @@ public class MovementSpeedCheck extends Check {
     public static class Provider implements CheckProvider {
 
         private final Detection detection;
+
+        private Location<World> previousLocation;
+        private Location<World> presentLocation;
 
         public Provider(Detection detection) {
             this.detection = detection;
@@ -82,6 +91,10 @@ public class MovementSpeedCheck extends Check {
                     .action(MoveEntityEvent.class)
                     .condition((user, event, contexts, sequenceResult) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
+                            if (user.getPlayer().isPresent()) {
+                                this.previousLocation = user.getPlayer().get().getLocation();
+                            }
+
                             return new ConditionResult(true, sequenceResult);
                         }
                         return new ConditionResult(false, sequenceResult);
@@ -96,8 +109,10 @@ public class MovementSpeedCheck extends Check {
                     .suspend(ContextTypes.PLAYER_CONTROL_SPEED, ContextTypes.BLOCK_SPEED)
 
                     .success((user, event, contexts, sequenceResult) -> {
-                        double playerControlSpeed;
-                        double blockModifier;
+                        double playerControlSpeed = 0.0;
+                        double blockModifier = 0.0;
+
+                        PlayerControlSpeedContext.State playerControlState = PlayerControlSpeedContext.State.WALKING;
 
                         for (Context context : contexts) {
                             if (context.getName().equals(ContextTypes.PLAYER_CONTROL_SPEED)) {
@@ -111,7 +126,43 @@ public class MovementSpeedCheck extends Check {
                             }
                         }
 
-                        // TODO: Player control context.
+                        if (user.getPlayer().isPresent()) {
+                            if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
+                                if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
+                                    SequenceReport failReport = SequenceReport.of(sequenceResult)
+                                            .append(ReportType.TEST, false)
+                                            .build();
+
+                                    return new ConditionResult(false, failReport);
+                                }
+                            }
+
+                            this.presentLocation = user.getPlayer().get().getLocation();
+
+                            double travelDisplacement = Math.abs(Math.sqrt((
+                                    (this.presentLocation.getX() - this.previousLocation.getX()) *
+                                            (this.presentLocation.getX() - this.previousLocation.getX())) +
+                                    (this.presentLocation.getZ() - this.previousLocation.getZ()) *
+                                            (this.presentLocation.getZ() - this.previousLocation.getZ())) +
+                                    (this.presentLocation.getY() - this.previousLocation.getY()) *
+                                            (this.presentLocation.getY() - this.previousLocation.getY()));
+
+                            double maximumSpeed = playerControlSpeed * blockModifier * 2;
+
+                            SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
+                                    .append(ReportType.INFORMATION, "Travel speed should be less than " +
+                                            maximumSpeed + " while they're " + playerControlState.name() + ".");
+
+                            if (travelDisplacement > maximumSpeed) {
+                                successReportBuilder.append(ReportType.TEST, true)
+                                        .append(ReportType.INFORMATION, "Overshot maximum speed by " +
+                                                (travelDisplacement - maximumSpeed) + ".");
+                            } else {
+                                successReportBuilder.append(ReportType.TEST, false);
+                            }
+
+                            return new ConditionResult(true, successReportBuilder.build());
+                        }
 
                         return new ConditionResult(false, sequenceResult);
                     })

@@ -39,6 +39,7 @@ import io.github.connorhartley.guardian.util.storage.StorageConsumer;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -48,17 +49,17 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Inject
     @ModuleContainer
-    private static PluginContainer moduleContainer;
+    private PluginContainer moduleContainer;
 
     private Guardian plugin;
     private ConfigurationNode globalConfigurationNode;
 
     private boolean ready = false;
 
-    // TODO: This may die... We will see what happens.
+    private static final Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
 
     public SpeedDetection() {
-        super(moduleContainer.getId(), moduleContainer.getName());
+        super(moduleAnnotation.id(), moduleAnnotation.name());
     }
 
     @Override
