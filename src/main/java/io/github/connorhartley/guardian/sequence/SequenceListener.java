@@ -24,6 +24,11 @@
 package io.github.connorhartley.guardian.sequence;
 
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.event.filter.Getter;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.service.user.UserStorageService;
 
 public class SequenceListener {
@@ -45,5 +50,10 @@ public class SequenceListener {
      *     this.userStorageService.get(player.getUniqueId()).ifPresent(user -> this.sequenceController.invoke(user, event));
      * }
      */
+
+    @Listener
+    public void onEntityMove(MoveEntityEvent event, @Getter(value = "getTargetEntity") Player player) {
+        this.sequenceController.invoke(player, event);
+    }
 
 }
