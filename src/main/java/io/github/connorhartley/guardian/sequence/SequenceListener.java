@@ -23,36 +23,30 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
-import org.spongepowered.api.event.filter.cause.First;
-import org.spongepowered.api.service.user.UserStorageService;
 
 public class SequenceListener {
 
     private final SequenceController sequenceController;
-    private final UserStorageService userStorageService;
 
     public SequenceListener(SequenceController sequenceController) {
         this.sequenceController = sequenceController;
-        this.userStorageService = Sponge.getServiceManager().provide(UserStorageService.class).orElseThrow(() ->
-                new IllegalStateException("SequenceListener was attempted to be loaded before UserStorageService object was provided."));
     }
 
     /*
      * Listeners will go here. For example:
      *
      * @Listener
-     * public void onEntityCollide(CollideEntityEvent event, @First Player player) {
-     *     this.userStorageService.get(player.getUniqueId()).ifPresent(user -> this.sequenceController.invoke(user, event));
+     * public void onEntityCollide(CollideEntityEvent event, @Getter("getTargetEntity") Player player) {
+     *     this.sequenceController.invoke(player, event);
      * }
      */
 
     @Listener
-    public void onEntityMove(MoveEntityEvent event, @Getter(value = "getTargetEntity") Player player) {
+    public void onEntityMove(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
         this.sequenceController.invoke(player, event);
     }
 
