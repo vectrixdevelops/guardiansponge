@@ -78,13 +78,19 @@ public class BlockSpeedContext extends Context implements TimeContext {
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         // Walking on the floor.
-                        if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
+                        if (this.player.isOnGround() && this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
                             this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
                         }
 
                         if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.ICE)) {
                             if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
                                 this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 0.08));
+                            }
+                        }
+
+                        if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.SOUL_SAND)) {
+                            if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
+                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 0.01));
                             }
                         }
 

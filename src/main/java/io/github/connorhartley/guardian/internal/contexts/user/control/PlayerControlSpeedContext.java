@@ -42,7 +42,7 @@ public class PlayerControlSpeedContext extends Context implements TimeContext {
     private HashMap<String, ContextValue> values = new HashMap<>();
 
     private ContextValue startingSpeedValue = new ContextValue().set(1.0);
-    private ContextValue startingStateValue = new ContextValue().set(State.NORMAL);
+    private ContextValue startingStateValue = new ContextValue().set(State.WALKING);
 
 
     private boolean ready = false;
@@ -69,17 +69,22 @@ public class PlayerControlSpeedContext extends Context implements TimeContext {
             if (this.player.get(Keys.IS_SPRINTING).get() && !this.player.get(Keys.IS_SNEAKING).get() &&
                     this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
                 this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.07));
-                this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.SPRINT));
+                this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.SPRINTING));
             }
         } else if (this.player.get(Keys.IS_SNEAKING).isPresent()) {
             if (this.player.get(Keys.IS_SNEAKING).get() && this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
                 this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.025));
-                this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.SNEAK));
+                this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.SNEAKING));
+            }
+        } else if (this.player.get(Keys.IS_FLYING).isPresent()) {
+            if (this.player.get(Keys.IS_FLYING).get() && this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
+                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.06));
+                this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.FLYING));
             }
         } else {
             if (this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
                 this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.05));
-                this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.NORMAL));
+                this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.WALKING));
             }
         }
     }
@@ -105,8 +110,9 @@ public class PlayerControlSpeedContext extends Context implements TimeContext {
     }
 
     public enum State {
-        SNEAK,
-        NORMAL,
-        SPRINT
+        SNEAKING,
+        WALKING,
+        FLYING,
+        SPRINTING
     }
 }
