@@ -94,8 +94,9 @@ public class Sequence {
 
             long now = System.currentTimeMillis();
 
+            action.updateReport(this.sequenceReport);
+
             if (!action.getEvent().equals(event.getClass())) {
-                action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
 
@@ -103,21 +104,13 @@ public class Sequence {
 
             typeAction.testContext(user, event);
 
-            this.sequenceReport = action.getSequenceReport();
-
             if (this.last + ((action.getDelay() / 20) * 1000) > now) {
-                action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
             }
 
-            this.sequenceReport = action.getSequenceReport();
-
             if (this.last + ((action.getExpire() / 20) * 1000) < now) {
-                action.updateReport(this.sequenceReport);
                 return fail(user, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
-
-            this.sequenceReport = action.getSequenceReport();
 
             for (ListIterator backIterator = this.contexts.listIterator(this.contexts.size()); backIterator.hasPrevious();) {
                 final Object unCastContext = backIterator.previous();
@@ -126,8 +119,7 @@ public class Sequence {
 
             this.contexts.addAll(typeAction.getContext());
 
-            if (!typeAction.testConditions(user, event)) {
-                action.updateReport(this.sequenceReport);
+            if (!typeAction.testConditions(user, event, this.last)) {
                 return fail(user, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
@@ -136,10 +128,12 @@ public class Sequence {
             iterator.remove();
 
             typeAction.updateReport(this.sequenceReport);
-            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getSequenceReport())));
-            typeAction.succeed(user, event);
+
+            typeAction.succeed(user, event, this.last);
 
             this.sequenceReport = action.getSequenceReport();
+
+            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", this.sequenceReport)));
 
             if (!iterator.hasNext()) {
                 this.finished = true;
@@ -164,7 +158,11 @@ public class Sequence {
 
     // Called when the player does not meet the requirements.
     Tristate fail(User user, Event event, Action action, Cause cause) {
-        this.cancelled = action.fail(user, event);
+        action.updateReport(this.sequenceReport);
+
+        this.cancelled = action.fail(user, event, this.last);
+
+        this.sequenceReport = action.getSequenceReport();
 
         SequenceFailEvent attempt = new SequenceFailEvent(this, user, event, cause);
         Sponge.getEventManager().post(attempt);
