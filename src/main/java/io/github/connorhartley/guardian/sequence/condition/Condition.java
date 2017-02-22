@@ -32,6 +32,6 @@ import java.util.List;
 
 public interface Condition {
 
-    ConditionResult test(User user, Event event, List<Context> contexts, SequenceReport sequenceReport);
+    ConditionResult test(User user, Event event, List<Context> contexts, SequenceReport sequenceReport, long lastAction);
 
 }

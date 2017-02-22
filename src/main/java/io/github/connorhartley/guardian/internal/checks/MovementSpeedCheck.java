@@ -89,7 +89,8 @@ public class MovementSpeedCheck extends Check {
                     // Trigger : Move Entity Event
 
                     .action(MoveEntityEvent.class)
-                    .condition((user, event, contexts, sequenceResult) -> {
+
+                    .condition((user, event, contexts, sequenceResult, lastAction) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
                             if (user.getPlayer().isPresent()) {
                                 this.previousLocation = user.getPlayer().get().getLocation();
@@ -108,9 +109,11 @@ public class MovementSpeedCheck extends Check {
 
                     .suspend(ContextTypes.PLAYER_CONTROL_SPEED, ContextTypes.BLOCK_SPEED)
 
-                    .success((user, event, contexts, sequenceResult) -> {
+                    .success((user, event, contexts, sequenceResult, lastAction) -> {
                         double playerControlSpeed = 0.0;
                         double blockModifier = 0.0;
+
+                        long currentTime = 0;
 
                         PlayerControlSpeedContext.State playerControlState = PlayerControlSpeedContext.State.WALKING;
 
@@ -137,6 +140,8 @@ public class MovementSpeedCheck extends Check {
                                 }
                             }
 
+                            currentTime = System.currentTimeMillis();
+
                             this.presentLocation = user.getPlayer().get().getLocation();
 
                             double travelDisplacement = Math.abs(Math.sqrt((
@@ -147,7 +152,7 @@ public class MovementSpeedCheck extends Check {
                                     (this.presentLocation.getY() - this.previousLocation.getY()) *
                                             (this.presentLocation.getY() - this.previousLocation.getY()));
 
-                            double maximumSpeed = playerControlSpeed * blockModifier * 2;
+                            double maximumSpeed = playerControlSpeed * blockModifier * ((currentTime - lastAction) * 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
                                     .append(ReportType.INFORMATION, "Travel speed should be less than " +

@@ -123,19 +123,19 @@ public class Action<T extends Event> {
         this.sequenceReport = sequenceReport;
     }
 
-    public void succeed(User user, T event) {
+    public void succeed(User user, T event, long lastAction) {
         this.successfulListeners.forEach(callback -> {
-            ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport);
+            ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport, lastAction);
 
             this.sequenceReport =
                 SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
         });
     }
 
-    public boolean fail(User user, T event) {
+    public boolean fail(User user, T event, long lastAction) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport);
+                    ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport, lastAction);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -144,10 +144,10 @@ public class Action<T extends Event> {
                 });
     }
 
-    public boolean testConditions(User user, T event) {
+    public boolean testConditions(User user, T event, long lastAction) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    ConditionResult testResult = condition.test(user, event, this.contexts, this.sequenceReport);
+                    ConditionResult testResult = condition.test(user, event, this.contexts, this.sequenceReport, lastAction);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
