@@ -91,8 +91,8 @@ public class ActionBuilder<T extends Event> {
         return this.builder.action(action);
     }
 
-    public SequenceBlueprint build(CheckProvider checkProvider, ContextProvider contextProvider) {
-        return this.builder.build(checkProvider, contextProvider);
+    public SequenceBlueprint build(CheckProvider checkProvider) {
+        return this.builder.build(checkProvider);
     }
 
 }

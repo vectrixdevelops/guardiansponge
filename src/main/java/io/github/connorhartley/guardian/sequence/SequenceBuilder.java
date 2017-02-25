@@ -45,14 +45,13 @@ import java.util.List;
 public class SequenceBuilder {
 
     private ContextProvider contextProvider;
-    private ContextBuilder contextBuilder;
+    private ContextBuilder contextBuilder = ContextBuilder.builder().build();
 
     private SequenceReport sequenceReport;
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder() {}
-
-    public SequenceBuilder context(ContextBuilder contextBuilder) {
+    public SequenceBuilder context(ContextProvider contextProvider, ContextBuilder contextBuilder) {
+        this.contextProvider = contextProvider;
         this.contextBuilder = contextBuilder;
         return this;
     }
@@ -63,6 +62,7 @@ public class SequenceBuilder {
     }
 
     public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
+        if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
         return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, this.contextBuilder));
     }
 
@@ -76,11 +76,11 @@ public class SequenceBuilder {
         return new ActionBuilder<>(this.contextProvider, this, action, action.getContextBuilder(), action.getSequenceReport());
     }
 
-    public SequenceBlueprint build(CheckProvider checkProvider, ContextProvider contextProvider) {
-        this.contextProvider = contextProvider;
+    public SequenceBlueprint build(CheckProvider checkProvider) {
         return new SequenceBlueprint(checkProvider) {
             @Override
             public Sequence create(User user) {
+                if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
                 return new Sequence(user, checkProvider, actions, sequenceReport);
             }
         };

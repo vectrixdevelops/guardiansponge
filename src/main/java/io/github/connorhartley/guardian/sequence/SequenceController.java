@@ -32,6 +32,7 @@ import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceBeginEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
@@ -60,66 +61,67 @@ public class SequenceController implements SequenceInvoker {
     }
 
     @Override
-    public void invoke(User user, Event event) {
-        if (!user.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).isPresent()) user.offer((Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).create());
+    public void invoke(Player player, Event event) {
+        List<Sequence> currentlyExecuting = new ArrayList<>();
 
-        user.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> {
-            sequences.forEach(sequence -> sequence.check(user, event));
-            sequences.removeIf(Sequence::isCancelled);
-            sequences.removeIf(Sequence::hasExpired);
-            sequences.removeIf(sequence -> {
-               if (!sequence.isFinished()) {
-                   return false;
-               }
+        if (player.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).isPresent()) {
+            System.out.println("Handler is here.");
+            currentlyExecuting.addAll(player.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).get());
+        }
 
-               if (sequence.isWaiting()) {
-                   return false;
-               }
+        if (!currentlyExecuting.isEmpty()) {
+            System.out.println("Checking the removal.");
+            currentlyExecuting.forEach(sequence -> sequence.check(player, event));
+            currentlyExecuting.removeIf(Sequence::isCancelled);
+            currentlyExecuting.removeIf(Sequence::hasExpired);
+            currentlyExecuting.removeIf(sequence -> {
+                if (!sequence.isFinished()) {
+                    return false;
+                }
 
-               SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, user, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
-               Sponge.getEventManager().post(attempt);
+                SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
+                Sponge.getEventManager().post(attempt);
 
-               if (attempt.isCancelled()) {
-                   return true;
-               }
+                if (attempt.isCancelled()) {
+                    return true;
+                }
 
-               CheckProvider checkProvider = sequence.getProvider();
-               this.checkController.post(checkProvider, user);
-               return true;
+                CheckProvider checkProvider = sequence.getProvider();
+                this.checkController.post(checkProvider, player);
+                return true;
             });
+        }
 
-            this.blueprints.stream()
-                    .filter(blueprint -> !sequences.contains(blueprint))
-                    .forEach(blueprint -> {
-                        Sequence sequence = blueprint.create(user);
+        this.blueprints.stream()
+                .filter(blueprint -> !currentlyExecuting.contains(blueprint))
+                .forEach(blueprint -> {
+                    System.out.println("Creating new sequence.");
+                    Sequence sequence = blueprint.create(player);
 
-                        SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, user, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
-                        Sponge.getEventManager().post(attempt);
+                    SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
+                    Sponge.getEventManager().post(attempt);
 
-                        if (attempt.isCancelled()) {
+                    if (attempt.isCancelled()) {
+                        return;
+                    }
+
+                    if (sequence.check(player, event)) {
+                        if (sequence.isCancelled()) {
                             return;
                         }
 
-                        Tristate check = sequence.check(user, event);
-
-                        if (check.asBoolean() || check == Tristate.UNDEFINED) {
-                            if (sequence.isCancelled()) {
-                                return;
-                            }
-
-                            if (sequence.isFinished()) {
-                                CheckProvider checkProvider = sequence.getProvider();
-                                this.checkController.post(checkProvider, user);
-                                return;
-                            }
-
-                            sequences.add(sequence);
-                            user.offer(((SequenceHandlerData.Builder) Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get()).createFrom(sequences));
+                        if (sequence.isFinished()) {
+                            CheckProvider checkProvider = sequence.getProvider();
+                            this.checkController.post(checkProvider, player);
+                            return;
                         }
-                    });
 
-            user.offer(((SequenceHandlerData.Builder) (Sponge.getDataManager().getManipulatorBuilder(SequenceHandlerData.class).get())).createFrom(sequences));
-        });
+                        System.out.println("Created.");
+
+                        currentlyExecuting.add(sequence);
+                        player.offer(DataKeys.GUARDIAN_SEQUENCE_HANDLER, currentlyExecuting);
+                    }
+                });
     }
 
     /**
@@ -128,13 +130,10 @@ public class SequenceController implements SequenceInvoker {
      * <p>Removes any {@link Sequence}s that have expired from the {@link User}s {@link SequenceHandlerData}.</p>
      */
     public void cleanup() {
-        Sponge.getServer().getOnlinePlayers().forEach(player -> {
-            Sponge.getServiceManager().provide(UserStorageService.class).ifPresent(userStorageService -> {
-                userStorageService.get(player.getUniqueId()).ifPresent(user -> {
-                    user.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> sequences.removeIf(Sequence::hasExpired));
-                });
-            });
-        });
+        Sponge.getServer().getOnlinePlayers().forEach(player -> player.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> {
+            sequences.removeIf(Sequence::hasExpired);
+            player.offer(DataKeys.GUARDIAN_SEQUENCE_HANDLER, sequences);
+        }));
     }
 
     /**
@@ -154,11 +153,7 @@ public class SequenceController implements SequenceInvoker {
      * <p>Removes data for {@link SequenceHandlerData} from all of the players online.</p>
      */
     public void forceCleanup() {
-        Sponge.getServer().getOnlinePlayers().forEach(player -> {
-            Sponge.getServiceManager().provide(UserStorageService.class).ifPresent(userStorageService -> {
-                userStorageService.get(player.getUniqueId()).ifPresent(user -> user.remove(DataKeys.GUARDIAN_SEQUENCE_HANDLER));
-            });
-        });
+        Sponge.getServer().getOnlinePlayers().forEach(player -> player.remove(DataKeys.GUARDIAN_SEQUENCE_HANDLER));
     }
 
     /**

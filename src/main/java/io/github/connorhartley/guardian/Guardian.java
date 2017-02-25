@@ -111,8 +111,6 @@ public class Guardian implements ContextProvider {
         return this.configurationOptions;
     }
 
-    private File pluginConfigDirectory = this.pluginConfig.getParentFile();
-
     /* Module System */
 
     private ModuleController<Guardian> moduleController;
@@ -168,7 +166,7 @@ public class Guardian implements ContextProvider {
 
         this.globalConfiguration = new GuardianConfiguration(this, this.pluginConfig, this.pluginConfigManager);
         this.configurationOptions = ConfigurationOptions.defaults();
-        this.globalConfiguration.load();
+        this.globalConfiguration.create();
 
         this.loggingLevel = this.globalConfiguration.configLoggingLevel.getValue();
 
@@ -193,10 +191,8 @@ public class Guardian implements ContextProvider {
             return false;
         });
 
-        this.globalConfiguration.load();
-
         this.moduleController.getModules().stream()
-                .filter(moduleWrapper -> !moduleWrapper.isEnabled())
+                .filter(ModuleWrapper::isEnabled)
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
                     if (moduleWrapper.getModule().get() instanceof Detection) {
@@ -204,9 +200,11 @@ public class Guardian implements ContextProvider {
 
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
 
-                        Sponge.getRegistry().register(DetectionType.class, detection);
+//                        Sponge.getRegistry().register(DetectionType.class, detection);
                     }
                 });
+
+        this.globalConfiguration.load();
 
         this.globalConfiguration.update();
     }
