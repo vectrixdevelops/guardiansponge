@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextKeys;
@@ -84,7 +85,7 @@ public class MovementSpeedCheck extends Check {
         public SequenceBlueprint getSequence() {
             return new SequenceBuilder()
 
-                    .context(this.getContextTracker())
+                    .context(this.getDetection().getContextProvider(), this.getContextTracker())
 
                     // Trigger : Move Entity Event
 
@@ -113,7 +114,7 @@ public class MovementSpeedCheck extends Check {
                         double playerControlSpeed = 0.0;
                         double blockModifier = 0.0;
 
-                        long currentTime = 0;
+                        long currentTime;
 
                         PlayerControlSpeedContext.State playerControlState = PlayerControlSpeedContext.State.WALKING;
 
@@ -152,7 +153,11 @@ public class MovementSpeedCheck extends Check {
                                     (this.presentLocation.getY() - this.previousLocation.getY()) *
                                             (this.presentLocation.getY() - this.previousLocation.getY()));
 
-                            double maximumSpeed = playerControlSpeed * blockModifier * ((currentTime - lastAction) * 1000);
+                            System.out.println("Control: " + playerControlSpeed);
+                            System.out.println("Block Modifier: " + blockModifier);
+                            System.out.println("Time: " + ((currentTime - lastAction) / 1000));
+
+                            double maximumSpeed = playerControlSpeed * blockModifier * ((currentTime - lastAction) / 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
                                     .append(ReportType.INFORMATION, "Travel speed should be less than " +
@@ -162,6 +167,8 @@ public class MovementSpeedCheck extends Check {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumSpeed) + ".");
+                                System.out.println(user.getName() + " has triggered the speed check.");
+                                System.out.println("Overshot by " + (travelDisplacement - maximumSpeed));
                             } else {
                                 successReportBuilder.append(ReportType.TEST, false);
                             }
@@ -172,7 +179,7 @@ public class MovementSpeedCheck extends Check {
                         return new ConditionResult(false, sequenceResult);
                     })
 
-                    .build(this, this.getDetection().getContextProvider());
+                    .build(this);
         }
 
         @Override

@@ -68,22 +68,22 @@ public class PlayerControlSpeedContext extends Context implements TimeContext {
         if (this.player.get(Keys.IS_SPRINTING).isPresent() && this.player.get(Keys.IS_SNEAKING).isPresent()) {
             if (this.player.get(Keys.IS_SPRINTING).get() && !this.player.get(Keys.IS_SNEAKING).get() &&
                     this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
-                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.07));
+                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= (0.07 / 20)));
                 this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.SPRINTING));
             }
         } else if (this.player.get(Keys.IS_SNEAKING).isPresent()) {
             if (this.player.get(Keys.IS_SNEAKING).get() && this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
-                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.025));
+                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= (0.025 / 20)));
                 this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.SNEAKING));
             }
         } else if (this.player.get(Keys.IS_FLYING).isPresent()) {
             if (this.player.get(Keys.IS_FLYING).get() && this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
-                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.06));
+                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= (0.06 / 20)));
                 this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.FLYING));
             }
         } else {
             if (this.values.containsKey(ContextKeys.CONTROL_SPEED) && this.values.containsKey(ContextKeys.CONTROL_SPEED_STATE)) {
-                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= 0.05));
+                this.values.replace(ContextKeys.CONTROL_SPEED, this.values.get(ContextKeys.CONTROL_SPEED).<Double>transform(oldValue -> oldValue *= (0.05 / 20)));
                 this.values.replace(ContextKeys.CONTROL_SPEED_STATE, new ContextValue().set(State.WALKING));
             }
         }

@@ -36,7 +36,6 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
-import org.spongepowered.api.util.Tristate;
 
 import java.util.*;
 
@@ -62,15 +61,14 @@ public class Sequence {
 
     private long last = System.currentTimeMillis();
 
-    private boolean wait = false;
-    private boolean cancelled = false;
-    private boolean finished = false;
+    private boolean cancelled;
+    private boolean finished;
 
     public Sequence(User user, CheckProvider checkProvider, List<Action> actions, SequenceReport sequenceReport) {
         this.user = user;
         this.checkProvider = checkProvider;
-        this.actions.addAll(actions);
         this.sequenceReport = sequenceReport;
+        this.actions.addAll(actions);
     }
 
     /**
@@ -86,7 +84,7 @@ public class Sequence {
      * @param <T> The {@link Event} type
      * @return True if the sequence should continue, false if the sequence should stop
      */
-    <T extends Event> Tristate check(User user, T event) {
+    <T extends Event> boolean check(User user, T event) {
         Iterator<Action> iterator = this.actions.iterator();
 
         if (iterator.hasNext()) {
@@ -96,11 +94,11 @@ public class Sequence {
 
             action.updateReport(this.sequenceReport);
 
-            if (!action.getEvent().equals(event.getClass())) {
+            Action<T> typeAction = (Action<T>) action;
+
+            if (!action.getEvent().isAssignableFrom(event.getClass())) {
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
-
-            Action<T> typeAction = (Action<T>) action;
 
             typeAction.testContext(user, event);
 
@@ -142,22 +140,22 @@ public class Sequence {
             this.actions.forEach(Action::suspendAllContexts);
         }
 
-        return Tristate.TRUE;
+        return true;
     }
 
     // Called when the player meets the action requirements.
-    Tristate pass(User user, Event event, Cause cause) {
+    boolean pass(User user, Event event, Cause cause) {
         this.last = System.currentTimeMillis();
 
         SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, user, event, cause);
         Sponge.getEventManager().post(attempt);
 
         this.completeEvents.add(event);
-        return Tristate.TRUE;
+        return true;
     }
 
     // Called when the player does not meet the requirements.
-    Tristate fail(User user, Event event, Action action, Cause cause) {
+    boolean fail(User user, Event event, Action action, Cause cause) {
         action.updateReport(this.sequenceReport);
 
         this.cancelled = action.fail(user, event, this.last);
@@ -168,7 +166,7 @@ public class Sequence {
         Sponge.getEventManager().post(attempt);
 
         this.incompleteEvents.add(event);
-        return Tristate.FALSE;
+        return false;
     }
 
     /**
@@ -191,10 +189,6 @@ public class Sequence {
      */
     SequenceReport getSequenceReport() {
         return this.sequenceReport;
-    }
-
-    boolean isWaiting() {
-        return this.wait;
     }
 
     /**

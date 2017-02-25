@@ -38,10 +38,10 @@ import java.util.List;
  */
 public class ContextBuilder {
 
-    private final List<String> contexts;
+    private final List<String> contexts = new ArrayList<>();
 
     private ContextBuilder(Builder builder) {
-        this.contexts = builder.contexts;
+        this.contexts.addAll(builder.contexts);
     }
 
     public static Builder builder() {
@@ -59,7 +59,7 @@ public class ContextBuilder {
         public Builder() {}
 
         public Builder of(ContextBuilder contextBuilder) {
-            this.contexts = contextBuilder.contexts;
+            this.contexts.addAll(contextBuilder.contexts);
             return this;
         }
 

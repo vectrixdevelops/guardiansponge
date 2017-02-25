@@ -64,8 +64,8 @@ public class StorageValue<T, K, V> {
     }
 
     public StorageValue<T, K, V> load(T storageDevice) {
-        if (storageDevice instanceof  ConfigurationNode) {
-            Optional<V> internalValue = getInternalValue((ConfigurationNode) storageDevice);
+        if (storageDevice instanceof  CommentedConfigurationNode) {
+            Optional<V> internalValue = getInternalValue(storageDevice);
             internalValue.ifPresent(v -> {
                 this.value = v;
                 save(storageDevice);
@@ -76,7 +76,7 @@ public class StorageValue<T, K, V> {
 
     public StorageValue<T, K, V> save(T storageDevice) {
         if (storageDevice instanceof  ConfigurationNode) {
-            setInternalValue((ConfigurationNode) storageDevice);
+            setInternalValue(storageDevice);
         }
         return this;
     }
@@ -135,23 +135,26 @@ public class StorageValue<T, K, V> {
         return this.typeToken == null ? TypeToken.of((Class<V>) this.defaultValue.getClass()) : this.typeToken;
     }
 
-    private <T extends ConfigurationNode, K extends String> boolean setInternalValue(T storageDevice) {
+    private boolean setInternalValue(T storageDevice) {
         if (storageDevice != null) {
-            ConfigurationNode node = storageDevice.getNode(this.key);
-            if(this.comment != null && node instanceof CommentedConfigurationNode) {
+            ConfigurationNode node = ((CommentedConfigurationNode) storageDevice).getNode(this.key);
+            if(this.comment != null && node != null) {
                 ((CommentedConfigurationNode)node).setComment(this.comment);
             }
 
             if (this.modified) {
                 if (this.typeToken != null) {
                     try {
-                        node.setValue(this.typeToken, this.value);
+                        if (node != null) {
+                            node.setValue(this.typeToken, this.value);
+                        }
                     } catch (ObjectMappingException e) {
                         e.printStackTrace();
-                        return false;
                     }
                 } else {
-                    node.setValue(this.value);
+                    if (node != null) {
+                        node.setValue(this.value);
+                    }
                 }
                 this.modified = false;
             }
@@ -161,14 +164,14 @@ public class StorageValue<T, K, V> {
         return false;
     }
 
-    private <T extends ConfigurationNode, K extends String> Optional<V> getInternalValue(T storageDevice) {
+    private Optional<V> getInternalValue(T storageDevice) {
         if (storageDevice != null) {
-            ConfigurationNode node = storageDevice.getNode(this.key);
+            ConfigurationNode node = ((CommentedConfigurationNode) storageDevice).getNode(this.key);
             if(node.isVirtual()) {
                 this.modified = true;
             }
 
-            if(this.comment != null && node instanceof CommentedConfigurationNode) {
+            if(this.comment != null) {
                 ((CommentedConfigurationNode)node).setComment(this.comment);
             }
 
@@ -176,7 +179,7 @@ public class StorageValue<T, K, V> {
                 if(typeToken != null)
                     return Optional.of(node.getValue(this.typeToken, this.defaultValue));
                 else
-                    return Optional.of((V) node.getValue(new TypeToken(this.defaultValue.getClass()){}, this.defaultValue));
+                    return Optional.of(node.getValue(new TypeToken<V>(defaultValue.getClass()){}, defaultValue));
             } catch(Exception e) {
                 return Optional.of(this.defaultValue);
             }

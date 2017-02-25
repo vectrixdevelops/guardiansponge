@@ -23,7 +23,6 @@
  */
 package io.github.connorhartley.guardian;
 
-import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
 import com.me4502.modularframework.module.ModuleWrapper;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.util.StorageValue;
@@ -47,9 +46,14 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
 
     private CommentedConfigurationNode configurationNode;
 
-    public StorageValue<CommentedConfigurationNode, String, String> configVersion;
-    public StorageValue<CommentedConfigurationNode, String, List<String>> configEnabledDetections;
-    public StorageValue<CommentedConfigurationNode, String, Integer> configLoggingLevel;
+    public StorageValue<CommentedConfigurationNode, String, String> configVersion = new StorageValue<>("version", this.plugin.getPluginContainer().getVersion().get(),
+            "Do not edit this!", null);
+
+    public StorageValue<CommentedConfigurationNode, String, List<String>> configEnabledDetections = new StorageValue<>("enabled", Collections.singletonList("speed_detection"),
+            "Detections in this list will be enabled.", null);
+
+    public StorageValue<CommentedConfigurationNode, String, Integer> configLoggingLevel = new StorageValue<>("logging-level", 2,
+            "1 for basic logging, 2 for more logging, 3 for detailed logging.", null);
 
     protected GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
@@ -60,22 +64,13 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
     @Override
     public void create() {
         try {
-            if (!this.exists()) {
-                this.configFile.getParentFile().mkdirs();
-                this.configFile.createNewFile();
+             this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
-                this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
+             this.configVersion.save(this.configurationNode);
+             this.configEnabledDetections.save(this.configurationNode);
+             this.configLoggingLevel.save(this.configurationNode);
 
-                this.configVersion = new StorageValue<CommentedConfigurationNode, String, String>("version", this.plugin.getPluginContainer().getVersion().get(),
-                        "Do not edit this!", null).load(this.configurationNode);
-                this.configEnabledDetections = new StorageValue<CommentedConfigurationNode, String, List<String>>("enabled", Collections.emptyList(),
-                        "Detections in this list will be enabled.", null).load(this.configurationNode);
-
-                this.configLoggingLevel = new StorageValue<CommentedConfigurationNode, String, Integer>("logging.level", 2,
-                        "1 for basic logging, 2 for more logging, 3 for detailed logging.", null).load(this.configurationNode);
-
-                this.configManager.save(this.configurationNode);
-            }
+             this.configManager.save(this.configurationNode);
         } catch (IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to create Guardians global configuration!", e);
         }
@@ -84,7 +79,9 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
     @Override
     public void load() {
         try {
-            if (!exists()) {
+            if (!this.exists()) {
+                this.configFile.getParentFile().mkdirs();
+                this.configFile.createNewFile();
                 this.create();
                 return;
             }
@@ -117,8 +114,6 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
     @Override
     public void update() {
         try {
-            this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
-
             this.configVersion.save(this.configurationNode);
             this.configEnabledDetections.save(this.configurationNode);
             this.configLoggingLevel.save(this.configurationNode);

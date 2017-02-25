@@ -164,7 +164,7 @@ public class Action<T extends Event> {
         return this.expire;
     }
 
-    public Class<T> getEvent() {
+    public Class getEvent() {
         return this.event;
     }
 
