@@ -21,12 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.util.storage;
+package io.github.connorhartley.guardian.util;
 
-import io.github.connorhartley.guardian.util.StorageValue;
+import io.github.connorhartley.guardian.util.storage.DatabaseQuery;
 
-public interface StorageConsumer {
+public class StorageKey<T> {
 
-    StorageValue<?, ?>[] getStorageNodes();
+    private T key;
+
+    public StorageKey(T key) {
+        if (key instanceof String || key instanceof DatabaseQuery) {
+            this.key = key;
+        } else throw new RuntimeException("Incorrect key type.");
+    }
+
+    public T get() {
+        return this.key;
+    }
+
+    public void set(T key) {
+        if (key instanceof String || key instanceof DatabaseQuery) {
+            this.key = key;
+        } else throw new RuntimeException("Incorrect key type.");
+    }
 
 }

@@ -24,71 +24,120 @@
 package io.github.connorhartley.guardian.util;
 
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.util.storage.DatabaseConnection;
-import io.github.connorhartley.guardian.util.storage.DatabaseQuery;
+import io.github.connorhartley.guardian.util.context.ValueTransform;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Optional;
+public class StorageValue<K, E> {
 
-public class StorageValue<T, K, V> {
-
-    private K key;
-    private K defaultKey;
-    private V value;
-    private V defaultValue;
-
+    private StorageKey<K> key;
     private String comment;
+    private E defaultValue;
+    private E value;
 
-    private TypeToken<V> typeToken;
+    private TypeToken<E> valueTypeToken;
 
     private boolean modified;
 
-    public StorageValue(K key, V value) {
-        this(key, value, null);
+    public StorageValue(StorageKey<K> key, String comment, E value) {
+        this(key, comment, value, null);
     }
 
-    public StorageValue(K key, V value, String comment) {
-        this(key, value, comment, null);
-    }
-
-    public StorageValue(K key, V value, String comment, TypeToken<V> typeToken) {
+    public StorageValue(StorageKey<K> key, String comment, E value, TypeToken<E> valueTypeToken) {
         this.key = key;
         this.comment = comment;
         this.defaultValue = value;
-        this.typeToken = typeToken;
+        this.valueTypeToken = valueTypeToken;
     }
 
-    public StorageValue<T, K, V> load(T storageDevice) {
-        if (storageDevice instanceof  CommentedConfigurationNode) {
-            Optional<V> internalValue = getInternalValue(storageDevice);
-            internalValue.ifPresent(v -> {
-                this.value = v;
-                save(storageDevice);
-            });
+    /* Storage Handler Methods. */
+
+    /**
+     * Initializes the storage handler in whatever way is needed.
+     *
+     * @param storageHandler A handler of storage.
+     * @param <T> A handler type.
+     * @return This class.
+     */
+    public <T> StorageValue<K, E> createStorage(T storageHandler) {
+        if (storageHandler instanceof ConfigurationNode) {
+            this.value = this.getInternalValue(storageHandler);
+            this.updateStorage(storageHandler);
         }
         return this;
     }
 
-    public StorageValue<T, K, V> save(T storageDevice) {
-        if (storageDevice instanceof  ConfigurationNode) {
-            setInternalValue(storageDevice);
+    /**
+     * Load the storage from the storage handler.
+     *
+     * @param storageHandler A handler of storage.
+     * @param <T> A handler type.
+     * @return This class.
+     */
+    public <T> StorageValue<K, E> loadStorage(T storageHandler) {
+        if (storageHandler instanceof ConfigurationNode) {
+            this.value = this.getInternalValue(storageHandler);
+            this.updateStorage(storageHandler);
         }
         return this;
     }
 
-    public StorageValue<T, K, V> query(T storageDevice) {
-        if (storageDevice instanceof DatabaseConnection) {
-            Optional<V> internalQueryValue = queryInternalValue((DatabaseConnection) storageDevice);
-            internalQueryValue.ifPresent(v -> {
-                this.value = v;
-            });
+    /**
+     * Update the storage from the storage handler.
+     *
+     * @param storageHandler A handler of storage.
+     * @param <T> A handler type.
+     * @return This class.
+     */
+    public <T> StorageValue<K, E> updateStorage(T storageHandler) {
+        if (storageHandler instanceof ConfigurationNode) {
+            this.setInternalValue(storageHandler);
         }
         return this;
+    }
+
+    /* Storage methods. */
+
+    public StorageKey<K> getKey() {
+        return this.key;
+    }
+
+    public void transformKey(ValueTransform<K> transform) {
+        this.key.set(transform.transform(this.key.get()));
+    }
+
+    public void setKey(K key) {
+        this.key.set(key);
+    }
+
+    public String getComment() {
+        return this.comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public E getValue() {
+        if (this.value == null) {
+            this.value = this.defaultValue;
+        }
+        return this.value;
+    }
+
+    public void transformValue(ValueTransform<E> transform) {
+        this.modified = true;
+        this.value = transform.transform(this.getValue());
+    }
+
+    public void setValue() {
+        this.modified = true;
+        this.value = value;
+    }
+
+    public TypeToken<E> getValueTypeToken() {
+        return this.valueTypeToken == null ? TypeToken.of((Class<E>) this.defaultValue.getClass()) : this.valueTypeToken;
     }
 
     public boolean isModified() {
@@ -99,109 +148,65 @@ public class StorageValue<T, K, V> {
         this.modified = modified;
     }
 
-    public K getKey() {
-        return this.key;
-    }
+    /* Internal Storage Values */
 
-    public void setKey(K key) {
-        this.key = key;
-    }
-
-    public Optional<String> getComment() {
-        if (this.comment != null) {
-            return Optional.of(this.comment);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public V getValue() {
-        if (this.value == null) {
-            this.value = this.defaultValue;
-        }
-        return this.value;
-    }
-
-    public void setValue(V value) {
-        this.modified = true;
-        this.value = value;
-    }
-
-    public TypeToken<V> getTypeToken() {
-        return this.typeToken == null ? TypeToken.of((Class<V>) this.defaultValue.getClass()) : this.typeToken;
-    }
-
-    private boolean setInternalValue(T storageDevice) {
-        if (storageDevice != null) {
-            ConfigurationNode node = ((CommentedConfigurationNode) storageDevice).getNode(this.key);
-            if(this.comment != null && node != null) {
-                ((CommentedConfigurationNode)node).setComment(this.comment);
+    private <T> void setInternalValue(T storageHandler) {
+        if (storageHandler instanceof ConfigurationNode) {
+            ConfigurationNode node = ((ConfigurationNode) storageHandler).getNode(this.key.get());
+            if (this.comment != null && node instanceof CommentedConfigurationNode) {
+                ((CommentedConfigurationNode) node).setComment(this.comment);
             }
 
             if (this.modified) {
-                if (this.typeToken != null) {
+                if (this.valueTypeToken != null) {
                     try {
-                        if (node != null) {
-                            node.setValue(this.typeToken, this.value);
-                        }
+                        node.setValue(this.valueTypeToken, this.value);
                     } catch (ObjectMappingException e) {
                         e.printStackTrace();
                     }
                 } else {
-                    if (node != null) {
-                        node.setValue(this.value);
-                    }
+                    node.setValue(this.value);
                 }
                 this.modified = false;
             }
-
-            return true;
         }
-        return false;
     }
 
-    private Optional<V> getInternalValue(T storageDevice) {
-        if (storageDevice != null) {
-            ConfigurationNode node = ((CommentedConfigurationNode) storageDevice).getNode(this.key);
-            if(node.isVirtual()) {
+    private <T> E getInternalValue(T storageHandler) {
+        if (storageHandler instanceof ConfigurationNode) {
+            ConfigurationNode node = ((ConfigurationNode) storageHandler).getNode(this.key.get());
+
+            if (node.isVirtual()) {
                 this.modified = true;
             }
 
-            if(this.comment != null) {
-                ((CommentedConfigurationNode)node).setComment(this.comment);
+            if (this.comment != null && node instanceof CommentedConfigurationNode) {
+                ((CommentedConfigurationNode) node).setComment(this.comment);
             }
 
             try {
-                if(typeToken != null)
-                    return Optional.of(node.getValue(this.typeToken, this.defaultValue));
-                else
-                    return Optional.of(node.getValue(new TypeToken<V>(defaultValue.getClass()){}, defaultValue));
-            } catch(Exception e) {
-                return Optional.of(this.defaultValue);
+                if (this.valueTypeToken != null) {
+                    return node.getValue(this.valueTypeToken, this.defaultValue);
+                } else {
+                    return node.getValue(new TypeToken<E>(this.defaultValue.getClass()) {}, this.defaultValue);
+                }
+            } catch (Exception e) {
+                return this.defaultValue;
             }
         }
-        return Optional.empty();
+        return null;
     }
 
-    private <T extends DatabaseConnection, K extends DatabaseQuery, V extends Object> Optional<V> queryInternalValue(T storageDevice) {
-        if (storageDevice != null && this.key instanceof DatabaseQuery) {
-            try {
-                PreparedStatement statement = storageDevice.getDataSource().getConnection().prepareStatement(((DatabaseQuery) this.key).getQuery());
-                if (this.value instanceof Boolean) {
-                    return Optional.of((V) Boolean.valueOf(statement.execute()));
-                } else if (this.value instanceof ResultSet) {
-                    ResultSet resultSet = statement.executeQuery();
-                    return Optional.of((V) resultSet);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+    public void serializeDefault(ConfigurationNode configurationNode) {
+        try {
+            if (valueTypeToken != null) {
+                configurationNode.setValue(valueTypeToken, this.defaultValue);
+            } else {
+                configurationNode.setValue(this.defaultValue);
             }
+        } catch (ObjectMappingException e) {
+            e.printStackTrace();
         }
-        return Optional.empty();
     }
 
 }
