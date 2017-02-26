@@ -181,7 +181,11 @@ public class Guardian implements ContextProvider {
         this.globalDetections = new GuardianDetections(this.moduleController);
         this.globalDetections.registerInternalModules();
 
-        if (this.loggingLevel > 1) getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
+        if (this.loggingLevel > 1 && this.moduleController.getModules().size() == 1) {
+            getLogger().info("Discovered " + this.moduleController.getModules().size() + " module.");
+        } else if (this.loggingLevel > 1) {
+            getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
+        }
 
         this.moduleController.enableModules(moduleWrapper -> {
             if (this.globalConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
@@ -204,8 +208,6 @@ public class Guardian implements ContextProvider {
                     }
                 });
 
-        this.globalConfiguration.load();
-
         this.globalConfiguration.update();
     }
 
@@ -215,7 +217,21 @@ public class Guardian implements ContextProvider {
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();
 
-        getLogger().info(this.moduleController.getModules().size() + " detections are protecting you're server!");
+        this.globalConfiguration.update();
+
+        int loadedModules = 0;
+
+        for (ModuleWrapper moduleWrapper : this.moduleController.getModules()) {
+            if (moduleWrapper.isEnabled()) {
+                loadedModules += 1;
+            }
+        }
+
+        if (loadedModules == 1) {
+            getLogger().info(loadedModules + " detection is protecting your server!");
+        } else {
+            getLogger().info(loadedModules + " detections are protecting your server!");
+        }
     }
 
     @Listener

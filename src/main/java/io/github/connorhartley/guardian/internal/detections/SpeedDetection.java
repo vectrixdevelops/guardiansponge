@@ -27,7 +27,6 @@ import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import com.me4502.precogs.detection.CommonDetectionTypes;
-import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -39,7 +38,6 @@ import io.github.connorhartley.guardian.util.storage.StorageConsumer;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -100,7 +98,7 @@ public class SpeedDetection extends Detection implements StorageConsumer {
     }
 
     @Override
-    public StorageValue[] getStorageNodes() {
-        return new StorageValue[0];
+    public StorageValue<?, ?>[] getStorageNodes() {
+        return new StorageValue<?, ?>[0];
     }
 }
