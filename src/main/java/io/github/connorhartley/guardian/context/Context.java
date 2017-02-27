@@ -21,45 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.context;
 
-import org.spongepowered.api.entity.living.player.User;
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.util.ContextValue;
 
+import java.util.HashMap;
 import java.util.Optional;
 
-public abstract class Check {
+public abstract class Context {
 
-    private final CheckProvider checkProvider;
-    private final User user;
+    private final Guardian plugin;
+    private final String id;
 
-    private boolean checking;
-
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
-        this.user = user;
+    public Context(Guardian plugin, String id) {
+        this.plugin = plugin;
+        this.id = id;
     }
 
-    public abstract void update();
-
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
+    public Guardian getPlugin() {
+        return this.plugin;
     }
 
-    public boolean isChecking() {
-        return this.checking;
+    public String getName() {
+        return this.id;
     }
 
-    public CheckProvider getProvider() {
-        return this.checkProvider;
-    }
+    public abstract HashMap<String, ContextValue> getValues();
 
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
-    }
+    public abstract Optional<TimeContext> asTimed();
 
 }

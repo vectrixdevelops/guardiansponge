@@ -23,6 +23,10 @@
  */
 package io.github.connorhartley.guardian.detection;
 
+import com.me4502.precogs.detection.CommonDetectionTypes;
+import com.me4502.precogs.detection.DetectionType;
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 
 import java.util.List;
@@ -30,24 +34,47 @@ import java.util.List;
 /**
  * Detection
  *
- * Represents a cheat / hack / exploit module that is loaded
+ * Represents a cheat / hack / exploit internal that is loaded
  * by the global detection manager.
  */
-public interface Detection {
+public abstract class Detection extends DetectionType {
+
+    public Detection(String id, String name) {
+        super(id, name);
+    }
 
     /**
      * On Construction
      *
-     * <p>Invoked when the module is enabled.</p>
+     * <p>Invoked when the internal is enabled.</p>
      */
-    void onConstruction();
+    public abstract void onConstruction();
 
     /**
      * On Deconstruction
      *
-     * <p>Invoked when the module is disabled.</p>
+     * <p>Invoked when the internal is disabled.</p>
      */
-    void onDeconstruction();
+    public abstract void onDeconstruction();
+
+    /**
+     * Get Context Provider
+     *
+     * <p>Returns the {@link ContextProvider} that this detection manages.</p>
+     *
+     * @return The detection context provider
+     */
+    public abstract ContextProvider getContextProvider();
+
+    /**
+     * Is Ready
+     *
+     * <p>True when the detection has finished loading and false when it is not,
+     * or being deconstructed.</p>
+     *
+     * @return True when ready, false when not
+     */
+    public abstract boolean isReady();
 
     /**
      * Get Checks
@@ -56,6 +83,15 @@ public interface Detection {
      *
      * @return Check providers for this detection
      */
-    List<CheckProvider> getChecks();
+    public abstract List<CheckProvider> getChecks();
+
+    /**
+     * Get Category
+     *
+     * <p>Returns the {@link CommonDetectionTypes.Category} for this {@link Detection}.</p>
+     *
+     * @return This detection category
+     */
+    public abstract CommonDetectionTypes.Category getCategory();
 
 }

@@ -23,11 +23,13 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.context.ContextProvider;
+import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
@@ -42,23 +44,28 @@ import java.util.List;
  */
 public class SequenceBuilder {
 
-    private SequenceResult.Builder sequenceResult;
+    private ContextProvider contextProvider;
+    private ContextBuilder contextBuilder = ContextBuilder.builder().build();
+
+    private SequenceReport sequenceReport;
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder() {
-        this(null);
+    public SequenceBuilder context(ContextProvider contextProvider, ContextBuilder contextBuilder) {
+        this.contextProvider = contextProvider;
+
+        // TODO: Builder should be refactored.
+        this.contextBuilder = ContextBuilder.builder().of(this.contextBuilder).of(contextBuilder).build();
+        return this;
     }
 
-    public SequenceBuilder(SequenceResult.Builder sequenceResult) {
-        if (sequenceResult == null) {
-            this.sequenceResult = new SequenceResult.Builder();
-        } else {
-            this.sequenceResult = sequenceResult;
-        }
+    public SequenceBuilder report(SequenceReport sequenceReport) {
+        this.sequenceReport = (sequenceReport == null) ? SequenceReport.builder().build() : sequenceReport;
+        return this;
     }
 
     public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(clazz, this.sequenceResult));
+        if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
+        return action(new Action<>(clazz, this.sequenceReport));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
@@ -68,14 +75,15 @@ public class SequenceBuilder {
     public <T extends Event> ActionBuilder<T> action(Action<T> action) {
         this.actions.add(action);
 
-        return new ActionBuilder<>(this, action, this.sequenceResult);
+        return new ActionBuilder<>(this, action, action.getSequenceReport());
     }
 
-    public SequenceBlueprint build(CheckProvider provider) {
-        return new SequenceBlueprint(provider) {
+    public SequenceBlueprint build(CheckProvider checkProvider) {
+        return new SequenceBlueprint(checkProvider) {
             @Override
             public Sequence create(User user) {
-                return new Sequence(user, provider, actions, sequenceResult);
+                if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
+                return new Sequence(user, this, checkProvider, actions, sequenceReport, contextProvider, contextBuilder);
             }
         };
     }

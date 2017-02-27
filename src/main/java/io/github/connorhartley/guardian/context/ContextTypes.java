@@ -21,45 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.context;
 
-import org.spongepowered.api.entity.living.player.User;
+public class ContextTypes {
 
-import java.util.Optional;
+    /* Block Contexts */
 
-public abstract class Check {
+    public static String BLOCK_SPEED = "block_speed_context";
 
-    private final CheckProvider checkProvider;
-    private final User user;
+    /* User Contexts */
 
-    private boolean checking;
+    public static String PLAYER_CONTROL = "player_control_context";
 
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
-        this.user = user;
-    }
-
-    public abstract void update();
-
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
-    }
-
-    public boolean isChecking() {
-        return this.checking;
-    }
-
-    public CheckProvider getProvider() {
-        return this.checkProvider;
-    }
-
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
-    }
+    public static String PLAYER_CONTROL_SPEED = "player_control_speed_context";
 
 }

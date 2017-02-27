@@ -23,58 +23,31 @@
  */
 package io.github.connorhartley.guardian.sequence.report;
 
-import java.util.List;
+/**
+ * Report Type
+ *
+ * Contains types of data that can be stored in a {@link SequenceReport}.
+ */
+public enum ReportType {
 
-public class SequencePoint {
+    INFORMATION(String.class),
+    SEVERITY(Double.class),
+    TEST(Boolean.class),
+    FLAG(null),
+    UNDEFINED(null);
 
-    private final List<String> lines;
-    private final boolean pass;
+    private Class<?> valueType;
 
-    public SequencePoint(Builder builder) {
-        this.lines = builder.lines;
-        this.pass = builder.pass;
+    ReportType(Class<?> type) {
+        this.valueType = type;
     }
 
-    public boolean hasPassed() {
-        return this.pass;
+    public Class<?> getType() {
+        return this.valueType;
     }
 
-    public List<String> getDescription() {
-        return this.lines;
-    }
-
-    public static class Builder {
-
-        private List<String> lines;
-        private boolean pass;
-
-        public Builder() {}
-
-        public Builder of(SequencePoint sequencePoint) {
-            this.lines = sequencePoint.lines;
-            this.pass = sequencePoint.pass;
-            return this;
-        }
-
-        public Builder setPass(boolean pass) {
-            this.pass = pass;
-            return this;
-        }
-
-        public Builder addDescriptions(List<String> lines) {
-            this.lines.addAll(lines);
-            return this;
-        }
-
-        public Builder addDescription(String line) {
-            this.lines.add(line);
-            return this;
-        }
-
-        public SequencePoint build() {
-            return new SequencePoint(this);
-        }
-
+    public boolean isType(Object comparison) {
+        return this.valueType.isAssignableFrom(comparison.getClass());
     }
 
 }

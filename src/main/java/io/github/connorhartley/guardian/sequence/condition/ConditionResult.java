@@ -21,45 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.sequence.condition;
 
-import org.spongepowered.api.entity.living.player.User;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 
-import java.util.Optional;
+public class ConditionResult {
 
-public abstract class Check {
+    private final boolean pass;
+    private final SequenceReport sequenceReport;
 
-    private final CheckProvider checkProvider;
-    private final User user;
 
-    private boolean checking;
-
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
-        this.user = user;
+    public ConditionResult(Boolean pass, SequenceReport sequenceReport) {
+        this.pass = pass;
+        this.sequenceReport = sequenceReport;
     }
 
-    public abstract void update();
-
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
+    public boolean hasPassed() {
+        return this.pass;
     }
 
-    public boolean isChecking() {
-        return this.checking;
-    }
-
-    public CheckProvider getProvider() {
-        return this.checkProvider;
-    }
-
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
+    public SequenceReport getSequenceReport() {
+        return this.sequenceReport;
     }
 
 }

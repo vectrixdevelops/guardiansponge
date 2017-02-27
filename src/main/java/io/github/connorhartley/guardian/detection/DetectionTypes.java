@@ -33,6 +33,6 @@ import java.util.Optional;
  */
 public final class DetectionTypes {
 
-    public static Optional<Detection> DUMMY_DETECTION = Optional.empty();
+    public static Optional<Detection> SPEED_DETECTION = Optional.empty();
 
 }

@@ -21,37 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.module;
+package io.github.connorhartley.guardian.service;
 
-import com.google.inject.Inject;
-import com.me4502.modularframework.module.Module;
-import com.me4502.modularframework.module.guice.ModuleConfiguration;
-import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
-import ninja.leaping.configurate.ConfigurationNode;
+import com.me4502.precogs.detection.DetectionType;
+import com.me4502.precogs.service.AntiCheatService;
+import com.me4502.precogs.service.BypassTicket;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 
 import java.util.List;
+import java.util.Optional;
 
-@Module(moduleId = "dummydetection", moduleName = "DummyDetection", moduleVersion = "0.0.1", onEnable = "onConstruction", onDisable = "onDeconstruction")
-public class DummyDetection implements Detection {
-
-    @Inject
-    @ModuleConfiguration
-    public ConfigurationNode configurationNode;
+public class GuardianAntiCheatService implements AntiCheatService {
 
     @Override
-    public void onConstruction() {
-
+    public Optional<BypassTicket> requestBypassTicket(Player player, List<DetectionType> list) {
+        return Optional.of(new GuardianBypassTicket(player, list));
     }
 
     @Override
-    public void onDeconstruction() {
-
+    public double getViolationLevel(User user, DetectionType detectionType) {
+        // TODO
+        return 0;
     }
 
     @Override
-    public List<CheckProvider> getChecks() {
-        return null;
+    public void logViolation(User user, DetectionType detectionType, double v) {
+        // TODO
     }
-
 }

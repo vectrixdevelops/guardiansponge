@@ -23,22 +23,24 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.context.Context;
+import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * Sequence
@@ -51,9 +53,15 @@ public class Sequence {
 
     private final User user;
     private final CheckProvider checkProvider;
+    private final ContextProvider contextProvider;
+    private final ContextBuilder contextBuilder;
 
-    private SequenceResult.Builder sequenceResult;
+    private ArrayList<Context> contexts = new ArrayList<>();
 
+    private SequenceBlueprint sequenceBlueprint;
+    private SequenceReport sequenceReport;
+
+    private final List<Action> previousActions = new ArrayList<>();
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
     private final List<Event> incompleteEvents = new ArrayList<>();
@@ -63,20 +71,24 @@ public class Sequence {
     private boolean cancelled = false;
     private boolean finished = false;
 
-    private Iterator<Action> iterator;
+    private int queue = 0;
 
-    public Sequence(User user, CheckProvider checkProvider, List<Action> actions, SequenceResult.Builder sequenceResult) {
+    public Sequence(User user, SequenceBlueprint sequenceBlueprint, CheckProvider checkProvider, List<Action> actions,
+                    SequenceReport sequenceReport, ContextProvider contextProvider, ContextBuilder contextBuilder) {
         this.user = user;
+        this.sequenceBlueprint = sequenceBlueprint;
         this.checkProvider = checkProvider;
+        this.sequenceReport = sequenceReport;
+        this.contextProvider = contextProvider;
+        this.contextBuilder = contextBuilder;
         this.actions.addAll(actions);
-        this.sequenceResult = sequenceResult;
     }
 
     /**
      * Check
      *
      * <p>Runs through the list of {@link Action}s and their {@link Condition}s and
-     * carries the {@link SequenceResult.Builder} through each allowing it to be
+     * carries the {@link SequenceReport} through each allowing it to be
      * updated through the chain. {@link Action}s that fail will fire the {@link SequenceFailEvent}.
      * {@link Action}s that succeed will fire the {@link SequenceSucceedEvent}.</p>
      *
@@ -86,72 +98,70 @@ public class Sequence {
      * @return True if the sequence should continue, false if the sequence should stop
      */
     <T extends Event> boolean check(User user, T event) {
-        this.iterator = this.actions.iterator();
+        Iterator<Action> iterator = this.actions.iterator();
 
         if (iterator.hasNext()) {
             Action action = iterator.next();
 
+            this.queue += 1;
+
             long now = System.currentTimeMillis();
 
-            if (!action.getEvent().equals(event.getClass())) {
-                action.updateResult(this.sequenceResult);
+            action.updateReport(this.sequenceReport);
+
+            if (!action.getEvent().isAssignableFrom(event.getClass())) {
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
 
-            this.sequenceResult = action.getSequenceResult();
-
-            if (this.last + ((action.getDelay() / 20) * 1000) > now) {
-                action.updateResult(this.sequenceResult);
+            if (this.queue != 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
             }
 
-            this.sequenceResult = action.getSequenceResult();
-
-            if (this.last + ((action.getExpire() / 20) * 1000) < now) {
-                action.updateResult(this.sequenceResult);
+            if (this.queue != 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
                 return fail(user, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
 
-            this.sequenceResult = action.getSequenceResult();
-
             Action<T> typeAction = (Action<T>) action;
 
-            if (!typeAction.testConditions(user, event)) {
-                action.updateResult(this.sequenceResult);
+            this.testContext(user, event);
+
+            this.contexts.forEach(typeAction::addContext);
+
+            if (!typeAction.testConditions(user, event, this.last)) {
                 return fail(user, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
-            this.iterator.remove();
+            this.sequenceReport = action.getSequenceReport();
 
-            typeAction.updateResult(this.sequenceResult);
-            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", action.getSequenceResult().build())));
-            typeAction.succeed(user, event);
+            SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, user, event, Cause.of(NamedCause.of("ACTION", this.sequenceReport)));
+            Sponge.getEventManager().post(attempt);
 
-            this.sequenceResult = action.getSequenceResult();
+            long previousLast = this.last;
+
+            this.last = System.currentTimeMillis();
+            this.completeEvents.add(event);
+            iterator.remove();
+            typeAction.updateReport(this.sequenceReport);
+            typeAction.succeed(user, event, previousLast);
+            this.sequenceReport = action.getSequenceReport();
+
+            this.previousActions.add(action);
 
             if (!iterator.hasNext()) {
                 this.finished = true;
             }
-
-            return true;
         }
-        return true;
-    }
 
-    // Called when the player meets the action requirements.
-    boolean pass(User user, Event event, Cause cause) {
-        this.last = System.currentTimeMillis();
-
-        SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, user, event, cause);
-        Sponge.getEventManager().post(attempt);
-
-        this.completeEvents.add(event);
         return true;
     }
 
     // Called when the player does not meet the requirements.
     boolean fail(User user, Event event, Action action, Cause cause) {
-        this.cancelled = action.fail(user, event);
+        action.updateReport(this.sequenceReport);
+
+        this.cancelled = action.fail(user, event, this.last);
+
+        this.sequenceReport = action.getSequenceReport();
 
         SequenceFailEvent attempt = new SequenceFailEvent(this, user, event, cause);
         Sponge.getEventManager().post(attempt);
@@ -160,15 +170,51 @@ public class Sequence {
         return false;
     }
 
+    <T extends Event> void testContext(User user, T event) {
+        if (this.contexts.isEmpty()) {
+            this.contextBuilder.getContexts().forEach(actionContextClass -> {
+                try {
+                    this.contextProvider.getContextController().construct(actionContextClass, user, event).ifPresent(context -> {
+                        System.out.println("Add context.");
+                        context.asTimed().ifPresent(timed -> timed.start(user, event));
+                        this.contexts.add(context);
+                    });
+                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
+
+    /**
+     * Get Context
+     *
+     * <p>Returns a list of {@link Context}s that have been analysed.</p>
+     *
+     * @return A list of contexts
+     */
+    List<Context> getContext() {
+        return this.contexts;
+    }
+
     /**
      * Get Sequence Result
      *
-     * <p>Returns the current {@link SequenceResult.Builder} for this {@link Sequence}.</p>
+     * <p>Returns the current {@link SequenceReport} for this {@link Sequence}.</p>
      *
-     * @return This {@link SequenceResult.Builder}
+     * @return This {@link SequenceReport}
      */
-    SequenceResult.Builder getSequenceResult() {
-        return this.sequenceResult;
+    SequenceReport getSequenceReport() {
+        return this.sequenceReport;
+    }
+
+    /**
+     * Get Sequence Blueprint
+     *
+     * @return
+     */
+    SequenceBlueprint getSequenceBlueprint() {
+        return this.sequenceBlueprint;
     }
 
     /**
@@ -246,6 +292,17 @@ public class Sequence {
      */
     public List<Event> getCompleteEvents() {
         return this.completeEvents;
+    }
+
+    /**
+     * Get Incomplete Events
+     *
+     * <p>Returns a {@link List} of {@link Event}s that have failed to be completed.</p>
+     *
+     * @return A {@link List} of failed {@link Event}s
+     */
+    public List<Event> getIncompleteEvents() {
+        return this.incompleteEvents;
     }
 
 }

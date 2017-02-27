@@ -24,31 +24,22 @@
 package io.github.connorhartley.guardian;
 
 import com.me4502.modularframework.ModuleController;
+import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 
 public class GuardianDetections {
 
-    private final Guardian plugin;
     private final ModuleController moduleController;
 
     private DetectionTypes detectionTypes;
 
-    protected GuardianDetections(Guardian plugin, ModuleController moduleController) {
-        this.plugin = plugin;
+    GuardianDetections(ModuleController moduleController) {
         this.moduleController = moduleController;
         this.detectionTypes = new DetectionTypes();
     }
 
-    public void registerInternalModules() {
-        // Register detections here.
-    }
-
-    public void registerModule(String modulePath) {
-        this.moduleController.registerModule(modulePath);
-    }
-
-    public DetectionTypes getDetectionTypes() {
-        return this.detectionTypes;
+    void registerInternalModules() {
+        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
     }
 
 }

@@ -23,26 +23,29 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import io.github.connorhartley.guardian.context.ContextProvider;
+import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.report.SequenceResult;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.event.Event;
 
 public class ActionBuilder<T extends Event> {
 
     private final SequenceBuilder builder;
-    private final Action action;
-    private final SequenceResult.Builder sequenceResult;
+    private final Action<T> action;
+    private final SequenceReport sequenceReport;
 
-    public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action, SequenceResult.Builder sequenceResult) {
+    public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action, SequenceReport sequenceReport) {
         this.builder = sequenceBuilder;
         this.action = action;
-        this.sequenceResult = sequenceResult;
+        this.sequenceReport = sequenceReport;
     }
 
-    public ActionBuilder<T> condition(Condition<T> condition) {
+    public ActionBuilder<T> condition(Condition condition) {
         this.action.addCondition(condition);
         return this;
     }
@@ -67,11 +70,11 @@ public class ActionBuilder<T extends Event> {
         return this;
     }
 
-    public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(clazz, this.sequenceResult));
+    public ActionBuilder<T> action(Class<T> clazz) {
+        return action(new Action<>(clazz, this.sequenceReport));
     }
 
-    public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> blueprint) {
+    public ActionBuilder<T> action(ActionBlueprint<T> blueprint) {
         return action(blueprint.create());
     }
 
@@ -79,8 +82,8 @@ public class ActionBuilder<T extends Event> {
         return this.builder.action(action);
     }
 
-    public SequenceBlueprint build(CheckProvider provider) {
-        return this.builder.build(provider);
+    public SequenceBlueprint build(CheckProvider checkProvider) {
+        return this.builder.build(checkProvider);
     }
 
 }

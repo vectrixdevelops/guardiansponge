@@ -21,45 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.service;
 
-import org.spongepowered.api.entity.living.player.User;
+import com.me4502.precogs.detection.DetectionType;
+import com.me4502.precogs.service.BypassTicket;
+import org.spongepowered.api.entity.living.player.Player;
 
-import java.util.Optional;
+import java.util.List;
 
-public abstract class Check {
+public class GuardianBypassTicket implements BypassTicket {
 
-    private final CheckProvider checkProvider;
-    private final User user;
+    private Player player;
+    private List<DetectionType> detectionTypes;
 
-    private boolean checking;
-
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
-        this.user = user;
+    public GuardianBypassTicket(Player player, List<DetectionType> detectionTypes) {
+        this.player = player;
+        this.detectionTypes = detectionTypes;
+        // TODO Disable the detections.
     }
 
-    public abstract void update();
-
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
+    @Override
+    public Player getPlayer() {
+        return this.player;
     }
 
-    public boolean isChecking() {
-        return this.checking;
+    @Override
+    public List<DetectionType> getDetectionTypes() {
+        return this.detectionTypes;
     }
 
-    public CheckProvider getProvider() {
-        return this.checkProvider;
+    @Override
+    public void close() {
+        // TODO Enable the detections.
     }
-
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
-    }
-
 }

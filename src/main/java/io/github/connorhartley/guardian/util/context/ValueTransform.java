@@ -21,45 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.util.context;
 
-import org.spongepowered.api.entity.living.player.User;
+public interface ValueTransform<E> {
 
-import java.util.Optional;
-
-public abstract class Check {
-
-    private final CheckProvider checkProvider;
-    private final User user;
-
-    private boolean checking;
-
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
-        this.user = user;
-    }
-
-    public abstract void update();
-
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
-    }
-
-    public boolean isChecking() {
-        return this.checking;
-    }
-
-    public CheckProvider getProvider() {
-        return this.checkProvider;
-    }
-
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
-    }
+     E transform(E oldValue);
 
 }

@@ -21,45 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian;
 
-import org.spongepowered.api.entity.living.player.User;
+import io.github.connorhartley.guardian.context.ContextController;
+import io.github.connorhartley.guardian.context.ContextTypes;
+import io.github.connorhartley.guardian.internal.contexts.environment.block.BlockSpeedContext;
+import io.github.connorhartley.guardian.internal.contexts.user.control.PlayerControlContext;
+import io.github.connorhartley.guardian.internal.contexts.user.control.PlayerControlSpeedContext;
 
-import java.util.Optional;
+public class GuardianContexts {
 
-public abstract class Check {
+    private final ContextController contextController;
 
-    private final CheckProvider checkProvider;
-    private final User user;
-
-    private boolean checking;
-
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
-        this.user = user;
+    GuardianContexts(ContextController contextController) {
+        this.contextController = contextController;
     }
 
-    public abstract void update();
-
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
-    }
-
-    public boolean isChecking() {
-        return this.checking;
-    }
-
-    public CheckProvider getProvider() {
-        return this.checkProvider;
-    }
-
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
+    void registerInternalContexts() {
+        this.contextController.registerContext(ContextTypes.BLOCK_SPEED, BlockSpeedContext.class);
+        this.contextController.registerContext(ContextTypes.PLAYER_CONTROL, PlayerControlContext.class);
+        this.contextController.registerContext(ContextTypes.PLAYER_CONTROL_SPEED, PlayerControlSpeedContext.class);
     }
 
 }

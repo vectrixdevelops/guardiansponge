@@ -26,8 +26,12 @@ package io.github.connorhartley.guardian;
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
-import com.me4502.modularframework.exception.ModuleNotInstantiatedException;
 import com.me4502.modularframework.module.ModuleWrapper;
+import com.me4502.precogs.detection.DetectionType;
+import com.me4502.precogs.service.AntiCheatService;
+import io.github.connorhartley.guardian.context.Context;
+import io.github.connorhartley.guardian.context.ContextController;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -35,21 +39,24 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
+import io.github.connorhartley.guardian.sequence.action.Action;
+import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
@@ -62,9 +69,12 @@ import java.io.File;
         description = "An extensible anticheat plugin for Sponge.",
         authors = {
                 "Connor Hartley (vectrix)"
-        }
+        },
+        dependencies = @Dependency(
+                id = "precogs"
+        )
 )
-public class Guardian {
+public class Guardian implements ContextProvider {
 
     /* Logger */
 
@@ -74,6 +84,8 @@ public class Guardian {
     public Logger getLogger() {
         return this.logger;
     }
+
+    private int loggingLevel = 2;
 
     /* Plugin Instance */
 
@@ -100,13 +112,11 @@ public class Guardian {
         return this.configurationOptions;
     }
 
-    private File pluginConfigDirectory = this.pluginConfig.getParentFile();
-
     /* Module System */
 
-    private ModuleController moduleController;
+    private ModuleController<Guardian> moduleController;
 
-    public ModuleController getModuleController() {
+    public ModuleController<Guardian> getModuleController() {
         return this.moduleController;
     }
 
@@ -114,33 +124,42 @@ public class Guardian {
 
     private GuardianConfiguration globalConfiguration;
 
+    /* Contexts */
+
+    private GuardianContexts globalContexts;
+
     /* Detections */
 
-    private GuardianDetections internalDetections;
+    private GuardianDetections globalDetections;
 
-    /* Check / Sequence */
+    /* Context / Check / Sequence */
 
+    private ContextController contextController;
     private CheckController checkController;
     private SequenceController sequenceController;
 
+    private ContextController.ContextControllerTask contextControllerTask;
     private CheckController.CheckControllerTask checkControllerTask;
     private SequenceController.SequenceControllerTask sequenceControllerTask;
 
     /* Game Events */
 
     @Listener
-    public void onGameInitialize(GameInitializationEvent event) {
-        getLogger().info("Starting Guardian AntiCheat.");
+    public void onGamePreInitialize(GamePreInitializationEvent event) {
+        getLogger().info("#---# Starting Guardian AntiCheat #---#");
+
+        Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 
         Sponge.getDataManager().register(OffenseTagData.class, OffenseTagData.Immutable.class, new OffenseTagData.Builder());
         Sponge.getDataManager().register(SequenceHandlerData.class, SequenceHandlerData.Immutable.class, new SequenceHandlerData.Builder());
-    }
 
-    @Listener
-    public void onServerStarting(GameStartingServerEvent event) {
+        getLogger().info("Registering controllers.");
+
+        this.contextController = new ContextController(this);
         this.checkController = new CheckController(this);
         this.sequenceController = new SequenceController(this, this.checkController);
 
+        this.contextControllerTask = new ContextController.ContextControllerTask(this, this.contextController);
         this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
         this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
 
@@ -148,54 +167,72 @@ public class Guardian {
 
         this.globalConfiguration = new GuardianConfiguration(this, this.pluginConfig, this.pluginConfigManager);
         this.configurationOptions = ConfigurationOptions.defaults();
-        this.globalConfiguration.load();
+        this.globalConfiguration.create();
+
+        this.loggingLevel = this.globalConfiguration.configLoggingLevel.getValue();
 
         getLogger().info("Discovering internal detections.");
 
         this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
-        this.moduleController.setConfigurationDirectory(this.pluginConfigDirectory);
-        this.moduleController.setConfigurationOptions(this.configurationOptions);
-        this.internalDetections = new GuardianDetections(this, this.moduleController);
+        this.moduleController.setPluginContainer(this.pluginContainer);
 
-        if (System.getProperty("TEST_GUARDIAN").contains("TRUE")) this.internalDetections
-                .registerModule("io.github.connorhartley.guardian.module.DummyDetection");
+        this.globalContexts = new GuardianContexts(this.contextController);
+        this.globalContexts.registerInternalContexts();
 
-        this.internalDetections.registerInternalModules();
+        this.globalDetections = new GuardianDetections(this.moduleController);
+        this.globalDetections.registerInternalModules();
 
-        getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
+        if (this.loggingLevel > 1 && this.moduleController.getModules().size() == 1) {
+            getLogger().info("Discovered " + this.moduleController.getModules().size() + " module.");
+        } else if (this.loggingLevel > 1) {
+            getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
+        }
 
         this.moduleController.enableModules(moduleWrapper -> {
             if (this.globalConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
-                getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                if (this.loggingLevel > 1) getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
                 return true;
             }
             return false;
         });
 
         this.moduleController.getModules().stream()
-                .filter(moduleWrapper -> !moduleWrapper.isEnabled())
+                .filter(ModuleWrapper::isEnabled)
                 .forEach(moduleWrapper -> {
-                    try {
-                        if (moduleWrapper.getModule() instanceof Detection) {
-                            Detection detection = (Detection) moduleWrapper.getModule();
+                    if (!moduleWrapper.getModule().isPresent()) return;
+                    if (moduleWrapper.getModule().get() instanceof Detection) {
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
-                            detection.getChecks().forEach(check -> this.getSequenceController().register(check));
-                        }
-                    } catch(ModuleNotInstantiatedException e) {
-                        getLogger().error("Failed to get module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                        detection.getChecks().forEach(check -> this.getSequenceController().register(check));
+
+//                        Sponge.getRegistry().register(DetectionType.class, detection);
                     }
                 });
 
         this.globalConfiguration.update();
-
     }
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
+        this.contextControllerTask.start();
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();
 
-        getLogger().info("Guardian AntiCheat is ready.");
+        this.globalConfiguration.update();
+
+        int loadedModules = 0;
+
+        for (ModuleWrapper moduleWrapper : this.moduleController.getModules()) {
+            if (moduleWrapper.isEnabled()) {
+                loadedModules += 1;
+            }
+        }
+
+        if (loadedModules == 1) {
+            getLogger().info(loadedModules + " detection is protecting your server!");
+        } else {
+            getLogger().info(loadedModules + " detections are protecting your server!");
+        }
     }
 
     @Listener
@@ -204,27 +241,27 @@ public class Guardian {
 
         this.sequenceControllerTask.stop();
         this.checkControllerTask.stop();
+        this.contextControllerTask.stop();
 
         this.sequenceController.forceCleanup();
 
         this.moduleController.getModules().stream()
                 .filter(ModuleWrapper::isEnabled)
                 .forEach(moduleWrapper -> {
-                    try {
-                        if (moduleWrapper.getModule() instanceof Detection) {
-                            Detection detection = (Detection) moduleWrapper.getModule();
+                    if (!moduleWrapper.getModule().isPresent()) return;
+                    if (moduleWrapper.getModule().get() instanceof Detection) {
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
-                            detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
-                        }
-                    } catch(ModuleNotInstantiatedException e) {
-                        getLogger().error("Failed to get module: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                        detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
                     }
                 });
 
         this.moduleController.disableModules(moduleWrapper -> {
-            getLogger().info("Disabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+            if (this.loggingLevel > 1) getLogger().info("Disabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
             return true;
         });
+
+        this.contextController.unregisterContexts();
 
         getLogger().info("Stopped Guardian AntiCheat.");
     }
@@ -235,8 +272,32 @@ public class Guardian {
     /* Player Events */
 
     @Listener
-    public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First User user) {
-        this.sequenceController.forceCleanup(user);
+    public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First Player player) {
+        this.sequenceController.forceCleanup(player);
+    }
+
+    /**
+     * Get Logging Level
+     *
+     * <p>Returns the logging level.</p>
+     *
+     * @return The logging level
+     */
+    public int getLoggingLevel() {
+        return this.loggingLevel;
+    }
+
+    /**
+     * Set Logging Level
+     *
+     * <p>Sets the logging level.</p>
+     *
+     * @param level The logging level
+     */
+    public void setLoggingLevel(int level) {
+        if (level > 0 && level < 4) {
+            this.loggingLevel = level;
+        }
     }
 
     /**
@@ -258,7 +319,23 @@ public class Guardian {
      * @return The guardian built-in detections
      */
     public GuardianDetections getGlobalDetections() {
-        return this.internalDetections;
+        return this.globalDetections;
+    }
+
+    @Override
+    public ContextController getContextController() {
+        return this.contextController;
+    }
+
+    /**
+     * Get Context Controller
+     *
+     * <p>Returns the {@link ContextController} for controlling the running of {@link Context}s for {@link Action}s.</p>
+     *
+     * @return The context controller
+     */
+    public CheckController getCheckController() {
+        return this.checkController;
     }
 
     /**

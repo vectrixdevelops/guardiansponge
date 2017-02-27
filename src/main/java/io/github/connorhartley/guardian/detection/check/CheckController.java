@@ -35,19 +35,18 @@ import org.spongepowered.api.scheduler.Task;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 public class CheckController {
 
     private final List<Check> checks = new CopyOnWriteArrayList<>();
-    private final Object plugin;
+    private final Guardian plugin;
 
-    public CheckController(Object plugin) {
+    public CheckController(Guardian plugin) {
         this.plugin = plugin;
     }
 
-    public void post(CheckProvider checkProvider, Sequence sequence, User user) {
-        Check check = checkProvider.createInstance(this, sequence, user);
+    public void post(CheckProvider checkProvider, User user) {
+        Check check = checkProvider.createInstance(user);
 
         CheckBeginEvent attempt = new CheckBeginEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
         Sponge.getEventManager().post(attempt);

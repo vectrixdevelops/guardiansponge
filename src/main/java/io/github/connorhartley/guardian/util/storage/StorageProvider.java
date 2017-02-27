@@ -31,7 +31,9 @@ public interface StorageProvider<T> {
 
     void update();
 
-    boolean exists();
+    default boolean exists() {
+        return false;
+    }
 
     T getLocation();
 

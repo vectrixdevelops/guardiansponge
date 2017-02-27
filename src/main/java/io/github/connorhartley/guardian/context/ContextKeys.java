@@ -21,29 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.data;
+package io.github.connorhartley.guardian.context;
 
-import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.detection.Offense;
-import io.github.connorhartley.guardian.sequence.Sequence;
-import org.spongepowered.api.data.key.Key;
-import org.spongepowered.api.data.value.mutable.Value;
+public class ContextKeys {
 
-import java.util.List;
+    /* Control Speed | Used in: PlayerControlSpeedContext */
 
-import static org.spongepowered.api.data.DataQuery.of;
-import static org.spongepowered.api.data.key.KeyFactory.makeSingleKey;
+    public static String CONTROL_SPEED = "control_speed";
 
-public class Keys {
+    public static String CONTROL_SPEED_STATE = "control_speed_state";
 
-    /* Handler : Attached to the user to represent handler data. Used internally only. */
+    /* Speed Amplifier | Used in: BlockSpeedContext */
 
-    public static Key<Value<List<Sequence>>> GUARDIAN_SEQUENCE_HANDLER = makeSingleKey(new TypeToken<List<Sequence>>() {},
-            new TypeToken<Value<List<Sequence>>>() {}, of("GuardianSequenceHandler"), "guardian:guardiansequencehandler", "GuardianSequenceHandler");
+    public static String SPEED_AMPLIFIER = "speed_amplifier";
 
-    /* Tags : Attached to the player to represent some "type" data. */
-
-    public static Key<Value<Offense>> GUARDIAN_OFFENSE_TAG = makeSingleKey(TypeToken.of(Offense.class),
-            new TypeToken<Value<Offense>>() {}, of("GuardianOffenseTag"), "guardian:guardianoffensetag", "GuardianOffenseTag");
+    public static String SPEED_AMPLIFIER_BLOCKS = "speed_amplifier_blocks";
 
 }

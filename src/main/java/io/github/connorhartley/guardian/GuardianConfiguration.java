@@ -23,7 +23,11 @@
  */
 package io.github.connorhartley.guardian;
 
+import com.me4502.modularframework.module.ModuleWrapper;
+import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.util.StorageKey;
 import io.github.connorhartley.guardian.util.StorageValue;
+import io.github.connorhartley.guardian.util.storage.StorageConsumer;
 import io.github.connorhartley.guardian.util.storage.StorageProvider;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -34,7 +38,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-public class GuardianConfiguration implements StorageProvider<File> {
+public class GuardianConfiguration implements StorageProvider<File>, StorageConsumer {
 
     private Guardian plugin;
 
@@ -43,8 +47,9 @@ public class GuardianConfiguration implements StorageProvider<File> {
 
     private CommentedConfigurationNode configurationNode;
 
-    public StorageValue<CommentedConfigurationNode, String, String> configVersion;
-    public StorageValue<CommentedConfigurationNode, String, List<String>> configEnabledDetections;
+    public StorageValue<String, String> configVersion;
+    public StorageValue<String, List<String>> configEnabledDetections;
+    public StorageValue<String, Integer> configLoggingLevel;
 
     protected GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
@@ -58,16 +63,22 @@ public class GuardianConfiguration implements StorageProvider<File> {
             if (!this.exists()) {
                 this.configFile.getParentFile().mkdirs();
                 this.configFile.createNewFile();
-
-                this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
-
-                this.configVersion = new StorageValue<CommentedConfigurationNode, String, String>("version", this.plugin.getPluginContainer().getVersion().get(),
-                        "Do not edit this!", null).load(this.configurationNode);
-                this.configEnabledDetections = new StorageValue<CommentedConfigurationNode, String, List<String>>("enabled", Collections.emptyList(),
-                        "Detections in this list will be enabled.", null).load(this.configurationNode);
-
-                this.configManager.save(this.configurationNode);
             }
+
+            this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
+
+            this.configVersion = new StorageValue<>(new StorageKey<>("version"), "Do not edit this! Internal use only!",
+                    this.plugin.getPluginContainer().getVersion().orElse("unknown"), null);
+            this.configEnabledDetections = new StorageValue<>(new StorageKey<>("enabled"), "Detections in this list will be enabled.",
+                    Collections.singletonList("speed_detection"), null);
+            this.configLoggingLevel = new StorageValue<>(new StorageKey<>("logging-level"), "1 for basic logging, 2 for more logging, 3 for detailed logging.",
+                    2, null);
+
+            this.configVersion.<ConfigurationNode>createStorage(this.configurationNode);
+            this.configEnabledDetections.<ConfigurationNode>createStorage(this.configurationNode);
+            this.configLoggingLevel.<ConfigurationNode>createStorage(this.configurationNode);
+
+            this.configManager.save(this.configurationNode);
         } catch (IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to create Guardians global configuration!", e);
         }
@@ -76,17 +87,28 @@ public class GuardianConfiguration implements StorageProvider<File> {
     @Override
     public void load() {
         try {
-            if (!exists()) {
-                this.create();
-                return;
+            if (this.exists()) {
+                this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
+
+                this.configVersion.<ConfigurationNode>loadStorage(this.configurationNode);
+                this.configEnabledDetections.<ConfigurationNode>loadStorage(this.configurationNode);
+                this.configLoggingLevel.<ConfigurationNode>loadStorage(this.configurationNode);
+
+                this.plugin.getModuleController().getModules().stream()
+                        .filter(ModuleWrapper::isEnabled)
+                        .forEach(moduleWrapper -> {
+                            if (!moduleWrapper.getModule().isPresent()) return;
+                            Detection detection = (Detection) moduleWrapper.getModule().get();
+
+                            if (detection instanceof StorageConsumer) {
+                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
+                                    storageValue.<ConfigurationNode>loadStorage(this.configurationNode);
+                                }
+                            }
+                        });
+
+                this.configManager.save(this.configurationNode);
             }
-
-            this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
-
-            this.configVersion.load(this.configurationNode);
-            this.configEnabledDetections.load(this.configurationNode);
-
-            this.configManager.save(this.configurationNode);
         } catch (IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
         }
@@ -95,15 +117,35 @@ public class GuardianConfiguration implements StorageProvider<File> {
     @Override
     public void update() {
         try {
-            this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
+            if (this.exists()) {
+                this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
-            this.configVersion.save(this.configurationNode);
-            this.configEnabledDetections.save(this.configurationNode);
+                this.configVersion.<ConfigurationNode>updateStorage(this.configurationNode);
+                this.configEnabledDetections.<ConfigurationNode>updateStorage(this.configurationNode);
+                this.configLoggingLevel.<ConfigurationNode>updateStorage(this.configurationNode);
 
-            this.configManager.save(this.configurationNode);
+                this.plugin.getModuleController().getModules().stream()
+                        .filter(ModuleWrapper::isEnabled)
+                        .forEach(moduleWrapper -> {
+                            if (!moduleWrapper.getModule().isPresent()) return;
+                            Detection detection = (Detection) moduleWrapper.getModule().get();
+
+                            if (detection instanceof StorageConsumer) {
+                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
+                                    storageValue.<ConfigurationNode>updateStorage(this.configurationNode);
+                                }
+                            }
+                        });
+
+                this.configManager.save(this.configurationNode);
+            }
         } catch (IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to update Guardians global configuration!", e);
         }
+    }
+
+    public ConfigurationNode getConfigurationNode()  {
+        return this.configurationNode;
     }
 
     @Override
@@ -116,8 +158,9 @@ public class GuardianConfiguration implements StorageProvider<File> {
         return this.configFile;
     }
 
-    public StorageValue<?, ?, ?>[] getConfigurationNodes() {
-        return new StorageValue<?, ?, ?>[]{ this.configVersion };
+    @Override
+    public StorageValue<?, ?>[] getStorageNodes() {
+        return new StorageValue<?, ?>[]{ this.configVersion };
     }
 
 }

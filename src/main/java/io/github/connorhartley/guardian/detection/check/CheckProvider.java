@@ -23,14 +23,20 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
+import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import org.spongepowered.api.entity.living.player.User;
 
 public interface CheckProvider {
 
+    Detection getDetection();
+
+    ContextBuilder getContextTracker();
+
     SequenceBlueprint getSequence();
 
-    Check createInstance(CheckController checkController, Sequence sequence, User user);
+    Check createInstance(User user);
 
 }

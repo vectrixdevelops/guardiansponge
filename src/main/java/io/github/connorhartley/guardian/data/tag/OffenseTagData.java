@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.data.tag;
 
-import io.github.connorhartley.guardian.data.Keys;
+import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Offense;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
@@ -45,7 +45,7 @@ import java.util.Optional;
 public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, OffenseTagData.Immutable> {
 
     protected OffenseTagData(Offense value) {
-        super(value, Keys.GUARDIAN_OFFENSE_TAG);
+        super(value, DataKeys.GUARDIAN_OFFENSE_TAG);
     }
 
     public Value<Offense> getOffense() {
@@ -54,7 +54,7 @@ public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, 
 
     @Override
     protected Value<Offense> getValueGetter() {
-        return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_OFFENSE_TAG, getValue());
+        return Sponge.getRegistry().getValueFactory().createValue(DataKeys.GUARDIAN_OFFENSE_TAG, getValue());
     }
 
     @Override
@@ -75,15 +75,15 @@ public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, 
 
     @Override
     public Optional<OffenseTagData> from(DataContainer container) {
-        if (container.contains(Keys.GUARDIAN_OFFENSE_TAG.getQuery())) {
-            return Optional.of(set(Keys.GUARDIAN_OFFENSE_TAG, (Offense) container.get(Keys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(this.getValue())));
+        if (container.contains(DataKeys.GUARDIAN_OFFENSE_TAG.getQuery())) {
+            return Optional.of(set(DataKeys.GUARDIAN_OFFENSE_TAG, (Offense) container.get(DataKeys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(this.getValue())));
         }
         return Optional.empty();
     }
 
     @Override
     public DataContainer toContainer() {
-        return new MemoryDataContainer().set(Keys.GUARDIAN_OFFENSE_TAG, this.getValue());
+        return new MemoryDataContainer().set(DataKeys.GUARDIAN_OFFENSE_TAG, this.getValue());
     }
 
     @Override
@@ -99,7 +99,7 @@ public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, 
     public static class Immutable extends AbstractImmutableSingleData<Offense, Immutable, OffenseTagData> {
 
         protected Immutable(Offense value) {
-            super(value, Keys.GUARDIAN_OFFENSE_TAG);
+            super(value, DataKeys.GUARDIAN_OFFENSE_TAG);
         }
 
         public ImmutableValue<Offense> getOffense() {
@@ -108,7 +108,7 @@ public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, 
 
         @Override
         protected ImmutableValue<Offense> getValueGetter() {
-            return Sponge.getRegistry().getValueFactory().createValue(Keys.GUARDIAN_OFFENSE_TAG, this.getValue()).asImmutable();
+            return Sponge.getRegistry().getValueFactory().createValue(DataKeys.GUARDIAN_OFFENSE_TAG, this.getValue()).asImmutable();
         }
 
         @Override
@@ -151,11 +151,11 @@ public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, 
 
         @Override
         protected Optional<OffenseTagData> buildContent(DataView container) throws InvalidDataException {
-            if (!container.contains(Keys.GUARDIAN_OFFENSE_TAG.getQuery())) {
+            if (!container.contains(DataKeys.GUARDIAN_OFFENSE_TAG.getQuery())) {
                 return Optional.empty();
             }
 
-            Offense offense = container.getObject(Keys.GUARDIAN_OFFENSE_TAG.getQuery(), Offense.class).get();
+            Offense offense = container.getObject(DataKeys.GUARDIAN_OFFENSE_TAG.getQuery(), Offense.class).get();
 
             return Optional.of(new OffenseTagData(offense));
         }

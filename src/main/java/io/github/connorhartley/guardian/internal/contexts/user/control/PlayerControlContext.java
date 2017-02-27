@@ -21,45 +21,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.internal.contexts.user.control;
 
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.Context;
+import io.github.connorhartley.guardian.context.TimeContext;
+import io.github.connorhartley.guardian.util.ContextValue;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
 
+import java.util.HashMap;
 import java.util.Optional;
 
-public abstract class Check {
+public class PlayerControlContext extends Context implements TimeContext {
 
-    private final CheckProvider checkProvider;
-    private final User user;
+    // TODO: Check for weird movement and control based things.
 
-    private boolean checking;
+    private Player player;
+    private HashMap<String, ContextValue> values = new HashMap<>();
 
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
-        this.user = user;
+    private boolean ready = false;
+    
+    public PlayerControlContext(Guardian plugin, String id) {
+        super(plugin, id);
     }
 
-    public abstract void update();
+    @Override
+    public void start(User user, Event event) {
 
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
     }
 
-    public boolean isChecking() {
-        return this.checking;
+    @Override
+    public void update() {
+
     }
 
-    public CheckProvider getProvider() {
-        return this.checkProvider;
+    @Override
+    public void stop() {
+
     }
 
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
+    @Override
+    public boolean isReady() {
+        return this.ready;
     }
 
+    @Override
+    public HashMap<String, ContextValue> getValues() {
+        return null;
+    }
+
+    @Override
+    public Optional<TimeContext> asTimed() {
+        return null;
+    }
 }
