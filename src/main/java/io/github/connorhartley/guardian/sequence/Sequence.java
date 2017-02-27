@@ -171,8 +171,8 @@ public class Sequence {
     }
 
     <T extends Event> void testContext(User user, T event) {
-        this.contextBuilder.getContexts().forEach(actionContextClass -> {
-            if (this.contexts.isEmpty()) {
+        if (this.contexts.isEmpty()) {
+            this.contextBuilder.getContexts().forEach(actionContextClass -> {
                 try {
                     this.contextProvider.getContextController().construct(actionContextClass, user, event).ifPresent(context -> {
                         System.out.println("Add context.");
@@ -182,8 +182,8 @@ public class Sequence {
                 } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
                     e.printStackTrace();
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
