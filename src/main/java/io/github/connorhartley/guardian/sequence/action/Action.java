@@ -45,8 +45,6 @@ public class Action<T extends Event> {
     private final List<Condition> successfulListeners = new ArrayList<>();
     private final List<Condition> failedListeners = new ArrayList<>();
 
-    private final ContextProvider contextProvider;
-
     private final Class<T> event;
 
     private int delay;
@@ -55,56 +53,26 @@ public class Action<T extends Event> {
     private List<Context> contexts;
 
     private SequenceReport sequenceReport;
-    private ContextBuilder contextBuilder;
 
-    Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextBuilder contextBuilder, Condition... conditions) {
-        this(contextProvider, event, sequenceReport, contextBuilder);
+    Action(Class<T> event, SequenceReport sequenceReport, Condition... conditions) {
+        this(event, sequenceReport);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextBuilder contextBuilder, List<Condition> conditions) {
-        this(contextProvider, event, sequenceReport, contextBuilder);
+    public Action(Class<T> event, SequenceReport sequenceReport, List<Condition> conditions) {
+        this(event, sequenceReport);
         this.conditions.addAll(conditions);
     }
 
-    public Action(ContextProvider contextProvider, Class<T> event, SequenceReport sequenceReport, ContextBuilder contextBuilder) {
-        this.contextProvider = contextProvider;
+    public Action(Class<T> event, SequenceReport sequenceReport) {
         this.event = event;
         this.sequenceReport = sequenceReport;
-        this.contextBuilder = contextBuilder;
 
         this.contexts = new ArrayList<>();
     }
 
     public void addContext(Context context) {
         this.contexts.add(context);
-    }
-
-    public void testContext(User user, T event) {
-        this.contextBuilder.getContexts().forEach(actionContextClass -> {
-            try {
-                this.contextProvider.getContextController().construct(actionContextClass, user, event).ifPresent(context -> {
-                    context.asTimed().ifPresent(timed -> timed.start(user, event));
-                    this.contexts.add(context);
-                });
-            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public void suspendAllContexts() {
-        this.contexts.forEach(context -> this.contextProvider.getContextController().suspend(context));
-    }
-
-    public void suspendContext(String... id) {
-        this.contexts.forEach(context -> {
-            for (String name : id) {
-                if (context.getName().equals(name)) {
-                    this.contextProvider.getContextController().suspend(context);
-                }
-            }
-        });
     }
 
     void addCondition(Condition condition) {
@@ -171,8 +139,6 @@ public class Action<T extends Event> {
     public List<Context> getContext() {
         return this.contexts;
     }
-
-    public ContextBuilder getContextBuilder() { return this.contextBuilder; }
 
     public List<Condition> getConditions() {
         return this.conditions;

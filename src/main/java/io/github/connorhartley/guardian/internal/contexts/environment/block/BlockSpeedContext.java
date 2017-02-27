@@ -70,7 +70,7 @@ public class BlockSpeedContext extends Context implements TimeContext {
                 this.player.getLocation().add(0, -1, 0).getBlock().getProperty(MatterProperty.class).ifPresent(matterPropertySolid -> {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
-                            this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= (0.06 / 20)));
+                            this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 1.06));
                         }
                     }
                 });
@@ -79,18 +79,18 @@ public class BlockSpeedContext extends Context implements TimeContext {
                     if (matterPropertySolid.getValue().equals(MatterProperty.Matter.SOLID)) {
                         // Walking on the floor.
                         if (!this.player.isOnGround() && this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
-                            this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= (0.08 / 20)));
+                            this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 1.08));
                         }
 
                         if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.ICE)) {
                             if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
-                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= (0.08 / 20)));
+                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 1.08));
                             }
                         }
 
                         if (this.player.getLocation().add(0, -1, 0).getBlockType().equals(BlockTypes.SOUL_SAND)) {
                             if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
-                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= (0.01 / 20)));
+                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 1.01));
                             }
                         }
 
@@ -98,7 +98,7 @@ public class BlockSpeedContext extends Context implements TimeContext {
                                 this.player.getLocation().add(0, 0, 0).getBlockType().equals(BlockTypes.WEB)) {
 
                             if (this.values.containsKey(ContextKeys.SPEED_AMPLIFIER)) {
-                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= (0.007 / 20)));
+                                this.values.replace(ContextKeys.SPEED_AMPLIFIER, this.values.get(ContextKeys.SPEED_AMPLIFIER).<Double>transform(oldValue -> oldValue *= 1.007));
                             }
                         }
                     }

@@ -108,8 +108,6 @@ public class MovementSpeedCheck extends Check {
                     .delay(20 * 2)
                     .expire(20 * 3)
 
-                    .suspend(ContextTypes.PLAYER_CONTROL_SPEED, ContextTypes.BLOCK_SPEED)
-
                     .success((user, event, contexts, sequenceResult, lastAction) -> {
                         double playerControlSpeed = 0.0;
                         double blockModifier = 0.0;
@@ -158,11 +156,16 @@ public class MovementSpeedCheck extends Check {
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
                                     .append(ReportType.INFORMATION, "Travel speed should be less than " +
                                             maximumSpeed + " while they're " + playerControlState.name() + ".");
+                            System.out.println("Player Control Speed: " + playerControlSpeed);
+                            System.out.println("Block Modifier Speed: " + blockModifier);
+                            System.out.println("Total: " + maximumSpeed);
 
                             if (travelDisplacement > maximumSpeed) {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumSpeed) + ".");
+                                System.out.println(user.getName() + " has triggered the speed check.");
+                                System.out.println("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
                             } else {
                                 successReportBuilder.append(ReportType.TEST, false);
                             }

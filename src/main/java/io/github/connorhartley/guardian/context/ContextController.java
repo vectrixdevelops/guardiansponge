@@ -100,7 +100,7 @@ public class ContextController {
     public void updateAll() {
         this.contexts.stream()
                 .filter(context -> context.asTimed().isPresent())
-                .filter(context -> !((TimeContext) context).isReady())
+                .filter(context -> ((TimeContext) context).isReady())
                 .forEach(context -> ((TimeContext) context).update());
     }
 
