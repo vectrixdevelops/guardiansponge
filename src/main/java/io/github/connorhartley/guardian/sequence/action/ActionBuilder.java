@@ -35,23 +35,14 @@ import org.spongepowered.api.event.Event;
 
 public class ActionBuilder<T extends Event> {
 
-    private final ContextProvider contextProvider;
     private final SequenceBuilder builder;
     private final Action<T> action;
-    private final ContextBuilder contextBuilder;
     private final SequenceReport sequenceReport;
 
-    public ActionBuilder(ContextProvider contextProvider, SequenceBuilder sequenceBuilder, Action<T> action, ContextBuilder contextBuilder, SequenceReport sequenceReport) {
-        this.contextProvider = contextProvider;
+    public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action, SequenceReport sequenceReport) {
         this.builder = sequenceBuilder;
         this.action = action;
-        this.contextBuilder = contextBuilder;
         this.sequenceReport = sequenceReport;
-    }
-
-    public ActionBuilder<T> suspend(String... id) {
-        this.action.suspendContext(id);
-        return this;
     }
 
     public ActionBuilder<T> condition(Condition condition) {
@@ -80,7 +71,7 @@ public class ActionBuilder<T extends Event> {
     }
 
     public ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(this.contextProvider, clazz, this.sequenceReport, this.contextBuilder));
+        return action(new Action<>(clazz, this.sequenceReport));
     }
 
     public ActionBuilder<T> action(ActionBlueprint<T> blueprint) {

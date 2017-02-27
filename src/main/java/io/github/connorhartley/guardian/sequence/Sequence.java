@@ -24,6 +24,8 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.context.Context;
+import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
@@ -37,6 +39,7 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -50,6 +53,8 @@ public class Sequence {
 
     private final User user;
     private final CheckProvider checkProvider;
+    private final ContextProvider contextProvider;
+    private final ContextBuilder contextBuilder;
 
     private ArrayList<Context> contexts = new ArrayList<>();
 
@@ -68,11 +73,14 @@ public class Sequence {
 
     private int queue = 0;
 
-    public Sequence(User user, SequenceBlueprint sequenceBlueprint, CheckProvider checkProvider, List<Action> actions, SequenceReport sequenceReport) {
+    public Sequence(User user, SequenceBlueprint sequenceBlueprint, CheckProvider checkProvider, List<Action> actions,
+                    SequenceReport sequenceReport, ContextProvider contextProvider, ContextBuilder contextBuilder) {
         this.user = user;
         this.sequenceBlueprint = sequenceBlueprint;
         this.checkProvider = checkProvider;
         this.sequenceReport = sequenceReport;
+        this.contextProvider = contextProvider;
+        this.contextBuilder = contextBuilder;
         this.actions.addAll(actions);
     }
 
@@ -101,13 +109,9 @@ public class Sequence {
 
             action.updateReport(this.sequenceReport);
 
-            Action<T> typeAction = (Action<T>) action;
-
             if (!action.getEvent().isAssignableFrom(event.getClass())) {
                 return fail(user, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
             }
-
-            typeAction.testContext(user, event);
 
             if (this.queue != 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
@@ -117,12 +121,11 @@ public class Sequence {
                 return fail(user, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
 
-            for (ListIterator backIterator = this.contexts.listIterator(this.contexts.size()); backIterator.hasPrevious();) {
-                final Object unCastContext = backIterator.previous();
-                action.addContext(((Context) unCastContext));
-            }
+            Action<T> typeAction = (Action<T>) action;
 
-            this.contexts.addAll(typeAction.getContext());
+            this.testContext(user, event);
+
+            this.contexts.forEach(typeAction::addContext);
 
             if (!typeAction.testConditions(user, event, this.last)) {
                 return fail(user, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
@@ -146,7 +149,6 @@ public class Sequence {
 
             if (!iterator.hasNext()) {
                 this.finished = true;
-                this.previousActions.forEach(Action::suspendAllContexts);
             }
         }
 
@@ -166,6 +168,22 @@ public class Sequence {
 
         this.incompleteEvents.add(event);
         return false;
+    }
+
+    <T extends Event> void testContext(User user, T event) {
+        this.contextBuilder.getContexts().forEach(actionContextClass -> {
+            if (this.contexts.isEmpty()) {
+                try {
+                    this.contextProvider.getContextController().construct(actionContextClass, user, event).ifPresent(context -> {
+                        System.out.println("Add context.");
+                        context.asTimed().ifPresent(timed -> timed.start(user, event));
+                        this.contexts.add(context);
+                    });
+                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**

@@ -74,15 +74,25 @@ public class SequenceController implements SequenceInvoker {
             currentlyExecuting = this.runningSequences.get(player);
         }
 
-        currentlyExecuting.forEach(sequence -> {
-            sequence.check(player, event);
+        currentlyExecuting.forEach(sequence -> sequence.check(player, event));
+        currentlyExecuting.removeIf(sequence -> {
+            if (sequence.isCancelled()) {
+                sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
+            }
+            return sequence.isCancelled();
         });
-        currentlyExecuting.removeIf(Sequence::isCancelled);
-        currentlyExecuting.removeIf(Sequence::hasExpired);
+        currentlyExecuting.removeIf(sequence -> {
+            if (sequence.hasExpired()) {
+                sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
+            }
+            return sequence.hasExpired();
+        });
         currentlyExecuting.removeIf(sequence -> {
             if (!sequence.isFinished()) {
                 return false;
             }
+
+            sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
 
             SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
             Sponge.getEventManager().post(attempt);
@@ -119,10 +129,12 @@ public class SequenceController implements SequenceInvoker {
 
                     if (sequence.check(player, event)) {
                         if (sequence.isCancelled()) {
+                            sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
                             return;
                         }
 
                         if (sequence.isFinished()) {
+                            sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
                             CheckProvider checkProvider = sequence.getProvider();
                             this.checkController.post(checkProvider, player);
                             return;
