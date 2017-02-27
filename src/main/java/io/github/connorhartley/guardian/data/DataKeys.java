@@ -27,23 +27,31 @@ import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.detection.Offense;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.data.key.Key;
+import org.spongepowered.api.data.key.KeyFactory;
+import org.spongepowered.api.data.value.mutable.ListValue;
 import org.spongepowered.api.data.value.mutable.Value;
 
 import java.util.List;
 
 import static org.spongepowered.api.data.DataQuery.of;
-import static org.spongepowered.api.data.key.KeyFactory.makeSingleKey;
 
 public class DataKeys {
 
     /* Handler : Attached to the user to represent handler data. Used internally only. */
 
-    public static Key<Value<List<Sequence>>> GUARDIAN_SEQUENCE_HANDLER = makeSingleKey(new TypeToken<List<Sequence>>() {},
-            new TypeToken<Value<List<Sequence>>>() {}, of("GuardianSequenceHandler"), "guardian:guardiansequencehandler", "GuardianSequenceHandler");
+    public static Key<ListValue<Sequence>> GUARDIAN_SEQUENCE_HANDLER = KeyFactory.makeListKey(
+            new TypeToken<List<Sequence>>() {
+            },
+            new TypeToken<ListValue<Sequence>>() {
+            },
+            of("GuardianSequenceHandler"), "guardian:guardiansequencehandler", "GuardianSequenceHandler");
 
     /* Tags : Attached to the player to represent some "type" data. */
 
-    public static Key<Value<Offense>> GUARDIAN_OFFENSE_TAG = makeSingleKey(TypeToken.of(Offense.class),
-            new TypeToken<Value<Offense>>() {}, of("GuardianOffenseTag"), "guardian:guardianoffensetag", "GuardianOffenseTag");
+    public static Key<Value<Offense>> GUARDIAN_OFFENSE_TAG = KeyFactory.makeSingleKey(
+            TypeToken.of(Offense.class),
+            new TypeToken<Value<Offense>>() {
+            },
+            of("GuardianOffenseTag"), "guardian:guardianoffensetag", "GuardianOffenseTag");
 
 }

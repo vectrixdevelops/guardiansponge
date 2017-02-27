@@ -42,6 +42,7 @@ import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.util.Tristate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -55,6 +56,8 @@ public class SequenceController implements SequenceInvoker {
     private final CheckController checkController;
     private final List<SequenceBlueprint> blueprints = new ArrayList<>();
 
+    private final HashMap<Player, List<Sequence>> runningSequences = new HashMap<>();
+
     public SequenceController(Guardian plugin, CheckController checkController) {
         this.plugin = plugin;
         this.checkController = checkController;
@@ -62,45 +65,54 @@ public class SequenceController implements SequenceInvoker {
 
     @Override
     public void invoke(Player player, Event event) {
-        List<Sequence> currentlyExecuting = new ArrayList<>();
+        List<Sequence> currentlyExecuting;
 
-        if (player.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).isPresent()) {
-            System.out.println("Handler is here.");
-            currentlyExecuting.addAll(player.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).get());
+        if (!this.runningSequences.containsKey(player)) {
+            currentlyExecuting = new ArrayList<>();
+            runningSequences.put(player, currentlyExecuting);
+        } else {
+            currentlyExecuting = this.runningSequences.get(player);
         }
 
-        if (!currentlyExecuting.isEmpty()) {
-            System.out.println("Checking the removal.");
-            currentlyExecuting.forEach(sequence -> sequence.check(player, event));
-            currentlyExecuting.removeIf(Sequence::isCancelled);
-            currentlyExecuting.removeIf(Sequence::hasExpired);
-            currentlyExecuting.removeIf(sequence -> {
-                if (!sequence.isFinished()) {
-                    return false;
-                }
+        currentlyExecuting.forEach(sequence -> {
+            sequence.check(player, event);
+        });
+        currentlyExecuting.removeIf(Sequence::isCancelled);
+        currentlyExecuting.removeIf(Sequence::hasExpired);
+        currentlyExecuting.removeIf(sequence -> {
+            if (!sequence.isFinished()) {
+                return false;
+            }
 
-                SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
-                Sponge.getEventManager().post(attempt);
-
-                if (attempt.isCancelled()) {
-                    return true;
-                }
-
-                CheckProvider checkProvider = sequence.getProvider();
-                this.checkController.post(checkProvider, player);
+            SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
+            Sponge.getEventManager().post(attempt);
+            if (attempt.isCancelled()) {
                 return true;
-            });
-        }
+            }
+
+            CheckProvider checkProvider = sequence.getProvider();
+            this.checkController.post(checkProvider, player);
+            return true;
+        });
+        this.runningSequences.put(player, currentlyExecuting);
 
         this.blueprints.stream()
-                .filter(blueprint -> !currentlyExecuting.contains(blueprint))
+                .filter(blueprint -> {
+                    boolean exists = false;
+                    if (this.runningSequences.get(player) != null) {
+                        for (Sequence sequence : this.runningSequences.get(player)) {
+                            if (sequence.getSequenceBlueprint().getClass().isAssignableFrom(blueprint.getClass())) {
+                                exists = true;
+                            }
+                        }
+                    }
+                    return !exists;
+                })
                 .forEach(blueprint -> {
-                    System.out.println("Creating new sequence.");
                     Sequence sequence = blueprint.create(player);
 
                     SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
                     Sponge.getEventManager().post(attempt);
-
                     if (attempt.isCancelled()) {
                         return;
                     }
@@ -116,12 +128,11 @@ public class SequenceController implements SequenceInvoker {
                             return;
                         }
 
-                        System.out.println("Created.");
-
                         currentlyExecuting.add(sequence);
-                        player.offer(DataKeys.GUARDIAN_SEQUENCE_HANDLER, currentlyExecuting);
                     }
                 });
+
+        this.runningSequences.put(player, currentlyExecuting);
     }
 
     /**
@@ -132,7 +143,7 @@ public class SequenceController implements SequenceInvoker {
     public void cleanup() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> player.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> {
             sequences.removeIf(Sequence::hasExpired);
-            player.offer(DataKeys.GUARDIAN_SEQUENCE_HANDLER, sequences);
+            this.runningSequences.put(player, sequences);
         }));
     }
 
@@ -141,10 +152,10 @@ public class SequenceController implements SequenceInvoker {
      *
      * <p>Removes the {@link User}'s data for {@link SequenceHandlerData}.</p>
      *
-     * @param user {@link User} to remove data from
+     * @param player {@link Player} to remove data from
      */
-    public void forceCleanup(User user) {
-        user.remove(DataKeys.GUARDIAN_SEQUENCE_HANDLER);
+    public void forceCleanup(Player player) {
+        this.runningSequences.remove(player);
     }
 
     /**
@@ -153,7 +164,7 @@ public class SequenceController implements SequenceInvoker {
      * <p>Removes data for {@link SequenceHandlerData} from all of the players online.</p>
      */
     public void forceCleanup() {
-        Sponge.getServer().getOnlinePlayers().forEach(player -> player.remove(DataKeys.GUARDIAN_SEQUENCE_HANDLER));
+        Sponge.getServer().getOnlinePlayers().forEach(this.runningSequences::remove);
     }
 
     /**

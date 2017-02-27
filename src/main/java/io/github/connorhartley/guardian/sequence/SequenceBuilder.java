@@ -81,7 +81,7 @@ public class SequenceBuilder {
             @Override
             public Sequence create(User user) {
                 if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
-                return new Sequence(user, checkProvider, actions, sequenceReport);
+                return new Sequence(user, this, checkProvider, actions, sequenceReport);
             }
         };
     }

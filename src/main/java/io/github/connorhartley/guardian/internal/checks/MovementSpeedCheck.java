@@ -153,10 +153,6 @@ public class MovementSpeedCheck extends Check {
                                     (this.presentLocation.getY() - this.previousLocation.getY()) *
                                             (this.presentLocation.getY() - this.previousLocation.getY()));
 
-                            System.out.println("Control: " + playerControlSpeed);
-                            System.out.println("Block Modifier: " + blockModifier);
-                            System.out.println("Time: " + ((currentTime - lastAction) / 1000));
-
                             double maximumSpeed = playerControlSpeed * blockModifier * ((currentTime - lastAction) / 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
@@ -167,8 +163,6 @@ public class MovementSpeedCheck extends Check {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumSpeed) + ".");
-                                System.out.println(user.getName() + " has triggered the speed check.");
-                                System.out.println("Overshot by " + (travelDisplacement - maximumSpeed));
                             } else {
                                 successReportBuilder.append(ReportType.TEST, false);
                             }

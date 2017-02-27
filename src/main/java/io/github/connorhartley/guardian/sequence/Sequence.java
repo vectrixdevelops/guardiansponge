@@ -53,19 +53,24 @@ public class Sequence {
 
     private ArrayList<Context> contexts = new ArrayList<>();
 
+    private SequenceBlueprint sequenceBlueprint;
     private SequenceReport sequenceReport;
 
+    private final List<Action> previousActions = new ArrayList<>();
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
     private final List<Event> incompleteEvents = new ArrayList<>();
 
     private long last = System.currentTimeMillis();
 
-    private boolean cancelled;
-    private boolean finished;
+    private boolean cancelled = false;
+    private boolean finished = false;
 
-    public Sequence(User user, CheckProvider checkProvider, List<Action> actions, SequenceReport sequenceReport) {
+    private int queue = 0;
+
+    public Sequence(User user, SequenceBlueprint sequenceBlueprint, CheckProvider checkProvider, List<Action> actions, SequenceReport sequenceReport) {
         this.user = user;
+        this.sequenceBlueprint = sequenceBlueprint;
         this.checkProvider = checkProvider;
         this.sequenceReport = sequenceReport;
         this.actions.addAll(actions);
@@ -90,6 +95,8 @@ public class Sequence {
         if (iterator.hasNext()) {
             Action action = iterator.next();
 
+            this.queue += 1;
+
             long now = System.currentTimeMillis();
 
             action.updateReport(this.sequenceReport);
@@ -102,11 +109,11 @@ public class Sequence {
 
             typeAction.testContext(user, event);
 
-            if (this.last + ((action.getDelay() / 20) * 1000) > now) {
+            if (this.queue != 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
                 return fail(user, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
             }
 
-            if (this.last + ((action.getExpire() / 20) * 1000) < now) {
+            if (this.queue != 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
                 return fail(user, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
 
@@ -123,34 +130,26 @@ public class Sequence {
 
             this.sequenceReport = action.getSequenceReport();
 
+            SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, user, event, Cause.of(NamedCause.of("ACTION", this.sequenceReport)));
+            Sponge.getEventManager().post(attempt);
+
+            long previousLast = this.last;
+
+            this.last = System.currentTimeMillis();
+            this.completeEvents.add(event);
             iterator.remove();
-
             typeAction.updateReport(this.sequenceReport);
-
-            typeAction.succeed(user, event, this.last);
-
+            typeAction.succeed(user, event, previousLast);
             this.sequenceReport = action.getSequenceReport();
 
-            pass(user, event, Cause.of(NamedCause.of("ACTION_SUCCEED", this.sequenceReport)));
+            this.previousActions.add(action);
 
             if (!iterator.hasNext()) {
                 this.finished = true;
+                this.previousActions.forEach(Action::suspendAllContexts);
             }
-        } else {
-            this.actions.forEach(Action::suspendAllContexts);
         }
 
-        return true;
-    }
-
-    // Called when the player meets the action requirements.
-    boolean pass(User user, Event event, Cause cause) {
-        this.last = System.currentTimeMillis();
-
-        SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, user, event, cause);
-        Sponge.getEventManager().post(attempt);
-
-        this.completeEvents.add(event);
         return true;
     }
 
@@ -189,6 +188,15 @@ public class Sequence {
      */
     SequenceReport getSequenceReport() {
         return this.sequenceReport;
+    }
+
+    /**
+     * Get Sequence Blueprint
+     *
+     * @return
+     */
+    SequenceBlueprint getSequenceBlueprint() {
+        return this.sequenceBlueprint;
     }
 
     /**
