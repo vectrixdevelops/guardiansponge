@@ -36,15 +36,6 @@ public class SequenceListener {
         this.sequenceController = sequenceController;
     }
 
-    /*
-     * Listeners will go here. For example:
-     *
-     * @Listener
-     * public void onEntityCollide(CollideEntityEvent event, @Getter("getTargetEntity") Player player) {
-     *     this.sequenceController.invoke(player, event);
-     * }
-     */
-
     @Listener
     public void onEntityMove(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
         this.sequenceController.invoke(player, event);

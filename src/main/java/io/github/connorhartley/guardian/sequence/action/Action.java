@@ -24,9 +24,7 @@
 package io.github.connorhartley.guardian.sequence.action;
 
 import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.context.ContextBuilder;
-import io.github.connorhartley.guardian.context.ContextTypes;
+import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
@@ -34,25 +32,23 @@ import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Action<T extends Event> {
+
+    private final Class<T> event;
 
     private final List<Condition> conditions = new ArrayList<>();
     private final List<Condition> successfulListeners = new ArrayList<>();
     private final List<Condition> failedListeners = new ArrayList<>();
 
-    private final Class<T> event;
-
+    private ContextContainer contextContainer;
+    private SequenceReport sequenceReport;
     private int delay;
     private int expire;
-
-    private List<Context> contexts;
-
-    private SequenceReport sequenceReport;
 
     Action(Class<T> event, SequenceReport sequenceReport, Condition... conditions) {
         this(event, sequenceReport);
@@ -67,12 +63,12 @@ public class Action<T extends Event> {
     public Action(Class<T> event, SequenceReport sequenceReport) {
         this.event = event;
         this.sequenceReport = sequenceReport;
-
-        this.contexts = new ArrayList<>();
     }
 
-    public void addContext(Context context) {
-        this.contexts.add(context);
+    public void addContextContainer(ContextContainer contextContainer) {
+        if (this.contextContainer == null) {
+            this.contextContainer = contextContainer;
+        }
     }
 
     void addCondition(Condition condition) {
@@ -93,7 +89,7 @@ public class Action<T extends Event> {
 
     public void succeed(User user, T event, long lastAction) {
         this.successfulListeners.forEach(callback -> {
-            ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport, lastAction);
+            ConditionResult testResult = callback.test(user, event, this.contextContainer.clone(), this.sequenceReport, lastAction);
 
             this.sequenceReport =
                 SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
@@ -103,7 +99,7 @@ public class Action<T extends Event> {
     public boolean fail(User user, T event, long lastAction) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    ConditionResult testResult = callback.test(user, event, this.contexts, this.sequenceReport, lastAction);
+                    ConditionResult testResult = callback.test(user, event, this.contextContainer.clone(), this.sequenceReport, lastAction);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -115,7 +111,7 @@ public class Action<T extends Event> {
     public boolean testConditions(User user, T event, long lastAction) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    ConditionResult testResult = condition.test(user, event, this.contexts, this.sequenceReport, lastAction);
+                    ConditionResult testResult = condition.test(user, event, this.contextContainer.clone(), this.sequenceReport, lastAction);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -136,8 +132,8 @@ public class Action<T extends Event> {
         return this.event;
     }
 
-    public List<Context> getContext() {
-        return this.contexts;
+    public ContextContainer getContextContainer() {
+        return this.contextContainer;
     }
 
     public List<Condition> getConditions() {

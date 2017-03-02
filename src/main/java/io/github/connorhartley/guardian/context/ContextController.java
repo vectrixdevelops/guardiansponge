@@ -24,90 +24,105 @@
 package io.github.connorhartley.guardian.context;
 
 import io.github.connorhartley.guardian.Guardian;
-import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.Event;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.scheduler.Task;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-/**
- * Context Controller
- *
- * A way to register contexts and invoke them on request.
- */
 public class ContextController {
 
     private final Guardian plugin;
-
-    private HashMap<String, Class<? extends Context>> registry = new HashMap<>();
-    private HashMap<User, List<Class>> runningContexts = new HashMap<>();
-    private List<Context> contexts = new ArrayList<>();
+    private final List<Class<? extends Context>> contextRegistry = new LinkedList<>();
+    private final HashMap<Player, List<Context>> runningContexts = new LinkedHashMap<>();
 
     public ContextController(Guardian plugin) {
         this.plugin = plugin;
     }
 
-    public void registerContext(String id, Class<? extends Context> context) {
-        this.registry.put(id, context);
-    }
+    public Optional<Context> construct(Player player, Class<? extends Context> context) {
+        for (Class<? extends Context> contextClass : this.contextRegistry) {
+            if (contextClass.equals(context)) {
+                if (this.runningContexts.get(player) == null) {
+                    List<Context> contexts = new ArrayList<>();
 
-    public void unregisterContext(String id) {
-        this.contexts.forEach(context -> {
-            if (this.registry.get(id).equals(context.getClass())) {
-                context.asTimed().ifPresent(TimeContext::stop);
-                this.contexts.remove(context);
-            }
-        });
+                    try {
+                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Player.class);
+                        Context newContext = (Context) ctor.newInstance(this.plugin, player);
 
-        this.contexts.removeIf(context -> context.getName().equals(id));
-        this.runningContexts.forEach((user, contextList) -> {
-            contextList.removeIf(context -> this.registry.get(id).equals(context));
-            this.runningContexts.replace(user, contextList);
-        });
-        this.registry.remove(id);
-    }
+                        contexts.add(newContext);
+                        this.runningContexts.put(player, contexts);
 
-    public void unregisterContexts() {
-        this.contexts.forEach(context -> context.asTimed().ifPresent(TimeContext::stop));
-        this.contexts.clear();
-        this.runningContexts.clear();
-        this.registry.clear();
-    }
+                        return Optional.of(newContext);
+                    } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    boolean exists = false;
+                    for (Context contextSearch : this.runningContexts.get(player)) {
+                        if (contextSearch.getClass().isAssignableFrom(contextClass)) {
+                            exists = true;
+                        }
+                    }
 
-    public Optional<Context> construct(String id, User user, Event event) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
-        if (this.registry.containsKey(id)) {
-            Constructor<?> ctor = this.registry.get(id).getConstructor(Guardian.class, String.class);
-            Context context = (Context) ctor.newInstance(this.plugin, id);
-            if (this.runningContexts.get(user) == null) {
-                List<Class> contextClasses = new ArrayList<>();
-                contextClasses.add(context.getClass());
-                this.runningContexts.put(user, contextClasses);
-                this.contexts.add(context);
-                return Optional.of(context);
-            } else if (!this.runningContexts.get(user).contains(context.getClass())) {
-                List<Class> contextClasses = this.runningContexts.get(user);
-                contextClasses.add(context.getClass());
-                this.runningContexts.replace(user, contextClasses);
-                this.contexts.add(context);
-                return Optional.of(context);
+                    if (!exists) {
+                        List<Context> contexts = this.runningContexts.get(player);
+
+                        try {
+                            Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Player.class);
+                            Context newContext = (Context) ctor.newInstance(this.plugin, player);
+
+                            contexts.add(newContext);
+                            this.runningContexts.put(player, contexts);
+
+                            return Optional.of(newContext);
+                        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
         }
         return Optional.empty();
     }
 
-    public void updateAll() {
-        this.contexts.stream()
-                .filter(context -> context.asTimed().isPresent())
-                .filter(context -> ((TimeContext) context).isReady())
-                .forEach(context -> ((TimeContext) context).update());
+    public void suspend(Player player, Context context) {
+        context.getContainer().clear();
+        context.suspend();
+        this.runningContexts.get(player).remove(context);
     }
 
-    public void suspend(Context context) {
-        if (context.getClass().isAssignableFrom(TimeContext.class)) {
-            ((TimeContext) context).stop();
+    public void suspendFor(Player player) {
+        if (this.runningContexts.get(player) != null) {
+            this.runningContexts.get(player).forEach(context -> {
+                context.getContainer().clear();
+                context.suspend();
+            });
         }
+        this.runningContexts.remove(player);
+    }
+
+    public void updateAll() {
+        this.runningContexts.values()
+                .forEach(contexts -> contexts.forEach(context -> {
+                    if (!context.isSuspended()) {
+                        context.update();
+                    }
+                }));
+    }
+
+    public void register(Class<? extends Context> clazz) {
+        if (this.contextRegistry.contains(clazz)) return;
+        this.contextRegistry.add(clazz);
+    }
+
+    public List<Class<? extends Context>> getContextRegistry() {
+        return this.contextRegistry;
+    }
+
+    public void unregister(Class<? extends Context> clazz) {
+        this.contextRegistry.remove(clazz);
     }
 
     public static class ContextControllerTask {
@@ -124,8 +139,8 @@ public class ContextController {
         }
 
         public void start() {
-            this.task = this.taskBuilder.execute(this.contextController::updateAll).intervalTicks(1)
-                    .name("Guardian - Context Controller Task").submit(this.plugin);
+            this.task = this.taskBuilder.execute(this.contextController::updateAll)
+                    .intervalTicks(1).name("Guardian - Context Controller Task").submit(this.plugin);
         }
 
         public void stop() {

@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.util.context;
+package io.github.connorhartley.guardian.storage;
 
-public interface ValueTransform<E> {
+import io.github.connorhartley.guardian.storage.container.StorageValue;
 
-     E transform(E oldValue);
+public interface StorageConsumer {
+
+    StorageValue<?, ?>[] getStorageNodes();
 
 }

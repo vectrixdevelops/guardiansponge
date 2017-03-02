@@ -24,31 +24,26 @@
 package io.github.connorhartley.guardian.context;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.util.ContextValue;
-
-import java.util.HashMap;
-import java.util.Optional;
+import io.github.connorhartley.guardian.context.container.ContextContainer;
 
 public abstract class Context {
 
     private final Guardian plugin;
-    private final String id;
 
-    public Context(Guardian plugin, String id) {
+    public Context(Guardian plugin) {
         this.plugin = plugin;
-        this.id = id;
     }
 
     public Guardian getPlugin() {
         return this.plugin;
     }
 
-    public String getName() {
-        return this.id;
-    }
+    public abstract void update();
 
-    public abstract HashMap<String, ContextValue> getValues();
+    public abstract void suspend();
 
-    public abstract Optional<TimeContext> asTimed();
+    public abstract boolean isSuspended();
+
+    public abstract ContextContainer getContainer();
 
 }

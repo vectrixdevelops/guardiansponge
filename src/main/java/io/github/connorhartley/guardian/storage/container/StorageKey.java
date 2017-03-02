@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.util;
+package io.github.connorhartley.guardian.storage.container;
 
-import io.github.connorhartley.guardian.util.storage.DatabaseQuery;
+import io.github.connorhartley.guardian.storage.DatabaseQuery;
 
 public class StorageKey<T> {
 

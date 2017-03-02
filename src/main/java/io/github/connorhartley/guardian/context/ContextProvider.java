@@ -31,10 +31,10 @@ public interface ContextProvider {
     /**
      * Get Context Controller
      *
-     * <p>Returns the {@link ContextController} for controlling the action context system for each {@link Action} in a {@link Sequence}.</p>
+     * <p>Returns the {@link io.github.connorhartley.guardian.context.ContextController} for controlling the action context system for each {@link Action} in a {@link Sequence}.</p>
      *
      * @return The context controller
      */
-    ContextController getContextController();
+    io.github.connorhartley.guardian.context.ContextController getContextController();
 
 }

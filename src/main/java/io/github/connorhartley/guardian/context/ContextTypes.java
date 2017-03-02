@@ -23,16 +23,32 @@
  */
 package io.github.connorhartley.guardian.context;
 
+import io.github.connorhartley.guardian.context.container.ContextKey;
+import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
+import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
+
+/**
+ * Context Types
+ *
+ * Represents keys used for contexts.
+ *
+ * <p>This is deprecated! DO NOT use this for more than one context!</p>
+ */
+@Deprecated
 public class ContextTypes {
 
-    /* Block Contexts */
+    /* Control HorizontalSpeed | Used in: PlayerControlContext.HorizontalSpeed */
 
-    public static String BLOCK_SPEED = "block_speed_context";
+    public static ContextKey<Double> CONTROL_SPEED =
+            new ContextKey<>("control_speed", PlayerControlContext.HorizontalSpeed.class, 1.0);
 
-    /* User Contexts */
+    public static ContextKey<PlayerControlContext.HorizontalSpeed.State> CONTROL_SPEED_STATE =
+            new ContextKey<>("control_speed_state", PlayerControlContext.HorizontalSpeed.class,
+                    PlayerControlContext.HorizontalSpeed.State.WALKING);
 
-    public static String PLAYER_CONTROL = "player_control_context";
+    /* HorizontalSpeed Amplifier | Used in: BlockSpeedContext */
 
-    public static String PLAYER_CONTROL_SPEED = "player_control_speed_context";
+    public static ContextKey<Double> SPEED_AMPLIFIER =
+            new ContextKey<>("speed_amplifier", BlockSpeedContext.class, 1.0);
 
 }

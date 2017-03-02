@@ -23,33 +23,27 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
-import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextBuilder;
-import io.github.connorhartley.guardian.context.ContextKeys;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
-import io.github.connorhartley.guardian.internal.contexts.user.control.PlayerControlSpeedContext;
-import io.github.connorhartley.guardian.sequence.Sequence;
+import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
+import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
-import io.github.connorhartley.guardian.util.ContextValue;
 import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.value.mutable.Value;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-public class MovementSpeedCheck extends Check {
+public class HorizontalSpeedCheck extends Check {
 
-    public MovementSpeedCheck(CheckProvider checkProvider, User user) {
+    HorizontalSpeedCheck(CheckProvider checkProvider, User user) {
         super(checkProvider, user);
     }
 
@@ -77,8 +71,8 @@ public class MovementSpeedCheck extends Check {
 
         @Override
         public ContextBuilder getContextTracker() {
-            return ContextBuilder.builder().append(ContextTypes.PLAYER_CONTROL_SPEED)
-                    .append(ContextTypes.BLOCK_SPEED).build();
+            return ContextBuilder.builder().append(PlayerControlContext.HorizontalSpeed.class)
+                    .append(BlockSpeedContext.class).build();
         }
 
         @Override
@@ -91,15 +85,12 @@ public class MovementSpeedCheck extends Check {
 
                     .action(MoveEntityEvent.class)
 
-                    .condition((user, event, contexts, sequenceResult, lastAction) -> {
-                        if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
-                            if (user.getPlayer().isPresent()) {
-                                this.previousLocation = user.getPlayer().get().getLocation();
-                            }
-
-                            return new ConditionResult(true, sequenceResult);
+                    .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
+                        if (user.getPlayer().isPresent()) {
+                            this.previousLocation = user.getPlayer().get().getLocation();
+                            return new ConditionResult(true, sequenceReport);
                         }
-                        return new ConditionResult(false, sequenceResult);
+                        return new ConditionResult(false, sequenceReport);
                     })
 
                     // After 2 Seconds : Move Entity Event
@@ -108,24 +99,25 @@ public class MovementSpeedCheck extends Check {
                     .delay(20 * 2)
                     .expire(20 * 3)
 
-                    .success((user, event, contexts, sequenceResult, lastAction) -> {
-                        double playerControlSpeed = 0.0;
-                        double blockModifier = 0.0;
+                    .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
+                        if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
+                            return new ConditionResult(true, sequenceReport);
+                        }
+                        return new ConditionResult(false, sequenceReport);
+                    })
+
+                    .success((user, event, contextContainer, sequenceResult, lastAction) -> {
+                        double playerControlSpeed = 1.3;
+                        double blockModifier = 1.3;
 
                         long currentTime;
 
-                        PlayerControlSpeedContext.State playerControlState = PlayerControlSpeedContext.State.WALKING;
+                        PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 
-                        for (Context context : contexts) {
-                            if (context.getName().equals(ContextTypes.PLAYER_CONTROL_SPEED)) {
-                                ContextValue value = context.getValues().get(ContextKeys.CONTROL_SPEED);
-                                playerControlSpeed = value.<Double>get();
-                            }
-
-                            if (context.getName().equals(ContextTypes.BLOCK_SPEED)) {
-                                ContextValue value = context.getValues().get(ContextKeys.SPEED_AMPLIFIER);
-                                blockModifier = value.<Double>get();
-                            }
+                        if (contextContainer.get(ContextTypes.CONTROL_SPEED).isPresent() &&
+                                contextContainer.get(ContextTypes.SPEED_AMPLIFIER).isPresent()) {
+                            playerControlSpeed = contextContainer.get(ContextTypes.CONTROL_SPEED).get();
+                            blockModifier = contextContainer.get(ContextTypes.SPEED_AMPLIFIER).get();
                         }
 
                         if (user.getPlayer().isPresent()) {
@@ -147,18 +139,17 @@ public class MovementSpeedCheck extends Check {
                                     (this.presentLocation.getX() - this.previousLocation.getX()) *
                                             (this.presentLocation.getX() - this.previousLocation.getX())) +
                                     (this.presentLocation.getZ() - this.previousLocation.getZ()) *
-                                            (this.presentLocation.getZ() - this.previousLocation.getZ())) +
-                                    (this.presentLocation.getY() - this.previousLocation.getY()) *
-                                            (this.presentLocation.getY() - this.previousLocation.getY()));
+                                            (this.presentLocation.getZ() - this.previousLocation.getZ())));
 
                             double maximumSpeed = playerControlSpeed * blockModifier * ((currentTime - lastAction) / 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
                                     .append(ReportType.INFORMATION, "Travel speed should be less than " +
                                             maximumSpeed + " while they're " + playerControlState.name() + ".");
-                            System.out.println("Player Control Speed: " + playerControlSpeed);
-                            System.out.println("Block Modifier Speed: " + blockModifier);
+                            System.out.println("Player Control HorizontalSpeed: " + playerControlSpeed);
+                            System.out.println("Block Modifier HorizontalSpeed: " + blockModifier);
                             System.out.println("Total: " + maximumSpeed);
+                            System.out.println("Travel Displacement: " + travelDisplacement);
 
                             if (travelDisplacement > maximumSpeed) {
                                 successReportBuilder.append(ReportType.TEST, true)
@@ -181,7 +172,7 @@ public class MovementSpeedCheck extends Check {
 
         @Override
         public Check createInstance(User user) {
-            return new MovementSpeedCheck(this, user);
+            return new HorizontalSpeedCheck(this, user);
         }
     }
 

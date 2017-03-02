@@ -23,9 +23,6 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
-import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.context.ContextBuilder;
-import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
@@ -35,8 +32,8 @@ import org.spongepowered.api.event.Event;
 
 public class ActionBuilder<T extends Event> {
 
-    private final SequenceBuilder builder;
     private final Action<T> action;
+    private final SequenceBuilder builder;
     private final SequenceReport sequenceReport;
 
     public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action, SequenceReport sequenceReport) {
