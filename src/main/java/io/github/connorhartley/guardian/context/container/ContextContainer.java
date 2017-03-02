@@ -66,7 +66,7 @@ public class ContextContainer {
         return this;
     }
 
-    public <E> ContextContainer transform(ContextKey<E> contextKey, ValueTransform valueTransform) {
+    public <E> ContextContainer transform(ContextKey<E> contextKey, ValueTransform<E> valueTransform) {
         if (this.contains(contextKey)) {
             this.rawMap.replace(contextKey.getId(), valueTransform.transform(this.get(contextKey).get()));
         } else {
