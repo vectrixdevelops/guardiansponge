@@ -21,20 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.util.storage;
+package io.github.connorhartley.guardian.util;
 
-public interface StorageProvider<T> {
+public interface ValueTransform<E> {
 
-    void create();
-
-    void load();
-
-    void update();
-
-    default boolean exists() {
-        return false;
-    }
-
-    T getLocation();
+     E transform(E oldValue);
 
 }

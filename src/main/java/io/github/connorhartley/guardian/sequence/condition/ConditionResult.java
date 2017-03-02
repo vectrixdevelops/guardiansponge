@@ -29,8 +29,7 @@ public class ConditionResult {
 
     private final boolean pass;
     private final SequenceReport sequenceReport;
-
-
+    
     public ConditionResult(Boolean pass, SequenceReport sequenceReport) {
         this.pass = pass;
         this.sequenceReport = sequenceReport;

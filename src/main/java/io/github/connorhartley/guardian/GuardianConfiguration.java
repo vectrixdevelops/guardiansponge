@@ -25,10 +25,10 @@ package io.github.connorhartley.guardian;
 
 import com.me4502.modularframework.module.ModuleWrapper;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.util.StorageKey;
-import io.github.connorhartley.guardian.util.StorageValue;
-import io.github.connorhartley.guardian.util.storage.StorageConsumer;
-import io.github.connorhartley.guardian.util.storage.StorageProvider;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
+import io.github.connorhartley.guardian.storage.container.StorageValue;
+import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -41,17 +41,16 @@ import java.util.List;
 public class GuardianConfiguration implements StorageProvider<File>, StorageConsumer {
 
     private Guardian plugin;
+    private CommentedConfigurationNode configurationNode;
 
     private final File configFile;
     private final ConfigurationLoader<CommentedConfigurationNode> configManager;
-
-    private CommentedConfigurationNode configurationNode;
 
     public StorageValue<String, String> configVersion;
     public StorageValue<String, List<String>> configEnabledDetections;
     public StorageValue<String, Integer> configLoggingLevel;
 
-    protected GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
+    public GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
         this.configFile = configFile;
         this.configManager = configManager;

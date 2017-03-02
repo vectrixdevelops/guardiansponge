@@ -30,7 +30,7 @@ import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
-import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 
 import java.util.ArrayList;
@@ -81,9 +81,9 @@ public class SequenceBuilder {
     public SequenceBlueprint build(CheckProvider checkProvider) {
         return new SequenceBlueprint(checkProvider) {
             @Override
-            public Sequence create(User user) {
+            public Sequence create(Player player) {
                 if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
-                return new Sequence(user, this, checkProvider, actions, sequenceReport, contextProvider, contextBuilder);
+                return new Sequence(player, this, checkProvider, actions, sequenceReport, contextProvider, contextBuilder);
             }
         };
     }

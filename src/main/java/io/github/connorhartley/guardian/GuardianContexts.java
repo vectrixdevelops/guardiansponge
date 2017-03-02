@@ -24,10 +24,8 @@
 package io.github.connorhartley.guardian;
 
 import io.github.connorhartley.guardian.context.ContextController;
-import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.internal.contexts.environment.block.BlockSpeedContext;
-import io.github.connorhartley.guardian.internal.contexts.user.control.PlayerControlContext;
-import io.github.connorhartley.guardian.internal.contexts.user.control.PlayerControlSpeedContext;
+import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
+import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 
 public class GuardianContexts {
 
@@ -38,9 +36,8 @@ public class GuardianContexts {
     }
 
     void registerInternalContexts() {
-        this.contextController.registerContext(ContextTypes.BLOCK_SPEED, BlockSpeedContext.class);
-        this.contextController.registerContext(ContextTypes.PLAYER_CONTROL, PlayerControlContext.class);
-        this.contextController.registerContext(ContextTypes.PLAYER_CONTROL_SPEED, PlayerControlSpeedContext.class);
+        this.contextController.register(BlockSpeedContext.class);
+        this.contextController.register(PlayerControlContext.HorizontalSpeed.class);
     }
 
 }

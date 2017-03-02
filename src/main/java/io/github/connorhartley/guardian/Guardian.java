@@ -32,7 +32,6 @@ import com.me4502.precogs.service.AntiCheatService;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextController;
 import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
@@ -48,11 +47,10 @@ import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -145,13 +143,12 @@ public class Guardian implements ContextProvider {
     /* Game Events */
 
     @Listener
-    public void onGamePreInitialize(GamePreInitializationEvent event) {
+    public void onGameInitialize(GameInitializationEvent event) {
         getLogger().info("#---# Starting Guardian AntiCheat #---#");
 
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 
         Sponge.getDataManager().register(OffenseTagData.class, OffenseTagData.Immutable.class, new OffenseTagData.Builder());
-        Sponge.getDataManager().register(SequenceHandlerData.class, SequenceHandlerData.Immutable.class, new SequenceHandlerData.Builder());
 
         getLogger().info("Registering controllers.");
 
@@ -205,7 +202,7 @@ public class Guardian implements ContextProvider {
 
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
 
-//                        Sponge.getRegistry().register(DetectionType.class, detection);
+                        Sponge.getRegistry().register(DetectionType.class, detection);
                     }
                 });
 
@@ -261,7 +258,7 @@ public class Guardian implements ContextProvider {
             return true;
         });
 
-        this.contextController.unregisterContexts();
+        this.contextController.getContextRegistry().clear();
 
         getLogger().info("Stopped Guardian AntiCheat.");
     }
@@ -273,6 +270,7 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First Player player) {
+        this.contextController.suspendFor(player);
         this.sequenceController.forceCleanup(player);
     }
 

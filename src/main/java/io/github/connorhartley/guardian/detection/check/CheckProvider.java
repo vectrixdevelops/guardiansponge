@@ -25,7 +25,6 @@ package io.github.connorhartley.guardian.detection.check;
 
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import org.spongepowered.api.entity.living.player.User;
 

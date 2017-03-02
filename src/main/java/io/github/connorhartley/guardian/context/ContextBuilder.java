@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class ContextBuilder {
 
-    private final List<String> contexts = new ArrayList<>();
+    private final List<Class<? extends Context>> contexts = new ArrayList<>();
 
     private ContextBuilder(Builder builder) {
         this.contexts.addAll(builder.contexts);
@@ -48,13 +48,13 @@ public class ContextBuilder {
         return new Builder();
     }
 
-    public List<String> getContexts() {
+    public List<Class<? extends Context>> getContexts() {
         return this.contexts;
     }
 
     public static class Builder {
 
-        private List<String> contexts = new ArrayList<>();
+        private List<Class<? extends Context>> contexts = new ArrayList<>();
 
         public Builder() {}
 
@@ -63,8 +63,8 @@ public class ContextBuilder {
             return this;
         }
 
-        public Builder append(String id) {
-            this.contexts.add(id);
+        public Builder append(Class<? extends Context> clazz) {
+            this.contexts.add(clazz);
             return this;
         }
 

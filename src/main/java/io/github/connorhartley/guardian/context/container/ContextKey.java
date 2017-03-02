@@ -21,20 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context;
+package io.github.connorhartley.guardian.context.container;
 
-public class ContextKeys {
+import io.github.connorhartley.guardian.context.Context;
 
-    /* Control Speed | Used in: PlayerControlSpeedContext */
+public class ContextKey<T> {
 
-    public static String CONTROL_SPEED = "control_speed";
+    private final String id;
+    private final Class<? extends Context> parentContext;
+    private final T defaultValue;
 
-    public static String CONTROL_SPEED_STATE = "control_speed_state";
+    public ContextKey(String id, Class<? extends Context> parentContext, T defaultValue) {
+        this.id = id;
+        this.parentContext = parentContext;
+        this.defaultValue = defaultValue;
+    }
 
-    /* Speed Amplifier | Used in: BlockSpeedContext */
+    public String getId() {
+        return this.id;
+    }
 
-    public static String SPEED_AMPLIFIER = "speed_amplifier";
+    public Class<? extends Context> getParent() {
+        return this.parentContext;
+    }
 
-    public static String SPEED_AMPLIFIER_BLOCKS = "speed_amplifier_blocks";
+    public Class<T> getValueType() {
+        return (Class<T>) this.defaultValue.getClass();
+    }
+
+    public T getDefaultValue() {
+        return this.defaultValue;
+    }
 
 }

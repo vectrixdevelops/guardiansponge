@@ -24,7 +24,6 @@
 package io.github.connorhartley.guardian;
 
 import com.me4502.modularframework.ModuleController;
-import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 
 public class GuardianDetections {

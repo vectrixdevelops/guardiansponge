@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.util;
+package io.github.connorhartley.guardian.storage.container;
 
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.util.context.ValueTransform;
+import io.github.connorhartley.guardian.util.ValueTransform;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;

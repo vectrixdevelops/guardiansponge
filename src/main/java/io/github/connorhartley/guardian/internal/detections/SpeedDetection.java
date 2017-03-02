@@ -32,9 +32,9 @@ import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
-import io.github.connorhartley.guardian.internal.checks.MovementSpeedCheck;
-import io.github.connorhartley.guardian.util.StorageValue;
-import io.github.connorhartley.guardian.util.storage.StorageConsumer;
+import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.storage.container.StorageValue;
+import io.github.connorhartley.guardian.storage.StorageConsumer;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 
@@ -42,7 +42,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-@Module(id = "speed_detection", name = "Speed Detection", version = "0.0.1", onEnable = "onConstruction", onDisable = "onDeconstruction")
+@Module(id = "speed_detection",
+        name = "HorizontalSpeed Detection",
+        authors = { "Connor Hartley (vectrix)" },
+        version = "0.0.1",
+        onEnable = "onConstruction",
+        onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Inject
@@ -51,7 +56,6 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
     private Guardian plugin;
     private ConfigurationNode globalConfigurationNode;
-
     private boolean ready = false;
 
     private static final Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
@@ -89,7 +93,7 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Override
     public List<CheckProvider> getChecks() {
-        return Collections.singletonList(new MovementSpeedCheck.Provider(this));
+        return Collections.singletonList(new HorizontalSpeedCheck.Provider(this));
     }
 
     @Override

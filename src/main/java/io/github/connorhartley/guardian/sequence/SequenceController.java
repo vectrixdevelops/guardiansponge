@@ -24,8 +24,8 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.data.DataKeys;
-import io.github.connorhartley.guardian.data.handler.SequenceHandlerData;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
@@ -38,8 +38,6 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.scheduler.Task;
-import org.spongepowered.api.service.user.UserStorageService;
-import org.spongepowered.api.util.Tristate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,24 +73,12 @@ public class SequenceController implements SequenceInvoker {
         }
 
         currentlyExecuting.forEach(sequence -> sequence.check(player, event));
-        currentlyExecuting.removeIf(sequence -> {
-            if (sequence.isCancelled()) {
-                sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
-            }
-            return sequence.isCancelled();
-        });
-        currentlyExecuting.removeIf(sequence -> {
-            if (sequence.hasExpired()) {
-                sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
-            }
-            return sequence.hasExpired();
-        });
+        currentlyExecuting.removeIf(Sequence::isCancelled);
+        currentlyExecuting.removeIf(Sequence::hasExpired);
         currentlyExecuting.removeIf(sequence -> {
             if (!sequence.isFinished()) {
                 return false;
             }
-
-            sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
 
             SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
             Sponge.getEventManager().post(attempt);
@@ -129,12 +115,10 @@ public class SequenceController implements SequenceInvoker {
 
                     if (sequence.check(player, event)) {
                         if (sequence.isCancelled()) {
-                            sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
                             return;
                         }
 
                         if (sequence.isFinished()) {
-                            sequence.getContext().forEach(context -> context.getPlugin().getContextController().suspend(context));
                             CheckProvider checkProvider = sequence.getProvider();
                             this.checkController.post(checkProvider, player);
                             return;
@@ -150,19 +134,19 @@ public class SequenceController implements SequenceInvoker {
     /**
      * Clean Up
      *
-     * <p>Removes any {@link Sequence}s that have expired from the {@link User}s {@link SequenceHandlerData}.</p>
+     * <p>Removes any {@link Sequence}s that have expired from the {@link User}s running sequences.</p>
      */
     public void cleanup() {
-        Sponge.getServer().getOnlinePlayers().forEach(player -> player.get(DataKeys.GUARDIAN_SEQUENCE_HANDLER).ifPresent(sequences -> {
-            sequences.removeIf(Sequence::hasExpired);
-            this.runningSequences.put(player, sequences);
-        }));
+        Sponge.getServer().getOnlinePlayers().forEach(player -> {
+            if (this.runningSequences.get(player) == null || this.runningSequences.get(player).isEmpty()) return;
+            this.runningSequences.get(player).removeIf(Sequence::hasExpired);
+        });
     }
 
     /**
      * Force Clean Up
      *
-     * <p>Removes the {@link User}'s data for {@link SequenceHandlerData}.</p>
+     * <p>Removes the {@link User}'s data from the running sequences.</p>
      *
      * @param player {@link Player} to remove data from
      */
@@ -173,10 +157,10 @@ public class SequenceController implements SequenceInvoker {
     /**
      * Force Clean Up
      *
-     * <p>Removes data for {@link SequenceHandlerData} from all of the players online.</p>
+     * <p>Removes running sequences from all of the players online.</p>
      */
     public void forceCleanup() {
-        Sponge.getServer().getOnlinePlayers().forEach(this.runningSequences::remove);
+        this.runningSequences.clear();
     }
 
     /**
