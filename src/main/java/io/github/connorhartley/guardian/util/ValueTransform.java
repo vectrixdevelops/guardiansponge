@@ -23,8 +23,8 @@
  */
 package io.github.connorhartley.guardian.util;
 
-public interface ValueTransform<E> {
+public interface ValueTransform {
 
-     E transform(E oldValue);
+     <E> E transform(E oldValue);
 
 }
