@@ -61,13 +61,15 @@ public class ContextController {
                 } else {
                     boolean exists = false;
                     for (Context contextSearch : this.runningContexts.get(player)) {
-                        if (contextSearch.getClass().isAssignableFrom(contextClass)) {
+                        if (contextSearch.getClass().equals(context)) {
                             exists = true;
+                            break;
                         }
                     }
 
                     if (!exists) {
-                        List<Context> contexts = this.runningContexts.get(player);
+                        List<Context> contexts = new ArrayList<>();
+                        contexts.addAll(this.runningContexts.get(player));
 
                         try {
                             Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Player.class);

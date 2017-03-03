@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextTypes;
+import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
@@ -85,7 +86,7 @@ public class HorizontalSpeedCheck extends Check {
 
                     .action(MoveEntityEvent.class)
 
-                    .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
+                    .condition((user, event, contextContainers, sequenceReport, lastAction) -> {
                         if (user.getPlayer().isPresent()) {
                             this.previousLocation = user.getPlayer().get().getLocation();
                             return new ConditionResult(true, sequenceReport);
@@ -99,25 +100,32 @@ public class HorizontalSpeedCheck extends Check {
                     .delay(20 * 2)
                     .expire(20 * 3)
 
-                    .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
+                    .condition((user, event, contextContainers, sequenceReport, lastAction) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
                             return new ConditionResult(true, sequenceReport);
                         }
                         return new ConditionResult(false, sequenceReport);
                     })
 
-                    .success((user, event, contextContainer, sequenceResult, lastAction) -> {
+                    .success((user, event, contextContainers, sequenceResult, lastAction) -> {
                         double playerControlSpeed = 1.3;
                         double blockModifier = 1.3;
+                        PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 
                         long currentTime;
 
-                        PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
+                        for (ContextContainer contextContainer : contextContainers) {
+                            if (contextContainer.get(ContextTypes.CONTROL_SPEED).isPresent()) {
+                                playerControlSpeed = contextContainer.get(ContextTypes.CONTROL_SPEED).get();
+                            }
 
-                        if (contextContainer.get(ContextTypes.CONTROL_SPEED).isPresent() &&
-                                contextContainer.get(ContextTypes.SPEED_AMPLIFIER).isPresent()) {
-                            playerControlSpeed = contextContainer.get(ContextTypes.CONTROL_SPEED).get();
-                            blockModifier = contextContainer.get(ContextTypes.SPEED_AMPLIFIER).get();
+                            if (contextContainer.get(ContextTypes.SPEED_AMPLIFIER).isPresent()) {
+                                blockModifier = contextContainer.get(ContextTypes.SPEED_AMPLIFIER).get();
+                            }
+
+                            if (contextContainer.get(ContextTypes.CONTROL_SPEED_STATE).isPresent()) {
+                                playerControlState = contextContainer.get(ContextTypes.CONTROL_SPEED_STATE).get();
+                            }
                         }
 
                         if (user.getPlayer().isPresent()) {

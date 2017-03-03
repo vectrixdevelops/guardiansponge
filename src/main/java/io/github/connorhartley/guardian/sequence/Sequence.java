@@ -57,7 +57,7 @@ public class Sequence {
     private final ContextProvider contextProvider;
     private final ContextBuilder contextBuilder;
 
-    private final ContextContainer contextContainer = new ContextContainer();
+    private final List<ContextContainer> contextContainer = new ArrayList<>();
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
     private final List<Event> incompleteEvents = new ArrayList<>();
@@ -115,7 +115,7 @@ public class Sequence {
             Action<T> typeAction = (Action<T>) action;
 
             this.testContext(player);
-            typeAction.addContextContainer(this.contextContainer);
+            typeAction.addContextContainers(this.contextContainer);
 
 
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
@@ -141,8 +141,8 @@ public class Sequence {
             this.sequenceReport = action.getSequenceReport();
 
             if (!iterator.hasNext()) {
-                for (Context context : this.contextContainer.getContext()) {
-                    this.contextProvider.getContextController().suspend(player, context);
+                for (ContextContainer contextContainer : this.contextContainer) {
+                    this.contextProvider.getContextController().suspend(player, contextContainer.getContext());
                 }
                 this.finished = true;
             }
@@ -169,7 +169,7 @@ public class Sequence {
         if (this.contextContainer.isEmpty()) {
             this.contextBuilder.getContexts().forEach(actionContextClass ->
                     this.contextProvider.getContextController().construct(player, actionContextClass)
-                            .ifPresent(context -> this.contextContainer.merge(context.getContainer())));
+                            .ifPresent(context -> this.contextContainer.add(context.getContainer())));
         }
     }
 
@@ -180,7 +180,7 @@ public class Sequence {
      *
      * @return A list of contextContainer
      */
-    ContextContainer getContext() {
+    List<ContextContainer> getContext() {
         return this.contextContainer;
     }
 
@@ -221,8 +221,8 @@ public class Sequence {
         long now = System.currentTimeMillis();
 
         if (action != null && this.last + ((action.getExpire() / 20) * 1000) < now) {
-            for (Context context : this.contextContainer.getContext()) {
-                this.contextProvider.getContextController().suspend(player, context);
+            for (ContextContainer contextContainer : this.contextContainer) {
+                this.contextProvider.getContextController().suspend(player, contextContainer.getContext());
             }
             return true;
         }
