@@ -39,6 +39,7 @@ public class PlayerControlContext {
         private Player player;
         private ContextContainer contextContainer;
 
+        private long updateAmount = 0;
         private boolean suspended = false;
 
         public HorizontalSpeed(Guardian plugin, Player player) {
@@ -54,19 +55,20 @@ public class PlayerControlContext {
             if (this.player.get(Keys.IS_SPRINTING).isPresent() && this.player.get(Keys.IS_SNEAKING).isPresent() &&
                     this.player.get(Keys.IS_FLYING).isPresent()) {
                 if (this.player.get(Keys.IS_FLYING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.09);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.08);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.FLYING);
                 } else if (this.player.get(Keys.IS_SPRINTING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.095);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.065);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SPRINTING);
                 } else if (this.player.get(Keys.IS_SNEAKING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.025);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.015);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SNEAKING);
                 } else {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.04);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.035);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.WALKING);
                 }
             }
+            this.updateAmount += 1;
         }
 
         @Override
@@ -77,6 +79,11 @@ public class PlayerControlContext {
         @Override
         public boolean isSuspended() {
             return this.suspended;
+        }
+
+        @Override
+        public long updateAmount() {
+            return this.updateAmount;
         }
 
         @Override

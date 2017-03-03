@@ -36,6 +36,7 @@ public class BlockSpeedContext extends Context {
     private Player player;
     private ContextContainer contextContainer;
 
+    private long updateAmount = 0;
     private boolean suspended = false;
 
     public BlockSpeedContext(Guardian plugin, Player player) {
@@ -48,18 +49,19 @@ public class BlockSpeedContext extends Context {
     @Override
     public void update() {
         if (!this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
-            this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.085);
+            this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.045);
         MatterProperty matterProperty = this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
 
         if (matterProperty.getValue() != null) {
             if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.025);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.015);
             } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.085);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.045);
             } else {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.065);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.025);
             }
         }
+        this.updateAmount += 1;
     }
 
     @Override
@@ -70,6 +72,11 @@ public class BlockSpeedContext extends Context {
     @Override
     public boolean isSuspended() {
         return this.suspended;
+    }
+
+    @Override
+    public long updateAmount() {
+        return this.updateAmount;
     }
 
     @Override

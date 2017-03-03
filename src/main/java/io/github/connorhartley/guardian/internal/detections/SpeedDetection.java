@@ -45,7 +45,7 @@ import java.util.Optional;
 @Module(id = "speed_detection",
         name = "HorizontalSpeed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.1",
+        version = "0.0.2",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection implements StorageConsumer {
@@ -83,6 +83,11 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Override
     public ContextProvider getContextProvider() {
+        return this.plugin;
+    }
+
+    @Override
+    public Object getPlugin() {
         return this.plugin;
     }
 

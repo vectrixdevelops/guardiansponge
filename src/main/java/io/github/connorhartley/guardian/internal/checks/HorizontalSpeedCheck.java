@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
@@ -108,24 +109,47 @@ public class HorizontalSpeedCheck extends Check {
                     })
 
                     .success((user, event, contextContainers, sequenceResult, lastAction) -> {
-                        double playerControlSpeed = 1.3;
-                        double blockModifier = 1.3;
+                        Guardian plugin = (Guardian) this.getDetection().getPlugin();
+
+                        long playerControlTicks = 0;
+                        long blockModifierTicks = 0;
+
+                        double playerControlSpeed = 1.0;
+                        double blockModifier = 1.0;
+
                         PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 
                         long currentTime;
 
                         for (ContextContainer contextContainer : contextContainers) {
                             if (contextContainer.get(ContextTypes.CONTROL_SPEED).isPresent()) {
+                                playerControlTicks = contextContainer.getContext().updateAmount();
                                 playerControlSpeed = contextContainer.get(ContextTypes.CONTROL_SPEED).get();
                             }
 
                             if (contextContainer.get(ContextTypes.SPEED_AMPLIFIER).isPresent()) {
+                                blockModifierTicks = contextContainer.getContext().updateAmount();
                                 blockModifier = contextContainer.get(ContextTypes.SPEED_AMPLIFIER).get();
                             }
 
                             if (contextContainer.get(ContextTypes.CONTROL_SPEED_STATE).isPresent()) {
                                 playerControlState = contextContainer.get(ContextTypes.CONTROL_SPEED_STATE).get();
                             }
+                        }
+
+                        if (playerControlTicks < 20 || blockModifierTicks < 20) {
+                            plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second behind.");
+                            SequenceReport failReport = SequenceReport.of(sequenceResult)
+                                    .append(ReportType.TEST, false)
+                                    .build();
+
+                            return new ConditionResult(false, failReport);
+                        } else if (playerControlTicks > 40 || blockModifierTicks > 40) {
+                            SequenceReport failReport = SequenceReport.of(sequenceResult)
+                                    .append(ReportType.TEST, false)
+                                    .build();
+
+                            return new ConditionResult(false, failReport);
                         }
 
                         if (user.getPlayer().isPresent()) {
@@ -143,13 +167,16 @@ public class HorizontalSpeedCheck extends Check {
 
                             this.presentLocation = user.getPlayer().get().getLocation();
 
+                            long contextTime = (1 / ((playerControlTicks + blockModifierTicks) / 2)) * 40000;
+                            long sequenceTime = (currentTime - lastAction);
+
                             double travelDisplacement = Math.abs(Math.sqrt((
                                     (this.presentLocation.getX() - this.previousLocation.getX()) *
                                             (this.presentLocation.getX() - this.previousLocation.getX())) +
                                     (this.presentLocation.getZ() - this.previousLocation.getZ()) *
                                             (this.presentLocation.getZ() - this.previousLocation.getZ())));
 
-                            double maximumSpeed = playerControlSpeed * blockModifier * ((currentTime - lastAction) / 1000);
+                            double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
                                     .append(ReportType.INFORMATION, "Travel speed should be less than " +

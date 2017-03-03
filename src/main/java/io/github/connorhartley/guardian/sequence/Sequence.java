@@ -131,14 +131,13 @@ public class Sequence {
             SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, player, event, Cause.of(NamedCause.of("ACTION", this.sequenceReport)));
             Sponge.getEventManager().post(attempt);
 
-            long previousLast = this.last;
-
-            this.last = System.currentTimeMillis();
             this.completeEvents.add(event);
             iterator.remove();
             typeAction.updateReport(this.sequenceReport);
-            typeAction.succeed(player, event, previousLast);
+            typeAction.succeed(player, event, this.last);
             this.sequenceReport = action.getSequenceReport();
+
+            this.last = System.currentTimeMillis();
 
             if (!iterator.hasNext()) {
                 for (ContextContainer contextContainer : this.contextContainer) {

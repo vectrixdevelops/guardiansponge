@@ -66,6 +66,15 @@ public abstract class Detection extends DetectionType {
     public abstract ContextProvider getContextProvider();
 
     /**
+     * Get Plugin
+     *
+     * <p>Returns the plugin that owns this {@link Detection}.</p>
+     *
+     * @return The owner of this detection
+     */
+    public abstract Object getPlugin();
+
+    /**
      * Is Ready
      *
      * <p>True when the detection has finished loading and false when it is not,

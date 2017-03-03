@@ -44,6 +44,8 @@ public abstract class Context {
 
     public abstract boolean isSuspended();
 
+    public abstract long updateAmount();
+
     public abstract ContextContainer getContainer();
 
 }
