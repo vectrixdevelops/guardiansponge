@@ -47,7 +47,6 @@ public class BlockSpeedContext extends Context {
 
     @Override
     public void update() {
-        System.out.println("Update Block Speed.");
         if (!this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
             this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.085);
         MatterProperty matterProperty = this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();

@@ -32,10 +32,7 @@ import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Action<T extends Event> {
 
@@ -44,8 +41,8 @@ public class Action<T extends Event> {
     private final List<Condition> conditions = new ArrayList<>();
     private final List<Condition> successfulListeners = new ArrayList<>();
     private final List<Condition> failedListeners = new ArrayList<>();
+    private final List<ContextContainer> contextContainer = new ArrayList<>();
 
-    private ContextContainer contextContainer;
     private SequenceReport sequenceReport;
     private int delay;
     private int expire;
@@ -66,9 +63,11 @@ public class Action<T extends Event> {
     }
 
     public void addContextContainer(ContextContainer contextContainer) {
-        if (this.contextContainer == null) {
-            this.contextContainer = contextContainer;
-        }
+        this.contextContainer.add(contextContainer);
+    }
+
+    public void addContextContainers(Collection<ContextContainer> contextContainer) {
+        this.contextContainer.addAll(contextContainer);
     }
 
     void addCondition(Condition condition) {
@@ -89,7 +88,7 @@ public class Action<T extends Event> {
 
     public void succeed(User user, T event, long lastAction) {
         this.successfulListeners.forEach(callback -> {
-            ConditionResult testResult = callback.test(user, event, this.contextContainer.clone(), this.sequenceReport, lastAction);
+            ConditionResult testResult = callback.test(user, event, this.contextContainer, this.sequenceReport, lastAction);
 
             this.sequenceReport =
                 SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
@@ -99,7 +98,7 @@ public class Action<T extends Event> {
     public boolean fail(User user, T event, long lastAction) {
         return this.failedListeners.stream()
                 .anyMatch(callback -> {
-                    ConditionResult testResult = callback.test(user, event, this.contextContainer.clone(), this.sequenceReport, lastAction);
+                    ConditionResult testResult = callback.test(user, event, this.contextContainer, this.sequenceReport, lastAction);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -111,7 +110,7 @@ public class Action<T extends Event> {
     public boolean testConditions(User user, T event, long lastAction) {
         return !this.conditions.stream()
                 .anyMatch(condition -> {
-                    ConditionResult testResult = condition.test(user, event, this.contextContainer.clone(), this.sequenceReport, lastAction);
+                    ConditionResult testResult = condition.test(user, event, this.contextContainer, this.sequenceReport, lastAction);
 
                     this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
                             testResult.hasPassed()).build();
@@ -132,7 +131,7 @@ public class Action<T extends Event> {
         return this.event;
     }
 
-    public ContextContainer getContextContainer() {
+    public List<ContextContainer> getContextContainer() {
         return this.contextContainer;
     }
 

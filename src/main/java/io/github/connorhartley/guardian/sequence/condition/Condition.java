@@ -28,8 +28,10 @@ import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
+import java.util.List;
+
 public interface Condition {
 
-    ConditionResult test(User user, Event event, ContextContainer contextContainer, SequenceReport sequenceReport, long lastAction);
+    ConditionResult test(User user, Event event, List<ContextContainer> contextContainer, SequenceReport sequenceReport, long lastAction);
 
 }

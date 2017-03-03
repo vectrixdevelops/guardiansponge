@@ -51,20 +51,19 @@ public class PlayerControlContext {
 
         @Override
         public void update() {
-            System.out.println("Update Player Control HorzSpeed.");
             if (this.player.get(Keys.IS_SPRINTING).isPresent() && this.player.get(Keys.IS_SNEAKING).isPresent() &&
                     this.player.get(Keys.IS_FLYING).isPresent()) {
                 if (this.player.get(Keys.IS_FLYING).get()) {
                     this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.09);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.FLYING);
                 } else if (this.player.get(Keys.IS_SPRINTING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.08);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.095);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SPRINTING);
                 } else if (this.player.get(Keys.IS_SNEAKING).get()) {
                     this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.025);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SNEAKING);
                 } else {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.06);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.04);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.WALKING);
                 }
             }
