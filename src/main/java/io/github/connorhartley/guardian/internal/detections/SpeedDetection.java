@@ -50,7 +50,7 @@ import java.util.Optional;
 @Module(id = "speed_detection",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.3",
+        version = "0.0.4",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection implements StorageConsumer {
@@ -81,7 +81,13 @@ public class SpeedDetection extends Detection implements StorageConsumer {
         this.plugin = (Guardian) moduleContainer.getInstance().get();
 
         this.globalConfigurationNode = this.plugin.getGlobalConfiguration().getConfigurationNode();
-        this.internalConfigurationProvider = new Configuration(this, this.internalConfigurationNode);
+        this.internalConfigurationProvider = new Configuration(this);
+
+        if (!Configuration.getLocation().exists()) {
+            for (StorageValue storageValue : this.getStorageNodes()) {
+                storageValue.<ConfigurationNode>createStorage(this.internalConfigurationNode);
+            }
+        }
 
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
 
@@ -136,7 +142,6 @@ public class SpeedDetection extends Detection implements StorageConsumer {
     public static class Configuration {
 
         private SpeedDetection speedDetection;
-        private ConfigurationNode configurationNode;
 
         private static File configFile;
 
@@ -153,9 +158,8 @@ public class SpeedDetection extends Detection implements StorageConsumer {
         public StorageValue<String, Double> configGroundModifier;
         public StorageValue<String, Double> configLiquidModifier;
 
-        public Configuration(SpeedDetection speedDetection, ConfigurationNode configurationNode) {
+        public Configuration(SpeedDetection speedDetection) {
             this.speedDetection = speedDetection;
-            this.configurationNode = configurationNode;
 
             configFile = new File(((Guardian) this.speedDetection.getPlugin()).getGlobalConfiguration()
                     .getLocation().getParentFile(), "detection" + File.separator + speedDetection.getId() + ".conf");
@@ -163,27 +167,27 @@ public class SpeedDetection extends Detection implements StorageConsumer {
             // Player Control
 
             this.configSneakControl = new StorageValue<>(new StorageKey<>("sneak_control_modifier"), null,
-                    1.015, null).createStorage(this.configurationNode);
+                    1.015, null);
 
             this.configWalkControl = new StorageValue<>(new StorageKey<>("walk_control_modifier"), null,
-                    1.035, null).createStorage(this.configurationNode);
+                    1.035, null);
 
             this.configSprintControl = new StorageValue<>(new StorageKey<>("sprint_control_modifier"), null,
-                    1.065, null).createStorage(this.configurationNode);
+                    1.065, null);
 
             this.configFlyControl = new StorageValue<>(new StorageKey<>("fly_control_modifier"), null,
-                    1.08, null).createStorage(this.configurationNode);
+                    1.08, null);
 
             // Block Speed
 
             this.configAirModifier = new StorageValue<>(new StorageKey<>("air_block_amplifier"), null,
-                    1.045, null).createStorage(this.configurationNode);
+                    1.045, null);
 
             this.configGroundModifier = new StorageValue<>(new StorageKey<>("ground_block_amplifier"), null,
-                    1.025, null).createStorage(this.configurationNode);
+                    1.025, null);
 
             this.configLiquidModifier = new StorageValue<>(new StorageKey<>("liquid_block_amplifier"), null,
-                    1.015, null).createStorage(this.configurationNode);
+                    1.015, null);
         }
 
         public static File getLocation() {
