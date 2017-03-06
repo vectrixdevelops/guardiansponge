@@ -137,8 +137,8 @@ public class HorizontalSpeedCheck extends Check {
                             }
                         }
 
-                        if (playerControlTicks < 20 || blockModifierTicks < 20) {
-                            plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second behind.");
+                        if (playerControlTicks < 30 || blockModifierTicks < 30) {
+                            plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
                             SequenceReport failReport = SequenceReport.of(sequenceResult)
                                     .append(ReportType.TEST, false)
                                     .build();

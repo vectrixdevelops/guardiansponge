@@ -27,6 +27,8 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Direction;
@@ -35,30 +37,45 @@ public class BlockSpeedContext extends Context {
 
     private Player player;
     private ContextContainer contextContainer;
+    private StorageConsumer storageConsumer;
+
+    private double airSpeedModifier = 1.045;
+    private double groundSpeedModifier = 1.025;
+    private double liquidSpeedModifier = 1.015;
 
     private long updateAmount = 0;
     private boolean suspended = false;
 
-    public BlockSpeedContext(Guardian plugin, Player player) {
+    public BlockSpeedContext(Guardian plugin, Player player, StorageConsumer storageConsumer) {
         super(plugin);
         this.player = player;
         this.contextContainer = new ContextContainer(this);
+        this.storageConsumer = storageConsumer;
+
+        for (StorageValue storageValue : this.storageConsumer.getStorageNodes()) {
+            switch ((String) storageValue.getKey().get()) {
+                case "air_block_amplifier": this.airSpeedModifier = (Double) storageValue.getValue();
+                case "ground_block_amplifier": this.groundSpeedModifier = (Double) storageValue.getValue();
+                case "liquid_block_amplifier": this.liquidSpeedModifier = (Double) storageValue.getValue();
+            }
+        }
+
         this.contextContainer.set(ContextTypes.SPEED_AMPLIFIER);
     }
 
     @Override
     public void update() {
         if (!this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
-            this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.045);
+            this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.airSpeedModifier);
         MatterProperty matterProperty = this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
 
         if (matterProperty.getValue() != null) {
             if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.015);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.liquidSpeedModifier);
             } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.045);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.airSpeedModifier);
             } else {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * 1.025);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.groundSpeedModifier);
             }
         }
         this.updateAmount += 1;

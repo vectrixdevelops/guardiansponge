@@ -27,6 +27,7 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.storage.StorageConsumer;
 
 import java.util.List;
 
@@ -73,6 +74,15 @@ public abstract class Detection extends DetectionType {
      * @return The owner of this detection
      */
     public abstract Object getPlugin();
+
+    /**
+     * Get Configuration
+     *
+     * <p>Returns the {@link StorageConsumer} for this {@link Detection}.</p>
+     *
+     * @return The detection storage consumer
+     */
+    public abstract StorageConsumer getConfiguration();
 
     /**
      * Is Ready

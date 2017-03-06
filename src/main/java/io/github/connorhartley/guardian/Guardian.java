@@ -173,6 +173,12 @@ public class Guardian implements ContextProvider {
         this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleController.setPluginContainer(this.pluginContainer);
 
+        File detectionDirectory = new File(this.globalConfiguration.getLocation().getParentFile(), "detection");
+        detectionDirectory.mkdir();
+
+        this.moduleController.setConfigurationDirectory(detectionDirectory);
+        this.moduleController.setConfigurationOptions(this.configurationOptions);
+
         this.globalContexts = new GuardianContexts(this.contextController);
         this.globalContexts.registerInternalContexts();
 

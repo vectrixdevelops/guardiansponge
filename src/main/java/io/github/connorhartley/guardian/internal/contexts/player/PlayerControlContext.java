@@ -27,6 +27,9 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 
@@ -38,14 +41,31 @@ public class PlayerControlContext {
 
         private Player player;
         private ContextContainer contextContainer;
+        private StorageConsumer storageConsumer;
+
+        private double sneakSpeedControl = 1.015;
+        private double walkSpeedControl = 1.035;
+        private double sprintSpeedControl = 1.065;
+        private double flySpeedControl = 1.08;
 
         private long updateAmount = 0;
         private boolean suspended = false;
 
-        public HorizontalSpeed(Guardian plugin, Player player) {
+        public HorizontalSpeed(Guardian plugin, Player player, StorageConsumer storageConsumer) {
             super(plugin);
             this.player = player;
+            this.storageConsumer = storageConsumer;
             this.contextContainer = new ContextContainer(this);
+
+            for (StorageValue storageValue : this.storageConsumer.getStorageNodes()) {
+                switch ((String) storageValue.getKey().get()) {
+                    case "sneak_control_modifier": this.sneakSpeedControl = (Double) storageValue.getValue();
+                    case "walk_control_modifier": this.walkSpeedControl = (Double) storageValue.getValue();
+                    case "sprint_control_modifier": this.sprintSpeedControl = (Double) storageValue.getValue();
+                    case "fly_control_modifier": this.flySpeedControl = (Double) storageValue.getValue();
+                }
+            }
+
             this.contextContainer.set(ContextTypes.CONTROL_SPEED);
             this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE);
         }
@@ -55,16 +75,16 @@ public class PlayerControlContext {
             if (this.player.get(Keys.IS_SPRINTING).isPresent() && this.player.get(Keys.IS_SNEAKING).isPresent() &&
                     this.player.get(Keys.IS_FLYING).isPresent()) {
                 if (this.player.get(Keys.IS_FLYING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.08);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * this.flySpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.FLYING);
                 } else if (this.player.get(Keys.IS_SPRINTING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.065);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * this.sprintSpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SPRINTING);
                 } else if (this.player.get(Keys.IS_SNEAKING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.015);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * this.sneakSpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SNEAKING);
                 } else {
-                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * 1.035);
+                    this.contextContainer.transform(ContextTypes.CONTROL_SPEED, oldValue -> oldValue * this.walkSpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.WALKING);
                 }
             }

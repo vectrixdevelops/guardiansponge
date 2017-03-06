@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.internal.detections;
 
 import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
+import com.me4502.modularframework.module.guice.ModuleConfiguration;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
@@ -33,29 +34,39 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.storage.StorageProvider;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Module(id = "speed_detection",
-        name = "HorizontalSpeed Detection",
+        name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.2",
+        version = "0.0.3",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Inject
     @ModuleContainer
-    private PluginContainer moduleContainer;
+    public PluginContainer moduleContainer;
+
+    @Inject
+    @ModuleConfiguration
+    public ConfigurationNode internalConfigurationNode;
 
     private Guardian plugin;
     private ConfigurationNode globalConfigurationNode;
+    private Configuration internalConfigurationProvider;
+
     private boolean ready = false;
 
     private static final Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
@@ -70,6 +81,7 @@ public class SpeedDetection extends Detection implements StorageConsumer {
         this.plugin = (Guardian) moduleContainer.getInstance().get();
 
         this.globalConfigurationNode = this.plugin.getGlobalConfiguration().getConfigurationNode();
+        this.internalConfigurationProvider = new Configuration(this, this.internalConfigurationNode);
 
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
 
@@ -92,6 +104,11 @@ public class SpeedDetection extends Detection implements StorageConsumer {
     }
 
     @Override
+    public StorageConsumer getConfiguration() {
+        return this;
+    }
+
+    @Override
     public boolean isReady() {
         return this.ready;
     }
@@ -108,6 +125,69 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
     @Override
     public StorageValue<?, ?>[] getStorageNodes() {
-        return new StorageValue<?, ?>[0];
+        return new StorageValue<?, ?>[] {
+                this.internalConfigurationProvider.configSneakControl, this.internalConfigurationProvider.configWalkControl,
+                this.internalConfigurationProvider.configSprintControl, this.internalConfigurationProvider.configFlyControl,
+                this.internalConfigurationProvider.configAirModifier, this.internalConfigurationProvider.configGroundModifier,
+                this.internalConfigurationProvider.configLiquidModifier
+        };
+    }
+
+    public static class Configuration {
+
+        private SpeedDetection speedDetection;
+        private ConfigurationNode configurationNode;
+
+        private static File configFile;
+
+        // Player Control
+
+        public StorageValue<String, Double> configSneakControl;
+        public StorageValue<String, Double> configWalkControl;
+        public StorageValue<String, Double> configSprintControl;
+        public StorageValue<String, Double> configFlyControl;
+
+        // Block Speed
+
+        public StorageValue<String, Double> configAirModifier;
+        public StorageValue<String, Double> configGroundModifier;
+        public StorageValue<String, Double> configLiquidModifier;
+
+        public Configuration(SpeedDetection speedDetection, ConfigurationNode configurationNode) {
+            this.speedDetection = speedDetection;
+            this.configurationNode = configurationNode;
+
+            configFile = new File(((Guardian) this.speedDetection.getPlugin()).getGlobalConfiguration()
+                    .getLocation().getParentFile(), "detection" + File.separator + speedDetection.getId() + ".conf");
+
+            // Player Control
+
+            this.configSneakControl = new StorageValue<>(new StorageKey<>("sneak_control_modifier"), null,
+                    1.015, null).createStorage(this.configurationNode);
+
+            this.configWalkControl = new StorageValue<>(new StorageKey<>("walk_control_modifier"), null,
+                    1.035, null).createStorage(this.configurationNode);
+
+            this.configSprintControl = new StorageValue<>(new StorageKey<>("sprint_control_modifier"), null,
+                    1.065, null).createStorage(this.configurationNode);
+
+            this.configFlyControl = new StorageValue<>(new StorageKey<>("fly_control_modifier"), null,
+                    1.08, null).createStorage(this.configurationNode);
+
+            // Block Speed
+
+            this.configAirModifier = new StorageValue<>(new StorageKey<>("air_block_amplifier"), null,
+                    1.045, null).createStorage(this.configurationNode);
+
+            this.configGroundModifier = new StorageValue<>(new StorageKey<>("ground_block_amplifier"), null,
+                    1.025, null).createStorage(this.configurationNode);
+
+            this.configLiquidModifier = new StorageValue<>(new StorageKey<>("liquid_block_amplifier"), null,
+                    1.015, null).createStorage(this.configurationNode);
+        }
+
+        public static File getLocation() {
+            return configFile;
+        }
     }
 }
