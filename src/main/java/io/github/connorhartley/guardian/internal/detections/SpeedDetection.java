@@ -23,6 +23,9 @@
  */
 package io.github.connorhartley.guardian.internal.detections;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleConfiguration;
@@ -31,29 +34,33 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.DetectionConfiguration;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
+import io.github.connorhartley.guardian.detection.Offense;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.event.check.CheckEndEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Module(id = "speed_detection",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.4",
+        version = "0.0.5",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
-public class SpeedDetection extends Detection implements StorageConsumer {
+public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
 
     @Inject
     @ModuleContainer
@@ -83,9 +90,9 @@ public class SpeedDetection extends Detection implements StorageConsumer {
         this.globalConfigurationNode = this.plugin.getGlobalConfiguration().getConfigurationNode();
         this.internalConfigurationProvider = new Configuration(this);
 
-        if (!Configuration.getLocation().exists()) {
+        if (Configuration.getLocation().exists()) {
             for (StorageValue storageValue : this.getStorageNodes()) {
-                storageValue.<ConfigurationNode>createStorage(this.internalConfigurationNode);
+                storageValue.<ConfigurationNode>loadStorage(this.internalConfigurationNode);
             }
         }
 
@@ -99,19 +106,32 @@ public class SpeedDetection extends Detection implements StorageConsumer {
         this.ready = false;
     }
 
+    @Listener
+    public void onCheckEnd(CheckEndEvent event) {
+        if (event.getResult().isPresent()) {
+            try {
+                Offense offense = new Offense.Builder().dateAndTime(LocalDateTime.now())
+                        .detection(event.getCheck().getProvider().getDetection())
+                        .severity((Integer) event.getResult().get().getReports().get(ReportType.SEVERITY)).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public ContextProvider getContextProvider() {
         return this.plugin;
     }
 
     @Override
-    public Object getPlugin() {
+    public Guardian getPlugin() {
         return this.plugin;
     }
 
     @Override
-    public StorageConsumer getConfiguration() {
-        return this;
+    public SpeedDetection.Configuration getConfiguration() {
+        return this.internalConfigurationProvider;
     }
 
     @Override
@@ -132,14 +152,11 @@ public class SpeedDetection extends Detection implements StorageConsumer {
     @Override
     public StorageValue<?, ?>[] getStorageNodes() {
         return new StorageValue<?, ?>[] {
-                this.internalConfigurationProvider.configSneakControl, this.internalConfigurationProvider.configWalkControl,
-                this.internalConfigurationProvider.configSprintControl, this.internalConfigurationProvider.configFlyControl,
-                this.internalConfigurationProvider.configAirModifier, this.internalConfigurationProvider.configGroundModifier,
-                this.internalConfigurationProvider.configLiquidModifier
+                this.internalConfigurationProvider.configControlValues, this.internalConfigurationProvider.configMaterialValues
         };
     }
 
-    public static class Configuration {
+    public static class Configuration implements DetectionConfiguration {
 
         private SpeedDetection speedDetection;
 
@@ -147,51 +164,58 @@ public class SpeedDetection extends Detection implements StorageConsumer {
 
         // Player Control
 
-        public StorageValue<String, Double> configSneakControl;
-        public StorageValue<String, Double> configWalkControl;
-        public StorageValue<String, Double> configSprintControl;
-        public StorageValue<String, Double> configFlyControl;
+        public StorageValue<String, Map<String, Double>> configControlValues;
 
         // Block Speed
 
-        public StorageValue<String, Double> configAirModifier;
-        public StorageValue<String, Double> configGroundModifier;
-        public StorageValue<String, Double> configLiquidModifier;
+        public StorageValue<String, Map<String, Double>> configMaterialValues;
 
         public Configuration(SpeedDetection speedDetection) {
             this.speedDetection = speedDetection;
 
-            configFile = new File(((Guardian) this.speedDetection.getPlugin()).getGlobalConfiguration()
+            configFile = new File(this.speedDetection.getPlugin().getGlobalConfiguration()
                     .getLocation().getParentFile(), "detection" + File.separator + speedDetection.getId() + ".conf");
 
             // Player Control
 
-            this.configSneakControl = new StorageValue<>(new StorageKey<>("sneak_control_modifier"), null,
-                    1.015, null);
+            HashMap<String, Double> controlValues = new HashMap<>();
+            controlValues.put("sneak", 1.015);
+            controlValues.put("walk", 1.035);
+            controlValues.put("sprint", 1.065);
+            controlValues.put("fly", 1.08);
 
-            this.configWalkControl = new StorageValue<>(new StorageKey<>("walk_control_modifier"), null,
-                    1.035, null);
-
-            this.configSprintControl = new StorageValue<>(new StorageKey<>("sprint_control_modifier"), null,
-                    1.065, null);
-
-            this.configFlyControl = new StorageValue<>(new StorageKey<>("fly_control_modifier"), null,
-                    1.08, null);
+            this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
+                    "Magic values for movement the player controls that are added each tick.",
+                    controlValues, new TypeToken<Map<String, Double>>() {
+            });
 
             // Block Speed
 
-            this.configAirModifier = new StorageValue<>(new StorageKey<>("air_block_amplifier"), null,
-                    1.045, null);
+            HashMap<String, Double> materialValues = new HashMap<>();
+            materialValues.put("gas", 1.045);
+            materialValues.put("solid", 1.025);
+            materialValues.put("liquid", 1.015);
 
-            this.configGroundModifier = new StorageValue<>(new StorageKey<>("ground_block_amplifier"), null,
-                    1.025, null);
-
-            this.configLiquidModifier = new StorageValue<>(new StorageKey<>("liquid_block_amplifier"), null,
-                    1.015, null);
+            this.configMaterialValues = new StorageValue<>(new StorageKey<>("material-values"),
+                    "Magic values for materials touching the player that affect the players speed which are added each tick.",
+                    materialValues, new TypeToken<Map<String, Double>>() {
+            });
         }
 
         public static File getLocation() {
             return configFile;
+        }
+
+        @Override
+        public <K, E> StorageValue<K, E> get(K name, E defaultElement) {
+            if (name instanceof String && defaultElement instanceof Map) {
+                if (name.equals("control-values")) {
+                    return (StorageValue<K, E>) this.configControlValues;
+                } else if (name.equals("material-values")) {
+                    return (StorageValue<K, E>) this.configMaterialValues;
+                }
+            }
+            return null;
         }
     }
 }

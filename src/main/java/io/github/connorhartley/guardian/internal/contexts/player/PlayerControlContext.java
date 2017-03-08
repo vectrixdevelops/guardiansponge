@@ -28,10 +28,14 @@ import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.internal.detections.SpeedDetection;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class PlayerControlContext {
 
@@ -39,9 +43,10 @@ public class PlayerControlContext {
 
     public static class HorizontalSpeed extends Context {
 
+        private Guardian plugin;
+        private Detection detection;
         private Player player;
         private ContextContainer contextContainer;
-        private StorageConsumer storageConsumer;
 
         private double sneakSpeedControl = 1.015;
         private double walkSpeedControl = 1.035;
@@ -51,20 +56,20 @@ public class PlayerControlContext {
         private long updateAmount = 0;
         private boolean suspended = false;
 
-        public HorizontalSpeed(Guardian plugin, Player player, StorageConsumer storageConsumer) {
-            super(plugin);
+        public HorizontalSpeed(Guardian plugin, Detection detection, Player player) {
+            super(plugin, detection, player);
+            this.plugin = plugin;
+            this.detection = detection;
             this.player = player;
-            this.storageConsumer = storageConsumer;
             this.contextContainer = new ContextContainer(this);
 
-            for (StorageValue storageValue : this.storageConsumer.getStorageNodes()) {
-                switch ((String) storageValue.getKey().get()) {
-                    case "sneak_control_modifier": this.sneakSpeedControl = (Double) storageValue.getValue();
-                    case "walk_control_modifier": this.walkSpeedControl = (Double) storageValue.getValue();
-                    case "sprint_control_modifier": this.sprintSpeedControl = (Double) storageValue.getValue();
-                    case "fly_control_modifier": this.flySpeedControl = (Double) storageValue.getValue();
-                }
-            }
+            Map<String, Double> storageValueMap = this.detection.getConfiguration().get("control-values",
+                    new HashMap<String, Double>()).getValue();
+
+            this.sneakSpeedControl = storageValueMap.get("sneak");
+            this.walkSpeedControl = storageValueMap.get("walk");
+            this.sprintSpeedControl = storageValueMap.get("sprint");
+            this.flySpeedControl = storageValueMap.get("fly");
 
             this.contextContainer.set(ContextTypes.CONTROL_SPEED);
             this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE);

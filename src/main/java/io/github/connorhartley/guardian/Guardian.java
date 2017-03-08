@@ -36,6 +36,7 @@ import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
+import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
 import io.github.connorhartley.guardian.sequence.action.Action;
@@ -204,7 +205,7 @@ public class Guardian implements ContextProvider {
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
                     if (moduleWrapper.getModule().get() instanceof Detection) {
-                        Detection detection = (Detection) moduleWrapper.getModule().get();
+                        Detection<Guardian> detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
 
@@ -253,7 +254,7 @@ public class Guardian implements ContextProvider {
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
                     if (moduleWrapper.getModule().get() instanceof Detection) {
-                        Detection detection = (Detection) moduleWrapper.getModule().get();
+                        Detection<Guardian> detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
                     }

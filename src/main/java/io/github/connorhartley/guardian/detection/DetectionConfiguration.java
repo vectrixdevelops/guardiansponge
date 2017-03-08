@@ -21,33 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context;
+package io.github.connorhartley.guardian.detection;
 
-import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
-import io.github.connorhartley.guardian.detection.Detection;
-import org.spongepowered.api.entity.living.player.Player;
+import io.github.connorhartley.guardian.storage.container.StorageValue;
 
-public abstract class Context {
+public interface DetectionConfiguration {
 
-    private final Guardian plugin;
-
-    public Context(Guardian plugin, Detection detection, Player player) {
-        this.plugin = plugin;
-    }
-
-    public Guardian getPlugin() {
-        return this.plugin;
-    }
-
-    public abstract void update();
-
-    public abstract void suspend();
-
-    public abstract boolean isSuspended();
-
-    public abstract long updateAmount();
-
-    public abstract ContextContainer getContainer();
+    <K, E> StorageValue<K, E> get(K name, E defaultElement);
 
 }

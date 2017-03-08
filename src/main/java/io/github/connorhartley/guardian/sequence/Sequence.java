@@ -167,8 +167,8 @@ public class Sequence {
     void testContext(Player player) {
         if (this.contextContainer.isEmpty()) {
             this.contextBuilder.getContexts().forEach(actionContextClass ->
-                    this.contextProvider.getContextController().construct(player,
-                            this.getProvider().getDetection().getConfiguration(), actionContextClass)
+                    this.contextProvider.getContextController().construct(this.getProvider().getDetection(),
+                            player, actionContextClass)
                             .ifPresent(context -> this.contextContainer.add(context.getContainer())));
         }
     }

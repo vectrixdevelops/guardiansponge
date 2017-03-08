@@ -27,38 +27,44 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.internal.detections.SpeedDetection;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Direction;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BlockSpeedContext extends Context {
 
+    private Guardian plugin;
+    private Detection detection;
     private Player player;
     private ContextContainer contextContainer;
-    private StorageConsumer storageConsumer;
 
-    private double airSpeedModifier = 1.045;
-    private double groundSpeedModifier = 1.025;
+    private double gasSpeedModifier = 1.045;
+    private double solidSpeedModifier = 1.025;
     private double liquidSpeedModifier = 1.015;
 
     private long updateAmount = 0;
     private boolean suspended = false;
 
-    public BlockSpeedContext(Guardian plugin, Player player, StorageConsumer storageConsumer) {
-        super(plugin);
+    public BlockSpeedContext(Guardian plugin, Detection detection, Player player) {
+        super(plugin, detection, player);
+        this.plugin = plugin;
+        this.detection = detection;
         this.player = player;
         this.contextContainer = new ContextContainer(this);
-        this.storageConsumer = storageConsumer;
 
-        for (StorageValue storageValue : this.storageConsumer.getStorageNodes()) {
-            switch ((String) storageValue.getKey().get()) {
-                case "air_block_amplifier": this.airSpeedModifier = (Double) storageValue.getValue();
-                case "ground_block_amplifier": this.groundSpeedModifier = (Double) storageValue.getValue();
-                case "liquid_block_amplifier": this.liquidSpeedModifier = (Double) storageValue.getValue();
-            }
-        }
+        Map<String, Double> storageValueMap = this.detection.getConfiguration().get("material-values",
+                new HashMap<String, Double>()).getValue();
+
+        this.gasSpeedModifier = storageValueMap.get("gas");
+        this.solidSpeedModifier = storageValueMap.get("solid");
+        this.liquidSpeedModifier = storageValueMap.get("liquid");
 
         this.contextContainer.set(ContextTypes.SPEED_AMPLIFIER);
     }
@@ -66,16 +72,16 @@ public class BlockSpeedContext extends Context {
     @Override
     public void update() {
         if (!this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
-            this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.airSpeedModifier);
+            this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
         MatterProperty matterProperty = this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
 
         if (matterProperty.getValue() != null) {
             if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
                 this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.liquidSpeedModifier);
             } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.airSpeedModifier);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
             } else {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.groundSpeedModifier);
+                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.solidSpeedModifier);
             }
         }
         this.updateAmount += 1;

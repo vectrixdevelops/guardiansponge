@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian.context;
 
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.Player;
@@ -43,15 +44,15 @@ public class ContextController {
         this.plugin = plugin;
     }
 
-    public Optional<Context> construct(Player player, StorageConsumer storageConsumer, Class<? extends Context> context) {
+    public Optional<Context> construct(Detection detection, Player player, Class<? extends Context> context) {
         for (Class<? extends Context> contextClass : this.contextRegistry) {
             if (contextClass.equals(context)) {
                 if (this.runningContexts.get(player) == null) {
                     List<Context> contexts = new ArrayList<>();
 
                     try {
-                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Player.class, StorageConsumer.class);
-                        Context newContext = (Context) ctor.newInstance(this.plugin, player, storageConsumer);
+                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, Player.class);
+                        Context newContext = (Context) ctor.newInstance(this.plugin, detection, player);
 
                         contexts.add(newContext);
                         this.runningContexts.put(player, contexts);
@@ -74,8 +75,8 @@ public class ContextController {
                         contexts.addAll(this.runningContexts.get(player));
 
                         try {
-                            Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Player.class, StorageConsumer.class);
-                            Context newContext = (Context) ctor.newInstance(this.plugin, player, storageConsumer);
+                            Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, Player.class);
+                            Context newContext = (Context) ctor.newInstance(this.plugin, detection, player);
 
                             contexts.add(newContext);
                             this.runningContexts.put(player, contexts);

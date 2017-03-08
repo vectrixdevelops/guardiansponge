@@ -93,19 +93,6 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
                 this.configEnabledDetections.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configLoggingLevel.<ConfigurationNode>loadStorage(this.configurationNode);
 
-                this.plugin.getModuleController().getModules().stream()
-                        .filter(ModuleWrapper::isEnabled)
-                        .forEach(moduleWrapper -> {
-                            if (!moduleWrapper.getModule().isPresent()) return;
-                            Detection detection = (Detection) moduleWrapper.getModule().get();
-
-                            if (detection instanceof StorageConsumer) {
-                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
-                                    storageValue.<ConfigurationNode>loadStorage(this.configurationNode);
-                                }
-                            }
-                        });
-
                 this.configManager.save(this.configurationNode);
             }
         } catch (IOException e) {
@@ -122,19 +109,6 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
                 this.configVersion.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configEnabledDetections.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configLoggingLevel.<ConfigurationNode>updateStorage(this.configurationNode);
-
-                this.plugin.getModuleController().getModules().stream()
-                        .filter(ModuleWrapper::isEnabled)
-                        .forEach(moduleWrapper -> {
-                            if (!moduleWrapper.getModule().isPresent()) return;
-                            Detection detection = (Detection) moduleWrapper.getModule().get();
-
-                            if (detection instanceof StorageConsumer) {
-                                for (StorageValue storageValue : ((StorageConsumer) detection).getStorageNodes()) {
-                                    storageValue.<ConfigurationNode>updateStorage(this.configurationNode);
-                                }
-                            }
-                        });
 
                 this.configManager.save(this.configurationNode);
             }
