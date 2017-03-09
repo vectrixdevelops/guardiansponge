@@ -25,8 +25,10 @@ package io.github.connorhartley.guardian.detection;
 
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 
+import java.util.Optional;
+
 public interface DetectionConfiguration {
 
-    <K, E> StorageValue<K, E> get(K name, E defaultElement);
+    <K, E> Optional<StorageValue<K, E>> get(K name, E defaultElement);
 
 }

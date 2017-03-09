@@ -59,12 +59,14 @@ public class BlockSpeedContext extends Context {
         this.player = player;
         this.contextContainer = new ContextContainer(this);
 
-        Map<String, Double> storageValueMap = this.detection.getConfiguration().get("material-values",
-                new HashMap<String, Double>()).getValue();
+        if (this.detection.getConfiguration().get("material-values", new HashMap<String, Double>()).isPresent()) {
+            Map<String, Double> storageValueMap = this.detection.getConfiguration().get("material-values",
+                    new HashMap<String, Double>()).get().getValue();
 
-        this.gasSpeedModifier = storageValueMap.get("gas");
-        this.solidSpeedModifier = storageValueMap.get("solid");
-        this.liquidSpeedModifier = storageValueMap.get("liquid");
+            this.gasSpeedModifier = storageValueMap.get("gas");
+            this.solidSpeedModifier = storageValueMap.get("solid");
+            this.liquidSpeedModifier = storageValueMap.get("liquid");
+        }
 
         this.contextContainer.set(ContextTypes.SPEED_AMPLIFIER);
     }

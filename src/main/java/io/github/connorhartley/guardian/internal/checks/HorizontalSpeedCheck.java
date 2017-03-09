@@ -43,6 +43,8 @@ import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.util.HashMap;
+
 public class HorizontalSpeedCheck extends Check {
 
     HorizontalSpeedCheck(CheckProvider checkProvider, User user) {
@@ -62,8 +64,23 @@ public class HorizontalSpeedCheck extends Check {
         private Location<World> previousLocation;
         private Location<World> presentLocation;
 
+        private double analysisTime = 40;
+        private double minimumTickRange = 30;
+        private double maximumTickRange = 40;
+
         public Provider(Detection detection) {
             this.detection = detection;
+
+            if (this.detection.getConfiguration().get("analysis-time", 2.0).isPresent()) {
+                this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2.0).get().getValue() / 0.05;
+            }
+
+            if (this.detection.getConfiguration().get("tick-bounds", new HashMap<String, Double>()).isPresent()) {
+                this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get("tick-bounds",
+                        new HashMap<String, Double>()).get().getValue().get("min");
+                this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get("tick-bounds",
+                        new HashMap<String, Double>()).get().getValue().get("max");
+            }
         }
 
         @Override
@@ -98,8 +115,8 @@ public class HorizontalSpeedCheck extends Check {
                     // After 2 Seconds : Move Entity Event
 
                     .action(MoveEntityEvent.class)
-                    .delay(20 * 2)
-                    .expire(20 * 3)
+                    .delay((int) this.analysisTime)
+                    .expire((int) this.analysisTime + 1)
 
                     .condition((user, event, contextContainers, sequenceReport, lastAction) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
@@ -137,14 +154,14 @@ public class HorizontalSpeedCheck extends Check {
                             }
                         }
 
-                        if (playerControlTicks < 30 || blockModifierTicks < 30) {
+                        if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
                             plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
                             SequenceReport failReport = SequenceReport.of(sequenceResult)
                                     .append(ReportType.TEST, false)
                                     .build();
 
                             return new ConditionResult(false, failReport);
-                        } else if (playerControlTicks > 40 || blockModifierTicks > 40) {
+                        } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
                             SequenceReport failReport = SequenceReport.of(sequenceResult)
                                     .append(ReportType.TEST, false)
                                     .build();

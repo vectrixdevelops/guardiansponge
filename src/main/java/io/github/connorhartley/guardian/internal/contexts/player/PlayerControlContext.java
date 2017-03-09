@@ -63,13 +63,15 @@ public class PlayerControlContext {
             this.player = player;
             this.contextContainer = new ContextContainer(this);
 
-            Map<String, Double> storageValueMap = this.detection.getConfiguration().get("control-values",
-                    new HashMap<String, Double>()).getValue();
+            if (this.detection.getConfiguration().get("control-values", new HashMap<String, Double>()).isPresent()) {
+                Map<String, Double> storageValueMap = this.detection.getConfiguration().get("control-values",
+                        new HashMap<String, Double>()).get().getValue();
 
-            this.sneakSpeedControl = storageValueMap.get("sneak");
-            this.walkSpeedControl = storageValueMap.get("walk");
-            this.sprintSpeedControl = storageValueMap.get("sprint");
-            this.flySpeedControl = storageValueMap.get("fly");
+                this.sneakSpeedControl = storageValueMap.get("sneak");
+                this.walkSpeedControl = storageValueMap.get("walk");
+                this.sprintSpeedControl = storageValueMap.get("sprint");
+                this.flySpeedControl = storageValueMap.get("fly");
+            }
 
             this.contextContainer.set(ContextTypes.CONTROL_SPEED);
             this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE);

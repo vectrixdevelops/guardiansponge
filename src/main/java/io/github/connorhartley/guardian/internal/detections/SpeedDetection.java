@@ -23,8 +23,6 @@
  */
 package io.github.connorhartley.guardian.internal.detections;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
@@ -41,7 +39,6 @@ import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.check.CheckEndEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
-import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
@@ -50,14 +47,13 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Module(id = "speed_detection",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.5",
+        version = "0.0.6",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -73,6 +69,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     private Guardian plugin;
     private ConfigurationNode globalConfigurationNode;
     private Configuration internalConfigurationProvider;
+    private List<CheckProvider> checkProviders;
 
     private boolean ready = false;
 
@@ -99,6 +96,8 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
 
         this.ready = true;
+
+        this.checkProviders = Collections.singletonList(new HorizontalSpeedCheck.Provider(this));
     }
 
     @Override
@@ -130,7 +129,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     }
 
     @Override
-    public SpeedDetection.Configuration getConfiguration() {
+    public DetectionConfiguration getConfiguration() {
         return this.internalConfigurationProvider;
     }
 
@@ -141,7 +140,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
     @Override
     public List<CheckProvider> getChecks() {
-        return Collections.singletonList(new HorizontalSpeedCheck.Provider(this));
+        return this.checkProviders;
     }
 
     @Override
@@ -152,6 +151,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     @Override
     public StorageValue<?, ?>[] getStorageNodes() {
         return new StorageValue<?, ?>[] {
+                this.internalConfigurationProvider.configAnalysisTime, this.internalConfigurationProvider.configTickBounds,
                 this.internalConfigurationProvider.configControlValues, this.internalConfigurationProvider.configMaterialValues
         };
     }
@@ -162,12 +162,9 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
         private static File configFile;
 
-        // Player Control
-
+        public StorageValue<String, Double> configAnalysisTime;
+        public StorageValue<String, Map<String, Double>> configTickBounds;
         public StorageValue<String, Map<String, Double>> configControlValues;
-
-        // Block Speed
-
         public StorageValue<String, Map<String, Double>> configMaterialValues;
 
         public Configuration(SpeedDetection speedDetection) {
@@ -175,6 +172,19 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
             configFile = new File(this.speedDetection.getPlugin().getGlobalConfiguration()
                     .getLocation().getParentFile(), "detection" + File.separator + speedDetection.getId() + ".conf");
+
+            this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
+                    "Time taken to analyse the players speed. 2 seconds is recommended!",
+                    2.0, null);
+
+            HashMap<String, Double> tickBounds = new HashMap<>();
+            tickBounds.put("min", 0.75);
+            tickBounds.put("max", 1.0);
+
+            this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
+                    "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
+                    tickBounds, new TypeToken<Map<String, Double>>() {
+            });
 
             // Player Control
 
@@ -207,15 +217,19 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         }
 
         @Override
-        public <K, E> StorageValue<K, E> get(K name, E defaultElement) {
-            if (name instanceof String && defaultElement instanceof Map) {
+        public <K, E> Optional<StorageValue<K, E>> get(K name, E defaultElement) {
+            if (name instanceof String) {
                 if (name.equals("control-values")) {
-                    return (StorageValue<K, E>) this.configControlValues;
+                    return Optional.of((StorageValue<K, E>) this.configControlValues);
                 } else if (name.equals("material-values")) {
-                    return (StorageValue<K, E>) this.configMaterialValues;
+                    return Optional.of((StorageValue<K, E>) this.configMaterialValues);
+                } else if (name.equals("analysis-time")) {
+                    return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
+                } else if (name.equals("tick-bounds")) {
+                    return Optional.of((StorageValue<K, E>) this.configTickBounds);
                 }
             }
-            return null;
+            return Optional.empty();
         }
     }
 }

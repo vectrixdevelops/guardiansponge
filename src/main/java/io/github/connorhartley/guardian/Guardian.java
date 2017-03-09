@@ -67,7 +67,8 @@ import java.io.File;
         version = "6.0.0-0.1.0-01",
         description = "An extensible anticheat plugin for Sponge.",
         authors = {
-                "Connor Hartley (vectrix)"
+                "Connor Hartley (vectrix)",
+                "Matthew Miller (me4502)"
         },
         dependencies = @Dependency(
                 id = "precogs"
