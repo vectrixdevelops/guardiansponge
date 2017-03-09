@@ -39,6 +39,7 @@ import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.check.CheckEndEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
@@ -109,9 +110,14 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     public void onCheckEnd(CheckEndEvent event) {
         if (event.getResult().isPresent()) {
             try {
-                Offense offense = new Offense.Builder().dateAndTime(LocalDateTime.now())
+                Offense offense = new Offense.Builder()
+                        .dateAndTime(LocalDateTime.now())
                         .detection(event.getCheck().getProvider().getDetection())
-                        .severity((Integer) event.getResult().get().getReports().get(ReportType.SEVERITY)).build();
+                        .report(event.getResult().orElse(SequenceReport.builder().build()))
+                        .severity((Integer) event.getResult().get().getReports().get(ReportType.SEVERITY))
+                        .build();
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

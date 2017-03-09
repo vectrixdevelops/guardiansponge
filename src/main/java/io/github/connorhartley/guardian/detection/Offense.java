@@ -24,6 +24,8 @@
 package io.github.connorhartley.guardian.detection;
 
 import java.time.LocalDateTime;
+
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.Player;
 
 /**
@@ -35,11 +37,13 @@ import org.spongepowered.api.entity.living.player.Player;
 public class Offense {
 
     private final Detection offenseDetection;
+    private final SequenceReport offenseReport;
     private final LocalDateTime offenseDateTime;
     private final int offenseSeverity;
 
     private Offense(Builder builder) {
         this.offenseDetection = builder.offenseDetection;
+        this.offenseReport = builder.offenseReport;
         this.offenseDateTime = builder.offenseDateTime;
         this.offenseSeverity = builder.offenseSeverity;
     }
@@ -52,6 +56,17 @@ public class Offense {
      * @return The {@link Detection}
      */
     public Detection getDetection() { return this.offenseDetection; }
+
+    /**
+     * Get Report
+     *
+     * <p>Returns the sequence report for this offense.</p>
+     *
+     * @return The {@link SequenceReport}
+     */
+    public SequenceReport getReport() {
+        return this.offenseReport;
+    }
 
     /**
      * Get Date and Time
@@ -83,6 +98,7 @@ public class Offense {
     public static class Builder {
 
         private Detection offenseDetection;
+        private SequenceReport offenseReport;
         private LocalDateTime offenseDateTime;
         private int offenseSeverity;
 
@@ -100,6 +116,19 @@ public class Offense {
             this.offenseDetection = offense.getDetection();
             this.offenseDateTime = offense.getDateAndTime();
             this.offenseSeverity = offense.getSeverity();
+            return this;
+        }
+
+        /**
+         * Report
+         *
+         * <p>Sets the sequence report of the offense to the builder.</p>
+         *
+         * @param sequenceReport The {@link SequenceReport}
+         * @return This {@link Builder}
+         */
+        public Builder report(SequenceReport sequenceReport) {
+            this.offenseReport = sequenceReport;
             return this;
         }
 
