@@ -29,6 +29,7 @@ import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleConfiguration;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import com.me4502.precogs.detection.CommonDetectionTypes;
+import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -40,9 +41,9 @@ import io.github.connorhartley.guardian.event.check.CheckEndEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
-import io.github.connorhartley.guardian.storage.StorageConsumer;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -54,7 +55,7 @@ import java.util.*;
 @Module(id = "speed_detection",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.6",
+        version = "0.0.7",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -67,14 +68,14 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     @ModuleConfiguration
     public ConfigurationNode internalConfigurationNode;
 
+    private static Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
+
     private Guardian plugin;
     private ConfigurationNode globalConfigurationNode;
     private Configuration internalConfigurationProvider;
     private List<CheckProvider> checkProviders;
 
     private boolean ready = false;
-
-    private static final Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
 
     public SpeedDetection() {
         super(moduleAnnotation.id(), moduleAnnotation.name());
@@ -106,27 +107,14 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         this.ready = false;
     }
 
-    @Listener
-    public void onCheckEnd(CheckEndEvent event) {
-        if (event.getResult().isPresent()) {
-            try {
-                Offense offense = new Offense.Builder()
-                        .dateAndTime(LocalDateTime.now())
-                        .detection(event.getCheck().getProvider().getDetection())
-                        .report(event.getResult().orElse(SequenceReport.builder().build()))
-                        .severity((Integer) event.getResult().get().getReports().get(ReportType.SEVERITY))
-                        .build();
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    @Override
+    public List<CheckProvider> getChecks() {
+        return this.checkProviders;
     }
 
     @Override
-    public ContextProvider getContextProvider() {
-        return this.plugin;
+    public CommonDetectionTypes.Category getCategory() {
+        return CommonDetectionTypes.Category.MOVEMENT;
     }
 
     @Override
@@ -140,26 +128,21 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     }
 
     @Override
-    public boolean isReady() {
-        return this.ready;
-    }
-
-    @Override
-    public List<CheckProvider> getChecks() {
-        return this.checkProviders;
-    }
-
-    @Override
-    public CommonDetectionTypes.Category getCategory() {
-        return CommonDetectionTypes.Category.MOVEMENT;
-    }
-
-    @Override
     public StorageValue<?, ?>[] getStorageNodes() {
         return new StorageValue<?, ?>[] {
                 this.internalConfigurationProvider.configAnalysisTime, this.internalConfigurationProvider.configTickBounds,
                 this.internalConfigurationProvider.configControlValues, this.internalConfigurationProvider.configMaterialValues
         };
+    }
+
+    @Override
+    public ContextProvider getContextProvider() {
+        return this.plugin;
+    }
+
+    @Override
+    public boolean isReady() {
+        return this.ready;
     }
 
     public static class Configuration implements DetectionConfiguration {
@@ -168,17 +151,21 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
         private static File configFile;
 
-        public StorageValue<String, Double> configAnalysisTime;
-        public StorageValue<String, Map<String, Double>> configTickBounds;
-        public StorageValue<String, Map<String, Double>> configControlValues;
-        public StorageValue<String, Map<String, Double>> configMaterialValues;
+        StorageValue<String, Double> configAnalysisTime;
+        StorageValue<String, Map<String, Double>> configTickBounds;
+        StorageValue<String, Map<String, Double>> configControlValues;
+        StorageValue<String, Map<String, Double>> configMaterialValues;
 
-        public Configuration(SpeedDetection speedDetection) {
+        Configuration(SpeedDetection speedDetection) {
             this.speedDetection = speedDetection;
 
             configFile = new File(this.speedDetection.getPlugin().getGlobalConfiguration()
                     .getLocation().getParentFile(), "detection" + File.separator + speedDetection.getId() + ".conf");
 
+            initialize();
+        }
+
+        void initialize() {
             this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                     "Time taken to analyse the players speed. 2 seconds is recommended!",
                     2.0, null);
@@ -218,7 +205,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             });
         }
 
-        public static File getLocation() {
+        static File getLocation() {
             return configFile;
         }
 

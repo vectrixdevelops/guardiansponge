@@ -28,8 +28,10 @@ import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.Offense;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
@@ -39,23 +41,53 @@ import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class HorizontalSpeedCheck extends Check {
 
+    private final CheckProvider checkProvider;
+    private final User user;
+
     HorizontalSpeedCheck(CheckProvider checkProvider, User user) {
         super(checkProvider, user);
+        this.checkProvider = checkProvider;
+        this.user = user;
     }
 
     @Override
     public void update() {}
 
     @Override
-    public void finish() {}
+    public void finish() {
+        this.setChecking(false);
+    }
+
+    @Listener
+    public void onSequenceFinish(SequenceFinishEvent event) {
+        if (!event.isCancelled()) {
+            if (this.checkProvider.getSequence().equals(event.getSequence())) {
+                try {
+                    if ((Boolean) event.getResult().getReports().get(ReportType.TEST)) {
+//                        Offense offense = new Offense.Builder()
+//                                .dateAndTime(LocalDateTime.now())
+//                                .detection(this.checkProvider.getDetection())
+//                                .report(event.getResult())
+//                                .severity((Integer) event.getResult().getReports().get(ReportType.SEVERITY))
+//                                .build();
+                        // TODO: Post offense to punishment system.
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     public static class Provider implements CheckProvider {
 
