@@ -39,7 +39,7 @@ public class Offense {
     private final Detection offenseDetection;
     private final SequenceReport offenseReport;
     private final LocalDateTime offenseDateTime;
-    private final int offenseSeverity;
+    private final double offenseSeverity;
 
     private Offense(Builder builder) {
         this.offenseDetection = builder.offenseDetection;
@@ -84,9 +84,9 @@ public class Offense {
      *
      * <p>Returns the severity of the offense.</p>
      *
-     * @return An {@link Integer} representing the level of severity
+     * @return An {@link Double} representing the level of severity
      */
-    public int getSeverity() {
+    public double getSeverity() {
         return this.offenseSeverity;
     }
 
@@ -100,7 +100,7 @@ public class Offense {
         private Detection offenseDetection;
         private SequenceReport offenseReport;
         private LocalDateTime offenseDateTime;
-        private int offenseSeverity;
+        private double offenseSeverity;
 
         public Builder() {}
 
@@ -161,15 +161,12 @@ public class Offense {
         /**
          * Severity
          *
-         * <p>Sets the severity of the offense to the builder.
-         * Value must be between 0 and 100.</p>
+         * <p>Sets the severity of the offense to the builder.</p>
          *
-         * @param severity The {@link Integer} representing the level of severity
+         * @param severity The {@link Double} representing the level of severity
          * @return This {@link Builder}
-         * @throws Exception Value out of bounds exception
          */
-        public Builder severity(int severity) throws Exception {
-            if (severity < 0 || severity > 100) throw new Exception("Value out of bounds exception.");
+        public Builder severity(double severity) {
             this.offenseSeverity = severity;
             return this;
         }

@@ -39,6 +39,7 @@ import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
@@ -53,6 +54,10 @@ public class HorizontalSpeedCheck extends Check {
 
     private final CheckProvider checkProvider;
     private final User user;
+
+    private double lower = 0d;
+    private double mean = 5d;
+    private double standardDeviation = 3d;
 
     HorizontalSpeedCheck(CheckProvider checkProvider, User user) {
         super(checkProvider, user);
@@ -74,13 +79,29 @@ public class HorizontalSpeedCheck extends Check {
             if (this.checkProvider.getSequence().equals(event.getSequence())) {
                 try {
                     if ((Boolean) event.getResult().getReports().get(ReportType.TEST)) {
-//                        Offense offense = new Offense.Builder()
-//                                .dateAndTime(LocalDateTime.now())
-//                                .detection(this.checkProvider.getDetection())
-//                                .report(event.getResult())
-//                                .severity((Integer) event.getResult().getReports().get(ReportType.SEVERITY))
-//                                .build();
-                        // TODO: Post offense to punishment system.
+                        if (this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                                new HashMap<String, Double>()).isPresent()) {
+                            this.lower = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                                    new HashMap<String, Double>()).get().getValue().get("lower");
+                            this.mean = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                                    new HashMap<String, Double>()).get().getValue().get("mean");
+                            this.standardDeviation = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                                    new HashMap<String, Double>()).get().getValue().get("standard-deviation");
+                        }
+
+                        NormalDistribution normalDistribution =
+                                new NormalDistribution(this.mean, this.standardDeviation);
+
+                        double probability = normalDistribution.probability(this.lower, (Double) event.getResult().getReports().get(ReportType.SEVERITY));
+
+                        Offense offense = new Offense.Builder()
+                                .dateAndTime(LocalDateTime.now())
+                                .detection(this.checkProvider.getDetection())
+                                .report(event.getResult())
+                                .severity(probability)
+                                .build();
+
+                        ((Guardian) this.checkProvider.getDetection().getPlugin()).getPunishmentController().analyse(event.getUser(), offense);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -238,7 +259,8 @@ public class HorizontalSpeedCheck extends Check {
                             if (travelDisplacement > maximumSpeed) {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
-                                                (travelDisplacement - maximumSpeed) + ".");
+                                                (travelDisplacement - maximumSpeed) + ".")
+                                        .append(ReportType.SEVERITY, travelDisplacement - maximumSpeed);
                                 System.out.println(user.getName() + " has triggered the speed check.");
                                 System.out.println("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
                             } else {

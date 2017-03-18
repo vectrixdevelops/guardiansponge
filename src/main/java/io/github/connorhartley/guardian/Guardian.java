@@ -37,6 +37,7 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.punishment.PunishmentController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
 import io.github.connorhartley.guardian.sequence.action.Action;
@@ -132,8 +133,9 @@ public class Guardian implements ContextProvider {
 
     private GuardianDetections globalDetections;
 
-    /* Context / Check / Sequence */
+    /* Context / Check / Sequence / Punishment */
 
+    private PunishmentController punishmentController;
     private ContextController contextController;
     private CheckController checkController;
     private SequenceController sequenceController;
@@ -154,6 +156,7 @@ public class Guardian implements ContextProvider {
 
         getLogger().info("Registering controllers.");
 
+        this.punishmentController = new PunishmentController(this);
         this.contextController = new ContextController(this);
         this.checkController = new CheckController(this);
         this.sequenceController = new SequenceController(this, this.checkController);
@@ -211,6 +214,8 @@ public class Guardian implements ContextProvider {
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
 
                         Sponge.getRegistry().register(DetectionType.class, detection);
+
+                        this.punishmentController.register(detection);
                     }
                 });
 
@@ -258,6 +263,8 @@ public class Guardian implements ContextProvider {
                         Detection<Guardian> detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
+
+                        this.punishmentController.unregister(detection);
                     }
                 });
 
@@ -326,6 +333,17 @@ public class Guardian implements ContextProvider {
      */
     public GuardianDetections getGlobalDetections() {
         return this.globalDetections;
+    }
+
+    /**
+     * Get Punishment Controller
+     *
+     * <p>Returns the built-in {@link PunishmentController} for controlling the punishments.</p>
+     *
+     * @return The punishment controller
+     */
+    public PunishmentController getPunishmentController() {
+        return this.punishmentController;
     }
 
     @Override
