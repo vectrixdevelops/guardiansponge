@@ -36,7 +36,7 @@ import java.util.function.BiPredicate;
 public class PunishmentController {
 
     private final Guardian plugin;
-    private final HashMap<Detection, HashMap<PunishmentType, Double>> detectionPunishments = new HashMap<>();
+    private final HashMap<Detection, HashMap<String, Double>> detectionPunishments = new HashMap<>();
 
     public PunishmentController(Guardian plugin) {
         this.plugin = plugin;
@@ -50,14 +50,14 @@ public class PunishmentController {
         });
     }
 
-    public void post(User user, PunishmentType punishmentType, Offense offense) {
+    public void post(User user, String punishmentType, Offense offense) {
         // TODO: Do the punishment.
     }
 
     public void register(Detection detection) {
-        if (detection.getConfiguration().get("punishment-levels", new HashMap<PunishmentType, Double>()).isPresent()) {
+        if (detection.getConfiguration().get("punishment-levels", new HashMap<String, Double>()).isPresent()) {
             this.detectionPunishments.put(detection, detection.getConfiguration()
-                    .get("punishment-levels", new HashMap<PunishmentType, Double>()).get().getValue());
+                    .get("punishment-levels", new HashMap<String, Double>()).get().getValue());
         }
     }
 

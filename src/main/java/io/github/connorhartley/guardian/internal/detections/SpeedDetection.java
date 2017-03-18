@@ -157,7 +157,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         StorageValue<String, Map<String, Double>> configTickBounds;
         StorageValue<String, Map<String, Double>> configControlValues;
         StorageValue<String, Map<String, Double>> configMaterialValues;
-        StorageValue<String, Map<PunishmentType, Double>> configPunishmentLevels;
+        StorageValue<String, Map<String, Double>> configPunishmentLevels;
         StorageValue<String, Map<String, Double>> configSeverityDistribution;
 
         Configuration(SpeedDetection speedDetection) {
@@ -183,15 +183,15 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                     tickBounds, new TypeToken<Map<String, Double>>() {
             });
 
-            HashMap<PunishmentType, Double> punishmentLevels = new HashMap<>();
-            punishmentLevels.put(PunishmentType.WARN, 0.1);
-            punishmentLevels.put(PunishmentType.FLAG, 0.2);
-            punishmentLevels.put(PunishmentType.REPORT, 0.3);
-            punishmentLevels.put(PunishmentType.KICK, 0.5);
+            HashMap<String, Double> punishmentLevels = new HashMap<>();
+            punishmentLevels.put(PunishmentType.WARN.getPlaceHolderNames()[0], 0.1);
+            punishmentLevels.put(PunishmentType.FLAG.getPlaceHolderNames()[1], 0.2);
+            punishmentLevels.put(PunishmentType.REPORT.getPlaceHolderNames()[2], 0.3);
+            punishmentLevels.put(PunishmentType.KICK.getPlaceHolderNames()[3], 0.5);
 
             this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
                     "Punishments that happen when the user reaches the individual severity threshold.",
-                    punishmentLevels, new TypeToken<Map<PunishmentType, Double>>() {
+                    punishmentLevels, new TypeToken<Map<String, Double>>() {
             });
 
             HashMap<String, Double> severityDistribution = new HashMap<>();
