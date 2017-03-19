@@ -118,3 +118,9 @@ bintray {
         }
     }
 }
+
+install {
+    repositories.mavenInstaller {
+        addFilter('dist') { artifact, file -> artifact.name.endsWith('dist') }
+    }
+}
