@@ -84,13 +84,14 @@ shadowJar {
     exclude 'com/me4502/modularframework/ModularFramework.class'
 }
 
+artifacts {
+    jar
+    shadowJar
+    javadocJar
+    sourceJar
+}
+
 build.dependsOn(shadowJar)
 build.dependsOn(sourceJar)
 build.dependsOn(javadocJar)
 build.dependsOn(jar)
-
-install {
-    repositories.mavenInstaller {
-        addFilter('dist') { artifact, file -> artifact.name.endsWith('dist') }
-    }
-}
