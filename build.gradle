@@ -1,11 +1,9 @@
 plugins {
     id 'java'
     id 'maven'
-    id 'maven-publish'
     id 'idea'
     id 'eclipse'
     id 'signing'
-    id 'com.jfrog.bintray' version '1.7.3'
     id 'com.github.hierynomus.license' version '0.13.1'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'org.spongepowered.plugin' version '0.8.1'
@@ -73,7 +71,7 @@ jar {
 }
 
 shadowJar {
-    classifier 'dist'
+    classifier = 'dist'
     dependencies {
         relocate ('com.me4502.modularframework', 'io.github.connorhartley.guardian.util.modularframework') {
             include(dependency('com.me4502:ModularFramework'))
@@ -90,34 +88,6 @@ build.dependsOn(shadowJar)
 build.dependsOn(sourceJar)
 build.dependsOn(javadocJar)
 build.dependsOn(jar)
-
-publishing {
-    publications {
-        MyPublication(MavenPublication) {
-            from components.shadow
-            groupId pluginGroup
-            artifactId pluginId
-            version "${spongeVersion}-${pluginVersion}"
-        }
-    }
-}
-
-bintray {
-    user = System.getProperty('BIN_USER')
-    key = System.getProperty('BIN_KEY')
-    publications = [ 'MyPublication' ]
-    pkg {
-        repo = 'maven'
-        name = pluginId
-        licenses = [ 'MIT' ]
-        vcsUrl = 'https://github.com/connorhartley/guardian.git'
-        publicDownloadNumbers = true
-        version {
-            name = 'Guardian-' + spongeVersion + '-' + pluginVersion
-            desc = pluginId
-        }
-    }
-}
 
 install {
     repositories.mavenInstaller {
