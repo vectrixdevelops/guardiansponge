@@ -24,15 +24,20 @@
 package io.github.connorhartley.guardian.punishment;
 
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 public class PunishmentAction {
 
     public PunishmentAction() {}
 
     public void warn(Detection detection, User user, SequenceReport sequenceReport) {
-
+        if (user.getPlayer().isPresent()) {
+            user.getPlayer().get().sendMessage(Text.of(TextColors.RED + "You have violated the " + detection.getName() + " with a severity of " + sequenceReport.getReports().get(ReportType.SEVERITY)));
+        }
     }
 
     public void flag(Detection detection, User user, String time, SequenceReport sequenceReport) {

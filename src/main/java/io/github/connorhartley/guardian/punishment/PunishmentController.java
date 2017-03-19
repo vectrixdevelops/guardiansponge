@@ -49,7 +49,7 @@ public class PunishmentController {
 
     public void analyse(User user, Offense offense) {
         this.detectionPunishments.get(offense.getDetection()).forEach((punishmentType, value) -> {
-            if (value >= offense.getSeverity()) {
+            if (value >= offense.getSeverity() && value != -1) {
                 this.post(user, punishmentType, offense);
             }
         });
