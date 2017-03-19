@@ -25,30 +25,34 @@ package io.github.connorhartley.guardian.punishment;
 
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 
 public enum PunishmentType {
 
+    EMPTY("",
+            new String[]{},
+            new Class[]{}),
     WARN("warn p:%0 r:%1",
-            new String[]{"player", "report"},
-            new Class[]{Player.class, String.class}),
+            new String[]{"user", "report"},
+            new Class[]{User.class, SequenceReport.class}),
     FLAG("flag p:%0 t:%1 r:%2",
-            new String[]{"player", "time", "report"},
-            new Class[]{Player.class, String.class, SequenceReport.class}),
+            new String[]{"user", "time", "report"},
+            new Class[]{User.class, String.class, SequenceReport.class}),
     REPORT("report p:%0 t:%1 c:%2 r:%3",
-            new String[]{"player", "time", "channel", "report"},
-            new Class[]{Player.class, String.class, String.class, SequenceReport.class}),
+            new String[]{"user", "time", "channel", "report"},
+            new Class[]{User.class, String.class, String.class, SequenceReport.class}),
     KICK("kick p:%0 t:%1 c:%2 r:%3",
-            new String[]{"player", "time", "channel", "report"},
-            new Class[]{Player.class, String.class, String.class, SequenceReport.class}),
+            new String[]{"user", "time", "channel", "report"},
+            new Class[]{User.class, String.class, String.class, SequenceReport.class}),
     TEMPBAN("tempban p:%0 b:%1 t:%2 c:%3 r:%4",
-            new String[]{"player", "releasetime", "time", "channel", "report"},
-            new Class[]{Player.class, String.class, String.class, String.class, SequenceReport.class}),
+            new String[]{"user", "releasetime", "time", "channel", "report"},
+            new Class[]{User.class, String.class, String.class, String.class, SequenceReport.class}),
     BAN("tempban p:%0 t:%2 c:%3 r:%4",
-            new String[]{"player", "time", "channel", "report"},
-            new Class[]{Player.class, String.class, String.class, SequenceReport.class}),
+            new String[]{"user", "time", "channel", "report"},
+            new Class[]{User.class, String.class, String.class, SequenceReport.class}),
     CUSTOM("custom c:%0",
-            new String[]{"command", "player", "releasetime", "time", "channel", "report"},
-            new Class[]{String.class, Player.class, String.class, String.class, String.class, SequenceReport.class});
+            new String[]{"command", "user", "releasetime", "time", "channel", "report"},
+            new Class[]{String.class, User.class, String.class, String.class, String.class, SequenceReport.class});
 
     private String text;
     private String[] placeHolderNames;

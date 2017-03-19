@@ -27,6 +27,7 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.Offense;
 import io.github.connorhartley.guardian.detection.check.Check;
@@ -78,29 +79,31 @@ public class HorizontalSpeedCheck extends Check {
         if (!event.isCancelled()) {
             if (this.checkProvider.getSequence().equals(event.getSequence())) {
                 try {
+                    if (this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                            new HashMap<String, Double>()).isPresent()) {
+                        this.lower = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                                new HashMap<String, Double>()).get().getValue().get("lower");
+                        this.mean = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                                new HashMap<String, Double>()).get().getValue().get("mean");
+                        this.standardDeviation = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
+                                new HashMap<String, Double>()).get().getValue().get("standard-deviation");
+                    }
+
+                    NormalDistribution normalDistribution =
+                            new NormalDistribution(this.mean, this.standardDeviation);
+
+                    double probability = normalDistribution.probability(this.lower, (Double) event.getResult().getReports().get(ReportType.SEVERITY));
+
+                    Offense offense = new Offense.Builder()
+                            .dateAndTime(LocalDateTime.now())
+                            .detection(this.checkProvider.getDetection())
+                            .report(event.getResult())
+                            .severity(probability)
+                            .build();
+
+                    this.user.offer(DataKeys.GUARDIAN_OFFENSE_TAG, offense);
+
                     if ((Boolean) event.getResult().getReports().get(ReportType.TEST)) {
-                        if (this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                                new HashMap<String, Double>()).isPresent()) {
-                            this.lower = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                                    new HashMap<String, Double>()).get().getValue().get("lower");
-                            this.mean = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                                    new HashMap<String, Double>()).get().getValue().get("mean");
-                            this.standardDeviation = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                                    new HashMap<String, Double>()).get().getValue().get("standard-deviation");
-                        }
-
-                        NormalDistribution normalDistribution =
-                                new NormalDistribution(this.mean, this.standardDeviation);
-
-                        double probability = normalDistribution.probability(this.lower, (Double) event.getResult().getReports().get(ReportType.SEVERITY));
-
-                        Offense offense = new Offense.Builder()
-                                .dateAndTime(LocalDateTime.now())
-                                .detection(this.checkProvider.getDetection())
-                                .report(event.getResult())
-                                .severity(probability)
-                                .build();
-
                         ((Guardian) this.checkProvider.getDetection().getPlugin()).getPunishmentController().analyse(event.getUser(), offense);
                     }
                 } catch (Exception e) {
@@ -117,15 +120,15 @@ public class HorizontalSpeedCheck extends Check {
         private Location<World> previousLocation;
         private Location<World> presentLocation;
 
-        private double analysisTime = 40;
-        private double minimumTickRange = 30;
-        private double maximumTickRange = 40;
+        private double analysisTime = 40d;
+        private double minimumTickRange = 30d;
+        private double maximumTickRange = 40d;
 
         public Provider(Detection detection) {
             this.detection = detection;
 
-            if (this.detection.getConfiguration().get("analysis-time", 2.0).isPresent()) {
-                this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2.0).get().getValue() / 0.05;
+            if (this.detection.getConfiguration().get("analysis-time", 2d).isPresent()) {
+                this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2d).get().getValue() / 0.05;
             }
 
             if (this.detection.getConfiguration().get("tick-bounds", new HashMap<String, Double>()).isPresent()) {

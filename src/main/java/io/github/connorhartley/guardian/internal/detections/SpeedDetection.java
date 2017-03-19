@@ -56,7 +56,7 @@ import java.util.*;
 @Module(id = "speed_detection",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.8",
+        version = "0.0.9",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -131,9 +131,10 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     @Override
     public StorageValue<?, ?>[] getStorageNodes() {
         return new StorageValue<?, ?>[] {
-                this.internalConfigurationProvider.configAnalysisTime, this.internalConfigurationProvider.configTickBounds,
-                this.internalConfigurationProvider.configPunishmentLevels, this.internalConfigurationProvider.configSeverityDistribution,
-                this.internalConfigurationProvider.configControlValues, this.internalConfigurationProvider.configMaterialValues
+                this.internalConfigurationProvider.configPunishmentProperties, this.internalConfigurationProvider.configPunishmentLevels,
+                this.internalConfigurationProvider.configSeverityDistribution, this.internalConfigurationProvider.configAnalysisTime,
+                this.internalConfigurationProvider.configTickBounds, this.internalConfigurationProvider.configControlValues,
+                this.internalConfigurationProvider.configMaterialValues
         };
     }
 
@@ -158,6 +159,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         StorageValue<String, Map<String, Double>> configControlValues;
         StorageValue<String, Map<String, Double>> configMaterialValues;
         StorageValue<String, Map<String, Double>> configPunishmentLevels;
+        StorageValue<String, Map<String, String>> configPunishmentProperties;
         StorageValue<String, Map<String, Double>> configSeverityDistribution;
 
         Configuration(SpeedDetection speedDetection) {
@@ -172,7 +174,8 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         void initialize() {
             this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                     "Time taken to analyse the players speed. 2 seconds is recommended!",
-                    2d, null);
+                    2d, new TypeToken<Double>() {
+            });
 
             HashMap<String, Double> tickBounds = new HashMap<>();
             tickBounds.put("min", 0.75);
@@ -192,6 +195,15 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
                     "Punishments that happen when the user reaches the individual severity threshold.",
                     punishmentLevels, new TypeToken<Map<String, Double>>() {
+            });
+
+            HashMap<String, String> punishmentProperties = new HashMap<>();
+            punishmentProperties.put("channel", "admin");
+            punishmentProperties.put("releasetime", "12096000");
+
+            this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
+                    "Properties that define certain properties for all the punishments in this detection.",
+                    punishmentProperties, new TypeToken<Map<String, String>>() {
             });
 
             HashMap<String, Double> severityDistribution = new HashMap<>();
@@ -247,6 +259,8 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                     return Optional.of((StorageValue<K, E>) this.configTickBounds);
                 } else if (name.equals("punishment-levels")) {
                     return Optional.of((StorageValue<K, E>) this.configPunishmentLevels);
+                } else if (name.equals("punishment-properties")) {
+                    return Optional.of((StorageValue<K, E>) this.configPunishmentProperties);
                 } else if (name.equals("severity-distribution")) {
                     return Optional.of((StorageValue<K, E>) this.configSeverityDistribution);
                 }

@@ -76,7 +76,8 @@ public class OffenseTagData extends AbstractSingleData<Offense, OffenseTagData, 
     @Override
     public Optional<OffenseTagData> from(DataContainer container) {
         if (container.contains(DataKeys.GUARDIAN_OFFENSE_TAG.getQuery())) {
-            return Optional.of(set(DataKeys.GUARDIAN_OFFENSE_TAG, (Offense) container.get(DataKeys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(this.getValue())));
+            return Optional.of(set(DataKeys.GUARDIAN_OFFENSE_TAG,
+                    (Offense) container.get(DataKeys.GUARDIAN_OFFENSE_TAG.getQuery()).orElse(this.getValue())));
         }
         return Optional.empty();
     }
