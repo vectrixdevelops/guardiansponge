@@ -63,18 +63,17 @@ public class Sequence {
     private final List<Event> incompleteEvents = new ArrayList<>();
 
     private SequenceBlueprint sequenceBlueprint;
-    private SequenceReport sequenceReport;
+    private SequenceReport sequenceReport = SequenceReport.builder().build();
     private int queue = 0;
     private long last = System.currentTimeMillis();
     private boolean cancelled = false;
     private boolean finished = false;
 
     public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckProvider checkProvider, List<Action> actions,
-                    SequenceReport sequenceReport, ContextProvider contextProvider, ContextBuilder contextBuilder) {
+                    ContextProvider contextProvider, ContextBuilder contextBuilder) {
         this.player = player;
         this.sequenceBlueprint = sequenceBlueprint;
         this.checkProvider = checkProvider;
-        this.sequenceReport = sequenceReport;
         this.contextProvider = contextProvider;
         this.contextBuilder = contextBuilder;
         this.actions.addAll(actions);

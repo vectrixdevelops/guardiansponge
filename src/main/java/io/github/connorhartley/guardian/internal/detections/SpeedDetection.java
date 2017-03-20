@@ -32,12 +32,14 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
+import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionConfiguration;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.Offense;
 import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.event.check.CheckEndEvent;
+import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.punishment.PunishmentType;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
@@ -46,6 +48,7 @@ import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.PluginContainer;
 
@@ -101,6 +104,40 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         this.ready = true;
 
         this.checkProviders = Collections.singletonList(new HorizontalSpeedCheck.Provider(this));
+        this.plugin.getPunishmentController().register(this);
+    }
+
+    @Listener
+    public void onSequenceFinish(SequenceFinishEvent event) {
+        if (!event.isCancelled()) {
+            for (CheckProvider checkProvider : this.checkProviders) {
+                if (checkProvider.getSequence().equals(event.getSequence())) {
+                    double lower = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("lower");
+                    double mean = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("mean");
+                    double standardDeviation = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("standard-deviation");
+
+                    NormalDistribution normalDistribution =
+                            new NormalDistribution(mean, standardDeviation);
+
+                    if (event.getResult().getReports().get(ReportType.SEVERITY) != null) {
+                        double probability = normalDistribution.probability(lower, (Double) event.getResult().getReports().get(ReportType.SEVERITY));
+
+                        Offense offense = new Offense.Builder()
+                                .dateAndTime(LocalDateTime.now())
+                                .detection(this)
+                                .report(event.getResult())
+                                .severity(probability)
+                                .build();
+
+                        event.getUser().offer(DataKeys.GUARDIAN_OFFENSE_TAG, offense);
+
+                        if ((Boolean) event.getResult().getReports().get(ReportType.TEST)) {
+                            this.getPlugin().getPunishmentController().analyse(event.getUser(), offense);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -154,7 +191,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
         private static File configFile;
 
-        StorageValue<String, Double> configAnalysisTime;
+        StorageValue<String, Integer> configAnalysisTime;
         StorageValue<String, Map<String, Double>> configTickBounds;
         StorageValue<String, Map<String, Double>> configControlValues;
         StorageValue<String, Map<String, Double>> configMaterialValues;
@@ -174,12 +211,12 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         void initialize() {
             this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                     "Time taken to analyse the players speed. 2 seconds is recommended!",
-                    2d, new TypeToken<Double>() {
+                    2, new TypeToken<Integer>() {
             });
 
             HashMap<String, Double> tickBounds = new HashMap<>();
             tickBounds.put("min", 0.75);
-            tickBounds.put("max", 1d);
+            tickBounds.put("max", 1.5);
 
             this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
                     "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
@@ -187,10 +224,10 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             });
 
             HashMap<String, Double> punishmentLevels = new HashMap<>();
-            punishmentLevels.put(PunishmentType.WARN.getPlaceHolderNames()[0], 0.1);
-            punishmentLevels.put(PunishmentType.FLAG.getPlaceHolderNames()[1], 0.2);
-            punishmentLevels.put(PunishmentType.REPORT.getPlaceHolderNames()[2], 0.3);
-            punishmentLevels.put(PunishmentType.KICK.getPlaceHolderNames()[3], 0.5);
+            punishmentLevels.put(PunishmentType.WARN.getName(), 0.1);
+            punishmentLevels.put(PunishmentType.FLAG.getName(), 0.2);
+            punishmentLevels.put(PunishmentType.REPORT.getName(), 0.3);
+            punishmentLevels.put(PunishmentType.KICK.getName(), 0.5);
 
             this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
                     "Punishments that happen when the user reaches the individual severity threshold.",

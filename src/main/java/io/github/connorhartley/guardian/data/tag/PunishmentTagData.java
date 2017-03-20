@@ -116,7 +116,7 @@ public class PunishmentTagData extends AbstractListData<PunishmentType, Punishme
 
     public static class Builder extends AbstractDataBuilder<PunishmentTagData> implements DataManipulatorBuilder<PunishmentTagData, Immutable> {
 
-        protected Builder() {
+        public Builder() {
             super(PunishmentTagData.class, 1);
         }
 

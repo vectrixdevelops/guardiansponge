@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.sequence.action;
 
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
@@ -43,21 +44,21 @@ public class Action<T extends Event> {
     private final List<Condition> failedListeners = new ArrayList<>();
     private final List<ContextContainer> contextContainer = new ArrayList<>();
 
-    private SequenceReport sequenceReport;
+    private SequenceReport sequenceReport = SequenceReport.builder().build();
     private int delay;
     private int expire;
 
-    Action(Class<T> event, SequenceReport sequenceReport, Condition... conditions) {
-        this(event, sequenceReport);
+    Action(Class<T> event, Condition... conditions) {
+        this(event);
         this.conditions.addAll(Arrays.asList(conditions));
     }
 
-    public Action(Class<T> event, SequenceReport sequenceReport, List<Condition> conditions) {
-        this(event, sequenceReport);
+    public Action(Class<T> event, List<Condition> conditions) {
+        this(event);
         this.conditions.addAll(conditions);
     }
 
-    public Action(Class<T> event, SequenceReport sequenceReport) {
+    public Action(Class<T> event) {
         this.event = event;
         this.sequenceReport = sequenceReport;
     }

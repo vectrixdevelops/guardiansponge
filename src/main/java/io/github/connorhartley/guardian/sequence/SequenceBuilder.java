@@ -47,7 +47,6 @@ public class SequenceBuilder {
     private ContextProvider contextProvider;
     private ContextBuilder contextBuilder = ContextBuilder.builder().build();
 
-    private SequenceReport sequenceReport;
     private List<Action> actions = new ArrayList<>();
 
     public SequenceBuilder context(ContextProvider contextProvider, ContextBuilder contextBuilder) {
@@ -58,14 +57,8 @@ public class SequenceBuilder {
         return this;
     }
 
-    public SequenceBuilder report(SequenceReport sequenceReport) {
-        this.sequenceReport = (sequenceReport == null) ? SequenceReport.builder().build() : sequenceReport;
-        return this;
-    }
-
     public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
-        if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
-        return action(new Action<>(clazz, this.sequenceReport));
+        return action(new Action<>(clazz));
     }
 
     public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
@@ -75,15 +68,14 @@ public class SequenceBuilder {
     public <T extends Event> ActionBuilder<T> action(Action<T> action) {
         this.actions.add(action);
 
-        return new ActionBuilder<>(this, action, action.getSequenceReport());
+        return new ActionBuilder<>(this, action);
     }
 
     public SequenceBlueprint build(CheckProvider checkProvider) {
         return new SequenceBlueprint(checkProvider) {
             @Override
             public Sequence create(Player player) {
-                if (sequenceReport == null) sequenceReport = SequenceReport.builder().build();
-                return new Sequence(player, this, checkProvider, actions, sequenceReport, contextProvider, contextBuilder);
+                return new Sequence(player, this, checkProvider, actions, contextProvider, contextBuilder);
             }
         };
     }

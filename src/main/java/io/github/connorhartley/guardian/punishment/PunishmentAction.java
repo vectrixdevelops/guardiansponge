@@ -36,7 +36,10 @@ public class PunishmentAction {
 
     public void warn(Detection detection, User user, SequenceReport sequenceReport) {
         if (user.getPlayer().isPresent()) {
-            user.getPlayer().get().sendMessage(Text.of(TextColors.RED + "You have violated the " + detection.getName() + " with a severity of " + sequenceReport.getReports().get(ReportType.SEVERITY)));
+            Text message = Text.builder().color(TextColors.RED).append(
+                    Text.of("You have violated the " + detection.getName() + " with a severity of %" +
+                            ((Double) sequenceReport.getReports().get(ReportType.SEVERITY)).intValue() + ".")).build();
+            user.getPlayer().get().sendMessage(message);
         }
     }
 

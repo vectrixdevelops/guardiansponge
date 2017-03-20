@@ -74,45 +74,6 @@ public class HorizontalSpeedCheck extends Check {
         this.setChecking(false);
     }
 
-    @Listener
-    public void onSequenceFinish(SequenceFinishEvent event) {
-        if (!event.isCancelled()) {
-            if (this.checkProvider.getSequence().equals(event.getSequence())) {
-                try {
-                    if (this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                            new HashMap<String, Double>()).isPresent()) {
-                        this.lower = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                                new HashMap<String, Double>()).get().getValue().get("lower");
-                        this.mean = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                                new HashMap<String, Double>()).get().getValue().get("mean");
-                        this.standardDeviation = this.checkProvider.getDetection().getConfiguration().get("severity-distribution",
-                                new HashMap<String, Double>()).get().getValue().get("standard-deviation");
-                    }
-
-                    NormalDistribution normalDistribution =
-                            new NormalDistribution(this.mean, this.standardDeviation);
-
-                    double probability = normalDistribution.probability(this.lower, (Double) event.getResult().getReports().get(ReportType.SEVERITY));
-
-                    Offense offense = new Offense.Builder()
-                            .dateAndTime(LocalDateTime.now())
-                            .detection(this.checkProvider.getDetection())
-                            .report(event.getResult())
-                            .severity(probability)
-                            .build();
-
-                    this.user.offer(DataKeys.GUARDIAN_OFFENSE_TAG, offense);
-
-                    if ((Boolean) event.getResult().getReports().get(ReportType.TEST)) {
-                        ((Guardian) this.checkProvider.getDetection().getPlugin()).getPunishmentController().analyse(event.getUser(), offense);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     public static class Provider implements CheckProvider {
 
         private final Detection detection;
@@ -120,15 +81,17 @@ public class HorizontalSpeedCheck extends Check {
         private Location<World> previousLocation;
         private Location<World> presentLocation;
 
-        private double analysisTime = 40d;
-        private double minimumTickRange = 30d;
-        private double maximumTickRange = 40d;
+        private double analysisTime = 40;
+        private double minimumTickRange = 30;
+        private double maximumTickRange = 50;
 
         public Provider(Detection detection) {
             this.detection = detection;
 
+            System.out.println("Test");
+
             if (this.detection.getConfiguration().get("analysis-time", 2d).isPresent()) {
-                this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2d).get().getValue() / 0.05;
+                this.analysisTime = ((double) this.detection.getConfiguration().get("analysis-time", 2).get().getValue()) / 0.05;
             }
 
             if (this.detection.getConfiguration().get("tick-bounds", new HashMap<String, Double>()).isPresent()) {
@@ -171,8 +134,8 @@ public class HorizontalSpeedCheck extends Check {
                     // After 2 Seconds : Move Entity Event
 
                     .action(MoveEntityEvent.class)
-                    .delay((int) this.analysisTime)
-                    .expire((int) this.analysisTime + 1)
+                    .delay(((Double) this.analysisTime).intValue())
+                    .expire(((Double) this.maximumTickRange).intValue())
 
                     .condition((user, event, contextContainers, sequenceReport, lastAction) -> {
                         if (!user.hasPermission("guardian.detection.movementspeed.exempt")) {
@@ -254,18 +217,16 @@ public class HorizontalSpeedCheck extends Check {
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
                                     .append(ReportType.INFORMATION, "Travel speed should be less than " +
                                             maximumSpeed + " while they're " + playerControlState.name() + ".");
-                            System.out.println("Player Control HorizontalSpeed: " + playerControlSpeed);
-                            System.out.println("Block Modifier HorizontalSpeed: " + blockModifier);
-                            System.out.println("Total: " + maximumSpeed);
-                            System.out.println("Travel Displacement: " + travelDisplacement);
 
                             if (travelDisplacement > maximumSpeed) {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumSpeed) + ".")
                                         .append(ReportType.SEVERITY, travelDisplacement - maximumSpeed);
-                                System.out.println(user.getName() + " has triggered the speed check.");
-                                System.out.println("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
+
+                                // TODO : Remove this after testing \/
+                                plugin.getLogger().warn(user.getName() + " has triggered the speed check and overshot " +
+                                        "the maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
                             } else {
                                 successReportBuilder.append(ReportType.TEST, false);
                             }

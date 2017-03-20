@@ -32,7 +32,9 @@ import com.me4502.precogs.service.AntiCheatService;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextController;
 import io.github.connorhartley.guardian.context.ContextProvider;
+import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.data.tag.OffenseTagData;
+import io.github.connorhartley.guardian.data.tag.PunishmentTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
@@ -49,6 +51,7 @@ import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
@@ -148,13 +151,14 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onGameInitialize(GameInitializationEvent event) {
-        getLogger().info("#---# Starting Guardian AntiCheat #---#");
+        getLogger().info("Starting Guardian AntiCheat " + this.pluginContainer.getVersion());
 
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 
         Sponge.getDataManager().register(OffenseTagData.class, OffenseTagData.Immutable.class, new OffenseTagData.Builder());
+        Sponge.getDataManager().register(PunishmentTagData.class, PunishmentTagData.Immutable.class, new PunishmentTagData.Builder());
 
-        getLogger().info("Registering controllers.");
+        getLogger().info("Loading controllers.");
 
         this.punishmentController = new PunishmentController(this);
         this.contextController = new ContextController(this);
@@ -165,7 +169,7 @@ public class Guardian implements ContextProvider {
         this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
         this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
 
-        getLogger().info("Loading global configuration.");
+        getLogger().info("Loading configurations.");
 
         this.globalConfiguration = new GuardianConfiguration(this, this.pluginConfig, this.pluginConfigManager);
         this.configurationOptions = ConfigurationOptions.defaults();
@@ -214,8 +218,6 @@ public class Guardian implements ContextProvider {
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
 
                         Sponge.getRegistry().register(DetectionType.class, detection);
-
-                        this.punishmentController.register(detection);
                     }
                 });
 
@@ -284,9 +286,10 @@ public class Guardian implements ContextProvider {
     /* Player Events */
 
     @Listener
-    public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First Player player) {
+    public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First User user, @First Player player) {
         this.contextController.suspendFor(player);
         this.sequenceController.forceCleanup(player);
+        user.remove(DataKeys.GUARDIAN_PUNISHMENT_TAG);
     }
 
     /**

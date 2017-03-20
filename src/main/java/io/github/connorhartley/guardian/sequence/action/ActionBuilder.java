@@ -34,12 +34,10 @@ public class ActionBuilder<T extends Event> {
 
     private final Action<T> action;
     private final SequenceBuilder builder;
-    private final SequenceReport sequenceReport;
 
-    public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action, SequenceReport sequenceReport) {
+    public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action) {
         this.builder = sequenceBuilder;
         this.action = action;
-        this.sequenceReport = sequenceReport;
     }
 
     public ActionBuilder<T> condition(Condition condition) {
@@ -68,7 +66,7 @@ public class ActionBuilder<T extends Event> {
     }
 
     public ActionBuilder<T> action(Class<T> clazz) {
-        return action(new Action<>(clazz, this.sequenceReport));
+        return action(new Action<>(clazz));
     }
 
     public ActionBuilder<T> action(ActionBlueprint<T> blueprint) {
