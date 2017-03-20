@@ -87,10 +87,10 @@ shadowJar {
 }
 
 artifacts {
-    shadowJar
-    sourceJar
-    javadocJar
-    jar
+    archives shadowJar
+    archives sourceJar
+    archives javadocJar
+    archives jar
 }
 
 build.dependsOn(shadowJar)
