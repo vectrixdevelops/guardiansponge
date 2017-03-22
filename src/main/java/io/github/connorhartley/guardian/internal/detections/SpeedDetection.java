@@ -29,21 +29,17 @@ import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleConfiguration;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import com.me4502.precogs.detection.CommonDetectionTypes;
-import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionConfiguration;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
-import io.github.connorhartley.guardian.detection.Offense;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
-import io.github.connorhartley.guardian.event.check.CheckEndEvent;
+import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
-import io.github.connorhartley.guardian.punishment.PunishmentType;
+import io.github.connorhartley.guardian.internal.punishments.WarnPunishment;
+import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
@@ -56,10 +52,10 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Module(id = "speed_detection",
+@Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.9",
+        version = "0.0.11",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -77,7 +73,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     private Guardian plugin;
     private ConfigurationNode globalConfigurationNode;
     private Configuration internalConfigurationProvider;
-    private List<CheckProvider> checkProviders;
+    private List<CheckType> checkTypes;
 
     private boolean ready = false;
 
@@ -101,16 +97,17 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
 
-        this.ready = true;
+        this.checkTypes = Collections.singletonList(new HorizontalSpeedCheck.Type(this));
 
-        this.checkProviders = Collections.singletonList(new HorizontalSpeedCheck.Provider(this));
-        this.plugin.getPunishmentController().register(this);
+        this.plugin.getPunishmentController().bind(WarnPunishment.class, this);
+
+        this.ready = true;
     }
 
     @Listener
     public void onSequenceFinish(SequenceFinishEvent event) {
         if (!event.isCancelled()) {
-            for (CheckProvider checkProvider : this.checkProviders) {
+            for (CheckType checkProvider : this.checkTypes) {
                 if (checkProvider.getSequence().equals(event.getSequence())) {
                     double lower = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("lower");
                     double mean = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("mean");
@@ -122,17 +119,14 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                     if (event.getResult().getReports().get(ReportType.SEVERITY) != null) {
                         double probability = normalDistribution.probability(lower, (Double) event.getResult().getReports().get(ReportType.SEVERITY));
 
-                        Offense offense = new Offense.Builder()
-                                .dateAndTime(LocalDateTime.now())
-                                .detection(this)
+                        Punishment punishment = Punishment.builder()
+                                .time(LocalDateTime.now())
                                 .report(event.getResult())
-                                .severity(probability)
+                                .probability(probability)
                                 .build();
 
-                        event.getUser().offer(DataKeys.GUARDIAN_OFFENSE_TAG, offense);
-
                         if ((Boolean) event.getResult().getReports().get(ReportType.TEST)) {
-                            this.getPlugin().getPunishmentController().analyse(event.getUser(), offense);
+                            this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
                         }
                     }
                 }
@@ -146,8 +140,8 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     }
 
     @Override
-    public List<CheckProvider> getChecks() {
-        return this.checkProviders;
+    public List<CheckType> getChecks() {
+        return this.checkTypes;
     }
 
     @Override
@@ -224,10 +218,10 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             });
 
             HashMap<String, Double> punishmentLevels = new HashMap<>();
-            punishmentLevels.put(PunishmentType.WARN.getName(), 0.1);
-            punishmentLevels.put(PunishmentType.FLAG.getName(), 0.2);
-            punishmentLevels.put(PunishmentType.REPORT.getName(), 0.3);
-            punishmentLevels.put(PunishmentType.KICK.getName(), 0.5);
+            punishmentLevels.put("warn", 0.1);
+//            punishmentLevels.put("flag", 0.2);
+//            punishmentLevels.put("report", 0.3);
+//            punishmentLevels.put("kick", 0.5);
 
             this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
                     "Punishments that happen when the user reaches the individual severity threshold.",
@@ -259,7 +253,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             controlValues.put("sneak", 1.015);
             controlValues.put("walk", 1.035);
             controlValues.put("sprint", 1.065);
-            controlValues.put("fly", 1.08);
+            controlValues.put("fly", 1.07);
 
             this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
                     "Magic values for movement the player controls that are added each tick.",
@@ -269,7 +263,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             // Block Speed
 
             HashMap<String, Double> materialValues = new HashMap<>();
-            materialValues.put("gas", 1.045);
+            materialValues.put("gas", 1.035);
             materialValues.put("solid", 1.025);
             materialValues.put("liquid", 1.015);
 
@@ -284,6 +278,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <K, E> Optional<StorageValue<K, E>> get(K name, E defaultElement) {
             if (name instanceof String) {
                 if (name.equals("control-values")) {

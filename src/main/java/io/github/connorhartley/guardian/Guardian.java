@@ -33,12 +33,10 @@ import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextController;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.data.DataKeys;
-import io.github.connorhartley.guardian.data.tag.OffenseTagData;
 import io.github.connorhartley.guardian.data.tag.PunishmentTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
 import io.github.connorhartley.guardian.punishment.PunishmentController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
@@ -155,7 +153,6 @@ public class Guardian implements ContextProvider {
 
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 
-        Sponge.getDataManager().register(OffenseTagData.class, OffenseTagData.Immutable.class, new OffenseTagData.Builder());
         Sponge.getDataManager().register(PunishmentTagData.class, PunishmentTagData.Immutable.class, new PunishmentTagData.Builder());
 
         getLogger().info("Loading controllers.");
@@ -265,8 +262,6 @@ public class Guardian implements ContextProvider {
                         Detection<Guardian> detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
-
-                        this.punishmentController.unregister(detection);
                     }
                 });
 

@@ -27,12 +27,9 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
-import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.Offense;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
-import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
+import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
@@ -40,29 +37,26 @@ import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class HorizontalSpeedCheck extends Check {
 
-    private final CheckProvider checkProvider;
+    private final CheckType checkType;
     private final User user;
 
     private double lower = 0d;
     private double mean = 5d;
     private double standardDeviation = 3d;
 
-    HorizontalSpeedCheck(CheckProvider checkProvider, User user) {
-        super(checkProvider, user);
-        this.checkProvider = checkProvider;
+    HorizontalSpeedCheck(CheckType checkType, User user) {
+        super(checkType, user);
+        this.checkType = checkType;
         this.user = user;
     }
 
@@ -74,7 +68,7 @@ public class HorizontalSpeedCheck extends Check {
         this.setChecking(false);
     }
 
-    public static class Provider implements CheckProvider {
+    public static class Type implements CheckType {
 
         private final Detection detection;
 
@@ -85,7 +79,7 @@ public class HorizontalSpeedCheck extends Check {
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
 
-        public Provider(Detection detection) {
+        public Type(Detection detection) {
             this.detection = detection;
 
             System.out.println("Test");

@@ -31,15 +31,11 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.data.manipulator.DataManipulatorBuilder;
-import org.spongepowered.api.data.manipulator.immutable.ImmutableListData;
 import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableListData;
-import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableSingleData;
 import org.spongepowered.api.data.manipulator.mutable.common.AbstractListData;
 import org.spongepowered.api.data.merge.MergeFunction;
 import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
-import org.spongepowered.api.data.value.immutable.ImmutableListValue;
-import org.spongepowered.api.data.value.immutable.ImmutableValue;
 import org.spongepowered.api.data.value.mutable.ListValue;
 
 import java.util.ArrayList;
@@ -123,7 +119,6 @@ public class PunishmentTagData extends AbstractListData<PunishmentType, Punishme
         @Override
         public PunishmentTagData create() {
             List<PunishmentType> punishmentTypeList = new ArrayList<>();
-            punishmentTypeList.add(PunishmentType.EMPTY);
 
             return new PunishmentTagData(punishmentTypeList);
         }

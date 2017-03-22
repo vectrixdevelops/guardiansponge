@@ -29,13 +29,13 @@ import java.util.Optional;
 
 public abstract class Check {
 
-    private final CheckProvider checkProvider;
+    private final CheckType checkType;
     private final User user;
 
     private boolean checking;
 
-    public Check(CheckProvider checkProvider, User user) {
-        this.checkProvider = checkProvider;
+    public Check(CheckType checkType, User user) {
+        this.checkType = checkType;
         this.user = user;
     }
 
@@ -51,8 +51,8 @@ public abstract class Check {
         return this.checking;
     }
 
-    public CheckProvider getProvider() {
-        return this.checkProvider;
+    public CheckType getProvider() {
+        return this.checkType;
     }
 
     public Optional<User> getUser() {

@@ -28,7 +28,7 @@ import io.github.connorhartley.guardian.context.ContextBuilder;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
@@ -53,7 +53,7 @@ import java.util.*;
 public class Sequence {
 
     private final Player player;
-    private final CheckProvider checkProvider;
+    private final CheckType checkType;
     private final ContextProvider contextProvider;
     private final ContextBuilder contextBuilder;
 
@@ -69,11 +69,11 @@ public class Sequence {
     private boolean cancelled = false;
     private boolean finished = false;
 
-    public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckProvider checkProvider, List<Action> actions,
+    public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckType checkType, List<Action> actions,
                     ContextProvider contextProvider, ContextBuilder contextBuilder) {
         this.player = player;
         this.sequenceBlueprint = sequenceBlueprint;
-        this.checkProvider = checkProvider;
+        this.checkType = checkType;
         this.contextProvider = contextProvider;
         this.contextBuilder = contextBuilder;
         this.actions.addAll(actions);
@@ -104,7 +104,7 @@ public class Sequence {
             action.updateReport(this.sequenceReport);
 
             if (!action.getEvent().isAssignableFrom(event.getClass())) {
-                return fail(player, event, action, Cause.of(NamedCause.of("INVALID", checkProvider.getSequence())));
+                return fail(player, event, action, Cause.of(NamedCause.of("INVALID", checkType.getSequence())));
             }
 
             if (this.queue > 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
@@ -265,15 +265,15 @@ public class Sequence {
     }
 
     /**
-     * Get Provider
+     * Get Type
      *
-     * <p>Returns the {@link CheckProvider} providing the {@link Check} containing
+     * <p>Returns the {@link CheckType} providing the {@link Check} containing
      * this {@link Sequence}.</p>
      *
-     * @return This {@link Sequence}s {@link CheckProvider}
+     * @return This {@link Sequence}s {@link CheckType}
      */
-    public CheckProvider getProvider() {
-        return this.checkProvider;
+    public CheckType getProvider() {
+        return this.checkType;
     }
 
     /**

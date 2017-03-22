@@ -26,7 +26,6 @@ package io.github.connorhartley.guardian.detection.check;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.event.check.CheckBeginEvent;
 import io.github.connorhartley.guardian.event.check.CheckEndEvent;
-import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
@@ -45,8 +44,8 @@ public class CheckController {
         this.plugin = plugin;
     }
 
-    public void post(CheckProvider checkProvider, User user) {
-        Check check = checkProvider.createInstance(user);
+    public void post(CheckType checkType, User user) {
+        Check check = checkType.createInstance(user);
 
         CheckBeginEvent attempt = new CheckBeginEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
         Sponge.getEventManager().post(attempt);

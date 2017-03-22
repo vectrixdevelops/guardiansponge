@@ -28,7 +28,7 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import org.spongepowered.api.entity.living.player.User;
 
-public interface CheckProvider {
+public interface CheckType {
 
     Detection getDetection();
 
