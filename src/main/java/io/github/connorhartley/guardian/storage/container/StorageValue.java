@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.storage.container;
 
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.util.ValueTransform;
+import io.github.connorhartley.guardian.util.Transformer;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -103,7 +103,7 @@ public class StorageValue<K, E> {
         return this.key;
     }
 
-    public void transformKey(ValueTransform<K> transform) {
+    public void transformKey(Transformer<K> transform) {
         this.key.set(transform.transform(this.key.get()));
     }
 
@@ -126,7 +126,7 @@ public class StorageValue<K, E> {
         return this.value;
     }
 
-    public void transformValue(ValueTransform<E> transform) {
+    public void transformValue(Transformer<E> transform) {
         this.modified = true;
         this.value = transform.transform(this.getValue());
     }

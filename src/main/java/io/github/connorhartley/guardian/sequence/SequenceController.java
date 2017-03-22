@@ -24,11 +24,9 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceBeginEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import org.spongepowered.api.Sponge;
@@ -86,8 +84,8 @@ public class SequenceController implements SequenceInvoker {
                 return true;
             }
 
-            CheckProvider checkProvider = sequence.getProvider();
-            this.checkController.post(checkProvider, player);
+            CheckType checkType = sequence.getProvider();
+            this.checkController.post(checkType, player);
             return true;
         });
         this.runningSequences.put(player, currentlyExecuting);
@@ -119,8 +117,8 @@ public class SequenceController implements SequenceInvoker {
                         }
 
                         if (sequence.isFinished()) {
-                            CheckProvider checkProvider = sequence.getProvider();
-                            this.checkController.post(checkProvider, player);
+                            CheckType checkType = sequence.getProvider();
+                            this.checkController.post(checkType, player);
                             return;
                         }
 
@@ -166,23 +164,23 @@ public class SequenceController implements SequenceInvoker {
     /**
      * Register
      *
-     * <p>Registers a {@link Sequence} from a {@link CheckProvider}.</p>
+     * <p>Registers a {@link Sequence} from a {@link CheckType}.</p>
      *
-     * @param checkProvider Provider of a {@link Sequence}
+     * @param checkType Type of a {@link Sequence}
      */
-    public void register(CheckProvider checkProvider) {
-        this.blueprints.add(checkProvider.getSequence());
+    public void register(CheckType checkType) {
+        this.blueprints.add(checkType.getSequence());
     }
 
     /**
      * Unregister
      *
-     * <p>Unregisters a {@link Sequence} from a {@link CheckProvider}.</p>
+     * <p>Unregisters a {@link Sequence} from a {@link CheckType}.</p>
      *
-     * @param checkProvider Provider of a {@link Sequence}
+     * @param checkType Type of a {@link Sequence}
      */
-    public void unregister(CheckProvider checkProvider) {
-        this.blueprints.removeIf(blueprint -> blueprint.getCheckProvider().equals(checkProvider));
+    public void unregister(CheckType checkType) {
+        this.blueprints.removeIf(blueprint -> blueprint.getCheckProvider().equals(checkType));
     }
 
     public static class SequenceControllerTask {

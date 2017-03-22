@@ -26,8 +26,7 @@ package io.github.connorhartley.guardian.detection;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
-import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.detection.check.CheckType;
 
 import java.util.List;
 
@@ -58,7 +57,7 @@ public abstract class Detection<T> extends DetectionType {
     public abstract void onDeconstruction();
 
     /**
-     * Get Context Provider
+     * Get Context Type
      *
      * <p>Returns the {@link ContextProvider} that this detection manages.</p>
      *
@@ -97,11 +96,11 @@ public abstract class Detection<T> extends DetectionType {
     /**
      * Get Checks
      *
-     * <p>Returns the {@link CheckProvider}s that this {@link Detection} uses.</p>
+     * <p>Returns the {@link CheckType}s that this {@link Detection} uses.</p>
      *
      * @return Check providers for this detection
      */
-    public abstract List<CheckProvider> getChecks();
+    public abstract List<CheckType> getChecks();
 
     /**
      * Get Category

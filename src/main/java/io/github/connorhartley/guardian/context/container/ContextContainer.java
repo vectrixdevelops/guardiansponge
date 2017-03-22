@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.context.container;
 
 import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.util.ValueTransform;
+import io.github.connorhartley.guardian.util.Transformer;
 
 import java.util.*;
 
@@ -57,9 +57,9 @@ public class ContextContainer {
         return this;
     }
 
-    public <E> ContextContainer transform(ContextKey<E> contextKey, ValueTransform<E> valueTransform) {
+    public <E> ContextContainer transform(ContextKey<E> contextKey, Transformer<E> transformer) {
         E value = (E) this.rawMap.get(contextKey.getId());
-        this.set(contextKey, valueTransform.transform(value));
+        this.set(contextKey, transformer.transform(value));
         return this;
     }
 

@@ -23,84 +23,17 @@
  */
 package io.github.connorhartley.guardian.punishment;
 
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
-import org.spongepowered.api.entity.living.player.Player;
+import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.entity.living.player.User;
 
-public enum PunishmentType {
+import java.util.Optional;
 
-    EMPTY("empty",
-            "",
-            new String[]{},
-            new Class[]{}),
-    WARN("warn",
-            "warn p:%0 r:%1",
-            new String[]{"user", "report"},
-            new Class[]{User.class, SequenceReport.class}),
-    FLAG("flag",
-            "flag p:%0 t:%1 r:%2",
-            new String[]{"user", "time", "report"},
-            new Class[]{User.class, String.class, SequenceReport.class}),
-    REPORT("report",
-            "report p:%0 t:%1 c:%2 r:%3",
-            new String[]{"user", "time", "channel", "report"},
-            new Class[]{User.class, String.class, String.class, SequenceReport.class}),
-    KICK("kick",
-            "kick p:%0 t:%1 c:%2 r:%3",
-            new String[]{"user", "time", "channel", "report"},
-            new Class[]{User.class, String.class, String.class, SequenceReport.class}),
-    TEMPBAN("tempban",
-            "tempban p:%0 b:%1 t:%2 c:%3 r:%4",
-            new String[]{"user", "releasetime", "time", "channel", "report"},
-            new Class[]{User.class, String.class, String.class, String.class, SequenceReport.class}),
-    BAN("ban",
-            "ban p:%0 t:%2 c:%3 r:%4",
-            new String[]{"user", "time", "channel", "report"},
-            new Class[]{User.class, String.class, String.class, SequenceReport.class}),
-    CUSTOM("custom",
-            "custom c:%0",
-            new String[]{"command", "user", "releasetime", "time", "channel", "report"},
-            new Class[]{String.class, User.class, String.class, String.class, String.class, SequenceReport.class});
+public interface PunishmentType {
 
-    private String name;
-    private String text;
-    private String[] placeHolderNames;
-    private Class[] placeHolderTypes;
+    String getName();
 
-    PunishmentType(String name, String text, String[] placeHolderNames, Class[] placeHolderTypes) {
-        this.name = name;
-        this.text = text;
-        this.placeHolderNames = placeHolderNames;
-        this.placeHolderTypes = placeHolderTypes;
-    }
+    Optional<Detection> getDetection();
 
-    public PunishmentType find(String search) {
-        for (PunishmentType punishmentType : getDeclaringClass().getEnumConstants()) {
-            if (punishmentType.getName().equalsIgnoreCase(search)) {
-                return punishmentType;
-            }
-        }
-        return PunishmentType.EMPTY;
-    }
+    boolean handle(User user, Punishment punishment);
 
-    public String getName() {
-        return this.name;
-    }
-
-    public String getText() {
-        return this.text;
-    }
-
-    public String[] getPlaceHolderNames() {
-        return this.placeHolderNames;
-    }
-
-    public Class[] getPlaceHolderTypes() {
-        return this.placeHolderTypes;
-    }
-
-    @Override
-    public String toString() {
-        return this.name;
-    }
 }

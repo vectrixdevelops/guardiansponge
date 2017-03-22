@@ -23,11 +23,10 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.event.Event;
 
 public class ActionBuilder<T extends Event> {
@@ -77,8 +76,8 @@ public class ActionBuilder<T extends Event> {
         return this.builder.action(action);
     }
 
-    public SequenceBlueprint build(CheckProvider checkProvider) {
-        return this.builder.build(checkProvider);
+    public SequenceBlueprint build(CheckType checkType) {
+        return this.builder.build(checkType);
     }
 
 }

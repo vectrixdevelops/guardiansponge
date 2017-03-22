@@ -25,11 +25,10 @@ package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.ContextBuilder;
-import io.github.connorhartley.guardian.detection.check.CheckProvider;
+import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 
@@ -71,11 +70,11 @@ public class SequenceBuilder {
         return new ActionBuilder<>(this, action);
     }
 
-    public SequenceBlueprint build(CheckProvider checkProvider) {
-        return new SequenceBlueprint(checkProvider) {
+    public SequenceBlueprint build(CheckType checkType) {
+        return new SequenceBlueprint(checkType) {
             @Override
             public Sequence create(Player player) {
-                return new Sequence(player, this, checkProvider, actions, contextProvider, contextBuilder);
+                return new Sequence(player, this, checkType, actions, contextProvider, contextBuilder);
             }
         };
     }
