@@ -25,7 +25,10 @@ package io.github.connorhartley.guardian.context;
 
 import io.github.connorhartley.guardian.context.container.ContextKey;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
+import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 /**
  * Context Types
@@ -36,6 +39,12 @@ import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContex
  */
 @Deprecated
 public class ContextTypes {
+
+    public static ContextKey<Location<World>> START_LOCATION =
+            new ContextKey<>("start_location", PlayerLocationContext.class, null);
+
+    public static ContextKey<Location<World>> PRESENT_LOCATION =
+            new ContextKey<>("present_location", PlayerLocationContext.class, null);
 
     /* Control HorizontalSpeed | Used in: PlayerControlContext.HorizontalSpeed */
 

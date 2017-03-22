@@ -30,6 +30,7 @@ import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
@@ -70,9 +71,6 @@ public class HorizontalSpeedCheck extends Check {
 
         private final Detection detection;
 
-        private Location<World> previousLocation;
-        private Location<World> presentLocation;
-
         private double analysisTime = 40;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
@@ -99,8 +97,11 @@ public class HorizontalSpeedCheck extends Check {
 
         @Override
         public ContextBuilder getContextTracker() {
-            return ContextBuilder.builder().append(PlayerControlContext.HorizontalSpeed.class)
-                    .append(BlockSpeedContext.class).build();
+            return ContextBuilder.builder()
+                    .append(PlayerLocationContext.class)
+                    .append(PlayerControlContext.HorizontalSpeed.class)
+                    .append(BlockSpeedContext.class)
+                    .build();
         }
 
         @Override
@@ -112,14 +113,6 @@ public class HorizontalSpeedCheck extends Check {
                     // Trigger : Move Entity Event
 
                     .action(MoveEntityEvent.class)
-
-                    .condition((user, event, contextContainers, sequenceReport, lastAction) -> {
-                        if (user.getPlayer().isPresent()) {
-                            this.previousLocation = user.getPlayer().get().getLocation();
-                            return new ConditionResult(true, sequenceReport);
-                        }
-                        return new ConditionResult(false, sequenceReport);
-                    })
 
                     // After 2 Seconds : Move Entity Event
 
@@ -137,6 +130,9 @@ public class HorizontalSpeedCheck extends Check {
                     .success((user, event, contextContainers, sequenceResult, lastAction) -> {
                         Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
+                        Location<World> start = null;
+                        Location<World> present = null;
+
                         long playerControlTicks = 0;
                         long blockModifierTicks = 0;
 
@@ -148,6 +144,14 @@ public class HorizontalSpeedCheck extends Check {
                         long currentTime;
 
                         for (ContextContainer contextContainer : contextContainers) {
+                            if (contextContainer.get(ContextTypes.START_LOCATION).isPresent()) {
+                                start = contextContainer.get(ContextTypes.START_LOCATION).get();
+                            }
+
+                            if (contextContainer.get(ContextTypes.PRESENT_LOCATION).isPresent()) {
+                                present = contextContainer.get(ContextTypes.PRESENT_LOCATION).get();
+                            }
+
                             if (contextContainer.get(ContextTypes.CONTROL_SPEED).isPresent()) {
                                 playerControlTicks = contextContainer.getContext().updateAmount();
                                 playerControlSpeed = contextContainer.get(ContextTypes.CONTROL_SPEED).get();
@@ -178,7 +182,7 @@ public class HorizontalSpeedCheck extends Check {
                             return new ConditionResult(false, failReport);
                         }
 
-                        if (user.getPlayer().isPresent()) {
+                        if (user.getPlayer().isPresent() && start != null && present != null) {
                             if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
                                 if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
                                     SequenceReport failReport = SequenceReport.of(sequenceResult)
@@ -191,16 +195,14 @@ public class HorizontalSpeedCheck extends Check {
 
                             currentTime = System.currentTimeMillis();
 
-                            this.presentLocation = user.getPlayer().get().getLocation();
-
                             long contextTime = (1 / ((playerControlTicks + blockModifierTicks) / 2)) * 40000;
                             long sequenceTime = (currentTime - lastAction);
 
                             double travelDisplacement = Math.abs(Math.sqrt((
-                                    (this.presentLocation.getX() - this.previousLocation.getX()) *
-                                            (this.presentLocation.getX() - this.previousLocation.getX())) +
-                                    (this.presentLocation.getZ() - this.previousLocation.getZ()) *
-                                            (this.presentLocation.getZ() - this.previousLocation.getZ())));
+                                    (present.getX() - start.getX()) *
+                                            (present.getX() - start.getX())) +
+                                    (present.getZ() - start.getZ()) *
+                                            (present.getZ() - start.getZ())));
 
                             double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000);
 
