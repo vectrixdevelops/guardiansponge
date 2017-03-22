@@ -31,7 +31,7 @@ public class Punishment {
 
     private final SequenceReport sequenceReport;
     private final LocalDateTime localDateTime;
-    private final double probability;
+    private final Double probability;
 
     public Punishment(Builder builder) {
         this.sequenceReport = builder.sequenceReport;
@@ -51,7 +51,7 @@ public class Punishment {
         return this.localDateTime;
     }
 
-    public double getProbability() {
+    public Double getProbability() {
         return this.probability;
     }
 
@@ -59,7 +59,7 @@ public class Punishment {
 
         private SequenceReport sequenceReport;
         private LocalDateTime localDateTime;
-        private double probability;
+        private Double probability;
 
         public Builder() {}
 
@@ -73,7 +73,7 @@ public class Punishment {
             return this;
         }
 
-        public Builder probability(double probability) {
+        public Builder probability(Double probability) {
             this.probability = probability;
             return this;
         }

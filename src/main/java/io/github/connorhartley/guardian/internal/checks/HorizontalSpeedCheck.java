@@ -50,14 +50,12 @@ public class HorizontalSpeedCheck extends Check {
     private final CheckType checkType;
     private final User user;
 
-    private double lower = 0d;
-    private double mean = 5d;
-    private double standardDeviation = 3d;
-
     HorizontalSpeedCheck(CheckType checkType, User user) {
         super(checkType, user);
         this.checkType = checkType;
         this.user = user;
+
+        this.setChecking(true);
     }
 
     @Override
@@ -81,8 +79,6 @@ public class HorizontalSpeedCheck extends Check {
 
         public Type(Detection detection) {
             this.detection = detection;
-
-            System.out.println("Test");
 
             if (this.detection.getConfiguration().get("analysis-time", 2d).isPresent()) {
                 this.analysisTime = ((double) this.detection.getConfiguration().get("analysis-time", 2).get().getValue()) / 0.05;

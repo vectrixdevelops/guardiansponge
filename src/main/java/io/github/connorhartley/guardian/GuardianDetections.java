@@ -39,6 +39,7 @@ public class GuardianDetections {
 
     void registerInternalModules() {
         this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
+        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.FlyDetection");
     }
 
 }

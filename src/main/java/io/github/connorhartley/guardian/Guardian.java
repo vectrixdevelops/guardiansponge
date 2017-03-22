@@ -149,7 +149,7 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onGameInitialize(GameInitializationEvent event) {
-        getLogger().info("Starting Guardian AntiCheat " + this.pluginContainer.getVersion());
+        getLogger().info("Starting Guardian AntiCheat " + this.pluginContainer.getVersion().get());
 
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 

@@ -55,10 +55,17 @@ import java.util.*;
 @Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.11",
+        version = "0.0.12",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
+
+    private static Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
+
+    private Guardian plugin;
+    private List<CheckType> checkTypes;
+    private Configuration configuration;
+    private boolean ready = false;
 
     @Inject
     @ModuleContainer
@@ -66,16 +73,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
     @Inject
     @ModuleConfiguration
-    public ConfigurationNode internalConfigurationNode;
-
-    private static Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
-
-    private Guardian plugin;
-    private ConfigurationNode globalConfigurationNode;
-    private Configuration internalConfigurationProvider;
-    private List<CheckType> checkTypes;
-
-    private boolean ready = false;
+    public ConfigurationNode configurationNode;
 
     public SpeedDetection() {
         super(moduleAnnotation.id(), moduleAnnotation.name());
@@ -83,15 +81,13 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
     @Override
     public void onConstruction() {
-        if (!moduleContainer.getInstance().isPresent());
-        this.plugin = (Guardian) moduleContainer.getInstance().get();
+        this.moduleContainer.getInstance().ifPresent(plugin -> this.plugin = (Guardian) plugin);
 
-        this.globalConfigurationNode = this.plugin.getGlobalConfiguration().getConfigurationNode();
-        this.internalConfigurationProvider = new Configuration(this);
+        this.configuration = new Configuration(this);
 
         if (Configuration.getLocation().exists()) {
             for (StorageValue storageValue : this.getStorageNodes()) {
-                storageValue.<ConfigurationNode>loadStorage(this.internalConfigurationNode);
+                storageValue.<ConfigurationNode>loadStorage(this.configurationNode);
             }
         }
 
@@ -109,9 +105,9 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         if (!event.isCancelled()) {
             for (CheckType checkProvider : this.checkTypes) {
                 if (checkProvider.getSequence().equals(event.getSequence())) {
-                    double lower = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("lower");
-                    double mean = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("mean");
-                    double standardDeviation = this.internalConfigurationProvider.configSeverityDistribution.getValue().get("standard-deviation");
+                    double lower = this.configuration.configSeverityDistribution.getValue().get("lower");
+                    double mean = this.configuration.configSeverityDistribution.getValue().get("mean");
+                    double standardDeviation = this.configuration.configSeverityDistribution.getValue().get("standard-deviation");
 
                     NormalDistribution normalDistribution =
                             new NormalDistribution(mean, standardDeviation);
@@ -140,11 +136,6 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     }
 
     @Override
-    public List<CheckType> getChecks() {
-        return this.checkTypes;
-    }
-
-    @Override
     public CommonDetectionTypes.Category getCategory() {
         return CommonDetectionTypes.Category.MOVEMENT;
     }
@@ -155,23 +146,28 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     }
 
     @Override
-    public DetectionConfiguration getConfiguration() {
-        return this.internalConfigurationProvider;
+    public List<CheckType> getChecks() {
+        return this.checkTypes;
     }
 
     @Override
-    public StorageValue<?, ?>[] getStorageNodes() {
-        return new StorageValue<?, ?>[] {
-                this.internalConfigurationProvider.configPunishmentProperties, this.internalConfigurationProvider.configPunishmentLevels,
-                this.internalConfigurationProvider.configSeverityDistribution, this.internalConfigurationProvider.configAnalysisTime,
-                this.internalConfigurationProvider.configTickBounds, this.internalConfigurationProvider.configControlValues,
-                this.internalConfigurationProvider.configMaterialValues
-        };
+    public DetectionConfiguration getConfiguration() {
+        return this.configuration;
     }
 
     @Override
     public ContextProvider getContextProvider() {
         return this.plugin;
+    }
+
+    @Override
+    public StorageValue<?, ?>[] getStorageNodes() {
+        return new StorageValue<?, ?>[] {
+                this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
+                this.configuration.configSeverityDistribution, this.configuration.configAnalysisTime,
+                this.configuration.configTickBounds, this.configuration.configControlValues,
+                this.configuration.configMaterialValues
+        };
     }
 
     @Override
@@ -181,7 +177,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
     public static class Configuration implements DetectionConfiguration {
 
-        private SpeedDetection speedDetection;
+        private final SpeedDetection speedDetection;
 
         private static File configFile;
 
@@ -193,16 +189,17 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         StorageValue<String, Map<String, String>> configPunishmentProperties;
         StorageValue<String, Map<String, Double>> configSeverityDistribution;
 
-        Configuration(SpeedDetection speedDetection) {
+        private Configuration(SpeedDetection speedDetection) {
             this.speedDetection = speedDetection;
 
             configFile = new File(this.speedDetection.getPlugin().getGlobalConfiguration()
-                    .getLocation().getParentFile(), "detection" + File.separator + speedDetection.getId() + ".conf");
+                    .getLocation().getParentFile(), "detection" + File.separator +
+                    this.speedDetection.getId() + ".conf");
 
             initialize();
         }
 
-        void initialize() {
+        private void initialize() {
             this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                     "Time taken to analyse the players speed. 2 seconds is recommended!",
                     2, new TypeToken<Integer>() {
@@ -273,7 +270,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             });
         }
 
-        static File getLocation() {
+        private static File getLocation() {
             return configFile;
         }
 

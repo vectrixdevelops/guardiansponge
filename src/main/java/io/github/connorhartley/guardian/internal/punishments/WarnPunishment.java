@@ -71,10 +71,12 @@ public class WarnPunishment implements PunishmentType {
 
         // # Temporary Warning Action #
 
+        Double probability = punishment.getProbability() * 100;
+
         if (user.getPlayer().isPresent()) {
             Text message = Text.builder().color(TextColors.RED).append(
-                    Text.of("You have violated the " + detection.getName() + " with a severity of %" +
-                            ((Double) punishment.getProbability()).intValue() + ".")).build();
+                    Text.of("You have violated the " + detection.getName() + " with a certainty of %" +
+                            probability.intValue() + ".")).build();
             user.getPlayer().get().sendMessage(message);
         }
 
