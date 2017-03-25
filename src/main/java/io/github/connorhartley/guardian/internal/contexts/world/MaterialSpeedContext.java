@@ -38,7 +38,7 @@ import org.spongepowered.api.util.Direction;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BlockSpeedContext extends Context {
+public class MaterialSpeedContext extends Context {
 
     private Guardian plugin;
     private Detection detection;
@@ -52,7 +52,7 @@ public class BlockSpeedContext extends Context {
     private long updateAmount = 0;
     private boolean suspended = false;
 
-    public BlockSpeedContext(Guardian plugin, Detection detection, Player player) {
+    public MaterialSpeedContext(Guardian plugin, Detection detection, Player player) {
         super(plugin, detection, player);
         this.plugin = plugin;
         this.detection = detection;
