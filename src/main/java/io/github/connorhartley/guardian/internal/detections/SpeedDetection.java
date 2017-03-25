@@ -37,9 +37,11 @@ import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.internal.checks.VerticalSpeedCheck;
 import io.github.connorhartley.guardian.internal.punishments.WarnPunishment;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
+import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
@@ -55,7 +57,7 @@ import java.util.*;
 @Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.12",
+        version = "0.0.13",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -94,6 +96,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
 
         this.checkTypes = Collections.singletonList(new HorizontalSpeedCheck.Type(this));
+        this.checkTypes = Arrays.asList(new HorizontalSpeedCheck.Type(this), new VerticalSpeedCheck.Type(this));
 
         this.plugin.getPunishmentController().bind(WarnPunishment.class, this);
 
@@ -113,7 +116,8 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                             new NormalDistribution(mean, standardDeviation);
 
                     if (event.getResult().getReports().get(ReportType.SEVERITY) != null) {
-                        double probability = normalDistribution.probability(lower, (Double) event.getResult().getReports().get(ReportType.SEVERITY));
+                        double probability = normalDistribution.probability(lower, (Double) event.getResult()
+                                .getReports().get(ReportType.SEVERITY));
 
                         Punishment punishment = Punishment.builder()
                                 .time(LocalDateTime.now())
@@ -121,9 +125,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                                 .probability(probability)
                                 .build();
 
-                        if ((Boolean) event.getResult().getReports().get(ReportType.TEST)) {
-                            this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
-                        }
+                        this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
                     }
                 }
             }
@@ -177,9 +179,9 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
     public static class Configuration implements DetectionConfiguration {
 
-        private final SpeedDetection speedDetection;
-
         private static File configFile;
+
+        private final SpeedDetection speedDetection;
 
         StorageValue<String, Integer> configAnalysisTime;
         StorageValue<String, Map<String, Double>> configTickBounds;
@@ -250,7 +252,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             controlValues.put("sneak", 1.015);
             controlValues.put("walk", 1.035);
             controlValues.put("sprint", 1.065);
-            controlValues.put("fly", 1.07);
+            controlValues.put("fly", 1.065);
 
             this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
                     "Magic values for movement the player controls that are added each tick.",

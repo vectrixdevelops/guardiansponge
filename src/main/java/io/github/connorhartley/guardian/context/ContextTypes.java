@@ -26,7 +26,8 @@ package io.github.connorhartley.guardian.context;
 import io.github.connorhartley.guardian.context.container.ContextKey;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
-import io.github.connorhartley.guardian.internal.contexts.world.BlockSpeedContext;
+import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionContext;
+import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedContext;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -40,24 +41,39 @@ import org.spongepowered.api.world.World;
 @Deprecated
 public class ContextTypes {
 
+    /* General */
+
+    public static ContextKey<Boolean> IMPOSSIBLE_MOVE =
+            new ContextKey<>("impossible_move", PlayerPositionContext.Altitude.class, false);
+
+    /* Player Location */
+
     public static ContextKey<Location<World>> START_LOCATION =
             new ContextKey<>("start_location", PlayerLocationContext.class, null);
 
     public static ContextKey<Location<World>> PRESENT_LOCATION =
             new ContextKey<>("present_location", PlayerLocationContext.class, null);
 
-    /* Control HorizontalSpeed | Used in: PlayerControlContext.HorizontalSpeed */
+    /* Player Controller | Used in: PlayerControlContext.HorizontalSpeed */
 
-    public static ContextKey<Double> CONTROL_SPEED =
+    public static ContextKey<Double> VERTICAL_CONTROL_SPEED =
+            new ContextKey<>("control_speed", PlayerControlContext.VerticalSpeed.class, 1.0);
+
+    public static ContextKey<Double> HORIZONTAL_CONTROL_SPEED =
             new ContextKey<>("control_speed", PlayerControlContext.HorizontalSpeed.class, 1.0);
 
     public static ContextKey<PlayerControlContext.HorizontalSpeed.State> CONTROL_SPEED_STATE =
             new ContextKey<>("control_speed_state", PlayerControlContext.HorizontalSpeed.class,
                     PlayerControlContext.HorizontalSpeed.State.WALKING);
 
-    /* HorizontalSpeed Amplifier | Used in: BlockSpeedContext */
+    /* Player Position | Used in: PlayerPositionContext.Altitude */
+
+    public static ContextKey<Double> GAINED_ALTITUDE =
+            new ContextKey<>("control_speed", PlayerPositionContext.Altitude.class, 0.0);
+
+    /* Speed Amplifier | Used in: MaterialSpeedContext */
 
     public static ContextKey<Double> SPEED_AMPLIFIER =
-            new ContextKey<>("speed_amplifier", BlockSpeedContext.class, 1.0);
+            new ContextKey<>("speed_amplifier", MaterialSpeedContext.class, 1.0);
 
 }

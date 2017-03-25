@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.detections;
 
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleConfiguration;
@@ -36,14 +37,13 @@ import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.internal.punishments.WarnPunishment;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Module(
         id = "fly",
@@ -141,6 +141,9 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
 
         private final FlyDetection flyDetection;
 
+        StorageValue<String, Integer> configAnalysisTime;
+        StorageValue<String, Map<String, Double>> configTickBounds;
+
         private Configuration(FlyDetection flyDetection) {
             this.flyDetection = flyDetection;
 
@@ -149,13 +152,36 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     this.flyDetection.getId() + ".conf");
         }
 
+        private void initialize() {
+            this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
+                    "Time taken to analyse the players air time. 2 seconds is recommended!",
+                    2, new TypeToken<Integer>() {
+            });
+
+            HashMap<String, Double> tickBounds = new HashMap<>();
+            tickBounds.put("min", 0.75);
+            tickBounds.put("max", 1.5);
+
+            this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
+                    "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
+                    tickBounds, new TypeToken<Map<String, Double>>() {
+            });
+        }
+
         private static File getLocation() {
             return configFile;
         }
 
         @Override
         public <K, E> Optional<StorageValue<K, E>> get(K name, E defaultElement) {
-            return null;
+            if (name instanceof String) {
+                if (name.equals("analysis-time")) {
+                    return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
+                } else if (name.equals("tick-bounds")) {
+                    return Optional.of((StorageValue<K, E>) this.configTickBounds);
+                }
+            }
+            return Optional.empty();
         }
     }
 

@@ -92,7 +92,7 @@ public class Action<T extends Event> {
             ConditionResult testResult = callback.test(user, event, this.contextContainer, this.sequenceReport, lastAction);
 
             this.sequenceReport =
-                SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
+                    SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
         });
     }
 
