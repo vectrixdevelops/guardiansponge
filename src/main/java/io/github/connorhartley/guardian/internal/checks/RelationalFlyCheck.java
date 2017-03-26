@@ -76,8 +76,10 @@ public class RelationalFlyCheck extends Check {
         public Type(Detection detection) {
             this.detection = detection;
 
-            if (this.detection.getConfiguration().get("analysis-time", 2d).isPresent()) {
-                this.analysisTime = ((double) this.detection.getConfiguration().get("analysis-time", 2).get().getValue()) / 0.05;
+            System.out.println("Test.");
+
+            if (this.detection.getConfiguration().get("analysis-time", 2.0).isPresent()) {
+                this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2.0).get().getValue() / 0.05;
             }
 
             if (this.detection.getConfiguration().get("tick-bounds", new HashMap<String, Double>()).isPresent()) {
@@ -132,21 +134,20 @@ public class RelationalFlyCheck extends Check {
                     .success((user, event, contextContainers, sequenceReport, lastAction) -> {
                         Guardian plugin = (Guardian) this.detection.getPlugin();
 
-                        Optional<Location<World>> start = Optional.empty();
-                        Optional<Location<World>> present = Optional.empty();
+                        Location<World> start = null;
+                        Location<World> present = null;
 
                         long currentTime;
                         long playerAltitudeGainTicks = 0;
                         double playerAltitudeGain = 0;
-                        boolean impossibleMove = false;
 
                         for (ContextContainer contextContainer : contextContainers) {
                             if (contextContainer.get(ContextTypes.START_LOCATION).isPresent()) {
-                                start = contextContainer.get(ContextTypes.START_LOCATION);
+                                start = contextContainer.get(ContextTypes.START_LOCATION).get();
                             }
 
                             if (contextContainer.get(ContextTypes.PRESENT_LOCATION).isPresent()) {
-                                present = contextContainer.get(ContextTypes.PRESENT_LOCATION);
+                                present = contextContainer.get(ContextTypes.PRESENT_LOCATION).get();
                             }
 
                             if (contextContainer.get(ContextTypes.GAINED_ALTITUDE).isPresent()) {
@@ -170,10 +171,7 @@ public class RelationalFlyCheck extends Check {
                             return new ConditionResult(false, failReport);
                         }
 
-                        if (user.getPlayer().isPresent() && start.isPresent() && present.isPresent()) {
-                            Location<World> firstLoc = start.get();
-                            Location<World> presentLoc = present.get();
-
+                        if (user.getPlayer().isPresent() && start != null && present != null) {
                             // ### For correct movement context ###
                             if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
                                 if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
@@ -192,18 +190,20 @@ public class RelationalFlyCheck extends Check {
                             long sequenceTime = (currentTime - lastAction);
 
                             double travelDisplacement = Math.abs(Math.sqrt((
-                                    (presentLoc.getX() - firstLoc.getX()) *
-                                            (presentLoc.getX() - firstLoc.getX())) +
-                                    (presentLoc.getZ() - firstLoc.getZ()) *
-                                            (presentLoc.getZ() - firstLoc.getZ())));
+                                    (present.getX() - start.getX()) *
+                                            (present.getX() - start.getX())) +
+                                    (present.getZ() - start.getZ()) *
+                                            (present.getZ() - start.getZ())));
 
                             double position;
 
                             if (travelDisplacement > this.amplitudeMean) {
-                                position = (playerAltitudeGain * travelDisplacement) / (((contextTime + sequenceTime) / 2) / 1000);
+                                position = (playerAltitudeGain / travelDisplacement) / (((contextTime + sequenceTime) / 2) / 1000);
                             } else {
-                                position = (playerAltitudeGain * this.amplitudeMean) / (((contextTime + sequenceTime) / 2) / 1000);
+                                position = (playerAltitudeGain / this.amplitudeMean) / (((contextTime + sequenceTime) / 2) / 1000);
                             }
+
+                            System.out.println("Position: " + position);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport)
                                     .append(ReportType.INFORMATION, "Player position in time should be " + position +

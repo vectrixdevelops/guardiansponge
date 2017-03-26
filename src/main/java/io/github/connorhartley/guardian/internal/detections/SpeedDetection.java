@@ -57,7 +57,7 @@ import java.util.*;
 @Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.14",
+        version = "0.0.15",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -182,7 +182,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
         private final SpeedDetection speedDetection;
 
-        StorageValue<String, Integer> configAnalysisTime;
+        StorageValue<String, Double> configAnalysisTime;
         StorageValue<String, Map<String, Double>> configTickBounds;
         StorageValue<String, Map<String, Double>> configControlValues;
         StorageValue<String, Map<String, Double>> configMaterialValues;
@@ -203,7 +203,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         private void initialize() {
             this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                     "Time taken to analyse the players speed. 2 seconds is recommended!",
-                    2, new TypeToken<Integer>() {
+                    2.0, new TypeToken<Double>() {
             });
 
             HashMap<String, Double> tickBounds = new HashMap<>();

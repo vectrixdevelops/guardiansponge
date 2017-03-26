@@ -49,7 +49,7 @@ public class PlayerPositionContext {
         private double mean = 2.3;
         private double major = 3.0;
 
-        private Location<World> previous;
+        private double previous;
 
         private long updateAmount = 0;
         private boolean suspended = false;
@@ -72,7 +72,7 @@ public class PlayerPositionContext {
 
             this.contextContainer.set(ContextTypes.GAINED_ALTITUDE);
 
-            this.previous = this.player.getLocation();
+            this.previous = 0;
         }
 
         @Override
@@ -82,14 +82,17 @@ public class PlayerPositionContext {
             for (int i = 0; i < this.player.getLocation().getY(); i++) {
                 if (!this.player.getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
                      highestBlockAtCurrent = this.player.getLocation().sub(0, i - 1, 0);
+                     break;
                 }
             }
 
-            double distanceGained = (this.player.getLocation().getY() - highestBlockAtCurrent.getY()) - this.previous.getY();
+            double distanceGained = (this.player.getLocation().getY() - highestBlockAtCurrent.getY()) - this.previous;
 
-            this.previous = this.player.getLocation();
+            this.previous = (this.player.getLocation().getY() - highestBlockAtCurrent.getY());
 
-            this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + distanceGained);
+            if (distanceGained > 0.5) {
+                this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + distanceGained);
+            }
 
             this.updateAmount += 1;
         }

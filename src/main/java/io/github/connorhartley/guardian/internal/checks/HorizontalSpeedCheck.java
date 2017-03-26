@@ -72,8 +72,8 @@ public class HorizontalSpeedCheck extends Check {
         public Type(Detection detection) {
             this.detection = detection;
 
-            if (this.detection.getConfiguration().get("analysis-time", 2d).isPresent()) {
-                this.analysisTime = ((double) this.detection.getConfiguration().get("analysis-time", 2).get().getValue()) / 0.05;
+            if (this.detection.getConfiguration().get("analysis-time", 2.0).isPresent()) {
+                this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2.0).get().getValue() / 0.05;
             }
 
             if (this.detection.getConfiguration().get("tick-bounds", new HashMap<String, Double>()).isPresent()) {

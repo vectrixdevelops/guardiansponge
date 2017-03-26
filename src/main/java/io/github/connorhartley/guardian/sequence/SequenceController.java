@@ -91,17 +91,7 @@ public class SequenceController implements SequenceInvoker {
         this.runningSequences.put(player, currentlyExecuting);
 
         this.blueprints.stream()
-                .filter(blueprint -> {
-                    boolean exists = false;
-                    if (this.runningSequences.get(player) != null) {
-                        for (Sequence sequence : this.runningSequences.get(player)) {
-                            if (sequence.getSequenceBlueprint().getClass().isAssignableFrom(blueprint.getClass())) {
-                                exists = true;
-                            }
-                        }
-                    }
-                    return !exists;
-                })
+                .filter(blueprint -> !currentlyExecuting.contains(blueprint))
                 .forEach(blueprint -> {
                     Sequence sequence = blueprint.create(player);
 

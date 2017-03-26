@@ -62,29 +62,19 @@ public class ContextController {
                         e.printStackTrace();
                     }
                 } else {
-                    boolean exists = false;
-                    for (Context contextSearch : this.runningContexts.get(player)) {
-                        if (contextSearch.getClass().equals(context)) {
-                            exists = true;
-                            break;
-                        }
-                    }
+                    List<Context> contexts = new ArrayList<>();
+                    contexts.addAll(this.runningContexts.get(player));
 
-                    if (!exists) {
-                        List<Context> contexts = new ArrayList<>();
-                        contexts.addAll(this.runningContexts.get(player));
+                    try {
+                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, Player.class);
+                        Context newContext = (Context) ctor.newInstance(this.plugin, detection, player);
 
-                        try {
-                            Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, Player.class);
-                            Context newContext = (Context) ctor.newInstance(this.plugin, detection, player);
+                        contexts.add(newContext);
+                        this.runningContexts.put(player, contexts);
 
-                            contexts.add(newContext);
-                            this.runningContexts.put(player, contexts);
-
-                            return Optional.of(newContext);
-                        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
+                        return Optional.of(newContext);
+                    } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
                     }
                 }
             }
