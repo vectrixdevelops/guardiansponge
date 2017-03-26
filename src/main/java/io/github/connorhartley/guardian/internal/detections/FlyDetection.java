@@ -56,7 +56,7 @@ import java.util.*;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.2",
+        version = "0.0.3",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -181,7 +181,7 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
 
         private final FlyDetection flyDetection;
 
-        StorageValue<String, Integer> configAnalysisTime;
+        StorageValue<String, Double> configAnalysisTime;
         StorageValue<String, Map<String, Double>> configTickBounds;
         StorageValue<String, Map<String, Double>> configDistanceAmplitude;
         StorageValue<String, Map<String, Double>> configPunishmentLevels;
@@ -201,7 +201,7 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
         private void initialize() {
             this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                     "Time taken to analyse the players air time. 2 seconds is recommended!",
-                    2, new TypeToken<Integer>() {
+                    2.0, new TypeToken<Double>() {
             });
 
             HashMap<String, Double> tickBounds = new HashMap<>();
