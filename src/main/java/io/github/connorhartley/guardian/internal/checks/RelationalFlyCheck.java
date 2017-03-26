@@ -213,8 +213,6 @@ public class RelationalFlyCheck extends Check {
                                 position = (playerAltitudeGain / this.amplitudeMean) / (((contextTime + sequenceTime) / 2) / 1000);
                             }
 
-                            System.out.println("Position: " + position);
-
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport)
                                     .append(ReportType.INFORMATION, "Player position in time should be " + position +
                                             ".");
