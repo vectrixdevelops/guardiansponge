@@ -186,6 +186,16 @@ public class RelationalFlyCheck extends Check {
 
                             currentTime = System.currentTimeMillis();
 
+                            if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
+                                if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
+                                    SequenceReport failReport = SequenceReport.of(sequenceReport)
+                                            .append(ReportType.TEST, false)
+                                            .build();
+
+                                    return new ConditionResult(false, failReport);
+                                }
+                            }
+
                             long contextTime = (1 / playerAltitudeGainTicks) * ((long) this.analysisTime * 1000);
                             long sequenceTime = (currentTime - lastAction);
 
