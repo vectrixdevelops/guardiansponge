@@ -45,10 +45,14 @@ public class PlayerPositionContext {
         private Player player;
         private ContextContainer contextContainer;
 
+        private double minor = 1.4;
+        private double mean = 2.3;
+        private double major = 3.0;
+
+        private Location<World> previous;
+
         private long updateAmount = 0;
         private boolean suspended = false;
-
-        private double previous = 0;
 
         public Altitude(Guardian plugin, Detection detection, Player player) {
             super(plugin, detection, player);
@@ -57,8 +61,18 @@ public class PlayerPositionContext {
             this.player = player;
             this.contextContainer = new ContextContainer(this);
 
-            this.contextContainer.set(ContextTypes.IMPOSSIBLE_MOVE);
+            if (this.detection.getConfiguration().get("distance-amplitude", new HashMap<String, Double>()).isPresent()) {
+                Map<String, Double> storageValueMap = this.detection.getConfiguration().get("distance-amplitude",
+                        new HashMap<String, Double>()).get().getValue();
+
+                this.minor = storageValueMap.get("minor");
+                this.mean = storageValueMap.get("mean");
+                this.major = storageValueMap.get("major");
+            }
+
             this.contextContainer.set(ContextTypes.GAINED_ALTITUDE);
+
+            this.previous = this.player.getLocation();
         }
 
         @Override
@@ -71,17 +85,11 @@ public class PlayerPositionContext {
                 }
             }
 
-            double distanceBetween = this.player.getLocation().getY() - highestBlockAtCurrent.getY();
+            double distanceGained = (this.player.getLocation().getY() - highestBlockAtCurrent.getY()) - this.previous.getY();
 
-            // TODO: Should be configurable.
-            //                                         \|/
-            if (this.previous != 0 && (this.previous / 1.4) < distanceBetween) {
-                this.contextContainer.set(ContextTypes.IMPOSSIBLE_MOVE, true);
-            }
+            this.previous = this.player.getLocation();
 
-            this.previous = distanceBetween;
-
-            this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + distanceBetween);
+            this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + distanceGained);
 
             this.updateAmount += 1;
         }

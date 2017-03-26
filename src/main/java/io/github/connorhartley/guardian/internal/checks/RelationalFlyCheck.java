@@ -37,7 +37,6 @@ import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.sequence.report.SequenceReport;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -45,6 +44,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class RelationalFlyCheck extends Check {
@@ -66,9 +66,12 @@ public class RelationalFlyCheck extends Check {
 
         private final Detection detection;
 
-        private double analysisTime = 60;
-        private double minimumTickRange = 50;
-        private double maximumTickRange = 40;
+        private double analysisTime = 40;
+        private double minimumTickRange = 30;
+        private double maximumTickRange = 50;
+        private double amplitudeMinor = 1.4;
+        private double amplitudeMean = 2.3;
+        private double amplitudeMajor = 3;
 
         public Type(Detection detection) {
             this.detection = detection;
@@ -82,6 +85,15 @@ public class RelationalFlyCheck extends Check {
                         new HashMap<String, Double>()).get().getValue().get("min");
                 this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get("tick-bounds",
                         new HashMap<String, Double>()).get().getValue().get("max");
+            }
+
+            if (this.detection.getConfiguration().get("distance-amplitude", new HashMap<String, Double>()).isPresent()) {
+                Map<String, Double> storageValueMap = this.detection.getConfiguration().get("distance-amplitude",
+                        new HashMap<String, Double>()).get().getValue();
+
+                this.amplitudeMinor = storageValueMap.get("minor");
+                this.amplitudeMean = storageValueMap.get("mean");
+                this.amplitudeMajor = storageValueMap.get("major");
             }
         }
 
@@ -137,10 +149,6 @@ public class RelationalFlyCheck extends Check {
                                 present = contextContainer.get(ContextTypes.PRESENT_LOCATION);
                             }
 
-                            if (contextContainer.get(ContextTypes.IMPOSSIBLE_MOVE).isPresent()) {
-                                impossibleMove = contextContainer.get(ContextTypes.IMPOSSIBLE_MOVE).get();
-                            }
-
                             if (contextContainer.get(ContextTypes.GAINED_ALTITUDE).isPresent()) {
                                 playerAltitudeGainTicks = contextContainer.getContext().updateAmount();
                                 playerAltitudeGain = contextContainer.get(ContextTypes.GAINED_ALTITUDE).get();
@@ -189,7 +197,33 @@ public class RelationalFlyCheck extends Check {
                                     (presentLoc.getZ() - firstLoc.getZ()) *
                                             (presentLoc.getZ() - firstLoc.getZ())));
 
-                            // TODO: Result checking here.
+                            double position;
+
+                            if (travelDisplacement > this.amplitudeMean) {
+                                position = (playerAltitudeGain * travelDisplacement) / (((contextTime + sequenceTime) / 2) / 1000);
+                            } else {
+                                position = (playerAltitudeGain * this.amplitudeMean) / (((contextTime + sequenceTime) / 2) / 1000);
+                            }
+
+                            SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport)
+                                    .append(ReportType.INFORMATION, "Player position in time should be " + position +
+                                            ".");
+
+                            if (playerAltitudeGain > this.amplitudeMajor && (position * this.amplitudeMajor) >
+                                    this.amplitudeMinor) {
+                                successReportBuilder.append(ReportType.TEST, true)
+                                        .append(ReportType.INFORMATION, "Overshot maximum speed by " +
+                                                ((position * this.amplitudeMajor) - this.amplitudeMinor) + ".")
+                                        .append(ReportType.SEVERITY, (position * this.amplitudeMajor) - this.amplitudeMinor);
+
+                                // TODO : Remove this after testing \/
+                                plugin.getLogger().warn(user.getName() + " has triggered the fly check and overshot " +
+                                        "the maximum speed by " + ((position * this.amplitudeMajor) - this.amplitudeMinor) + ".");
+                            } else {
+                                successReportBuilder.append(ReportType.TEST, false);
+                            }
+
+                            return new ConditionResult(true, successReportBuilder.build());
                         }
 
                         return new ConditionResult(false, sequenceReport);

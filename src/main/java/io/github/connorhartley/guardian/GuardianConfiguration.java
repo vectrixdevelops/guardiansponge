@@ -35,6 +35,7 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -69,7 +70,7 @@ public class GuardianConfiguration implements StorageProvider<File>, StorageCons
             this.configVersion = new StorageValue<>(new StorageKey<>("version"), "Do not edit this! Internal use only!",
                     this.plugin.getPluginContainer().getVersion().orElse("unknown"), null);
             this.configEnabledDetections = new StorageValue<>(new StorageKey<>("enabled"), "Detections in this list will be enabled.",
-                    Collections.singletonList("speed_detection"), null);
+                    Arrays.asList("speed", "fly"), null);
             this.configLoggingLevel = new StorageValue<>(new StorageKey<>("logging-level"), "1 for basic logging, 2 for more logging, 3 for detailed logging.",
                     2, null);
 
