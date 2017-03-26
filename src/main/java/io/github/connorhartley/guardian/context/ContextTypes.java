@@ -41,11 +41,6 @@ import org.spongepowered.api.world.World;
 @Deprecated
 public class ContextTypes {
 
-    /* General */
-
-    public static ContextKey<Boolean> IMPOSSIBLE_MOVE =
-            new ContextKey<>("impossible_move", PlayerPositionContext.Altitude.class, false);
-
     /* Player Location */
 
     public static ContextKey<Location<World>> START_LOCATION =

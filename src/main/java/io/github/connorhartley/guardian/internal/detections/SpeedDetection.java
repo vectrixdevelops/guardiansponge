@@ -57,7 +57,7 @@ import java.util.*;
 @Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.13",
+        version = "0.0.14",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -95,7 +95,6 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
 
-        this.checkTypes = Collections.singletonList(new HorizontalSpeedCheck.Type(this));
         this.checkTypes = Arrays.asList(new HorizontalSpeedCheck.Type(this), new VerticalSpeedCheck.Type(this));
 
         this.plugin.getPunishmentController().bind(WarnPunishment.class, this);

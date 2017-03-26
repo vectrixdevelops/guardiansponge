@@ -35,21 +35,28 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionConfiguration;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
+import io.github.connorhartley.guardian.internal.checks.RelationalFlyCheck;
 import io.github.connorhartley.guardian.internal.punishments.WarnPunishment;
+import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Module(
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.1",
+        version = "0.0.2",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -88,11 +95,40 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
 
         DetectionTypes.FLY_DETECTION = Optional.of(this);
 
-        this.checkTypes = Collections.emptyList();
+        this.checkTypes = Collections.singletonList(new RelationalFlyCheck.Type(this));
 
         this.plugin.getPunishmentController().bind(WarnPunishment.class, this);
 
         this.ready = true;
+    }
+
+    @Listener
+    public void onSequenceFinish(SequenceFinishEvent event) {
+        if (!event.isCancelled()) {
+            for (CheckType checkProvider : this.checkTypes) {
+                if (checkProvider.getSequence().equals(event.getSequence())) {
+                    double lower = this.configuration.configSeverityDistribution.getValue().get("lower");
+                    double mean = this.configuration.configSeverityDistribution.getValue().get("mean");
+                    double standardDeviation = this.configuration.configSeverityDistribution.getValue().get("standard-deviation");
+
+                    NormalDistribution normalDistribution =
+                            new NormalDistribution(mean, standardDeviation);
+
+                    if (event.getResult().getReports().get(ReportType.SEVERITY) != null) {
+                        double probability = normalDistribution.probability(lower, (Double) event.getResult()
+                                .getReports().get(ReportType.SEVERITY));
+
+                        Punishment punishment = Punishment.builder()
+                                .time(LocalDateTime.now())
+                                .report(event.getResult())
+                                .probability(probability)
+                                .build();
+
+                        this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -127,7 +163,11 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
 
     @Override
     public StorageValue<?, ?>[] getStorageNodes() {
-        return new StorageValue<?, ?>[] {};
+        return new StorageValue<?, ?>[] {
+                this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
+                this.configuration.configSeverityDistribution, this.configuration.configAnalysisTime,
+                this.configuration.configTickBounds, this.configuration.configDistanceAmplitude
+        };
     }
 
     @Override
@@ -143,6 +183,10 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
 
         StorageValue<String, Integer> configAnalysisTime;
         StorageValue<String, Map<String, Double>> configTickBounds;
+        StorageValue<String, Map<String, Double>> configDistanceAmplitude;
+        StorageValue<String, Map<String, Double>> configPunishmentLevels;
+        StorageValue<String, Map<String, String>> configPunishmentProperties;
+        StorageValue<String, Map<String, Double>> configSeverityDistribution;
 
         private Configuration(FlyDetection flyDetection) {
             this.flyDetection = flyDetection;
@@ -150,6 +194,8 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
             configFile = new File(this.flyDetection.getPlugin().getGlobalConfiguration()
                     .getLocation().getParentFile(), "detection" + File.separator +
                     this.flyDetection.getId() + ".conf");
+
+            initialize();
         }
 
         private void initialize() {
@@ -166,6 +212,46 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
                     tickBounds, new TypeToken<Map<String, Double>>() {
             });
+
+            HashMap<String, Double> punishmentLevels = new HashMap<>();
+            punishmentLevels.put("warn", 0.1);
+//            punishmentLevels.put("flag", 0.2);
+//            punishmentLevels.put("report", 0.3);
+//            punishmentLevels.put("kick", 0.5);
+
+            this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
+                    "Punishments that happen when the user reaches the individual severity threshold.",
+                    punishmentLevels, new TypeToken<Map<String, Double>>() {
+            });
+
+            HashMap<String, String> punishmentProperties = new HashMap<>();
+            punishmentProperties.put("channel", "admin");
+            punishmentProperties.put("releasetime", "12096000");
+
+            this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
+                    "Properties that define certain properties for all the punishments in this detection.",
+                    punishmentProperties, new TypeToken<Map<String, String>>() {
+            });
+
+            HashMap<String, Double> severityDistribution = new HashMap<>();
+            severityDistribution.put("lower", 0d);
+            severityDistribution.put("mean", 2.5d);
+            severityDistribution.put("standard-deviation", 1.5d);
+
+            this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
+                    "Normal distribution properties for calculating the over-shot value from the mean.",
+                    severityDistribution, new TypeToken<Map<String, Double>>() {
+            });
+
+            HashMap<String, Double> distanceAmplitude = new HashMap<>();
+            distanceAmplitude.put("minor", 1.4);
+            distanceAmplitude.put("mean", 2.2);
+            distanceAmplitude.put("major", 3.0);
+
+            this.configDistanceAmplitude = new StorageValue<>(new StorageKey<>("distance-amplitude"),
+                    "Amplitude of distance that can be made between each tick, to ensure legal vertical movement.",
+                    distanceAmplitude, new TypeToken<Map<String, Double>>() {
+            });
         }
 
         private static File getLocation() {
@@ -173,12 +259,21 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <K, E> Optional<StorageValue<K, E>> get(K name, E defaultElement) {
             if (name instanceof String) {
                 if (name.equals("analysis-time")) {
                     return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
                 } else if (name.equals("tick-bounds")) {
                     return Optional.of((StorageValue<K, E>) this.configTickBounds);
+                } else if (name.equals("distance-amplitude")) {
+                    return Optional.of((StorageValue<K, E>) this.configDistanceAmplitude);
+                } else if (name.equals("punishment-properties")) {
+                    return Optional.of((StorageValue<K, E>) this.configPunishmentProperties);
+                } else if (name.equals("punishment-levels")) {
+                    return Optional.of((StorageValue<K, E>) this.configPunishmentLevels);
+                } else if (name.equals("severity-distribution")) {
+                    return Optional.of((StorageValue<K, E>) this.configSeverityDistribution);
                 }
             }
             return Optional.empty();
