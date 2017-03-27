@@ -57,7 +57,7 @@ import java.util.*;
 @Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.15",
+        version = "0.0.16",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -251,7 +251,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             controlValues.put("sneak", 1.015);
             controlValues.put("walk", 1.035);
             controlValues.put("sprint", 1.065);
-            controlValues.put("fly", 1.065);
+            controlValues.put("fly", 1.075);
 
             this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
                     "Magic values for movement the player controls that are added each tick.",
@@ -261,7 +261,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             // Block Speed
 
             HashMap<String, Double> materialValues = new HashMap<>();
-            materialValues.put("gas", 1.035);
+            materialValues.put("gas", 1.04);
             materialValues.put("solid", 1.025);
             materialValues.put("liquid", 1.015);
 

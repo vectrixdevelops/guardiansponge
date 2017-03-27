@@ -174,14 +174,19 @@ public class VerticalSpeedCheck extends Check {
                             long contextTime = (1 / playerControlTicks) * ((long) this.analysisTime * 1000);
                             long sequenceTime = (currentTime - lastAction);
 
-                            double travelDisplacement = Math.abs(Math.sqrt(
-                                    (present.get().getY() - start.get().getY()) *
-                                            (present.get().getY() - start.get().getY())));
-                            double maximumSpeed = playerControlSpeed * (((contextTime + sequenceTime) / 2) / 1000);
+                            double travelDisplacement = 0;
+
+                            if (present.get().getY() - start.get().getY() > 0) {
+                                travelDisplacement = Math.abs(Math.sqrt(
+                                        (present.get().getY() - start.get().getY()) *
+                                                (present.get().getY() - start.get().getY())));
+                            }
+
+                            double maximumSpeed = (playerControlSpeed * (playerControlSpeed / 0.2)) * (((contextTime + sequenceTime) / 2) / 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport);
 
-                            if (travelDisplacement > maximumSpeed) {
+                            if (travelDisplacement > maximumSpeed && travelDisplacement > 0) {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumSpeed) + ".")

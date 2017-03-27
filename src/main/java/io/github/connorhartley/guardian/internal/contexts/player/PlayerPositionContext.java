@@ -88,11 +88,9 @@ public class PlayerPositionContext {
 
             double distanceGained = (this.player.getLocation().getY() - highestBlockAtCurrent.getY()) - this.previous;
 
-            this.previous = (this.player.getLocation().getY() - highestBlockAtCurrent.getY());
+            this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + distanceGained);
 
-            if (distanceGained > 0.5) {
-                this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + distanceGained);
-            }
+            this.previous = (this.player.getLocation().getY() - highestBlockAtCurrent.getY());
 
             this.updateAmount += 1;
         }

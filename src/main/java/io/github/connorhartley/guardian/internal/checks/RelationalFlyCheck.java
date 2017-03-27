@@ -76,8 +76,6 @@ public class RelationalFlyCheck extends Check {
         public Type(Detection detection) {
             this.detection = detection;
 
-            System.out.println("Test.");
-
             if (this.detection.getConfiguration().get("analysis-time", 2.0).isPresent()) {
                 this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2.0).get().getValue() / 0.05;
             }
@@ -199,34 +197,27 @@ public class RelationalFlyCheck extends Check {
                             long contextTime = (1 / playerAltitudeGainTicks) * ((long) this.analysisTime * 1000);
                             long sequenceTime = (currentTime - lastAction);
 
-                            double travelDisplacement = Math.abs(Math.sqrt((
-                                    (present.getX() - start.getX()) *
-                                            (present.getX() - start.getX())) +
-                                    (present.getZ() - start.getZ()) *
-                                            (present.getZ() - start.getZ())));
+                            double travelDisplacement = Math.abs(Math.sqrt(
+                                    (present.getY() - start.getY()) *
+                                            (present.getY() - start.getY())));
 
-                            double position;
-
-                            if (travelDisplacement > this.amplitudeMean) {
-                                position = (playerAltitudeGain / travelDisplacement) / (((contextTime + sequenceTime) / 2) / 1000);
-                            } else {
-                                position = (playerAltitudeGain / this.amplitudeMean) / (((contextTime + sequenceTime) / 2) / 1000);
-                            }
+                            // TODO: Make configurable                 \/
+                            double maximumGain = (playerAltitudeGain / 1.4) * (((contextTime + sequenceTime) / 2) / 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport)
-                                    .append(ReportType.INFORMATION, "Player position in time should be " + position +
+                                    .append(ReportType.INFORMATION, "Player position in time should be " + (travelDisplacement - maximumGain) +
                                             ".");
 
-                            if (playerAltitudeGain > this.amplitudeMajor && (position * this.amplitudeMajor) >
-                                    this.amplitudeMinor) {
+                            // TODO: Make configurable                                   \/
+                            if (travelDisplacement > maximumGain && travelDisplacement > 4.2) {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
-                                                ((position * this.amplitudeMajor) - this.amplitudeMinor) + ".")
-                                        .append(ReportType.SEVERITY, (position * this.amplitudeMajor) - this.amplitudeMinor);
+                                                (travelDisplacement - maximumGain) + ".")
+                                        .append(ReportType.SEVERITY, travelDisplacement - maximumGain);
 
                                 // TODO : Remove this after testing \/
-                                plugin.getLogger().warn(user.getName() + " has triggered the fly check and overshot " +
-                                        "the maximum speed by " + ((position * this.amplitudeMajor) - this.amplitudeMinor) + ".");
+                                plugin.getLogger().warn(user.getName() + " has triggered the flight check and overshot " +
+                                        "the maximum altitude gain by " + (travelDisplacement - maximumGain) + ".");
                             } else {
                                 successReportBuilder.append(ReportType.TEST, false);
                             }
