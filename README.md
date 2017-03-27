@@ -8,9 +8,12 @@ Guardian also provides a service for Precogs to reduce plugin conflicts with tho
 
 The plugin is a work in progress and there are plans for more detections to be added.
 
-Guardian detects these cheats:
+Guardian supports:
 
-- Speed
+- Horizontal and Vertical Speed Detections
+- Flight Detection
+
+And more coming soon.
 
 ## Contributing
 
