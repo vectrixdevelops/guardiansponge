@@ -45,10 +45,6 @@ public class PlayerPositionContext {
         private Player player;
         private ContextContainer contextContainer;
 
-        private double minor = 1.4;
-        private double mean = 2.3;
-        private double major = 3.0;
-
         private double previous;
 
         private long updateAmount = 0;
@@ -60,15 +56,6 @@ public class PlayerPositionContext {
             this.detection = detection;
             this.player = player;
             this.contextContainer = new ContextContainer(this);
-
-            if (this.detection.getConfiguration().get("distance-amplitude", new HashMap<String, Double>()).isPresent()) {
-                Map<String, Double> storageValueMap = this.detection.getConfiguration().get("distance-amplitude",
-                        new HashMap<String, Double>()).get().getValue();
-
-                this.minor = storageValueMap.get("minor");
-                this.mean = storageValueMap.get("mean");
-                this.major = storageValueMap.get("major");
-            }
 
             this.contextContainer.set(ContextTypes.GAINED_ALTITUDE);
 

@@ -166,7 +166,7 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
         return new StorageValue<?, ?>[] {
                 this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
                 this.configuration.configSeverityDistribution, this.configuration.configAnalysisTime,
-                this.configuration.configTickBounds, this.configuration.configDistanceAmplitude
+                this.configuration.configTickBounds
         };
     }
 
@@ -183,7 +183,6 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
 
         StorageValue<String, Double> configAnalysisTime;
         StorageValue<String, Map<String, Double>> configTickBounds;
-        StorageValue<String, Map<String, Double>> configDistanceAmplitude;
         StorageValue<String, Map<String, Double>> configPunishmentLevels;
         StorageValue<String, Map<String, String>> configPunishmentProperties;
         StorageValue<String, Map<String, Double>> configSeverityDistribution;
@@ -242,16 +241,6 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     "Normal distribution properties for calculating the over-shot value from the mean.",
                     severityDistribution, new TypeToken<Map<String, Double>>() {
             });
-
-            HashMap<String, Double> distanceAmplitude = new HashMap<>();
-            distanceAmplitude.put("minor", 1.4);
-            distanceAmplitude.put("mean", 2.2);
-            distanceAmplitude.put("major", 3.0);
-
-            this.configDistanceAmplitude = new StorageValue<>(new StorageKey<>("distance-amplitude"),
-                    "Amplitude of distance that can be made between each tick, to ensure legal vertical movement.",
-                    distanceAmplitude, new TypeToken<Map<String, Double>>() {
-            });
         }
 
         private static File getLocation() {
@@ -266,8 +255,6 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
                 } else if (name.equals("tick-bounds")) {
                     return Optional.of((StorageValue<K, E>) this.configTickBounds);
-                } else if (name.equals("distance-amplitude")) {
-                    return Optional.of((StorageValue<K, E>) this.configDistanceAmplitude);
                 } else if (name.equals("punishment-properties")) {
                     return Optional.of((StorageValue<K, E>) this.configPunishmentProperties);
                 } else if (name.equals("punishment-levels")) {
