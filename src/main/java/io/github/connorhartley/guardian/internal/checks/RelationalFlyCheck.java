@@ -67,11 +67,11 @@ public class RelationalFlyCheck extends Check {
         private final Detection detection;
 
         private double analysisTime = 40;
+        private double minimumTravel = 4.2;
+        private double altitudeReducer = 1.4;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
-        private double amplitudeMinor = 1.4;
-        private double amplitudeMean = 2.3;
-        private double amplitudeMajor = 3;
+
 
         public Type(Detection detection) {
             this.detection = detection;
@@ -87,13 +87,12 @@ public class RelationalFlyCheck extends Check {
                         new HashMap<String, Double>()).get().getValue().get("max");
             }
 
-            if (this.detection.getConfiguration().get("distance-amplitude", new HashMap<String, Double>()).isPresent()) {
-                Map<String, Double> storageValueMap = this.detection.getConfiguration().get("distance-amplitude",
-                        new HashMap<String, Double>()).get().getValue();
+            if (this.detection.getConfiguration().get("minimum-travel", 4.2).isPresent()) {
+                this.minimumTravel = this.detection.getConfiguration().get("minimum-travel", 4.2).get().getValue();
+            }
 
-                this.amplitudeMinor = storageValueMap.get("minor");
-                this.amplitudeMean = storageValueMap.get("mean");
-                this.amplitudeMajor = storageValueMap.get("major");
+            if (this.detection.getConfiguration().get("altitude-reducer", 1.4).isPresent()) {
+                this.altitudeReducer = this.detection.getConfiguration().get("altitude-reducer", 1.4).get().getValue();
             }
         }
 
@@ -201,15 +200,13 @@ public class RelationalFlyCheck extends Check {
                                     (present.getY() - start.getY()) *
                                             (present.getY() - start.getY())));
 
-                            // TODO: Make configurable                 \/
-                            double maximumGain = (playerAltitudeGain / 1.4) * (((contextTime + sequenceTime) / 2) / 1000);
+                            double maximumGain = (playerAltitudeGain / this.altitudeReducer) * (((contextTime + sequenceTime) / 2) / 1000);
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport)
                                     .append(ReportType.INFORMATION, "Player position in time should be " + (travelDisplacement - maximumGain) +
                                             ".");
 
-                            // TODO: Make configurable                                   \/
-                            if (travelDisplacement > maximumGain && travelDisplacement > 4.2) {
+                            if (travelDisplacement > maximumGain && travelDisplacement > this.minimumTravel) {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumGain) + ".")
