@@ -109,8 +109,8 @@ public class PlayerControlContext {
         private double sprintSpeedControl = 1.065;
         private double flySpeedControl = 1.065;
 
-        private double walkSpeedData = 1;
-        private double flySpeedData = 1;
+        private double walkSpeedData = 2;
+        private double flySpeedData = 2;
 
         private long updateAmount = 0;
         private boolean suspended = false;
@@ -140,6 +140,7 @@ public class PlayerControlContext {
                 this.flySpeedData = this.player.get(Keys.FLYING_SPEED).get();
             }
 
+            this.contextContainer.set(ContextTypes.CONTROL_MODIFIER);
             this.contextContainer.set(ContextTypes.HORIZONTAL_CONTROL_SPEED);
             this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE);
         }
@@ -149,16 +150,19 @@ public class PlayerControlContext {
             if (this.player.get(Keys.IS_SPRINTING).isPresent() && this.player.get(Keys.IS_SNEAKING).isPresent() &&
                     this.player.get(Keys.IS_FLYING).isPresent()) {
                 if (this.player.get(Keys.IS_FLYING).get()) {
-                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * (this.flySpeedControl * this.flySpeedData));
+                    this.contextContainer.transform(ContextTypes.CONTROL_MODIFIER, oldValue -> oldValue + (0.05 * this.flySpeedData));
+                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.flySpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.FLYING);
                 } else if (this.player.get(Keys.IS_SPRINTING).get()) {
-                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * (this.sprintSpeedControl * this.walkSpeedData));
+                    this.contextContainer.transform(ContextTypes.CONTROL_MODIFIER, oldValue -> oldValue + (0.05 * this.walkSpeedData));
+                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.sprintSpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SPRINTING);
                 } else if (this.player.get(Keys.IS_SNEAKING).get()) {
                     this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.sneakSpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SNEAKING);
                 } else {
-                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * (this.walkSpeedControl * this.walkSpeedData));
+                    this.contextContainer.transform(ContextTypes.CONTROL_MODIFIER, oldValue -> oldValue + (0.05 * this.walkSpeedControl));
+                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.walkSpeedControl);
                     this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.WALKING);
                 }
             }

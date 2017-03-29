@@ -61,6 +61,9 @@ public class ContextTypes {
             new ContextKey<>("control_speed_state", PlayerControlContext.HorizontalSpeed.class,
                     PlayerControlContext.HorizontalSpeed.State.WALKING);
 
+    public static ContextKey<Double> CONTROL_MODIFIER =
+            new ContextKey<>("control_modifier", PlayerControlContext.HorizontalSpeed.class, 1.0);
+
     /* Player Position | Used in: PlayerPositionContext.Altitude */
 
     public static ContextKey<Double> GAINED_ALTITUDE =

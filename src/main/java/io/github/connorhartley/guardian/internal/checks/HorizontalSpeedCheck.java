@@ -132,6 +132,7 @@ public class HorizontalSpeedCheck extends Check {
 
                         double playerControlSpeed = 1.0;
                         double blockModifier = 1.0;
+                        double playerControlModifier = 4.0;
 
                         PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 
@@ -154,6 +155,10 @@ public class HorizontalSpeedCheck extends Check {
                             if (contextContainer.get(ContextTypes.SPEED_AMPLIFIER).isPresent()) {
                                 blockModifierTicks = contextContainer.getContext().updateAmount();
                                 blockModifier = contextContainer.get(ContextTypes.SPEED_AMPLIFIER).get();
+                            }
+
+                            if (contextContainer.get(ContextTypes.CONTROL_MODIFIER).isPresent()) {
+                                playerControlModifier = contextContainer.get(ContextTypes.CONTROL_MODIFIER).get();
                             }
 
                             if (contextContainer.get(ContextTypes.CONTROL_SPEED_STATE).isPresent()) {
@@ -199,6 +204,8 @@ public class HorizontalSpeedCheck extends Check {
                                             (present.getX() - start.getX())) +
                                     (present.getZ() - start.getZ()) *
                                             (present.getZ() - start.getZ())));
+
+                            travelDisplacement += playerControlModifier / 2;
 
                             double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000);
 
