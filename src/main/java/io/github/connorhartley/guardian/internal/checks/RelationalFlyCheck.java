@@ -67,8 +67,7 @@ public class RelationalFlyCheck extends Check {
         private final Detection detection;
 
         private double analysisTime = 40;
-        private double minimumTravel = 4.2;
-        private double altitudeReducer = 1.4;
+        private double altitudeMaximum = 1.25;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
 
@@ -87,12 +86,8 @@ public class RelationalFlyCheck extends Check {
                         new HashMap<String, Double>()).get().getValue().get("max");
             }
 
-            if (this.detection.getConfiguration().get("minimum-travel", 4.2).isPresent()) {
-                this.minimumTravel = this.detection.getConfiguration().get("minimum-travel", 4.2).get().getValue();
-            }
-
-            if (this.detection.getConfiguration().get("altitude-reducer", 1.4).isPresent()) {
-                this.altitudeReducer = this.detection.getConfiguration().get("altitude-reducer", 1.4).get().getValue();
+            if (this.detection.getConfiguration().get("altitude-maximum", 1.25).isPresent()) {
+                this.altitudeMaximum = this.detection.getConfiguration().get("altitude-maximum", 1.25).get().getValue();
             }
         }
 
@@ -193,28 +188,24 @@ public class RelationalFlyCheck extends Check {
                                 }
                             }
 
-                            long contextTime = (1 / playerAltitudeGainTicks) * ((long) this.analysisTime * 1000);
-                            long sequenceTime = (currentTime - lastAction);
+                            double sequenceTime = (currentTime - lastAction) / 1000;
+                            double contextTime = (playerAltitudeGainTicks + this.analysisTime) / 2;
 
-                            double travelDisplacement = Math.abs(Math.sqrt(
-                                    (present.getY() - start.getY()) *
-                                            (present.getY() - start.getY())));
+                            double travelDisplacement = Math.abs(present.getY() - start.getY());
+                            double meanAltitude = playerAltitudeGain / ((contextTime + sequenceTime) / 2);
 
-                            double maximumGain = (playerAltitudeGain / this.altitudeReducer) * (((contextTime + sequenceTime) / 2) / 1000);
+                            double finalGain = (travelDisplacement / meanAltitude) + meanAltitude;
 
-                            SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport)
-                                    .append(ReportType.INFORMATION, "Player position in time should be " + (travelDisplacement - maximumGain) +
-                                            ".");
+                            SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport);
 
-                            if (travelDisplacement > maximumGain && travelDisplacement > this.minimumTravel) {
+                            if (finalGain > (this.altitudeMaximum * (this.analysisTime * 0.05))) {
                                 successReportBuilder.append(ReportType.TEST, true)
-                                        .append(ReportType.INFORMATION, "Overshot maximum speed by " +
-                                                (travelDisplacement - maximumGain) + ".")
-                                        .append(ReportType.SEVERITY, travelDisplacement - maximumGain);
+                                        .append(ReportType.INFORMATION, "Overshot altitude gain by " +
+                                                (finalGain - (this.altitudeMaximum * (this.analysisTime * 0.05))) + ".")
+                                        .append(ReportType.SEVERITY, finalGain - (this.altitudeMaximum * (this.analysisTime * 0.05)));
 
-                                // TODO : Remove this after testing \/
                                 plugin.getLogger().warn(user.getName() + " has triggered the flight check and overshot " +
-                                        "the maximum altitude gain by " + (travelDisplacement - maximumGain) + ".");
+                                        "the maximum altitude gain by " + (finalGain - (this.altitudeMaximum * (this.analysisTime * 0.05))) + ".");
                             } else {
                                 successReportBuilder.append(ReportType.TEST, false);
                             }
