@@ -56,7 +56,7 @@ import java.util.*;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.5",
+        version = "0.0.6",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -166,8 +166,7 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
         return new StorageValue<?, ?>[] {
                 this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
                 this.configuration.configSeverityDistribution, this.configuration.configAnalysisTime,
-                this.configuration.configTickBounds, this.configuration.configMinimumTravel,
-                this.configuration.configAltitudeReducer
+                this.configuration.configTickBounds, this.configuration.configAltitudeMaximum
         };
     }
 
@@ -183,8 +182,7 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
         private final FlyDetection flyDetection;
 
         StorageValue<String, Double> configAnalysisTime;
-        StorageValue<String, Double> configMinimumTravel;
-        StorageValue<String, Double> configAltitudeReducer;
+        StorageValue<String, Double> configAltitudeMaximum;
         StorageValue<String, Map<String, Double>> configTickBounds;
         StorageValue<String, Map<String, Double>> configPunishmentLevels;
         StorageValue<String, Map<String, String>> configPunishmentProperties;
@@ -206,14 +204,9 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     2.0, new TypeToken<Double>() {
             });
 
-            this.configMinimumTravel = new StorageValue<>(new StorageKey<>("minimum-travel"),
-                    "Minimum travel height before the check takes place. 4.2 is recommended!",
-                    4.2, new TypeToken<Double>() {
-            });
-
-            this.configAltitudeReducer = new StorageValue<>(new StorageKey<>("altitude-reducer"),
-                    "Reduces the altitude value in the check. 1.4 is recommended!",
-                    1.4, new TypeToken<Double>() {
+            this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
+                    "Maximum vanilla mean altitude the player can go. 1.25 is recommended!",
+                    1.25, new TypeToken<Double>() {
             });
 
             HashMap<String, Double> tickBounds = new HashMap<>();
@@ -266,6 +259,8 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
             if (name instanceof String) {
                 if (name.equals("analysis-time")) {
                     return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
+                } else if (name.equals("altitude-maximum")) {
+                    return Optional.of((StorageValue<K, E>) this.configAltitudeMaximum);
                 } else if (name.equals("tick-bounds")) {
                     return Optional.of((StorageValue<K, E>) this.configTickBounds);
                 } else if (name.equals("punishment-properties")) {
