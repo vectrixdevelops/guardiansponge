@@ -52,10 +52,10 @@ public class ContextTypes {
     /* Player Controller | Used in: PlayerControlContext.HorizontalSpeed */
 
     public static ContextKey<Double> VERTICAL_CONTROL_SPEED =
-            new ContextKey<>("control_speed", PlayerControlContext.VerticalSpeed.class, 1.0);
+            new ContextKey<>("vertical_control_speed", PlayerControlContext.VerticalSpeed.class, 1.0);
 
     public static ContextKey<Double> HORIZONTAL_CONTROL_SPEED =
-            new ContextKey<>("control_speed", PlayerControlContext.HorizontalSpeed.class, 1.0);
+            new ContextKey<>("horizontal_control_speed", PlayerControlContext.HorizontalSpeed.class, 1.0);
 
     public static ContextKey<PlayerControlContext.HorizontalSpeed.State> CONTROL_SPEED_STATE =
             new ContextKey<>("control_speed_state", PlayerControlContext.HorizontalSpeed.class,
@@ -67,7 +67,7 @@ public class ContextTypes {
     /* Player Position | Used in: PlayerPositionContext.Altitude */
 
     public static ContextKey<Double> GAINED_ALTITUDE =
-            new ContextKey<>("control_speed", PlayerPositionContext.Altitude.class, 0.0);
+            new ContextKey<>("position_altitude", PlayerPositionContext.Altitude.class, 0.0);
 
     /* Speed Amplifier | Used in: MaterialSpeedContext */
 
