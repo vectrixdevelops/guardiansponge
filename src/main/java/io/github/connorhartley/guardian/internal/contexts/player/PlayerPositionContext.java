@@ -45,7 +45,7 @@ public class PlayerPositionContext {
         private Player player;
         private ContextContainer contextContainer;
 
-        private double previous;
+        private Location<World> depthThreshold;
 
         private long updateAmount = 0;
         private boolean suspended = false;
@@ -58,26 +58,43 @@ public class PlayerPositionContext {
             this.contextContainer = new ContextContainer(this);
 
             this.contextContainer.set(ContextTypes.GAINED_ALTITUDE);
-
-            this.previous = 0;
         }
 
         @Override
         public void update() {
-            Location<World> highestBlockAtCurrent = new Location<>(this.player.getWorld(), -1, -1, -1);
+            Location<World> playerAltitude = null;
+            double blockDepth = 0;
 
             for (int i = 0; i < this.player.getLocation().getY(); i++) {
                 if (!this.player.getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
-                     highestBlockAtCurrent = this.player.getLocation().sub(0, i - 1, 0);
-                     break;
+                    Location<World> currentDepth = this.player.getLocation().sub(0, i, 0);
+                    if (this.depthThreshold != null && this.depthThreshold.getY() == currentDepth.getY()) {
+                        playerAltitude = currentDepth.add(0, 1, 0);
+                        blockDepth = 1;
+                    } else if (this.depthThreshold != null && this.depthThreshold.getY() < currentDepth.getY()) {
+                        playerAltitude = currentDepth.add(0, 1, 0);
+                        blockDepth = currentDepth.getY() - this.depthThreshold.getY();
+                    } else if (this.depthThreshold != null && this.depthThreshold.getY() > currentDepth.getY()) {
+                        playerAltitude = currentDepth.add(0, 1, 0);
+                        blockDepth = this.depthThreshold.getY() - currentDepth.getY();
+                    } else if (this.depthThreshold == null) {
+                        this.depthThreshold = currentDepth;
+                        playerAltitude = currentDepth.add(0, 1, 0);
+                    }
                 }
             }
 
-            double distanceGained = (this.player.getLocation().getY() - highestBlockAtCurrent.getY()) - this.previous;
+            if (this.depthThreshold == null || playerAltitude == null) {
+                playerAltitude = new Location<>(this.player.getWorld(), this.player.getLocation().getX(), 0, this.player.getLocation().getZ());
+            }
 
-            this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + distanceGained);
+            double altitude = (this.player.getLocation().getY() - playerAltitude.getY()) - blockDepth;
 
-            this.previous = (this.player.getLocation().getY() - highestBlockAtCurrent.getY());
+            if (altitude < 0) {
+                this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue);
+            } else {
+                this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + altitude);
+            }
 
             this.updateAmount += 1;
         }
