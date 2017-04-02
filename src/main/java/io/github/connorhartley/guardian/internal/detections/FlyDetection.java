@@ -56,7 +56,7 @@ import java.util.*;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.6",
+        version = "0.0.7",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -205,8 +205,8 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
             });
 
             this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
-                    "Maximum vanilla mean altitude the player can go. 1.25 is recommended!",
-                    1.25, new TypeToken<Double>() {
+                    "Maximum vanilla mean altitude the player can go. 2.65 is recommended!",
+                    2.65, new TypeToken<Double>() {
             });
 
             HashMap<String, Double> tickBounds = new HashMap<>();
