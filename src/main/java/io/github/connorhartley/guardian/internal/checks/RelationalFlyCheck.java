@@ -67,7 +67,7 @@ public class RelationalFlyCheck extends Check {
         private final Detection detection;
 
         private double analysisTime = 40;
-        private double altitudeMaximum = 2.65;
+        private double altitudeMaximum = 2.9;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
 
@@ -86,8 +86,8 @@ public class RelationalFlyCheck extends Check {
                         new HashMap<String, Double>()).get().getValue().get("max");
             }
 
-            if (this.detection.getConfiguration().get("altitude-maximum", 2.65).isPresent()) {
-                this.altitudeMaximum = this.detection.getConfiguration().get("altitude-maximum", 2.65).get().getValue();
+            if (this.detection.getConfiguration().get("altitude-maximum", 2.9).isPresent()) {
+                this.altitudeMaximum = this.detection.getConfiguration().get("altitude-maximum", 2.9).get().getValue();
             }
         }
 
