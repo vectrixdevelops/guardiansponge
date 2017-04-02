@@ -67,7 +67,7 @@ public class RelationalFlyCheck extends Check {
         private final Detection detection;
 
         private double analysisTime = 40;
-        private double altitudeMaximum = 1.25;
+        private double altitudeMaximum = 2.65;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
 
@@ -86,8 +86,8 @@ public class RelationalFlyCheck extends Check {
                         new HashMap<String, Double>()).get().getValue().get("max");
             }
 
-            if (this.detection.getConfiguration().get("altitude-maximum", 1.25).isPresent()) {
-                this.altitudeMaximum = this.detection.getConfiguration().get("altitude-maximum", 1.25).get().getValue();
+            if (this.detection.getConfiguration().get("altitude-maximum", 2.65).isPresent()) {
+                this.altitudeMaximum = this.detection.getConfiguration().get("altitude-maximum", 2.65).get().getValue();
             }
         }
 
@@ -198,14 +198,22 @@ public class RelationalFlyCheck extends Check {
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport);
 
+                            if (travelDisplacement < 1 || meanAltitude < 1) {
+                                SequenceReport failReport = SequenceReport.of(sequenceReport)
+                                        .append(ReportType.TEST, false)
+                                        .build();
+
+                                return new ConditionResult(false, failReport);
+                            }
+
                             if (finalGain > (this.altitudeMaximum * (this.analysisTime * 0.05))) {
                                 successReportBuilder.append(ReportType.TEST, true)
-                                        .append(ReportType.INFORMATION, "Overshot altitude gain by " +
-                                                (finalGain - (this.altitudeMaximum * (this.analysisTime * 0.05))) + ".")
-                                        .append(ReportType.SEVERITY, finalGain - (this.altitudeMaximum * (this.analysisTime * 0.05)));
+                                        .append(ReportType.INFORMATION, "Result of altitude gain was " +
+                                                finalGain + ".")
+                                        .append(ReportType.SEVERITY, finalGain);
 
                                 plugin.getLogger().warn(user.getName() + " has triggered the flight check and overshot " +
-                                        "the maximum altitude gain by " + (finalGain - (this.altitudeMaximum * (this.analysisTime * 0.05))) + ".");
+                                        "the maximum altitude gain by " + finalGain + ".");
                             } else {
                                 successReportBuilder.append(ReportType.TEST, false);
                             }
