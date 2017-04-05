@@ -57,7 +57,7 @@ import java.util.*;
 @Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.17",
+        version = "0.0.18",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -167,7 +167,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                 this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
                 this.configuration.configSeverityDistribution, this.configuration.configAnalysisTime,
                 this.configuration.configTickBounds, this.configuration.configControlValues,
-                this.configuration.configMaterialValues
+                this.configuration.configMaterialValues, this.configuration.configCustomPunishments
         };
     }
 
@@ -188,6 +188,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
         StorageValue<String, Map<String, Double>> configMaterialValues;
         StorageValue<String, Map<String, Double>> configPunishmentLevels;
         StorageValue<String, Map<String, String>> configPunishmentProperties;
+        StorageValue<String, Map<String, List<String>>> configCustomPunishments;
         StorageValue<String, Map<String, Double>> configSeverityDistribution;
 
         private Configuration(SpeedDetection speedDetection) {
@@ -233,6 +234,14 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
             this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
                     "Properties that define certain properties for all the punishments in this detection.",
                     punishmentProperties, new TypeToken<Map<String, String>>() {
+            });
+
+            HashMap<String, List<String>> customPunishments = new HashMap<>();
+            customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
+
+            this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
+                    "Custom punishments that can execute custom commands.",
+                    customPunishments, new TypeToken<Map<String, List<String>>>() {
             });
 
             HashMap<String, Double> severityDistribution = new HashMap<>();
@@ -291,6 +300,8 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                     return Optional.of((StorageValue<K, E>) this.configPunishmentLevels);
                 } else if (name.equals("punishment-properties")) {
                     return Optional.of((StorageValue<K, E>) this.configPunishmentProperties);
+                } else if (name.equals("custom-punishments")) {
+                    return Optional.of((StorageValue<K, E>) this.configCustomPunishments);
                 } else if (name.equals("severity-distribution")) {
                     return Optional.of((StorageValue<K, E>) this.configSeverityDistribution);
                 }

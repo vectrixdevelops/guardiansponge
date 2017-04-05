@@ -56,7 +56,7 @@ import java.util.*;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.8",
+        version = "0.0.9",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -166,7 +166,8 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
         return new StorageValue<?, ?>[] {
                 this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
                 this.configuration.configSeverityDistribution, this.configuration.configAnalysisTime,
-                this.configuration.configTickBounds, this.configuration.configAltitudeMaximum
+                this.configuration.configTickBounds, this.configuration.configAltitudeMaximum,
+                this.configuration.configCustomPunishments
         };
     }
 
@@ -186,6 +187,7 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
         StorageValue<String, Map<String, Double>> configTickBounds;
         StorageValue<String, Map<String, Double>> configPunishmentLevels;
         StorageValue<String, Map<String, String>> configPunishmentProperties;
+        StorageValue<String, Map<String, List<String>>> configCustomPunishments;
         StorageValue<String, Map<String, Double>> configSeverityDistribution;
 
         private Configuration(FlyDetection flyDetection) {
@@ -238,6 +240,14 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     punishmentProperties, new TypeToken<Map<String, String>>() {
             });
 
+            HashMap<String, List<String>> customPunishments = new HashMap<>();
+            customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
+
+            this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
+                    "Custom punishments that can execute custom commands.",
+                    customPunishments, new TypeToken<Map<String, List<String>>>() {
+            });
+
             HashMap<String, Double> severityDistribution = new HashMap<>();
             severityDistribution.put("lower", 0d);
             severityDistribution.put("mean", 2.5d);
@@ -267,6 +277,8 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     return Optional.of((StorageValue<K, E>) this.configPunishmentProperties);
                 } else if (name.equals("punishment-levels")) {
                     return Optional.of((StorageValue<K, E>) this.configPunishmentLevels);
+                } else if (name.equals("custom-punishments")) {
+                    return Optional.of((StorageValue<K, E>) this.configCustomPunishments);
                 } else if (name.equals("severity-distribution")) {
                     return Optional.of((StorageValue<K, E>) this.configSeverityDistribution);
                 }

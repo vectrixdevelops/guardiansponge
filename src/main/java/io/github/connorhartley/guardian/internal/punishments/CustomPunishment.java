@@ -28,28 +28,28 @@ import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.punishment.PunishmentType;
-import io.github.connorhartley.guardian.sequence.report.ReportType;
+import io.github.connorhartley.guardian.storage.container.StorageValue;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-public class WarnPunishment implements PunishmentType {
+public class CustomPunishment implements PunishmentType {
 
     private final Guardian plugin;
     private final Detection detection;
 
-    public WarnPunishment(Guardian plugin, Detection detection) {
+    public CustomPunishment(Guardian plugin, Detection detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
 
     @Override
     public String getName() {
-        return "warn";
+        return "custom";
     }
 
     @Override
@@ -69,22 +69,30 @@ public class WarnPunishment implements PunishmentType {
 
         user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
 
-        // # Temporary Warning Action #
+        Optional<StorageValue<String, HashMap<String, List<String>>>> detectionCustomPunishments =
+                this.detection.getConfiguration().get("custom-punishments", new HashMap<String, List<String>>());
 
-        Double probability = punishment.getProbability() * 100;
+        List<String> customCommandList;
 
-        if (user.getPlayer().isPresent()) {
-            Text message = Text.builder().color(TextColors.RED).append(
-                    Text.of("You have violated the " + detection.getName() + " with a certainty of %" +
-                            probability.intValue() + ".")).build();
-            user.getPlayer().get().sendMessage(message);
-
-            return true;
+        if (detectionCustomPunishments.isPresent()) {
+            if (!detectionCustomPunishments.get().getValue().isEmpty() && detectionCustomPunishments.get().getValue()
+                    .get(args[0]) != null) {
+                customCommandList = detectionCustomPunishments.get().getValue().get(args[0]);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
 
-        // ############################
+        for (String command : customCommandList) {
+            String commandModified = command.replace("%player%", user.getName())
+                    .replace("%probability%", punishment.getProbability().toString())
+                    .replace("%detection%", this.detection.getName());
 
-        return false;
+            Sponge.getCommandManager().process(Sponge.getServer().getConsole(), commandModified);
+        }
+
+        return true;
     }
-
 }

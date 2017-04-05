@@ -57,8 +57,18 @@ public class PunishmentController {
 
         if (this.registry.get(detection) != null) {
             for (PunishmentType punishmentType : this.registry.get(detection)) {
+                if (currentPunishLevel.startsWith("custom:")) {
+                    if (punishmentType.getName().equals("custom")) {
+                        punishmentType.handle(
+                                new String[]{ currentPunishLevel.replace("custom:", "") },
+                                user, punishment);
+                        break;
+                    }
+                }
+
                 if (punishmentType.getName().equals(currentPunishLevel)) {
-                    punishmentType.handle(user, punishment);
+                    punishmentType.handle(null, user, punishment);
+                    break;
                 }
             }
         }

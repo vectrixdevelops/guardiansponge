@@ -34,6 +34,6 @@ public interface PunishmentType {
 
     Optional<Detection> getDetection();
 
-    boolean handle(User user, Punishment punishment);
+    boolean handle(String[] args, User user, Punishment punishment);
 
 }
