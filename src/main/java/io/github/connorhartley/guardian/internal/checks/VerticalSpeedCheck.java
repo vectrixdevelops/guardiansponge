@@ -184,12 +184,15 @@ public class VerticalSpeedCheck extends Check {
 
                             double maximumSpeed = (playerControlSpeed * (playerControlSpeed / 0.2)) * (((contextTime + sequenceTime) / 2) / 1000);
 
+                            // TODO: Clean up the following...
+
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport);
 
                             if (travelDisplacement > maximumSpeed && travelDisplacement > 0) {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumSpeed) + ".")
+                                        .append(ReportType.TYPE, "vertically overspeeding")
                                         .append(ReportType.SEVERITY, travelDisplacement - maximumSpeed);
 
                                 // TODO : Remove this after testing \/

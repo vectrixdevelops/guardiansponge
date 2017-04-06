@@ -209,6 +209,8 @@ public class HorizontalSpeedCheck extends Check {
 
                             double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000);
 
+                            // TODO: Clean up the following...
+
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
                                     .append(ReportType.INFORMATION, "Horizontal travel speed should be less than " +
                                             maximumSpeed + " while they're " + playerControlState.name() + ".");
@@ -217,6 +219,7 @@ public class HorizontalSpeedCheck extends Check {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Overshot maximum speed by " +
                                                 (travelDisplacement - maximumSpeed) + ".")
+                                        .append(ReportType.TYPE, "horizontally overspeeding")
                                         .append(ReportType.SEVERITY, travelDisplacement - maximumSpeed);
 
                                 // TODO : Remove this after testing \/

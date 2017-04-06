@@ -30,6 +30,7 @@ package io.github.connorhartley.guardian.sequence.report;
  */
 public enum ReportType {
 
+    TYPE(String.class),
     INFORMATION(String.class),
     SEVERITY(Double.class),
     TEST(Boolean.class),

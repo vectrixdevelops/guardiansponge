@@ -38,10 +38,9 @@ import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.checks.VerticalSpeedCheck;
-import io.github.connorhartley.guardian.internal.punishments.WarnPunishment;
+import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.sequence.report.ReportType;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
@@ -97,7 +96,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
         this.checkTypes = Arrays.asList(new HorizontalSpeedCheck.Type(this), new VerticalSpeedCheck.Type(this));
 
-        this.plugin.getPunishmentController().bind(WarnPunishment.class, this);
+        this.plugin.getPunishmentController().bind(WarningPunishment.class, this);
 
         this.ready = true;
     }
@@ -115,10 +114,13 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                             new NormalDistribution(mean, standardDeviation);
 
                     if (event.getResult().getReports().get(ReportType.SEVERITY) != null) {
+                        String type = (String) event.getResult().getReports().get(ReportType.TYPE);
+
                         double probability = normalDistribution.probability(lower, (Double) event.getResult()
                                 .getReports().get(ReportType.SEVERITY));
 
                         Punishment punishment = Punishment.builder()
+                                .reason(type)
                                 .time(LocalDateTime.now())
                                 .report(event.getResult())
                                 .probability(probability)
@@ -246,8 +248,8 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
 
             HashMap<String, Double> severityDistribution = new HashMap<>();
             severityDistribution.put("lower", 0d);
-            severityDistribution.put("mean", 5d);
-            severityDistribution.put("standard-deviation", 3d);
+            severityDistribution.put("mean", 25d);
+            severityDistribution.put("standard-deviation", 15d);
 
             this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
                     "Normal distribution properties for calculating the over-shot value from the mean.",

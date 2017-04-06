@@ -37,12 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class WarnPunishment implements PunishmentType {
+public class WarningPunishment implements PunishmentType {
 
     private final Guardian plugin;
     private final Detection detection;
 
-    public WarnPunishment(Guardian plugin, Detection detection) {
+    public WarningPunishment(Guardian plugin, Detection detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
@@ -75,8 +75,8 @@ public class WarnPunishment implements PunishmentType {
 
         if (user.getPlayer().isPresent()) {
             Text message = Text.builder().color(TextColors.RED).append(
-                    Text.of("You have violated the " + detection.getName() + " with a certainty of %" +
-                            probability.intValue() + ".")).build();
+                    Text.of("You have been found illegally " + punishment.getDetectionReason() + " with a certainty of %" +
+                            probability.intValue() + ". This has been reported to an administrator.")).build();
             user.getPlayer().get().sendMessage(message);
 
             return true;

@@ -196,6 +196,8 @@ public class RelationalFlyCheck extends Check {
 
                             double finalGain = (travelDisplacement / meanAltitude) + meanAltitude;
 
+                            // TODO: Clean up the following...
+
                             SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport);
 
                             if (travelDisplacement < 1 || meanAltitude < 1) {
@@ -210,8 +212,10 @@ public class RelationalFlyCheck extends Check {
                                 successReportBuilder.append(ReportType.TEST, true)
                                         .append(ReportType.INFORMATION, "Result of altitude gain was " +
                                                 finalGain + ".")
+                                        .append(ReportType.TYPE, "flying")
                                         .append(ReportType.SEVERITY, finalGain);
 
+                                // TODO : Remove this after testing \/
                                 plugin.getLogger().warn(user.getName() + " has triggered the flight check and overshot " +
                                         "the maximum altitude gain by " + finalGain + ".");
                             } else {

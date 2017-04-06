@@ -29,11 +29,13 @@ import java.time.LocalDateTime;
 
 public class Punishment {
 
+    private final String detectionReason;
     private final SequenceReport sequenceReport;
     private final LocalDateTime localDateTime;
     private final Double probability;
 
     public Punishment(Builder builder) {
+        this.detectionReason = builder.detectionReason;
         this.sequenceReport = builder.sequenceReport;
         this.localDateTime = builder.localDateTime;
         this.probability = builder.probability;
@@ -41,6 +43,10 @@ public class Punishment {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public String getDetectionReason() {
+        return this.detectionReason;
     }
 
     public SequenceReport getSequenceReport() {
@@ -57,11 +63,17 @@ public class Punishment {
 
     public static class Builder {
 
+        private String detectionReason;
         private SequenceReport sequenceReport;
         private LocalDateTime localDateTime;
         private Double probability;
 
         public Builder() {}
+
+        public Builder reason(String detectionReason) {
+            this.detectionReason = detectionReason;
+            return this;
+        }
 
         public Builder report(SequenceReport sequenceReport) {
             this.sequenceReport = sequenceReport;
