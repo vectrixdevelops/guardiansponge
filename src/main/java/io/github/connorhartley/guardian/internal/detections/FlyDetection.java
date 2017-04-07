@@ -39,7 +39,6 @@ import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.RelationalFlyCheck;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
 import io.github.connorhartley.guardian.punishment.Punishment;
-import io.github.connorhartley.guardian.sequence.report.ReportType;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
@@ -56,7 +55,7 @@ import java.util.*;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.9",
+        version = "0.0.10",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -114,21 +113,18 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     NormalDistribution normalDistribution =
                             new NormalDistribution(mean, standardDeviation);
 
-                    if (event.getResult().getReports().get(ReportType.SEVERITY) != null) {
-                        String type = (String) event.getResult().getReports().get(ReportType.TYPE);
+                    String type = event.getResult().getDetectionTypes().get(0);
 
-                        double probability = normalDistribution.probability(lower, (Double) event.getResult()
-                                .getReports().get(ReportType.SEVERITY));
+                    double probability = normalDistribution.probability(lower, event.getResult().getSeverity());
 
-                        Punishment punishment = Punishment.builder()
-                                .reason(type)
-                                .time(LocalDateTime.now())
-                                .report(event.getResult())
-                                .probability(probability)
-                                .build();
+                    Punishment punishment = Punishment.builder()
+                            .reason(type)
+                            .time(LocalDateTime.now())
+                            .report(event.getResult())
+                            .probability(probability)
+                            .build();
 
-                        this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
-                    }
+                    this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
                 }
             }
         }

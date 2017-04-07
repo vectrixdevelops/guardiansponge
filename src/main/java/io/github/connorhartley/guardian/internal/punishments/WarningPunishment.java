@@ -28,7 +28,6 @@ import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.punishment.PunishmentType;
-import io.github.connorhartley.guardian.sequence.report.ReportType;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;

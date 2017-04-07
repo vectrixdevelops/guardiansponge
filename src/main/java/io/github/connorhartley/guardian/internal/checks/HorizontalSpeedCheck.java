@@ -36,8 +36,7 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlCo
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
-import io.github.connorhartley.guardian.sequence.report.ReportType;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -168,15 +167,13 @@ public class HorizontalSpeedCheck extends Check {
 
                         if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
                             plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                            SequenceReport failReport = SequenceReport.of(sequenceResult)
-                                    .append(ReportType.TEST, false)
-                                    .build();
+                            SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
+                                    .build(false);
 
                             return new ConditionResult(false, failReport);
                         } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
-                            SequenceReport failReport = SequenceReport.of(sequenceResult)
-                                    .append(ReportType.TEST, false)
-                                    .build();
+                            SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
+                                    .build(false);
 
                             return new ConditionResult(false, failReport);
                         }
@@ -185,9 +182,8 @@ public class HorizontalSpeedCheck extends Check {
                             // ### For correct movement context ###
                             if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
                                 if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
-                                    SequenceReport failReport = SequenceReport.of(sequenceResult)
-                                            .append(ReportType.TEST, false)
-                                            .build();
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
+                                            .build(false);
 
                                     return new ConditionResult(false, failReport);
                                 }
@@ -211,25 +207,24 @@ public class HorizontalSpeedCheck extends Check {
 
                             // TODO: Clean up the following...
 
-                            SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceResult)
-                                    .append(ReportType.INFORMATION, "Horizontal travel speed should be less than " +
-                                            maximumSpeed + " while they're " + playerControlState.name() + ".");
+                            SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceResult)
+                                    .information("Horizontal travel speed should be less than " + maximumSpeed +
+                                            " while they're " + playerControlState.name() + ".");
 
                             if (travelDisplacement > maximumSpeed) {
-                                successReportBuilder.append(ReportType.TEST, true)
-                                        .append(ReportType.INFORMATION, "Overshot maximum speed by " +
-                                                (travelDisplacement - maximumSpeed) + ".")
-                                        .append(ReportType.TYPE, "horizontally overspeeding")
-                                        .append(ReportType.SEVERITY, travelDisplacement - maximumSpeed);
+                                successReportBuilder
+                                        .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
+                                        .type("horizontally overspeeding")
+                                        .severity(travelDisplacement - maximumSpeed);
 
                                 // TODO : Remove this after testing \/
                                 plugin.getLogger().warn(user.getName() + " has triggered the horizontal speed check and overshot " +
                                         "the maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
                             } else {
-                                successReportBuilder.append(ReportType.TEST, false);
+                                return new ConditionResult(false, successReportBuilder.build(false));
                             }
 
-                            return new ConditionResult(true, successReportBuilder.build());
+                            return new ConditionResult(true, successReportBuilder.build(true));
                         }
 
                         return new ConditionResult(false, sequenceResult);

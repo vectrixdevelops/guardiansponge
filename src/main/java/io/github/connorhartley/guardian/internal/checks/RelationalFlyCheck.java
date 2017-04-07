@@ -35,8 +35,7 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionC
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
-import io.github.connorhartley.guardian.sequence.report.ReportType;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -44,8 +43,6 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public class RelationalFlyCheck extends Check {
 
@@ -150,15 +147,13 @@ public class RelationalFlyCheck extends Check {
 
                         if (playerAltitudeGainTicks < this.minimumTickRange) {
                             plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                            SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                    .append(ReportType.TEST, false)
-                                    .build();
+                            SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                    .build(false);
 
                             return new ConditionResult(false, failReport);
                         } else if (playerAltitudeGainTicks > this.maximumTickRange) {
-                            SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                    .append(ReportType.TEST, false)
-                                    .build();
+                            SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                    .build(false);
 
                             return new ConditionResult(false, failReport);
                         }
@@ -167,9 +162,8 @@ public class RelationalFlyCheck extends Check {
                             // ### For correct movement context ###
                             if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
                                 if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
-                                    SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                            .append(ReportType.TEST, false)
-                                            .build();
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                            .build(false);
 
                                     return new ConditionResult(false, failReport);
                                 }
@@ -180,9 +174,8 @@ public class RelationalFlyCheck extends Check {
 
                             if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
                                 if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
-                                    SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                            .append(ReportType.TEST, false)
-                                            .build();
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                            .build(false);
 
                                     return new ConditionResult(false, failReport);
                                 }
@@ -198,31 +191,29 @@ public class RelationalFlyCheck extends Check {
 
                             // TODO: Clean up the following...
 
-                            SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport);
+                            SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceReport);
 
                             if (travelDisplacement < 1 || meanAltitude < 1) {
-                                SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                        .append(ReportType.TEST, false)
-                                        .build();
+                                SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                        .build(false);
 
                                 return new ConditionResult(false, failReport);
                             }
 
                             if (finalGain > (this.altitudeMaximum * (this.analysisTime * 0.05))) {
-                                successReportBuilder.append(ReportType.TEST, true)
-                                        .append(ReportType.INFORMATION, "Result of altitude gain was " +
-                                                finalGain + ".")
-                                        .append(ReportType.TYPE, "flying")
-                                        .append(ReportType.SEVERITY, finalGain);
+                                successReportBuilder
+                                        .information("Result of altitude gain was " + finalGain + ".")
+                                        .type("flying")
+                                        .severity(finalGain);
 
                                 // TODO : Remove this after testing \/
                                 plugin.getLogger().warn(user.getName() + " has triggered the flight check and overshot " +
                                         "the maximum altitude gain by " + finalGain + ".");
                             } else {
-                                successReportBuilder.append(ReportType.TEST, false);
+                                return new ConditionResult(false, successReportBuilder.build(false));
                             }
 
-                            return new ConditionResult(true, successReportBuilder.build());
+                            return new ConditionResult(true, successReportBuilder.build(true));
                         }
 
                         return new ConditionResult(false, sequenceReport);

@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.event.sequence;
 
 import io.github.connorhartley.guardian.sequence.Sequence;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;

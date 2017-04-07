@@ -35,8 +35,7 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationC
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
-import io.github.connorhartley.guardian.sequence.report.ReportType;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -143,15 +142,13 @@ public class VerticalSpeedCheck extends Check {
 
                         if (playerControlTicks < this.minimumTickRange) {
                             plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                            SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                    .append(ReportType.TEST, false)
-                                    .build();
+                            SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                    .build(false);
 
                             return new ConditionResult(false, failReport);
                         } else if (playerControlTicks > this.maximumTickRange) {
-                            SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                    .append(ReportType.TEST, false)
-                                    .build();
+                            SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                    .build(false);
 
                             return new ConditionResult(false, failReport);
                         }
@@ -160,9 +157,8 @@ public class VerticalSpeedCheck extends Check {
                             // ### For correct movement context ###
                             if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
                                 if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
-                                    SequenceReport failReport = SequenceReport.of(sequenceReport)
-                                            .append(ReportType.TEST, false)
-                                            .build();
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                            .build(false);
 
                                     return new ConditionResult(false, failReport);
                                 }
@@ -186,23 +182,22 @@ public class VerticalSpeedCheck extends Check {
 
                             // TODO: Clean up the following...
 
-                            SequenceReport.Builder successReportBuilder = SequenceReport.of(sequenceReport);
+                            SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceReport);
 
                             if (travelDisplacement > maximumSpeed && travelDisplacement > 0) {
-                                successReportBuilder.append(ReportType.TEST, true)
-                                        .append(ReportType.INFORMATION, "Overshot maximum speed by " +
-                                                (travelDisplacement - maximumSpeed) + ".")
-                                        .append(ReportType.TYPE, "vertically overspeeding")
-                                        .append(ReportType.SEVERITY, travelDisplacement - maximumSpeed);
+                                successReportBuilder
+                                        .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
+                                        .type("vertically overspeeding")
+                                        .severity(travelDisplacement - maximumSpeed);
 
                                 // TODO : Remove this after testing \/
                                 plugin.getLogger().warn(user.getName() + " has triggered the vertical speed check and overshot " +
                                         "the maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
                             } else {
-                                successReportBuilder.append(ReportType.TEST, false);
+                                return new ConditionResult(false, successReportBuilder.build(false));
                             }
 
-                            return new ConditionResult(true, successReportBuilder.build());
+                            return new ConditionResult(true, successReportBuilder.build(true));
                         }
 
                         return new ConditionResult(false, sequenceReport);

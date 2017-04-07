@@ -23,13 +23,10 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
-import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
-import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
-import io.github.connorhartley.guardian.sequence.report.ReportType;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
@@ -44,7 +41,7 @@ public class Action<T extends Event> {
     private final List<Condition> failedListeners = new ArrayList<>();
     private final List<ContextContainer> contextContainer = new ArrayList<>();
 
-    private SequenceReport sequenceReport = SequenceReport.builder().build();
+    private SequenceReport sequenceReport = SequenceReport.builder().build(false);
     private int delay;
     private int expire;
 
@@ -92,7 +89,8 @@ public class Action<T extends Event> {
             ConditionResult testResult = callback.test(user, event, this.contextContainer, this.sequenceReport, lastAction);
 
             this.sequenceReport =
-                    SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST, testResult.hasPassed()).build();
+                    SequenceReport.builder().of(testResult.getSequenceReport())
+                            .build(testResult.hasPassed());
         });
     }
 
@@ -101,8 +99,8 @@ public class Action<T extends Event> {
                 .anyMatch(callback -> {
                     ConditionResult testResult = callback.test(user, event, this.contextContainer, this.sequenceReport, lastAction);
 
-                    this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
-                            testResult.hasPassed()).build();
+                    this.sequenceReport = SequenceReport.builder().of(testResult.getSequenceReport())
+                            .build(testResult.hasPassed());
 
                     return testResult.hasPassed();
                 });
@@ -113,8 +111,8 @@ public class Action<T extends Event> {
                 .anyMatch(condition -> {
                     ConditionResult testResult = condition.test(user, event, this.contextContainer, this.sequenceReport, lastAction);
 
-                    this.sequenceReport = SequenceReport.of(testResult.getSequenceReport()).append(ReportType.TEST,
-                            testResult.hasPassed()).build();
+                    this.sequenceReport = SequenceReport.builder().of(testResult.getSequenceReport())
+                            .build(testResult.hasPassed());
 
                     return !testResult.hasPassed();
                 });

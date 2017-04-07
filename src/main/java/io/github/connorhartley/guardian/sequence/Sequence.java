@@ -33,7 +33,6 @@ import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -63,7 +62,7 @@ public class Sequence {
     private final List<Event> incompleteEvents = new ArrayList<>();
 
     private SequenceBlueprint sequenceBlueprint;
-    private SequenceReport sequenceReport = SequenceReport.builder().build();
+    private SequenceReport sequenceReport = SequenceReport.builder().build(false);
     private int queue = 0;
     private long last = System.currentTimeMillis();
     private boolean cancelled = false;

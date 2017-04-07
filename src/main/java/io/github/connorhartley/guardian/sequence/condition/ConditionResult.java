@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence.condition;
 
-import io.github.connorhartley.guardian.sequence.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceReport;
 
 public class ConditionResult {
 
