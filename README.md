@@ -8,12 +8,17 @@ Guardian also provides a service for Precogs to reduce plugin conflicts with tho
 
 The plugin is a work in progress and there are plans for more detections to be added.
 
-Guardian supports:
+Cheats Guardian can detect so far:
 
-- Horizontal and Vertical Speed Detections
-- Flight Detection
+- Horizontal Speed
+- Vertical Speed
+- Flight
+- JetPack
 
 And more coming soon.
+
+Guardian has an optional mixin mod called [ElderGuardian](https://github.com/connorhartley/elderguardian) that allows Guardian to access things beyond the Sponge API.
+It is recommended that you use it with Guardian to improve accuracy. Some detections may also require it to work.
 
 ## Contributing
 
