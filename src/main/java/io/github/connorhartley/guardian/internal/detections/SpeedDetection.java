@@ -55,7 +55,7 @@ import java.util.*;
 @Module(id = "speed",
         name = "Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.19",
+        version = "0.0.20",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
@@ -112,7 +112,11 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
                     NormalDistribution normalDistribution =
                             new NormalDistribution(mean, standardDeviation);
 
-                    String type = event.getResult().getDetectionTypes().get(0);
+                    String type = "";
+
+                    if (event.getResult().getDetectionTypes().size() > 0) {
+                        type = event.getResult().getDetectionTypes().get(0);
+                    }
 
                     double probability = normalDistribution.probability(lower, event.getResult().getSeverity());
 

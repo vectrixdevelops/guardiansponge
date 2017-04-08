@@ -55,7 +55,7 @@ import java.util.*;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.10",
+        version = "0.0.11",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -113,7 +113,11 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
                     NormalDistribution normalDistribution =
                             new NormalDistribution(mean, standardDeviation);
 
-                    String type = event.getResult().getDetectionTypes().get(0);
+                    String type = "";
+
+                    if (event.getResult().getDetectionTypes().size() > 0) {
+                        type = event.getResult().getDetectionTypes().get(0);
+                    }
 
                     double probability = normalDistribution.probability(lower, event.getResult().getSeverity());
 
@@ -206,8 +210,8 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
             });
 
             this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
-                    "Maximum vanilla mean altitude the player can go. 2.9 is recommended!",
-                    2.9, new TypeToken<Double>() {
+                    "Maximum vanilla mean altitude the player can go. 3.1 is recommended!",
+                    3.1, new TypeToken<Double>() {
             });
 
             HashMap<String, Double> tickBounds = new HashMap<>();

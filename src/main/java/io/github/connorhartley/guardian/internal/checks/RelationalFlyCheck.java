@@ -64,7 +64,7 @@ public class RelationalFlyCheck extends Check {
         private final Detection detection;
 
         private double analysisTime = 40;
-        private double altitudeMaximum = 2.9;
+        private double altitudeMaximum = 3.1;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
 

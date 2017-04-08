@@ -35,14 +35,14 @@ import java.util.List;
  */
 public class SequenceReport {
 
-    private final ImmutableList<String> detectionTypes;
-    private final ImmutableList<String> information;
+    private final List<String> detectionTypes = new ArrayList<>();
+    private final List<String> information = new ArrayList<>();
     private final double severity;
     private final boolean accepted;
 
     public SequenceReport(Builder builder) {
-        this.detectionTypes = ImmutableList.copyOf(builder.detectionTypes);
-        this.information = ImmutableList.copyOf(builder.information);
+        this.detectionTypes.addAll(builder.detectionTypes);
+        this.information.addAll(builder.information);
         this.severity = builder.severity;
         this.accepted = builder.accepted;
     }
@@ -51,11 +51,11 @@ public class SequenceReport {
         return new Builder();
     }
 
-    public ImmutableList<String> getDetectionTypes() {
+    public List<String> getDetectionTypes() {
         return this.detectionTypes;
     }
 
-    public ImmutableList<String> getInformation() {
+    public List<String> getInformation() {
         return this.information;
     }
 
@@ -77,6 +77,10 @@ public class SequenceReport {
         public Builder() {}
 
         public Builder of(SequenceReport sequenceReport) {
+            this.detectionTypes = sequenceReport.detectionTypes;
+            this.information = sequenceReport.information;
+            this.severity = sequenceReport.severity;
+            this.accepted = sequenceReport.accepted;
             return this;
         }
 

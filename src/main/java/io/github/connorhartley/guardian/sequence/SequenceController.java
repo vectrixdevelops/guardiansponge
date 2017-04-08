@@ -187,6 +187,10 @@ public class SequenceController implements SequenceInvoker {
             this.sequenceController = sequenceController;
             this.sequenceListener = new SequenceListener(this.sequenceController);
 
+            register();
+        }
+
+        public void register() {
             Sponge.getEventManager().registerListeners(this.plugin, this.sequenceListener);
         }
 

@@ -227,8 +227,6 @@ public class Guardian implements ContextProvider {
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();
 
-        this.globalConfiguration.update();
-
         int loadedModules = 0;
 
         for (ModuleWrapper moduleWrapper : this.moduleController.getModules()) {
@@ -247,6 +245,7 @@ public class Guardian implements ContextProvider {
     @Listener
     public void onServerStopping(GameStoppingEvent event) {
         getLogger().info("Stopping Guardian AntiCheat.");
+        this.globalConfiguration.update();
 
         this.sequenceControllerTask.stop();
         this.checkControllerTask.stop();
@@ -276,7 +275,25 @@ public class Guardian implements ContextProvider {
     }
 
     @Listener
-    public void onReload(GameReloadEvent event) {}
+    public void onReload(GameReloadEvent event) {
+        getLogger().warn("Freezing detection checks.");
+
+        this.sequenceControllerTask.stop();
+        this.checkControllerTask.stop();
+        this.contextControllerTask.stop();
+
+        this.sequenceController.forceCleanup();
+
+        this.globalConfiguration.load();
+
+        this.sequenceControllerTask.register();
+
+        this.sequenceControllerTask.start();
+        this.checkControllerTask.start();
+        this.contextControllerTask.start();
+
+        getLogger().info("Unfreezed detection checks.");
+    }
 
     /* Player Events */
 
