@@ -181,6 +181,13 @@ public class RelationalFlyCheck extends Check {
                                 }
                             }
 
+                            if (user.getPlayer().get().getLocation().getY() < -1.25 || !user.getPlayer().get().isLoaded()) {
+                                SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                        .build(false);
+
+                                return new ConditionResult(false, failReport);
+                            }
+
                             double sequenceTime = (currentTime - lastAction) / 1000;
                             double contextTime = (playerAltitudeGainTicks + this.analysisTime) / 2;
 

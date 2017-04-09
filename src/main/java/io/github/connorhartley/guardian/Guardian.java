@@ -72,9 +72,15 @@ import java.io.File;
                 "Connor Hartley (vectrix)",
                 "Matthew Miller (me4502)"
         },
-        dependencies = @Dependency(
-                id = "precogs"
-        )
+        dependencies = {
+                @Dependency(
+                        id = "precogs"
+                ),
+                @Dependency(
+                        id = "elderguardian",
+                        optional = true
+                )
+        }
 )
 public class Guardian implements ContextProvider {
 
