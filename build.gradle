@@ -5,6 +5,7 @@ plugins {
     id 'eclipse'
     id 'signing'
     id 'com.github.hierynomus.license' version '0.13.1'
+    id 'ninja.miserable.blossom' version '1.0.1'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'org.spongepowered.plugin' version '0.8.1'
 }
@@ -31,6 +32,15 @@ dependencies {
     compile 'com.zaxxer:HikariCP:2.6.0'
     compile 'com.me4502:ModularFramework:1.8.3'
     compile 'com.github.Me4502:Precogs:-SNAPSHOT'
+}
+
+blossom {
+    def location = 'src/main/java/io/github/connorhartley/guardian/GuardianInfo.java'
+
+    replaceToken '@id@', project.pluginId, location
+    replaceToken '@name@', project.pluginName, location
+    replaceToken '@version@', version, location
+    replaceToken '@description@', project.pluginDescription, location
 }
 
 if (JavaVersion.current().isJava8Compatible()) {

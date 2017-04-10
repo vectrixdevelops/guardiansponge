@@ -64,10 +64,10 @@ import org.spongepowered.api.plugin.PluginContainer;
 import java.io.File;
 
 @Plugin(
-        id = "guardian",
-        name = "Guardian",
-        version = "6.0.0-0.1.0-01",
-        description = "An extensible anticheat plugin for Sponge.",
+        id = GuardianInfo.ID,
+        name = GuardianInfo.NAME,
+        version = GuardianInfo.VERSION,
+        description = GuardianInfo.DESCRIPTION,
         authors = {
                 "Connor Hartley (vectrix)",
                 "Matthew Miller (me4502)"
