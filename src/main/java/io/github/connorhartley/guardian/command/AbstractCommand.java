@@ -21,25 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian;
+package io.github.connorhartley.guardian.command;
 
-import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.detection.DetectionTypes;
+import io.github.connorhartley.guardian.Guardian;
+import org.spongepowered.api.command.spec.CommandExecutor;
 
-public final class GuardianDetections {
+public abstract class AbstractCommand implements CommandExecutor {
 
-    private final ModuleController moduleController;
+    private final Guardian plugin;
 
-    private DetectionTypes detectionTypes;
-
-    GuardianDetections(ModuleController moduleController) {
-        this.moduleController = moduleController;
-        this.detectionTypes = new DetectionTypes();
+    public AbstractCommand(Guardian plugin) {
+        this.plugin = plugin;
     }
 
-    void register() {
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.FlyDetection");
+    public Guardian getPlugin() {
+        return this.plugin;
     }
 
 }

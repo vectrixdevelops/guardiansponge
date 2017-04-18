@@ -128,6 +128,10 @@ public class Guardian implements ContextProvider {
         return this.moduleController;
     }
 
+    /* Command */
+
+    private GuardianCommand globalCommand;
+
     /* Configuration */
 
     private GuardianConfiguration globalConfiguration;
@@ -157,11 +161,15 @@ public class Guardian implements ContextProvider {
     public void onGameInitialize(GameInitializationEvent event) {
         getLogger().info("Starting Guardian AntiCheat " + this.pluginContainer.getVersion().get());
 
+        // Register Data
+
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 
         Sponge.getDataManager().register(PunishmentTagData.class, PunishmentTagData.Immutable.class, new PunishmentTagData.Builder());
 
         getLogger().info("Loading controllers.");
+
+        // Register Controllers and Controller Tasks
 
         this.punishmentController = new PunishmentController(this);
         this.contextController = new ContextController(this);
@@ -174,6 +182,8 @@ public class Guardian implements ContextProvider {
 
         getLogger().info("Loading configurations.");
 
+        // Load Configurations
+
         this.globalConfiguration = new GuardianConfiguration(this, this.pluginConfig, this.pluginConfigManager);
         this.configurationOptions = ConfigurationOptions.defaults();
         this.globalConfiguration.create();
@@ -182,8 +192,12 @@ public class Guardian implements ContextProvider {
 
         getLogger().info("Discovering internal detections.");
 
+        // Register Internal Detections
+
         this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleController.setPluginContainer(this.pluginContainer);
+
+        // Set Internal Detection Configuration Directory and Options
 
         File detectionDirectory = new File(this.globalConfiguration.getLocation().getParentFile(), "detection");
         detectionDirectory.mkdir();
@@ -191,17 +205,28 @@ public class Guardian implements ContextProvider {
         this.moduleController.setConfigurationDirectory(detectionDirectory);
         this.moduleController.setConfigurationOptions(this.configurationOptions);
 
+        // Register Guardian Commands
+
+        this.globalCommand = new GuardianCommand(this);
+        this.globalCommand.register();
+
+        // Register Guardian Contexts
+
         this.globalContexts = new GuardianContexts(this.contextController);
-        this.globalContexts.registerInternalContexts();
+        this.globalContexts.register();
+
+        // Register Guardian Detections
 
         this.globalDetections = new GuardianDetections(this.moduleController);
-        this.globalDetections.registerInternalModules();
+        this.globalDetections.register();
 
         if (this.loggingLevel > 1 && this.moduleController.getModules().size() == 1) {
             getLogger().info("Discovered " + this.moduleController.getModules().size() + " module.");
         } else if (this.loggingLevel > 1) {
             getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
         }
+
+        // Enable Modules
 
         this.moduleController.enableModules(moduleWrapper -> {
             if (this.globalConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
@@ -210,6 +235,8 @@ public class Guardian implements ContextProvider {
             }
             return false;
         });
+
+        // Register Detection Checks and Service Instance
 
         this.moduleController.getModules().stream()
                 .filter(ModuleWrapper::isEnabled)
@@ -229,6 +256,8 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
+        // Start Controller Tasks
+
         this.contextControllerTask.start();
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();

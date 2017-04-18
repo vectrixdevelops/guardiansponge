@@ -23,23 +23,31 @@
  */
 package io.github.connorhartley.guardian;
 
-import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.detection.DetectionTypes;
+import io.github.connorhartley.guardian.command.InfoCommand;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.text.Text;
 
-public final class GuardianDetections {
+public final class GuardianCommand {
 
-    private final ModuleController moduleController;
+    private final Guardian plugin;
 
-    private DetectionTypes detectionTypes;
-
-    GuardianDetections(ModuleController moduleController) {
-        this.moduleController = moduleController;
-        this.detectionTypes = new DetectionTypes();
+    GuardianCommand(Guardian plugin) {
+        this.plugin = plugin;
     }
 
     void register() {
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.FlyDetection");
+        CommandManager commandManager = Sponge.getCommandManager();
+
+        PluginContainer pluginContainer = this.plugin.getPluginContainer();
+
+        commandManager.register(pluginContainer, CommandSpec.builder()
+                .description(Text.of("The base command for Guardian."))
+                .permission("guardian.general")
+                .executor(new InfoCommand(this.plugin))
+                .build(), "guardian");
     }
 
 }

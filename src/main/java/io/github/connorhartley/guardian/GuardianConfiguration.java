@@ -23,8 +23,6 @@
  */
 package io.github.connorhartley.guardian;
 
-import com.me4502.modularframework.module.ModuleWrapper;
-import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
@@ -36,10 +34,9 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-public class GuardianConfiguration implements StorageProvider<File>, StorageConsumer {
+public final class GuardianConfiguration implements StorageProvider<File>, StorageConsumer {
 
     private Guardian plugin;
     private CommentedConfigurationNode configurationNode;

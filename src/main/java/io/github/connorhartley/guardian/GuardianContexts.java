@@ -29,7 +29,7 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionC
 import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 
-public class GuardianContexts {
+public final class GuardianContexts {
 
     private final ContextController contextController;
 
@@ -37,7 +37,7 @@ public class GuardianContexts {
         this.contextController = contextController;
     }
 
-    void registerInternalContexts() {
+    void register() {
         this.contextController.register(PlayerLocationContext.class);
         this.contextController.register(MaterialSpeedContext.class);
         this.contextController.register(PlayerControlContext.HorizontalSpeed.class);
