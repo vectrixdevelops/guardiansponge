@@ -191,21 +191,39 @@ public class RelationalFlyCheck extends Check {
                             double sequenceTime = (currentTime - lastAction) / 1000;
                             double contextTime = (playerAltitudeGainTicks + this.analysisTime) / 2;
 
-                            double travelDisplacement = Math.abs(present.getY() - start.getY());
+                            double altitudeDisplacement = Math.abs(present.getY() - start.getY());
+                            double travelDisplacement = Math.abs(Math.sqrt((
+                                    (present.getX() - start.getX()) *
+                                            (present.getX() - start.getX())) +
+                                    (present.getZ() - start.getZ()) *
+                                            (present.getZ() - start.getZ())));
+
+
                             double meanAltitude = playerAltitudeGain / ((contextTime + sequenceTime) / 2);
 
-                            double finalGain = (travelDisplacement / meanAltitude) + meanAltitude;
+                            double finalGain = (altitudeDisplacement / meanAltitude) + meanAltitude;
 
                             // TODO: Clean up the following...
 
                             SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceReport);
 
-                            if (travelDisplacement < 1 || meanAltitude < 1) {
+                            if (altitudeDisplacement < 1 || meanAltitude < 1) {
                                 SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
                                         .build(false);
 
                                 return new ConditionResult(false, failReport);
                             }
+
+                            // Temp
+
+                            if (altitudeDisplacement > travelDisplacement) {
+                                SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                        .build(false);
+
+                                return new ConditionResult(false, failReport);
+                            }
+
+                            // ####
 
                             if (finalGain > (this.altitudeMaximum * (this.analysisTime * 0.05))) {
                                 successReportBuilder
