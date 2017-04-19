@@ -48,6 +48,7 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
@@ -166,7 +167,12 @@ public class Guardian implements ContextProvider {
 
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 
-        Sponge.getDataManager().register(PunishmentTagData.class, PunishmentTagData.Immutable.class, new PunishmentTagData.Builder());
+        DataRegistration.<PunishmentTagData, PunishmentTagData.Immutable>builder()
+                .dataClass(PunishmentTagData.class)
+                .immutableClass(PunishmentTagData.Immutable.class)
+                .builder(new PunishmentTagData.Builder())
+                .manipulatorId("punishmenttag")
+                .buildAndRegister(this.pluginContainer);
 
         getLogger().info("Loading controllers.");
 
