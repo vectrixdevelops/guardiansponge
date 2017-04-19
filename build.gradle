@@ -41,6 +41,7 @@ blossom {
     replaceToken '@name@', project.pluginName, location
     replaceToken '@version@', version, location
     replaceToken '@description@', project.pluginDescription, location
+    replaceToken '@elderversion@', project.elderVersion, location
 }
 
 if (JavaVersion.current().isJava8Compatible()) {

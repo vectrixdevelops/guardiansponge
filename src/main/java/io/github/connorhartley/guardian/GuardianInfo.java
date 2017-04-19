@@ -32,4 +32,6 @@ public final class GuardianInfo {
     public static final String VERSION = "@version@";
     public static final String DESCRIPTION = "@description@";
 
+    public static final String ELDER_VERSION = "@elderversion@";
+
 }

@@ -78,6 +78,7 @@ import java.io.File;
                 ),
                 @Dependency(
                         id = "elderguardian",
+                        version = GuardianInfo.ELDER_VERSION,
                         optional = true
                 )
         }
