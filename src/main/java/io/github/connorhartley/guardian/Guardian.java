@@ -178,6 +178,7 @@ public class Guardian implements ContextProvider {
                 .immutableClass(PunishmentTagData.Immutable.class)
                 .builder(new PunishmentTagData.Builder())
                 .manipulatorId("punishmenttag")
+                .dataName("GuardianPunishmentTag")
                 .buildAndRegister(this.pluginContainer);
 
         getLogger().info("Loading controllers.");
