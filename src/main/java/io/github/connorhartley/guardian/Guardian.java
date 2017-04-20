@@ -45,6 +45,7 @@ import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.bstats.MetricsLite;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
@@ -121,6 +122,11 @@ public class Guardian implements ContextProvider {
     public ConfigurationOptions getConfigurationOptions() {
         return this.configurationOptions;
     }
+
+    /* Plugin Metrics */
+
+    @Inject
+    private MetricsLite metricsLite;
 
     /* Module System */
 
