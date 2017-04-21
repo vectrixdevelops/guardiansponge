@@ -214,16 +214,14 @@ public class FlyCheck extends Check {
                                 return new ConditionResult(false, failReport);
                             }
 
-                            // Temp
+                            // Possible math duplication over the final gain check. (Clean up later)
 
-                            if (altitudeDisplacement > travelDisplacement) {
+                            if (altitudeDisplacement + this.altitudeMaximum > travelDisplacement) {
                                 SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
                                         .build(false);
 
                                 return new ConditionResult(false, failReport);
                             }
-
-                            // ####
 
                             if (finalGain > (this.altitudeMaximum * (this.analysisTime * 0.05))) {
                                 successReportBuilder
