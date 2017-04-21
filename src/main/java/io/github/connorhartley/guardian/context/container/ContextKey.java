@@ -32,13 +32,17 @@ public class ContextKey<T> {
     private final T defaultValue;
 
     public ContextKey(String id, Class<? extends Context> parentContext, T defaultValue) {
-        this.id = id;
+        this.id = id.toLowerCase();
         this.parentContext = parentContext;
         this.defaultValue = defaultValue;
     }
 
-    public String getId() {
+    public String getName() {
         return this.id;
+    }
+
+    public String getId() {
+        return parentContext.getName().toLowerCase() + ":" + this.id;
     }
 
     public Class<? extends Context> getParent() {

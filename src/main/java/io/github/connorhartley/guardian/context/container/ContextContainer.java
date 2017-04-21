@@ -48,12 +48,35 @@ public class ContextContainer {
         return Optional.empty();
     }
 
+    public <E> Optional<E> get(Class<? extends Context> clazz, String name) {
+        String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
+        if (this.contains(combinedId)) {
+            Object value = this.rawMap.get(combinedId);
+            if (value != null)
+                return Optional.of((E) value);
+        }
+        return Optional.empty();
+    }
+
     public <E> ContextContainer set(ContextKey<E> contextKey) {
         return this.set(contextKey, contextKey.getDefaultValue());
     }
 
+    public <E> ContextContainer set(Class<? extends Context> clazz, String name, E value) {
+        String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
+        this.rawMap.put(combinedId, value);
+        return this;
+    }
+
     public <E> ContextContainer set(ContextKey<E> contextKey, E value) {
         this.rawMap.put(contextKey.getId(), value);
+        return this;
+    }
+
+    public <E> ContextContainer transform(Class<? extends Context> clazz, String name, Transformer<E> transformer) {
+        String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
+        E value = (E) this.rawMap.get(combinedId);
+        this.set(clazz, name, transformer.transform(value));
         return this;
     }
 
@@ -70,11 +93,11 @@ public class ContextContainer {
         return this;
     }
 
-    public Map<String, Object> getValues() {
+    public Map<String, Object> getAll() {
         return this.rawMap;
     }
 
-    public Map<String, Object> getShallowValues() {
+    public Map<String, Object> getAllShallow() {
         Map<String, Object> shallowMap = new HashMap<>();
         shallowMap.putAll(this.rawMap);
         return shallowMap;
@@ -87,6 +110,8 @@ public class ContextContainer {
     public <E> boolean contains(ContextKey<E> contextKey) {
         return this.rawMap.containsKey(contextKey.getId());
     }
+
+    public boolean contains(String id) { return this.rawMap.containsKey(id); }
 
     public void clear() {
         this.context = null;

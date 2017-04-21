@@ -31,6 +31,8 @@ import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedCon
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.util.HashMap;
+
 /**
  * Context Types
  *
@@ -68,6 +70,9 @@ public class ContextTypes {
 
     public static ContextKey<Double> GAINED_ALTITUDE =
             new ContextKey<>("position_altitude", PlayerPositionContext.Altitude.class, 0.0);
+
+    public static ContextKey<HashMap<String, Integer>> POSITION_STATE =
+            new ContextKey<>("position_state", PlayerPositionContext.Altitude.class, new HashMap<>());
 
     /* Speed Amplifier | Used in: MaterialSpeedContext */
 

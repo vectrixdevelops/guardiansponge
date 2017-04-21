@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -44,9 +44,9 @@ import org.spongepowered.api.world.World;
 
 import java.util.HashMap;
 
-public class RelationalFlyCheck extends Check {
+public class FlyCheck extends Check {
 
-    public RelationalFlyCheck(CheckType checkType, User user) {
+    public FlyCheck(CheckType checkType, User user) {
         super(checkType, user);
         this.setChecking(true);
     }
@@ -94,10 +94,10 @@ public class RelationalFlyCheck extends Check {
         }
 
         @Override
-        public ContextBuilder getContextTracker() {
-            return ContextBuilder.builder()
-                    .append(PlayerLocationContext.class)
-                    .append(PlayerPositionContext.Altitude.class)
+        public ContextListener getContextTracker() {
+            return ContextListener.builder()
+                    .listen(PlayerLocationContext.class)
+                    .listen(PlayerPositionContext.Altitude.class)
                     .build();
         }
 
@@ -249,7 +249,7 @@ public class RelationalFlyCheck extends Check {
 
         @Override
         public Check createInstance(User user) {
-            return new RelationalFlyCheck(this, user);
+            return new FlyCheck(this, user);
         }
     }
 }

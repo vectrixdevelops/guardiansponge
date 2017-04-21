@@ -38,6 +38,38 @@ import java.util.Map;
 
 public class PlayerPositionContext {
 
+    public static class Monitor extends Context {
+
+        public Monitor(Guardian plugin, Detection detection, Player player) {
+            super(plugin, detection, player);
+        }
+
+        @Override
+        public void update() {
+
+        }
+
+        @Override
+        public void suspend() {
+
+        }
+
+        @Override
+        public boolean isSuspended() {
+            return false;
+        }
+
+        @Override
+        public long updateAmount() {
+            return 0;
+        }
+
+        @Override
+        public ContextContainer getContainer() {
+            return null;
+        }
+    }
+
     public static class Altitude extends Context {
 
         private Guardian plugin;
@@ -65,7 +97,9 @@ public class PlayerPositionContext {
             Location<World> playerAltitude = null;
             double blockDepth = 0;
 
-            for (int i = 0; i < this.player.getLocation().getY(); i++) {
+            for (int n = 0; n < this.player.getLocation().getY(); n++) {
+                double i = Math.round(0.25 * n);
+
                 if (!this.player.getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
                     Location<World> currentDepth = this.player.getLocation().sub(0, i, 0);
                     if (this.depthThreshold != null && this.depthThreshold.getY() == currentDepth.getY()) {

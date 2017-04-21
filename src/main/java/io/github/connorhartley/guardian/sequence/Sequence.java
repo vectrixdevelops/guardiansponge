@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.check.Check;
@@ -54,7 +54,7 @@ public class Sequence {
     private final Player player;
     private final CheckType checkType;
     private final ContextProvider contextProvider;
-    private final ContextBuilder contextBuilder;
+    private final ContextListener contextListener;
 
     private final List<ContextContainer> contextContainer = new ArrayList<>();
     private final List<Action> actions = new ArrayList<>();
@@ -69,12 +69,12 @@ public class Sequence {
     private boolean finished = false;
 
     public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckType checkType, List<Action> actions,
-                    ContextProvider contextProvider, ContextBuilder contextBuilder) {
+                    ContextProvider contextProvider, ContextListener contextListener) {
         this.player = player;
         this.sequenceBlueprint = sequenceBlueprint;
         this.checkType = checkType;
         this.contextProvider = contextProvider;
-        this.contextBuilder = contextBuilder;
+        this.contextListener = contextListener;
         this.actions.addAll(actions);
     }
 
@@ -164,7 +164,7 @@ public class Sequence {
 
     void testContext(Player player) {
         if (this.contextContainer.isEmpty()) {
-            this.contextBuilder.getContexts().forEach(actionContextClass ->
+            this.contextListener.getListeners().forEach(actionContextClass ->
                     this.contextProvider.getContextController().construct(this.getProvider().getDetection(),
                             player, actionContextClass)
                             .ifPresent(context -> this.contextContainer.add(context.getContainer())));

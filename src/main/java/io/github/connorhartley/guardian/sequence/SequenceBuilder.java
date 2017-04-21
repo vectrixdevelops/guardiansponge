@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
@@ -44,15 +44,15 @@ import java.util.List;
 public class SequenceBuilder {
 
     private ContextProvider contextProvider;
-    private ContextBuilder contextBuilder = ContextBuilder.builder().build();
+    private ContextListener contextListener = ContextListener.builder().build();
 
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder context(ContextProvider contextProvider, ContextBuilder contextBuilder) {
+    public SequenceBuilder context(ContextProvider contextProvider, ContextListener contextListener) {
         this.contextProvider = contextProvider;
 
         // TODO: Builder should be refactored.
-        this.contextBuilder = ContextBuilder.builder().of(this.contextBuilder).of(contextBuilder).build();
+        this.contextListener = ContextListener.builder().of(this.contextListener).of(contextListener).build();
         return this;
     }
 
@@ -74,7 +74,7 @@ public class SequenceBuilder {
         return new SequenceBlueprint(checkType) {
             @Override
             public Sequence create(Player player) {
-                return new Sequence(player, this, checkType, actions, contextProvider, contextBuilder);
+                return new Sequence(player, this, checkType, actions, contextProvider, contextListener);
             }
         };
     }

@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.ContextBuilder;
+import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.context.ContextTypes;
 import io.github.connorhartley.guardian.context.container.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -89,11 +89,11 @@ public class HorizontalSpeedCheck extends Check {
         }
 
         @Override
-        public ContextBuilder getContextTracker() {
-            return ContextBuilder.builder()
-                    .append(PlayerLocationContext.class)
-                    .append(PlayerControlContext.HorizontalSpeed.class)
-                    .append(MaterialSpeedContext.class)
+        public ContextListener getContextTracker() {
+            return ContextListener.builder()
+                    .listen(PlayerLocationContext.class)
+                    .listen(PlayerControlContext.HorizontalSpeed.class)
+                    .listen(MaterialSpeedContext.class)
                     .build();
         }
 

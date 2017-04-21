@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context;
+package io.github.connorhartley.guardian.context.listener;
 
+import io.github.connorhartley.guardian.context.Context;
 import org.spongepowered.api.event.cause.Cause;
 import io.github.connorhartley.guardian.sequence.action.Action;
 
@@ -30,26 +31,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Context Tracker
+ * Context Listener
  *
- * Provides a way to represent a group of {@link Cause}s that
- * have been analysed by the added contexts to ensure validity in
- * {@link Action}s and represent how it happened.
+ * Represents a group of contexts to listen for and forward
+ * the appropriate data to the listening {@link Action}.
  */
-public class ContextBuilder {
+public class ContextListener {
 
-    private final List<Class<? extends Context>> contexts = new ArrayList<>();
+    private final List<Class<? extends Context>> listeners = new ArrayList<>();
 
-    private ContextBuilder(Builder builder) {
-        this.contexts.addAll(builder.contexts);
+    private ContextListener(Builder builder) {
+        this.listeners.addAll(builder.contexts);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public List<Class<? extends Context>> getContexts() {
-        return this.contexts;
+    public List<Class<? extends Context>> getListeners() {
+        return this.listeners;
     }
 
     public static class Builder {
@@ -58,18 +58,18 @@ public class ContextBuilder {
 
         public Builder() {}
 
-        public Builder of(ContextBuilder contextBuilder) {
-            this.contexts.addAll(contextBuilder.contexts);
+        public Builder of(ContextListener contextListener) {
+            this.contexts.addAll(contextListener.listeners);
             return this;
         }
 
-        public Builder append(Class<? extends Context> clazz) {
+        public Builder listen(Class<? extends Context> clazz) {
             this.contexts.add(clazz);
             return this;
         }
 
-        public ContextBuilder build() {
-            return new ContextBuilder(this);
+        public ContextListener build() {
+            return new ContextListener(this);
         }
 
     }
