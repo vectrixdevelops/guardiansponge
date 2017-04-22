@@ -46,9 +46,9 @@ public final class GuardianPermission {
             if (builderOptional.isPresent()) {
                 PermissionDescription.Builder builder = builderOptional.get();
 
-                builder.id("guardian.detections.watch.<Detection>")
-                        .description(Text.of("Allows the user to be checked for a <Detection> cheat."))
-                        .assign(PermissionDescription.ROLE_USER, true)
+                builder.id("guardian.detections.bypass.<Detection>")
+                        .description(Text.of("Exempts the user from being checked for a <Detection> cheat."))
+                        .assign(PermissionDescription.ROLE_ADMIN, true)
                         .register();
 
                 builder.id("guardian.detections.toggle.<Detection>")

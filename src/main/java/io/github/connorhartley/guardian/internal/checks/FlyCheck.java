@@ -115,7 +115,7 @@ public class FlyCheck extends Check {
 
                     .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
                         if (user.getPlayer().isPresent()) {
-                            if (user.getPlayer().get().hasPermission("guardian.detections.watch.fly")) {
+                            if (!user.getPlayer().get().hasPermission("guardian.detections.bypass.fly")) {
                                 return new ConditionResult(true, sequenceReport);
                             }
                         }

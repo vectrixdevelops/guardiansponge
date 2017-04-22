@@ -109,8 +109,10 @@ public class VerticalSpeedCheck extends Check {
                     .expire(((Double) this.maximumTickRange).intValue())
 
                     .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
-                        if (user.hasPermission("guardian.detections.watch.speed")) {
-                            return new ConditionResult(true, sequenceReport);
+                        if (user.getPlayer().isPresent()) {
+                            if (!user.getPlayer().get().hasPermission("guardian.detections.bypass.speed")) {
+                                return new ConditionResult(true, sequenceReport);
+                            }
                         }
                         return new ConditionResult(false, sequenceReport);
                     })
