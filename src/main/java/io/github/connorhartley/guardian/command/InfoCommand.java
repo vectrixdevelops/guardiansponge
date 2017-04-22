@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.command;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.GuardianInfo;
+import io.github.connorhartley.guardian.PluginInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -54,9 +54,9 @@ public class InfoCommand extends AbstractCommand {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         if (src instanceof User) {
-            src.sendMessage(Text.of(TextColors.AQUA, GuardianInfo.NAME, " v", GuardianInfo.VERSION));
-            src.sendMessage(Text.of(TextColors.GRAY, "Built with love by ", StringUtils.join(this.getPlugin().getPluginContainer().getAuthors(), ", ")));
-            src.sendMessage(Text.of(TextColors.GRAY, "Running ", this.getPlugin().getModuleController().getModules().size(), " modules."));
+            src.sendMessage(Text.of(TextColors.AQUA, PluginInfo.NAME, " v", PluginInfo.VERSION));
+            src.sendMessage(Text.of(TextColors.GRAY, "Built with love by ", TextColors.DARK_AQUA, StringUtils.join(this.getPlugin().getPluginContainer().getAuthors(), ", ")));
+            src.sendMessage(Text.of(TextColors.GRAY, "Running ", TextColors.DARK_AQUA, this.getPlugin().getModuleController().getModules().size(), " modules", TextColors.GRAY, "."));
             src.sendMessage(Text.builder("Click here for help.")
                     .color(TextColors.AQUA)
                     .onClick(TextActions.runCommand("/guardian help"))

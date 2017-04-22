@@ -66,21 +66,22 @@ import org.spongepowered.api.plugin.PluginContainer;
 import java.io.File;
 
 @Plugin(
-        id = GuardianInfo.ID,
-        name = GuardianInfo.NAME,
-        version = GuardianInfo.VERSION,
-        description = GuardianInfo.DESCRIPTION,
+        id = PluginInfo.ID,
+        name = PluginInfo.NAME,
+        version = PluginInfo.VERSION,
+        description = PluginInfo.DESCRIPTION,
         authors = {
                 "Connor Hartley (vectrix)",
                 "Matthew Miller (me4502)"
         },
         dependencies = {
                 @Dependency(
-                        id = "precogs"
+                        id = "precogs",
+                        version = PluginInfo.PRECOGS_VERSION
                 ),
                 @Dependency(
                         id = "elderguardian",
-                        version = GuardianInfo.ELDER_VERSION,
+                        version = PluginInfo.ELDER_VERSION,
                         optional = true
                 )
         }
@@ -136,6 +137,10 @@ public class Guardian implements ContextProvider {
         return this.moduleController;
     }
 
+    /* Permissions */
+
+    private GuardianPermission globalPermission;
+
     /* Command */
 
     private GuardianCommand globalCommand;
@@ -146,11 +151,11 @@ public class Guardian implements ContextProvider {
 
     /* Contexts */
 
-    private GuardianContexts globalContexts;
+    private GuardianContext globalContext;
 
     /* Detections */
 
-    private GuardianDetections globalDetections;
+    private GuardianDetection globalDetection;
 
     /* Context / Check / Sequence / Punishment */
 
@@ -219,6 +224,11 @@ public class Guardian implements ContextProvider {
         this.moduleController.setConfigurationDirectory(detectionDirectory);
         this.moduleController.setConfigurationOptions(this.configurationOptions);
 
+        // Register Guardian Permissions
+
+        this.globalPermission = new GuardianPermission(this);
+        this.globalPermission.register();
+
         // Register Guardian Commands
 
         this.globalCommand = new GuardianCommand(this);
@@ -226,13 +236,13 @@ public class Guardian implements ContextProvider {
 
         // Register Guardian Contexts
 
-        this.globalContexts = new GuardianContexts(this.contextController);
-        this.globalContexts.register();
+        this.globalContext = new GuardianContext(this.contextController);
+        this.globalContext.register();
 
         // Register Guardian Detections
 
-        this.globalDetections = new GuardianDetections(this.moduleController);
-        this.globalDetections.register();
+        this.globalDetection = new GuardianDetection(this.moduleController);
+        this.globalDetection.register();
 
         if (this.loggingLevel > 1 && this.moduleController.getModules().size() == 1) {
             getLogger().info("Discovered " + this.moduleController.getModules().size() + " module.");
@@ -395,8 +405,8 @@ public class Guardian implements ContextProvider {
      *
      * @return The guardian built-in detections
      */
-    public GuardianDetections getGlobalDetections() {
-        return this.globalDetections;
+    public GuardianDetection getGlobalDetections() {
+        return this.globalDetection;
     }
 
     /**

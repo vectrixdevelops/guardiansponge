@@ -36,13 +36,14 @@ dependencies {
 }
 
 blossom {
-    def location = 'src/main/java/io/github/connorhartley/guardian/GuardianInfo.java'
+    def location = 'src/main/java/io/github/connorhartley/guardian/PluginInfo.java'
 
     replaceToken '@id@', project.pluginId, location
     replaceToken '@name@', project.pluginName, location
     replaceToken '@version@', version, location
     replaceToken '@description@', project.pluginDescription, location
     replaceToken '@elderversion@', project.elderVersion, location
+    replaceToken '@precogsversion@', project.precogsVersion, location
 }
 
 if (JavaVersion.current().isJava8Compatible()) {

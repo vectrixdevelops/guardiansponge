@@ -29,11 +29,11 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionC
 import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 
-public final class GuardianContexts {
+public final class GuardianContext {
 
     private final ContextController contextController;
 
-    GuardianContexts(ContextController contextController) {
+    GuardianContext(ContextController contextController) {
         this.contextController = contextController;
     }
 

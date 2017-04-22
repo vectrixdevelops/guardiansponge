@@ -114,8 +114,10 @@ public class FlyCheck extends Check {
                     .expire(((Double) this.maximumTickRange).intValue())
 
                     .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
-                        if (!user.hasPermission("guardian.detection.fly.exempt")) {
-                            return new ConditionResult(true, sequenceReport);
+                        if (user.getPlayer().isPresent()) {
+                            if (user.getPlayer().get().hasPermission("guardian.detections.watch.fly")) {
+                                return new ConditionResult(true, sequenceReport);
+                            }
                         }
                         return new ConditionResult(false, sequenceReport);
                     })

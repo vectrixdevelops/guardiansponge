@@ -23,23 +23,16 @@
  */
 package io.github.connorhartley.guardian;
 
-import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.detection.DetectionTypes;
+public final class PluginInfo {
 
-public final class GuardianDetections {
+    private PluginInfo() {}
 
-    private final ModuleController moduleController;
+    public static final String ID = "@id@";
+    public static final String NAME = "@name@";
+    public static final String VERSION = "@version@";
+    public static final String DESCRIPTION = "@description@";
 
-    private DetectionTypes detectionTypes;
-
-    GuardianDetections(ModuleController moduleController) {
-        this.moduleController = moduleController;
-        this.detectionTypes = new DetectionTypes();
-    }
-
-    void register() {
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.FlyDetection");
-    }
+    public static final String ELDER_VERSION = "@elderversion@";
+    public static final String PRECOGS_VERSION = "@precogsversion";
 
 }
