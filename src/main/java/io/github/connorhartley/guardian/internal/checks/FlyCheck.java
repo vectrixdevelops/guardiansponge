@@ -83,8 +83,8 @@ public class FlyCheck extends Check {
                         new HashMap<String, Double>()).get().getValue().get("max");
             }
 
-            if (this.detection.getConfiguration().get("altitude-maximum", 2.9).isPresent()) {
-                this.altitudeMaximum = this.detection.getConfiguration().get("altitude-maximum", 2.9).get().getValue();
+            if (this.detection.getConfiguration().get("altitude-maximum", 3.1).isPresent()) {
+                this.altitudeMaximum = this.detection.getConfiguration().get("altitude-maximum", 3.1).get().getValue();
             }
         }
 
