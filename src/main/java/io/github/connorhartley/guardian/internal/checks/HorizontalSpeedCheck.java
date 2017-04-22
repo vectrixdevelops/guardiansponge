@@ -203,7 +203,7 @@ public class HorizontalSpeedCheck extends Check {
 
                             travelDisplacement += playerControlModifier / 2;
 
-                            double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000);
+                            double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000) + 0.01;
 
                             // TODO: Clean up the following...
 

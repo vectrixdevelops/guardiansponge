@@ -178,7 +178,7 @@ public class VerticalSpeedCheck extends Check {
                                                 (present.get().getY() - start.get().getY())));
                             }
 
-                            double maximumSpeed = (playerControlSpeed * (playerControlSpeed / 0.2)) * (((contextTime + sequenceTime) / 2) / 1000);
+                            double maximumSpeed = (playerControlSpeed * (playerControlSpeed / 0.2)) * (((contextTime + sequenceTime) / 2) / 1000) + 0.01;
 
                             // TODO: Clean up the following...
 
