@@ -24,9 +24,10 @@
 package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
@@ -116,7 +117,7 @@ public class FlyCheck extends Check {
 
                     .condition(new PermissionCheck(this.detection))
 
-                    .success((user, event, contextContainers, sequenceReport, lastAction) -> {
+                    .success((user, event, contextValuation, sequenceReport, lastAction) -> {
                         Guardian plugin = (Guardian) this.detection.getPlugin();
 
                         Location<World> start = null;
@@ -126,19 +127,20 @@ public class FlyCheck extends Check {
                         long playerAltitudeGainTicks = 0;
                         double playerAltitudeGain = 0;
 
-                        for (ContextContainer contextContainer : contextContainers) {
-                            if (contextContainer.get(ContextTypes.START_LOCATION).isPresent()) {
-                                start = contextContainer.get(ContextTypes.START_LOCATION).get();
-                            }
+                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
+                            start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
+                        }
 
-                            if (contextContainer.get(ContextTypes.PRESENT_LOCATION).isPresent()) {
-                                present = contextContainer.get(ContextTypes.PRESENT_LOCATION).get();
-                            }
+                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
+                            present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
+                        }
 
-                            if (contextContainer.get(ContextTypes.GAINED_ALTITUDE).isPresent()) {
-                                playerAltitudeGainTicks = contextContainer.getContext().updateAmount();
-                                playerAltitudeGain = contextContainer.get(ContextTypes.GAINED_ALTITUDE).get();
-                            }
+                        if (contextValuation.<PlayerPositionContext.Altitude, Integer>get(PlayerPositionContext.Altitude.class, "update").isPresent()) {
+                            playerAltitudeGainTicks = contextValuation.<PlayerPositionContext.Altitude, Integer>get(PlayerPositionContext.Altitude.class, "update").get();
+                        }
+
+                        if (contextValuation.<PlayerPositionContext.Altitude, Double>get(PlayerPositionContext.Altitude.class, "position_altitude").isPresent()) {
+                            playerAltitudeGain = contextValuation.<PlayerPositionContext.Altitude, Double>get(PlayerPositionContext.Altitude.class, "position_altitude").get();
                         }
 
                         if (playerAltitudeGainTicks < this.minimumTickRange) {

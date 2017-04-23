@@ -30,7 +30,7 @@ public abstract class AbstractCommand implements CommandExecutor {
 
     private final Guardian plugin;
 
-    public AbstractCommand(Guardian plugin) {
+    AbstractCommand(Guardian plugin) {
         this.plugin = plugin;
     }
 

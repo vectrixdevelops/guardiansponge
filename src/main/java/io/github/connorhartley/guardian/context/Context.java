@@ -24,20 +24,40 @@
 package io.github.connorhartley.guardian.context;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.entity.living.player.Player;
 
 public abstract class Context {
 
     private final Guardian plugin;
+    private final Detection detection;
+    private final ContextValuation contextValuation;
+    private final Player player;
 
-    public Context(Guardian plugin, Detection detection, Player player) {
+    public Context(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
         this.plugin = plugin;
+        this.detection = detection;
+        this.contextValuation = contextValuation;
+        this.player = player;
+
+        this.contextValuation.addContext(this);
     }
 
     public Guardian getPlugin() {
         return this.plugin;
+    }
+
+    public Detection getDetection() {
+        return this.detection;
+    }
+
+    public ContextValuation getContextValuation() {
+        return this.contextValuation;
+    }
+
+    public Player getPlayer() {
+        return this.player;
     }
 
     public abstract void update();
@@ -45,9 +65,5 @@ public abstract class Context {
     public abstract void suspend();
 
     public abstract boolean isSuspended();
-
-    public abstract long updateAmount();
-
-    public abstract ContextContainer getContainer();
 
 }

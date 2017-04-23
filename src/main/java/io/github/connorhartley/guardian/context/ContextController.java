@@ -24,7 +24,9 @@
 package io.github.connorhartley.guardian.context;
 
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.Player;
@@ -38,24 +40,25 @@ public class ContextController {
 
     private final Guardian plugin;
     private final List<Class<? extends Context>> contextRegistry = new LinkedList<>();
-    private final HashMap<Player, List<Context>> runningContexts = new LinkedHashMap<>();
+    private final HashMap<Sequence, List<Context>> runningContexts = new LinkedHashMap<>();
 
     public ContextController(Guardian plugin) {
         this.plugin = plugin;
     }
 
-    public Optional<Context> construct(Detection detection, Player player, Class<? extends Context> context) {
+    public Optional<Context> construct(Detection detection, Sequence sequence, ContextValuation contextValuation,
+                                       Player player, Class<? extends Context> context) {
         for (Class<? extends Context> contextClass : this.contextRegistry) {
             if (contextClass.equals(context)) {
-                if (this.runningContexts.get(player) == null) {
+                if (this.runningContexts.get(sequence) == null) {
                     List<Context> contexts = new ArrayList<>();
 
                     try {
-                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, Player.class);
-                        Context newContext = (Context) ctor.newInstance(this.plugin, detection, player);
+                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, ContextValuation.class, Player.class);
+                        Context newContext = (Context) ctor.newInstance(this.plugin, detection, contextValuation, player);
 
                         contexts.add(newContext);
-                        this.runningContexts.put(player, contexts);
+                        this.runningContexts.put(sequence, contexts);
 
                         return Optional.of(newContext);
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -63,14 +66,14 @@ public class ContextController {
                     }
                 } else {
                     List<Context> contexts = new ArrayList<>();
-                    contexts.addAll(this.runningContexts.get(player));
+                    contexts.addAll(this.runningContexts.get(sequence));
 
                     try {
-                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, Player.class);
-                        Context newContext = (Context) ctor.newInstance(this.plugin, detection, player);
+                        Constructor<?> ctor = contextClass.getConstructor(Guardian.class, Detection.class, ContextValuation.class, Player.class);
+                        Context newContext = (Context) ctor.newInstance(this.plugin, detection, contextValuation, player);
 
                         contexts.add(newContext);
-                        this.runningContexts.put(player, contexts);
+                        this.runningContexts.put(sequence, contexts);
 
                         return Optional.of(newContext);
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -82,20 +85,22 @@ public class ContextController {
         return Optional.empty();
     }
 
-    public void suspend(Player player, Context context) {
-        context.getContainer().clear();
-        context.suspend();
-        this.runningContexts.get(player).remove(context);
+    public void suspend(Sequence sequence) {
+        this.runningContexts.entrySet().forEach(sequenceListEntry -> {
+            if (sequenceListEntry.getKey() == sequence) {
+                sequenceListEntry.getValue().forEach(Context::suspend);
+                this.runningContexts.remove(sequenceListEntry.getKey());
+            }
+        });
     }
 
-    public void suspendFor(Player player) {
-        if (this.runningContexts.get(player) != null) {
-            this.runningContexts.get(player).forEach(context -> {
-                context.getContainer().clear();
-                context.suspend();
-            });
-        }
-        this.runningContexts.remove(player);
+    public void suspend(Player player) {
+        this.runningContexts.entrySet().forEach(sequenceListEntry -> {
+            if (sequenceListEntry.getKey().getPlayer() == player) {
+                sequenceListEntry.getValue().forEach(Context::suspend);
+                this.runningContexts.remove(sequenceListEntry.getKey());
+            }
+        });
     }
 
     public void updateAll() {

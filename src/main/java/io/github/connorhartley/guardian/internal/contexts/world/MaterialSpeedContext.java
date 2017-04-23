@@ -26,11 +26,8 @@ package io.github.connorhartley.guardian.internal.contexts.world;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.internal.detections.SpeedDetection;
-import io.github.connorhartley.guardian.storage.StorageConsumer;
-import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Direction;
@@ -40,11 +37,6 @@ import java.util.Map;
 
 public class MaterialSpeedContext extends Context {
 
-    private Guardian plugin;
-    private Detection detection;
-    private Player player;
-    private ContextContainer contextContainer;
-
     private double gasSpeedModifier = 1.045;
     private double solidSpeedModifier = 1.025;
     private double liquidSpeedModifier = 1.015;
@@ -52,15 +44,11 @@ public class MaterialSpeedContext extends Context {
     private long updateAmount = 0;
     private boolean suspended = false;
 
-    public MaterialSpeedContext(Guardian plugin, Detection detection, Player player) {
-        super(plugin, detection, player);
-        this.plugin = plugin;
-        this.detection = detection;
-        this.player = player;
-        this.contextContainer = new ContextContainer(this);
+    public MaterialSpeedContext(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
+        super(plugin, detection, contextValuation, player);
 
-        if (this.detection.getConfiguration().get("material-values", new HashMap<String, Double>()).isPresent()) {
-            Map<String, Double> storageValueMap = this.detection.getConfiguration().get("material-values",
+        if (this.getDetection().getConfiguration().get("material-values", new HashMap<String, Double>()).isPresent()) {
+            Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get("material-values",
                     new HashMap<String, Double>()).get().getValue();
 
             this.gasSpeedModifier = storageValueMap.get("gas");
@@ -68,22 +56,22 @@ public class MaterialSpeedContext extends Context {
             this.liquidSpeedModifier = storageValueMap.get("liquid");
         }
 
-        this.contextContainer.set(ContextTypes.SPEED_AMPLIFIER);
+        this.getContextValuation().set(ContextTypes.SPEED_AMPLIFIER);
     }
 
     @Override
     public void update() {
-        if (!this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
-            this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
-        MatterProperty matterProperty = this.player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
+        if (!this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
+            this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
+        MatterProperty matterProperty = this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
 
         if (matterProperty.getValue() != null) {
             if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.liquidSpeedModifier);
+                this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.liquidSpeedModifier);
             } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
+                this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
             } else {
-                this.contextContainer.transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.solidSpeedModifier);
+                this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.solidSpeedModifier);
             }
         }
         this.updateAmount += 1;
@@ -97,16 +85,6 @@ public class MaterialSpeedContext extends Context {
     @Override
     public boolean isSuspended() {
         return this.suspended;
-    }
-
-    @Override
-    public long updateAmount() {
-        return this.updateAmount;
-    }
-
-    @Override
-    public ContextContainer getContainer() {
-        return this.contextContainer;
     }
 
 }
