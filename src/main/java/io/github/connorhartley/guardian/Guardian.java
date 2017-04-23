@@ -88,93 +88,75 @@ import java.io.File;
 )
 public class Guardian implements ContextProvider {
 
-    /* Logger */
+    /* Injection Fields */
 
-    @Inject
-    private Logger logger;
+    private final ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager;
+    private final File pluginConfig;
+    private final Logger logger;
+    private final PluginContainer pluginContainer;
+    private final MetricsLite metrics;
 
-    public Logger getLogger() {
-        return this.logger;
-    }
+    /* Subsystem Fields */
+
+    private final ModuleController<Guardian> moduleSubsystem;
+
+    /* Controller Fields */
+
+    private final PunishmentController punishmentController;
+    private final ContextController contextController;
+    private final CheckController checkController;
+    private final SequenceController sequenceController;
+
+    private final ContextController.ContextControllerTask contextControllerTask;
+    private final CheckController.CheckControllerTask checkControllerTask;
+    private final SequenceController.SequenceControllerTask sequenceControllerTask;
+
+
+    /* Service Fields */
+
+    private final GuardianPermission guardianPermission;
+    private final GuardianCommand guardianCommand;
+    private final GuardianConfiguration guardianConfiguration;
+    private final GuardianContext guardianContext;
+    private final GuardianDetection guardianDetection;
+
+    /* Additional Fields */
 
     private int loggingLevel = 2;
-
-    /* Plugin Instance */
-
-    @Inject
-    private PluginContainer pluginContainer;
-
-    public PluginContainer getPluginContainer() {
-        return this.pluginContainer;
-    }
-
-    /* Plugin Configuration */
-
-    @Inject
-    @DefaultConfig(sharedRoot = false)
-    private File pluginConfig;
-
-    @Inject
-    @DefaultConfig(sharedRoot = false)
-    private ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager;
-
     private ConfigurationOptions configurationOptions;
 
-    public ConfigurationOptions getConfigurationOptions() {
-        return this.configurationOptions;
-    }
-
-    /* Plugin Metrics */
-
     @Inject
-    private MetricsLite metricsLite;
+    public Guardian(@DefaultConfig(sharedRoot = false) ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager,
+                    @DefaultConfig(sharedRoot = false) File pluginConfig, Logger logger, PluginContainer pluginContainer,
+                    MetricsLite metrics) {
+        this.pluginConfigManager = pluginConfigManager;
+        this.pluginConfig = pluginConfig;
+        this.logger = logger;
+        this.pluginContainer = pluginContainer;
+        this.metrics = metrics;
 
-    /* Module System */
+        this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
+        this.moduleSubsystem.setPluginContainer(pluginContainer);
 
-    private ModuleController<Guardian> moduleController;
+        this.punishmentController = new PunishmentController(this);
+        this.contextController = new ContextController(this);
+        this.checkController = new CheckController(this);
+        this.sequenceController = new SequenceController(this, this.checkController);
 
-    public ModuleController<Guardian> getModuleController() {
-        return this.moduleController;
+        this.contextControllerTask = new ContextController.ContextControllerTask(this, this.contextController);
+        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
+        this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
+
+        this.guardianPermission = new GuardianPermission(this);
+        this.guardianCommand = new GuardianCommand(this);
+        this.guardianConfiguration = new GuardianConfiguration(this, pluginConfig, pluginConfigManager);
+        this.guardianContext = new GuardianContext(this.contextController);
+        this.guardianDetection = new GuardianDetection(this.moduleSubsystem);
     }
-
-    /* Permissions */
-
-    private GuardianPermission globalPermission;
-
-    /* Command */
-
-    private GuardianCommand globalCommand;
-
-    /* Configuration */
-
-    private GuardianConfiguration globalConfiguration;
-
-    /* Contexts */
-
-    private GuardianContext globalContext;
-
-    /* Detections */
-
-    private GuardianDetection globalDetection;
-
-    /* Context / Check / Sequence / Punishment */
-
-    private PunishmentController punishmentController;
-    private ContextController contextController;
-    private CheckController checkController;
-    private SequenceController sequenceController;
-
-    private ContextController.ContextControllerTask contextControllerTask;
-    private CheckController.CheckControllerTask checkControllerTask;
-    private SequenceController.SequenceControllerTask sequenceControllerTask;
-
-    /* Game Events */
 
     @Listener
     public void onGameInitialize(GameInitializationEvent event) {
         getLogger().info("Starting Guardian AntiCheat " + this.pluginContainer.getVersion().get());
-
-        // Register Data
 
         Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new GuardianAntiCheatService());
 
@@ -186,74 +168,36 @@ public class Guardian implements ContextProvider {
                 .dataName("GuardianPunishmentTag")
                 .buildAndRegister(this.pluginContainer);
 
-        getLogger().info("Loading controllers.");
-
-        // Register Controllers and Controller Tasks
-
-        this.punishmentController = new PunishmentController(this);
-        this.contextController = new ContextController(this);
-        this.checkController = new CheckController(this);
-        this.sequenceController = new SequenceController(this, this.checkController);
-
-        this.contextControllerTask = new ContextController.ContextControllerTask(this, this.contextController);
-        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
-        this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
-
         getLogger().info("Loading configurations.");
 
-        // Load Configurations
-
-        this.globalConfiguration = new GuardianConfiguration(this, this.pluginConfig, this.pluginConfigManager);
         this.configurationOptions = ConfigurationOptions.defaults();
-        this.globalConfiguration.create();
+        this.guardianConfiguration.create();
 
-        this.loggingLevel = this.globalConfiguration.configLoggingLevel.getValue();
+        this.loggingLevel = this.guardianConfiguration.configLoggingLevel.getValue();
 
         getLogger().info("Discovering internal detections.");
 
-        // Register Internal Detections
-
-        this.moduleController = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
-        this.moduleController.setPluginContainer(this.pluginContainer);
-
-        // Set Internal Detection Configuration Directory and Options
-
-        File detectionDirectory = new File(this.globalConfiguration.getLocation().getParentFile(), "detection");
+        File detectionDirectory = new File(this.guardianConfiguration.getLocation().getParentFile(), "detection");
         detectionDirectory.mkdir();
 
-        this.moduleController.setConfigurationDirectory(detectionDirectory);
-        this.moduleController.setConfigurationOptions(this.configurationOptions);
+        this.moduleSubsystem.setConfigurationDirectory(detectionDirectory);
+        this.moduleSubsystem.setConfigurationOptions(this.configurationOptions);
 
-        // Register Guardian Permissions
+        this.guardianPermission.register();
+        this.guardianCommand.register();
+        this.guardianContext.register();
+        this.guardianDetection.register();
 
-        this.globalPermission = new GuardianPermission(this);
-        this.globalPermission.register();
-
-        // Register Guardian Commands
-
-        this.globalCommand = new GuardianCommand(this);
-        this.globalCommand.register();
-
-        // Register Guardian Contexts
-
-        this.globalContext = new GuardianContext(this.contextController);
-        this.globalContext.register();
-
-        // Register Guardian Detections
-
-        this.globalDetection = new GuardianDetection(this.moduleController);
-        this.globalDetection.register();
-
-        if (this.loggingLevel > 1 && this.moduleController.getModules().size() == 1) {
-            getLogger().info("Discovered " + this.moduleController.getModules().size() + " module.");
+        if (this.loggingLevel > 1 && this.moduleSubsystem.getModules().size() == 1) {
+            getLogger().info("Discovered " + this.moduleSubsystem.getModules().size() + " module.");
         } else if (this.loggingLevel > 1) {
-            getLogger().info("Discovered " + this.moduleController.getModules().size() + " modules.");
+            getLogger().info("Discovered " + this.moduleSubsystem.getModules().size() + " modules.");
         }
 
         // Enable Modules
 
-        this.moduleController.enableModules(moduleWrapper -> {
-            if (this.globalConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
+        this.moduleSubsystem.enableModules(moduleWrapper -> {
+            if (this.guardianConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
                 if (this.loggingLevel > 1) getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
                 return true;
             }
@@ -262,7 +206,7 @@ public class Guardian implements ContextProvider {
 
         // Register Detection Checks and Service Instance
 
-        this.moduleController.getModules().stream()
+        this.moduleSubsystem.getModules().stream()
                 .filter(ModuleWrapper::isEnabled)
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
@@ -275,7 +219,7 @@ public class Guardian implements ContextProvider {
                     }
                 });
 
-        this.globalConfiguration.update();
+        this.guardianConfiguration.update();
     }
 
     @Listener
@@ -288,7 +232,7 @@ public class Guardian implements ContextProvider {
 
         int loadedModules = 0;
 
-        for (ModuleWrapper moduleWrapper : this.moduleController.getModules()) {
+        for (ModuleWrapper moduleWrapper : this.moduleSubsystem.getModules()) {
             if (moduleWrapper.isEnabled()) {
                 loadedModules += 1;
             }
@@ -304,7 +248,7 @@ public class Guardian implements ContextProvider {
     @Listener
     public void onServerStopping(GameStoppingEvent event) {
         getLogger().info("Stopping Guardian AntiCheat.");
-        this.globalConfiguration.update();
+        this.guardianConfiguration.update();
 
         this.sequenceControllerTask.stop();
         this.checkControllerTask.stop();
@@ -312,7 +256,7 @@ public class Guardian implements ContextProvider {
 
         this.sequenceController.forceCleanup();
 
-        this.moduleController.getModules().stream()
+        this.moduleSubsystem.getModules().stream()
                 .filter(ModuleWrapper::isEnabled)
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
@@ -323,7 +267,7 @@ public class Guardian implements ContextProvider {
                     }
                 });
 
-        this.moduleController.disableModules(moduleWrapper -> {
+        this.moduleSubsystem.disableModules(moduleWrapper -> {
             if (this.loggingLevel > 1) getLogger().info("Disabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
             return true;
         });
@@ -343,7 +287,7 @@ public class Guardian implements ContextProvider {
 
         this.sequenceController.forceCleanup();
 
-        this.globalConfiguration.load();
+        this.guardianConfiguration.load();
 
         this.sequenceControllerTask.register();
 
@@ -358,9 +302,26 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First User user, @First Player player) {
-        this.contextController.suspendFor(player);
+        this.contextController.suspend(player);
         this.sequenceController.forceCleanup(player);
         user.remove(DataKeys.GUARDIAN_PUNISHMENT_TAG);
+    }
+
+    public Logger getLogger() {
+        return this.logger;
+    }
+
+    public PluginContainer getPluginContainer() {
+        return this.pluginContainer;
+    }
+
+
+    public ConfigurationOptions getConfigurationOptions() {
+        return this.configurationOptions;
+    }
+
+    public ModuleController<Guardian> getModuleController() {
+        return this.moduleSubsystem;
     }
 
     /**
@@ -395,7 +356,7 @@ public class Guardian implements ContextProvider {
      * @return The guardian configuration
      */
     public GuardianConfiguration getGlobalConfiguration() {
-        return this.globalConfiguration;
+        return this.guardianConfiguration;
     }
 
     /**
@@ -406,7 +367,7 @@ public class Guardian implements ContextProvider {
      * @return The guardian built-in detections
      */
     public GuardianDetection getGlobalDetections() {
-        return this.globalDetection;
+        return this.guardianDetection;
     }
 
     /**

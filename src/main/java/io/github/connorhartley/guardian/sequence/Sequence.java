@@ -26,7 +26,7 @@ package io.github.connorhartley.guardian.sequence;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
@@ -56,11 +56,11 @@ public class Sequence {
     private final ContextProvider contextProvider;
     private final ContextListener contextListener;
 
-    private final List<ContextContainer> contextContainer = new ArrayList<>();
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
     private final List<Event> incompleteEvents = new ArrayList<>();
 
+    private ContextValuation contextValuation;
     private SequenceBlueprint sequenceBlueprint;
     private SequenceReport sequenceReport = SequenceReport.builder().build(false);
     private int queue = 0;
@@ -113,7 +113,7 @@ public class Sequence {
             Action<T> typeAction = (Action<T>) action;
 
             this.testContext(player);
-            typeAction.addContextContainers(this.contextContainer);
+            typeAction.setContextValuation(this.contextValuation);
 
 
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
@@ -138,9 +138,7 @@ public class Sequence {
             this.last = System.currentTimeMillis();
 
             if (!iterator.hasNext()) {
-                for (ContextContainer contextContainer : this.contextContainer) {
-                    this.contextProvider.getContextController().suspend(player, contextContainer.getContext());
-                }
+                this.contextProvider.getContextController().suspend(this);
                 this.finished = true;
             }
         }
@@ -163,23 +161,22 @@ public class Sequence {
     }
 
     void testContext(Player player) {
-        if (this.contextContainer.isEmpty()) {
+        if (this.contextValuation.isEmpty()) {
             this.contextListener.getListeners().forEach(actionContextClass ->
                     this.contextProvider.getContextController().construct(this.getProvider().getDetection(),
-                            player, actionContextClass)
-                            .ifPresent(context -> this.contextContainer.add(context.getContainer())));
+                            this, this.contextValuation, player, actionContextClass));
         }
     }
 
     /**
      * Get Context
      *
-     * <p>Returns a list of {@link Context}s that have been analysed.</p>
+     * <p>Returns a {@link ContextValuation} of data that have been analysed.</p>
      *
-     * @return A list of contextContainer
+     * @return A list of contextValuation
      */
-    List<ContextContainer> getContext() {
-        return this.contextContainer;
+    ContextValuation getContextValuation() {
+        return this.contextValuation;
     }
 
     /**
@@ -219,9 +216,7 @@ public class Sequence {
         long now = System.currentTimeMillis();
 
         if (action != null && this.last + ((action.getExpire() / 20) * 1000) < now) {
-            for (ContextContainer contextContainer : this.contextContainer) {
-                this.contextProvider.getContextController().suspend(player, contextContainer.getContext());
-            }
+            this.contextProvider.getContextController().suspend(this);
             return true;
         }
 

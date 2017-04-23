@@ -26,22 +26,19 @@ package io.github.connorhartley.guardian.internal.contexts.player;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class PlayerPositionContext {
 
     public static class Monitor extends Context {
 
-        public Monitor(Guardian plugin, Detection detection, Player player) {
-            super(plugin, detection, player);
+        public Monitor(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
+            super(plugin, detection, contextValuation, player);
         }
 
         @Override
@@ -59,37 +56,17 @@ public class PlayerPositionContext {
             return false;
         }
 
-        @Override
-        public long updateAmount() {
-            return 0;
-        }
-
-        @Override
-        public ContextContainer getContainer() {
-            return null;
-        }
     }
 
     public static class Altitude extends Context {
 
-        private Guardian plugin;
-        private Detection detection;
-        private Player player;
-        private ContextContainer contextContainer;
-
         private Location<World> depthThreshold;
-
-        private long updateAmount = 0;
         private boolean suspended = false;
 
-        public Altitude(Guardian plugin, Detection detection, Player player) {
-            super(plugin, detection, player);
-            this.plugin = plugin;
-            this.detection = detection;
-            this.player = player;
-            this.contextContainer = new ContextContainer(this);
+        public Altitude(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
+            super(plugin, detection, contextValuation, player);
 
-            this.contextContainer.set(ContextTypes.GAINED_ALTITUDE);
+            this.getContextValuation().set(ContextTypes.GAINED_ALTITUDE);
         }
 
         @Override
@@ -97,11 +74,11 @@ public class PlayerPositionContext {
             Location<World> playerAltitude = null;
             double blockDepth = 0;
 
-            for (int n = 0; n < this.player.getLocation().getY(); n++) {
+            for (int n = 0; n < this.getPlayer().getLocation().getY(); n++) {
                 double i = Math.round(0.25 * n);
 
-                if (!this.player.getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
-                    Location<World> currentDepth = this.player.getLocation().sub(0, i, 0);
+                if (!this.getPlayer().getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
+                    Location<World> currentDepth = this.getPlayer().getLocation().sub(0, i, 0);
                     if (this.depthThreshold != null && this.depthThreshold.getY() == currentDepth.getY()) {
                         playerAltitude = currentDepth.add(0, 1, 0);
                         blockDepth = 1;
@@ -119,18 +96,17 @@ public class PlayerPositionContext {
             }
 
             if (this.depthThreshold == null || playerAltitude == null) {
-                playerAltitude = new Location<>(this.player.getWorld(), this.player.getLocation().getX(), 0, this.player.getLocation().getZ());
+                playerAltitude = new Location<>(this.getPlayer().getWorld(), this.getPlayer().getLocation().getX(), 0, this.getPlayer().getLocation().getZ());
             }
 
-            double altitude = (this.player.getLocation().getY() - playerAltitude.getY()) - blockDepth;
+            double altitude = (this.getPlayer().getLocation().getY() - playerAltitude.getY()) - blockDepth;
 
             if (altitude < 0) {
-                this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue);
+                this.getContextValuation().transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue);
             } else {
-                this.contextContainer.transform(ContextTypes.GAINED_ALTITUDE, oldValue -> oldValue + altitude);
+                this.getContextValuation().<PlayerPositionContext, Double>transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue + altitude);
             }
-
-            this.updateAmount += 1;
+            this.getContextValuation().<PlayerPositionContext, Integer>transform(PlayerPositionContext.class, "update", oldValue -> oldValue + 1);
         }
 
         @Override
@@ -143,14 +119,5 @@ public class PlayerPositionContext {
             return this.suspended;
         }
 
-        @Override
-        public long updateAmount() {
-            return this.updateAmount;
-        }
-
-        @Override
-        public ContextContainer getContainer() {
-            return this.contextContainer;
-        }
     }
 }

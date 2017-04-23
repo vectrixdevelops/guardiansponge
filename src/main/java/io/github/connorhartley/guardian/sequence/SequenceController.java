@@ -78,7 +78,8 @@ public class SequenceController implements SequenceInvoker {
                 return false;
             }
 
-            SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
+            SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(),
+                    Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContextValuation())));
             Sponge.getEventManager().post(attempt);
             if (attempt.isCancelled()) {
                 return true;
@@ -95,7 +96,8 @@ public class SequenceController implements SequenceInvoker {
                 .forEach(blueprint -> {
                     Sequence sequence = blueprint.create(player);
 
-                    SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, player, sequence.getSequenceReport(), Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContext())));
+                    SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, player, sequence.getSequenceReport(),
+                            Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContextValuation())));
                     Sponge.getEventManager().post(attempt);
                     if (attempt.isCancelled()) {
                         return;

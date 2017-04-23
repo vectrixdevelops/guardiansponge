@@ -26,7 +26,7 @@ package io.github.connorhartley.guardian.internal.contexts.player;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -38,42 +38,32 @@ public class PlayerControlContext {
 
     public static class VerticalSpeed extends Context {
 
-        private Guardian plugin;
-        private Detection detection;
-        private Player player;
-        private ContextContainer contextContainer;
-
         private double flySpeedControl = 1.065;
 
-        private long updateAmount = 0;
         private boolean suspended = false;
 
-        public VerticalSpeed(Guardian plugin, Detection detection, Player player) {
-            super(plugin, detection, player);
-            this.plugin = plugin;
-            this.detection = detection;
-            this.player = player;
-            this.contextContainer = new ContextContainer(this);
+        public VerticalSpeed(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
+            super(plugin, detection, contextValuation, player);
 
-            if (this.detection.getConfiguration().get("control-values", new HashMap<String, Double>()).isPresent()) {
-                Map<String, Double> storageValueMap = this.detection.getConfiguration().get("control-values",
+            if (this.getDetection().getConfiguration().get("control-values", new HashMap<String, Double>()).isPresent()) {
+                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get("control-values",
                         new HashMap<String, Double>()).get().getValue();
 
 
                 this.flySpeedControl = storageValueMap.get("fly");
             }
 
-            this.contextContainer.set(ContextTypes.VERTICAL_CONTROL_SPEED);
+            this.getContextValuation().set(VerticalSpeed.class, "vertical_control_speed", 1.0);
         }
 
         @Override
         public void update() {
-            if (this.player.get(Keys.IS_FLYING).isPresent()) {
-                if (this.player.get(Keys.IS_FLYING).get()) {
-                    this.contextContainer.transform(ContextTypes.VERTICAL_CONTROL_SPEED, oldValue -> oldValue * this.flySpeedControl);
+            if (this.getPlayer().get(Keys.IS_FLYING).isPresent()) {
+                if (this.getPlayer().get(Keys.IS_FLYING).get()) {
+                    this.getContextValuation().<VerticalSpeed, Double>transform(VerticalSpeed.class, "vertical_control_speed", oldValue -> oldValue * this.flySpeedControl);
                 }
             }
-            this.updateAmount += 1;
+            this.getContextValuation().<VerticalSpeed, Integer>transform(VerticalSpeed.class, "update", oldValue -> oldValue + 1);
         }
 
         @Override
@@ -86,23 +76,9 @@ public class PlayerControlContext {
             return this.suspended;
         }
 
-        @Override
-        public long updateAmount() {
-            return this.updateAmount;
-        }
-
-        @Override
-        public ContextContainer getContainer() {
-            return this.contextContainer;
-        }
     }
 
     public static class HorizontalSpeed extends Context {
-
-        private Guardian plugin;
-        private Detection detection;
-        private Player player;
-        private ContextContainer contextContainer;
 
         private double sneakSpeedControl = 1.015;
         private double walkSpeedControl = 1.035;
@@ -112,18 +88,13 @@ public class PlayerControlContext {
         private double walkSpeedData = 2;
         private double flySpeedData = 2;
 
-        private long updateAmount = 0;
         private boolean suspended = false;
 
-        public HorizontalSpeed(Guardian plugin, Detection detection, Player player) {
-            super(plugin, detection, player);
-            this.plugin = plugin;
-            this.detection = detection;
-            this.player = player;
-            this.contextContainer = new ContextContainer(this);
+        public HorizontalSpeed(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
+            super(plugin, detection, contextValuation, player);
 
-            if (this.detection.getConfiguration().get("control-values", new HashMap<String, Double>()).isPresent()) {
-                Map<String, Double> storageValueMap = this.detection.getConfiguration().get("control-values",
+            if (this.getDetection().getConfiguration().get("control-values", new HashMap<String, Double>()).isPresent()) {
+                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get("control-values",
                         new HashMap<String, Double>()).get().getValue();
 
                 this.sneakSpeedControl = storageValueMap.get("sneak");
@@ -132,41 +103,55 @@ public class PlayerControlContext {
                 this.flySpeedControl = storageValueMap.get("fly");
             }
 
-            if (this.player.get(Keys.WALKING_SPEED).isPresent()) {
-                this.walkSpeedData = this.player.get(Keys.WALKING_SPEED).get();
+            if (this.getPlayer().get(Keys.WALKING_SPEED).isPresent()) {
+                this.walkSpeedData = this.getPlayer().get(Keys.WALKING_SPEED).get();
             }
 
-            if (this.player.get(Keys.FLYING_SPEED).isPresent()) {
-                this.flySpeedData = this.player.get(Keys.FLYING_SPEED).get();
+            if (this.getPlayer().get(Keys.FLYING_SPEED).isPresent()) {
+                this.flySpeedData = this.getPlayer().get(Keys.FLYING_SPEED).get();
             }
 
-            this.contextContainer.set(ContextTypes.CONTROL_MODIFIER);
-            this.contextContainer.set(ContextTypes.HORIZONTAL_CONTROL_SPEED);
-            this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE);
+            this.getContextValuation().set(HorizontalSpeed.class, "control_modifier", 1.0);
+            this.getContextValuation().set(HorizontalSpeed.class, "horizontal_control_speed", 1.0);
+            this.getContextValuation().set(HorizontalSpeed.class, "control_speed_state", State.WALKING);
         }
 
         @Override
         public void update() {
-            if (this.player.get(Keys.IS_SPRINTING).isPresent() && this.player.get(Keys.IS_SNEAKING).isPresent() &&
-                    this.player.get(Keys.IS_FLYING).isPresent()) {
-                if (this.player.get(Keys.IS_FLYING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_MODIFIER, oldValue -> oldValue + (0.05 * this.flySpeedData));
-                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.flySpeedControl);
-                    this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.FLYING);
-                } else if (this.player.get(Keys.IS_SPRINTING).get()) {
-                    this.contextContainer.transform(ContextTypes.CONTROL_MODIFIER, oldValue -> oldValue + (0.05 * this.walkSpeedData));
-                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.sprintSpeedControl);
-                    this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SPRINTING);
-                } else if (this.player.get(Keys.IS_SNEAKING).get()) {
-                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.sneakSpeedControl);
-                    this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.SNEAKING);
+            if (this.getPlayer().get(Keys.IS_SPRINTING).isPresent() && this.getPlayer().get(Keys.IS_SNEAKING).isPresent() &&
+                    this.getPlayer().get(Keys.IS_FLYING).isPresent()) {
+                if (this.getPlayer().get(Keys.IS_FLYING).get()) {
+                    this.getContextValuation().<HorizontalSpeed, Double>transform(
+                            HorizontalSpeed.class, "control_modifier", oldValue -> oldValue + (0.05 * this.flySpeedData));
+
+                    this.getContextValuation().<HorizontalSpeed, Double>transform(
+                            HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.flySpeedControl);
+
+                    this.getContextValuation().set(HorizontalSpeed.class, "control_speed_state", State.FLYING);
+                } else if (this.getPlayer().get(Keys.IS_SPRINTING).get()) {
+                    this.getContextValuation().<HorizontalSpeed, Double>transform(
+                            HorizontalSpeed.class, "control_modifier", oldValue -> oldValue + (0.05 * this.walkSpeedData));
+
+                    this.getContextValuation().<HorizontalSpeed, Double>transform(
+                            HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.sprintSpeedControl);
+
+                    this.getContextValuation().set(HorizontalSpeed.class, "control_speed_state", State.SPRINTING);
+                } else if (this.getPlayer().get(Keys.IS_SNEAKING).get()) {
+                    this.getContextValuation().<HorizontalSpeed, Double>transform(
+                            HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.sneakSpeedControl);
+
+                    this.getContextValuation().set(HorizontalSpeed.class, "control_speed_state", State.SNEAKING);
                 } else {
-                    this.contextContainer.transform(ContextTypes.CONTROL_MODIFIER, oldValue -> oldValue + (0.05 * this.walkSpeedControl));
-                    this.contextContainer.transform(ContextTypes.HORIZONTAL_CONTROL_SPEED, oldValue -> oldValue * this.walkSpeedControl);
-                    this.contextContainer.set(ContextTypes.CONTROL_SPEED_STATE, State.WALKING);
+                    this.getContextValuation().<HorizontalSpeed, Double>transform(
+                            HorizontalSpeed.class, "control_modifier", oldValue -> oldValue + (0.05 * this.walkSpeedControl));
+
+                    this.getContextValuation().<HorizontalSpeed, Double>transform(
+                            HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.walkSpeedControl);
+
+                    this.getContextValuation().set(HorizontalSpeed.class, "control_speed_state", State.WALKING);
                 }
             }
-            this.updateAmount += 1;
+            this.getContextValuation().<HorizontalSpeed, Integer>transform(HorizontalSpeed.class, "update", oldValue -> oldValue + 1);
         }
 
         @Override
@@ -179,22 +164,13 @@ public class PlayerControlContext {
             return this.suspended;
         }
 
-        @Override
-        public long updateAmount() {
-            return this.updateAmount;
-        }
-
-        @Override
-        public ContextContainer getContainer() {
-            return this.contextContainer;
-        }
-
         public enum State {
             SNEAKING,
             WALKING,
             FLYING,
             SPRINTING
         }
+
     }
 
 }

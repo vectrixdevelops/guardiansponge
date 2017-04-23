@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.context;
 
-import io.github.connorhartley.guardian.context.container.ContextKey;
+import io.github.connorhartley.guardian.context.valuation.ContextKey;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionContext;

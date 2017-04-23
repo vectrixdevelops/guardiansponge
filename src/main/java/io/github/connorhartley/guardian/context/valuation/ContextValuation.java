@@ -21,22 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context.container;
+package io.github.connorhartley.guardian.context.valuation;
 
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.util.Transformer;
 
 import java.util.*;
 
-public class ContextContainer {
+public class ContextValuation {
 
-    private Context context;
-    private Map<String, Object> rawMap = new HashMap<>();
+    private final List<Context> context;
+    private final Map<String, Object> rawMap;
 
-    public ContextContainer() {}
+    public ContextValuation() {
+        this.context = new ArrayList<>();
+        this.rawMap = new HashMap<>();
+    }
 
-    public ContextContainer(Context context) {
-        this.context = context;
+    public ContextValuation(Context context) {
+        this.context = new ArrayList<>();
+        this.rawMap = new HashMap<>();
+
+        this.context.add(context);
+    }
+
+    public ContextValuation(Context... contexts) {
+        this.context = new ArrayList<>();
+        this.rawMap = new HashMap<>();
+
+        this.context.addAll(Arrays.asList(contexts));
+    }
+
+    public ContextValuation addContext(Context context) {
+        this.context.add(context);
+        return this;
     }
 
     public <E> Optional<E> get(ContextKey<E> contextKey) {
@@ -48,7 +66,7 @@ public class ContextContainer {
         return Optional.empty();
     }
 
-    public <E> Optional<E> get(Class<? extends Context> clazz, String name) {
+    public <C, E> Optional<E> get(Class<C> clazz, String name) {
         String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
         if (this.contains(combinedId)) {
             Object value = this.rawMap.get(combinedId);
@@ -58,35 +76,35 @@ public class ContextContainer {
         return Optional.empty();
     }
 
-    public <E> ContextContainer set(ContextKey<E> contextKey) {
+    public <E> ContextValuation set(ContextKey<E> contextKey) {
         return this.set(contextKey, contextKey.getDefaultValue());
     }
 
-    public <E> ContextContainer set(Class<? extends Context> clazz, String name, E value) {
+    public <C, E> ContextValuation set(Class<C> clazz, String name, E value) {
         String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
         this.rawMap.put(combinedId, value);
         return this;
     }
 
-    public <E> ContextContainer set(ContextKey<E> contextKey, E value) {
+    public <E> ContextValuation set(ContextKey<E> contextKey, E value) {
         this.rawMap.put(contextKey.getId(), value);
         return this;
     }
 
-    public <E> ContextContainer transform(Class<? extends Context> clazz, String name, Transformer<E> transformer) {
+    public <C, E> ContextValuation transform(Class<C> clazz, String name, Transformer<E> transformer) {
         String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
         E value = (E) this.rawMap.get(combinedId);
         this.set(clazz, name, transformer.transform(value));
         return this;
     }
 
-    public <E> ContextContainer transform(ContextKey<E> contextKey, Transformer<E> transformer) {
+    public <E> ContextValuation transform(ContextKey<E> contextKey, Transformer<E> transformer) {
         E value = (E) this.rawMap.get(contextKey.getId());
         this.set(contextKey, transformer.transform(value));
         return this;
     }
 
-    public <E> ContextContainer remove(ContextKey<E> contextKey) {
+    public <E> ContextValuation remove(ContextKey<E> contextKey) {
         if (this.contains(contextKey)) {
             this.rawMap.remove(contextKey.getId());
         }
@@ -103,7 +121,7 @@ public class ContextContainer {
         return shallowMap;
     }
 
-    public Context getContext() {
+    public List<Context> getContexts() {
         return this.context;
     }
 
@@ -114,7 +132,7 @@ public class ContextContainer {
     public boolean contains(String id) { return this.rawMap.containsKey(id); }
 
     public void clear() {
-        this.context = null;
+        this.context.clear();
         this.rawMap.clear();
     }
 
@@ -123,8 +141,8 @@ public class ContextContainer {
     }
 
     @Override
-    public ContextContainer clone() {
-        ContextContainer shallowClone = new ContextContainer(this.context);
+    public ContextValuation clone() {
+        ContextValuation shallowClone = new ContextValuation((Context[]) this.context.toArray());
         shallowClone.rawMap.putAll(this.rawMap);
         return shallowClone;
     }

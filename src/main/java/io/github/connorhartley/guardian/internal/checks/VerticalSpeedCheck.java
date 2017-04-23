@@ -26,7 +26,7 @@ package io.github.connorhartley.guardian.internal.checks;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
@@ -111,7 +111,7 @@ public class VerticalSpeedCheck extends Check {
 
                     .condition(new PermissionCheck(this.detection))
 
-                    .success((user, event, contextContainers, sequenceReport, lastAction) -> {
+                    .success((user, event, contextValuation, sequenceReport, lastAction) -> {
                         Guardian plugin = (Guardian) this.detection.getPlugin();
 
                         Optional<Location<World>> start = Optional.empty();
@@ -121,19 +121,24 @@ public class VerticalSpeedCheck extends Check {
                         long playerControlTicks = 0;
                         double playerControlSpeed = 0;
 
-                        for (ContextContainer contextContainer : contextContainers) {
-                            if (contextContainer.get(ContextTypes.START_LOCATION).isPresent()) {
-                                start = contextContainer.get(ContextTypes.START_LOCATION);
-                            }
+                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
+                            start = Optional.of(contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get());
+                        }
 
-                            if (contextContainer.get(ContextTypes.PRESENT_LOCATION).isPresent()) {
-                                present = contextContainer.get(ContextTypes.PRESENT_LOCATION);
-                            }
+                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
+                            present = Optional.of(contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get());
+                        }
 
-                            if (contextContainer.get(ContextTypes.VERTICAL_CONTROL_SPEED).isPresent()) {
-                                playerControlTicks = contextContainer.getContext().updateAmount();
-                                playerControlSpeed = contextContainer.get(ContextTypes.VERTICAL_CONTROL_SPEED).get();
-                            }
+                        if (contextValuation.<PlayerControlContext.VerticalSpeed, Double>get(
+                                PlayerControlContext.VerticalSpeed.class, "vertical_control_speed").isPresent()) {
+                            playerControlSpeed = contextValuation.<PlayerControlContext.VerticalSpeed, Double>get(
+                                    PlayerControlContext.VerticalSpeed.class, "vertical_control_speed").get();
+                        }
+
+                        if (contextValuation.<PlayerControlContext.VerticalSpeed, Integer>get(
+                                PlayerControlContext.VerticalSpeed.class, "update").isPresent()) {
+                            playerControlTicks = contextValuation.<PlayerControlContext.VerticalSpeed, Integer>get(
+                                    PlayerControlContext.VerticalSpeed.class, "update").get();
                         }
 
                         if (playerControlTicks < this.minimumTickRange) {

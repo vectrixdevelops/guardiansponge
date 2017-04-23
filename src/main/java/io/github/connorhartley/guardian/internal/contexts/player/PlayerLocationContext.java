@@ -26,35 +26,25 @@ package io.github.connorhartley.guardian.internal.contexts.player;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.entity.living.player.Player;
 
 public class PlayerLocationContext extends Context {
 
-    private Guardian plugin;
-    private Detection detection;
-    private Player player;
-    private ContextContainer contextContainer;
-
-    private long updateAmount = 0;
     private boolean suspended = false;
 
-    public PlayerLocationContext(Guardian plugin, Detection detection, Player player) {
-        super(plugin, detection, player);
-        this.plugin = plugin;
-        this.detection = detection;
-        this.player = player;
-        this.contextContainer = new ContextContainer(this);
+    public PlayerLocationContext(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
+        super(plugin, detection, contextValuation, player);
 
-        this.contextContainer.set(ContextTypes.START_LOCATION, this.player.getLocation());
+        this.getContextValuation().set(PlayerLocationContext.class, "start_location", this.getPlayer().getLocation());
     }
 
     @Override
     public void update() {
-        this.contextContainer.set(ContextTypes.PRESENT_LOCATION, this.player.getLocation());
+        this.getContextValuation().set(PlayerLocationContext.class, "present_location", this.getPlayer().getLocation());
 
-        this.updateAmount += 1;
+        this.getContextValuation().<PlayerLocationContext, Integer>transform(PlayerLocationContext.class, "update", oldValue -> oldValue + 1);
     }
 
     @Override
@@ -65,16 +55,6 @@ public class PlayerLocationContext extends Context {
     @Override
     public boolean isSuspended() {
         return this.suspended;
-    }
-
-    @Override
-    public long updateAmount() {
-        return this.updateAmount;
-    }
-
-    @Override
-    public ContextContainer getContainer() {
-        return this.contextContainer;
     }
 
 }

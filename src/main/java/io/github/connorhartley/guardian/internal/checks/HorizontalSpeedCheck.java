@@ -26,7 +26,7 @@ package io.github.connorhartley.guardian.internal.checks;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.container.ContextContainer;
+import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
@@ -116,7 +116,7 @@ public class HorizontalSpeedCheck extends Check {
 
                     .condition(new PermissionCheck(this.detection))
 
-                    .success((user, event, contextContainers, sequenceResult, lastAction) -> {
+                    .success((user, event, contextValuation, sequenceResult, lastAction) -> {
                         Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
                         Location<World> start = null;
@@ -133,32 +133,44 @@ public class HorizontalSpeedCheck extends Check {
 
                         long currentTime;
 
-                        for (ContextContainer contextContainer : contextContainers) {
-                            if (contextContainer.get(ContextTypes.START_LOCATION).isPresent()) {
-                                start = contextContainer.get(ContextTypes.START_LOCATION).get();
-                            }
+                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
+                            start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
+                        }
 
-                            if (contextContainer.get(ContextTypes.PRESENT_LOCATION).isPresent()) {
-                                present = contextContainer.get(ContextTypes.PRESENT_LOCATION).get();
-                            }
+                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
+                            present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
+                        }
 
-                            if (contextContainer.get(ContextTypes.HORIZONTAL_CONTROL_SPEED).isPresent()) {
-                                playerControlTicks = contextContainer.getContext().updateAmount();
-                                playerControlSpeed = contextContainer.get(ContextTypes.HORIZONTAL_CONTROL_SPEED).get();
-                            }
+                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").isPresent()) {
+                            playerControlSpeed = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                    PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").get();
+                        }
 
-                            if (contextContainer.get(ContextTypes.SPEED_AMPLIFIER).isPresent()) {
-                                blockModifierTicks = contextContainer.getContext().updateAmount();
-                                blockModifier = contextContainer.get(ContextTypes.SPEED_AMPLIFIER).get();
-                            }
+                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
+                                PlayerControlContext.HorizontalSpeed.class, "update").isPresent()) {
+                            playerControlTicks = contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
+                                    PlayerControlContext.HorizontalSpeed.class, "update").get();
+                        }
 
-                            if (contextContainer.get(ContextTypes.CONTROL_MODIFIER).isPresent()) {
-                                playerControlModifier = contextContainer.get(ContextTypes.CONTROL_MODIFIER).get();
-                            }
+                        if (contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").isPresent()) {
+                            blockModifier = contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").get();
+                        }
 
-                            if (contextContainer.get(ContextTypes.CONTROL_SPEED_STATE).isPresent()) {
-                                playerControlState = contextContainer.get(ContextTypes.CONTROL_SPEED_STATE).get();
-                            }
+                        if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
+                            blockModifierTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
+                        }
+
+                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                PlayerControlContext.HorizontalSpeed.class, "control_modifier").isPresent()) {
+                            playerControlModifier = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                    PlayerControlContext.HorizontalSpeed.class, "control_modifier").get();
+                        }
+
+                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
+                                PlayerControlContext.HorizontalSpeed.class, "control_speed_state").isPresent()) {
+                            playerControlState = contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
+                                    PlayerControlContext.HorizontalSpeed.class, "control_speed_state").get();
                         }
 
                         if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
