@@ -43,13 +43,10 @@ import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.service.permission.PermissionDescription;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.text.Text;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -141,6 +138,11 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
     @Override
     public void onDeconstruction() {
         this.ready = false;
+    }
+
+    @Override
+    public String getPermission(String permissionTarget) {
+        return StringUtils.join("guardian.detections.", permissionTarget, ".fly");
     }
 
     @Override

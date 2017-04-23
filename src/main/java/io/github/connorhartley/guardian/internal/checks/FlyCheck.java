@@ -36,6 +36,7 @@ import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.util.check.PermissionCheck;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -113,14 +114,7 @@ public class FlyCheck extends Check {
                     .delay(((Double) this.analysisTime).intValue())
                     .expire(((Double) this.maximumTickRange).intValue())
 
-                    .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
-                        if (user.getPlayer().isPresent()) {
-                            if (!user.getPlayer().get().hasPermission("guardian.detections.bypass.fly")) {
-                                return new ConditionResult(true, sequenceReport);
-                            }
-                        }
-                        return new ConditionResult(false, sequenceReport);
-                    })
+                    .condition(new PermissionCheck(this.detection))
 
                     .success((user, event, contextContainers, sequenceReport, lastAction) -> {
                         Guardian plugin = (Guardian) this.detection.getPlugin();

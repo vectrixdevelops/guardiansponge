@@ -57,6 +57,16 @@ public abstract class Detection<T> extends DetectionType {
     public abstract void onDeconstruction();
 
     /**
+     * Get Permission
+     *
+     * <p>Returns the permission string for the associated {@link PermissionTarget}.</p>
+     *
+     * @param permissionTarget The associated permission target
+     * @return Permission string
+     */
+    public abstract String getPermission(String permissionTarget);
+
+    /**
      * Get Context Type
      *
      * <p>Returns the {@link ContextProvider} that this detection manages.</p>
@@ -110,5 +120,13 @@ public abstract class Detection<T> extends DetectionType {
      * @return This detection category
      */
     public abstract CommonDetectionTypes.Category getCategory();
+
+    public static class PermissionTarget {
+
+        public static String BYPASS = "bypass";
+
+        public static String TOGGLE = "toggle";
+
+    }
 
 }

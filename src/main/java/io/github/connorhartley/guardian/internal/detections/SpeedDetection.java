@@ -44,6 +44,7 @@ import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -136,6 +137,11 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     @Override
     public void onDeconstruction() {
         this.ready = false;
+    }
+
+    @Override
+    public String getPermission(String permissionTarget) {
+        return StringUtils.join("guardian.detections.", permissionTarget, ".speed");
     }
 
     @Override

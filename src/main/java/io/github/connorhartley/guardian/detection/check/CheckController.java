@@ -94,8 +94,6 @@ public class CheckController {
         check.finish();
 
         this.checks.remove(check);
-
-        // TODO: Note that the player is no longer being checked.
     }
 
     public static class CheckControllerTask {
