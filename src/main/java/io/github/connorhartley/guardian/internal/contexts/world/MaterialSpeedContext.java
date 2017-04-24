@@ -41,7 +41,6 @@ public class MaterialSpeedContext extends Context {
     private double solidSpeedModifier = 1.025;
     private double liquidSpeedModifier = 1.015;
 
-    private long updateAmount = 0;
     private boolean suspended = false;
 
     public MaterialSpeedContext(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
@@ -56,25 +55,30 @@ public class MaterialSpeedContext extends Context {
             this.liquidSpeedModifier = storageValueMap.get("liquid");
         }
 
-        this.getContextValuation().set(ContextTypes.SPEED_AMPLIFIER);
+        this.getContextValuation().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
     }
 
     @Override
     public void update() {
         if (!this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
-            this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
+            this.getContextValuation().<MaterialSpeedContext, Double>transform(
+                    MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
+
         MatterProperty matterProperty = this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
 
         if (matterProperty.getValue() != null) {
             if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
-                this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.liquidSpeedModifier);
+                this.getContextValuation().<MaterialSpeedContext, Double>transform(
+                        MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.liquidSpeedModifier);
             } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.gasSpeedModifier);
+                this.getContextValuation().<MaterialSpeedContext, Double>transform(
+                        MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
             } else {
-                this.getContextValuation().transform(ContextTypes.SPEED_AMPLIFIER, oldValue -> oldValue * this.solidSpeedModifier);
+                this.getContextValuation().<MaterialSpeedContext, Double>transform(
+                        MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.solidSpeedModifier);
             }
         }
-        this.updateAmount += 1;
+        this.getContextValuation().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
     }
 
     @Override

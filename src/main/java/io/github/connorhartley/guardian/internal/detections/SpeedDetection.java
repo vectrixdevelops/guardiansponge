@@ -59,7 +59,7 @@ import java.util.*;
         version = "0.0.21",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
-public class SpeedDetection extends Detection<Guardian> implements StorageConsumer {
+public class SpeedDetection extends Detection implements StorageConsumer {
 
     private static Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
 
@@ -160,7 +160,7 @@ public class SpeedDetection extends Detection<Guardian> implements StorageConsum
     }
 
     @Override
-    public DetectionConfiguration getConfiguration() {
+    public SpeedDetection.Configuration getConfiguration() {
         return this.configuration;
     }
 
