@@ -211,7 +211,7 @@ public class Guardian implements ContextProvider {
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
                     if (moduleWrapper.getModule().get() instanceof Detection) {
-                        Detection<Guardian> detection = (Detection) moduleWrapper.getModule().get();
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
 
@@ -224,8 +224,6 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
-        // Start Controller Tasks
-
         this.contextControllerTask.start();
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();
@@ -261,7 +259,7 @@ public class Guardian implements ContextProvider {
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
                     if (moduleWrapper.getModule().get() instanceof Detection) {
-                        Detection<Guardian> detection = (Detection) moduleWrapper.getModule().get();
+                        Detection detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
                     }

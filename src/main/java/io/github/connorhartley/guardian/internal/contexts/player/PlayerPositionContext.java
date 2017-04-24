@@ -66,7 +66,7 @@ public class PlayerPositionContext {
         public Altitude(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
             super(plugin, detection, contextValuation, player);
 
-            this.getContextValuation().set(ContextTypes.GAINED_ALTITUDE);
+            this.getContextValuation().set(PlayerPositionContext.class, "position_altitude", 0.0);
         }
 
         @Override

@@ -36,7 +36,7 @@ import java.util.List;
  * Represents a cheat / hack / exploit internal that is loaded
  * by the global detection manager.
  */
-public abstract class Detection<T> extends DetectionType {
+public abstract class Detection extends DetectionType {
 
     public Detection(String id, String name) {
         super(id, name);
@@ -82,7 +82,7 @@ public abstract class Detection<T> extends DetectionType {
      *
      * @return The owner of this detection
      */
-    public abstract T getPlugin();
+    public abstract Object getPlugin();
 
     /**
      * Get Configuration

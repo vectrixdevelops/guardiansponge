@@ -60,7 +60,7 @@ import java.util.*;
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
-public class FlyDetection extends Detection<Guardian> implements StorageConsumer {
+public class FlyDetection extends Detection implements StorageConsumer {
 
     private static Module moduleAnnotation = FlyDetection.class.getAnnotation(Module.class);
 
@@ -161,7 +161,7 @@ public class FlyDetection extends Detection<Guardian> implements StorageConsumer
     }
 
     @Override
-    public DetectionConfiguration getConfiguration() {
+    public FlyDetection.Configuration getConfiguration() {
         return this.configuration;
     }
 
