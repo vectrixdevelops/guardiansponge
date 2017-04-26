@@ -30,7 +30,6 @@ import com.me4502.modularframework.module.guice.ModuleConfiguration;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionConfiguration;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
@@ -166,11 +165,6 @@ public class FlyDetection extends Detection implements StorageConsumer {
     }
 
     @Override
-    public ContextProvider getContextProvider() {
-        return this.plugin;
-    }
-
-    @Override
     public StorageValue<?, ?>[] getStorageNodes() {
         return new StorageValue<?, ?>[] {
                 this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
@@ -203,7 +197,7 @@ public class FlyDetection extends Detection implements StorageConsumer {
             this.flyDetection = flyDetection;
 
             configFile = new File(this.flyDetection.getPlugin().getGlobalConfiguration()
-                    .getLocation().getParentFile(), "detection" + File.separator +
+                    .getLocation().toFile().getParentFile(), "detection" + File.separator +
                     this.flyDetection.getId() + ".conf");
 
             initialize();

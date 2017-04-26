@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextValuation;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
@@ -57,10 +57,9 @@ public class Action<T extends Event> {
 
     public Action(Class<T> event) {
         this.event = event;
-        this.sequenceReport = sequenceReport;
     }
 
-    public void setContextValuation(ContextValuation contextValuation) {
+    public void updateContextValuation(ContextValuation contextValuation) {
         this.contextValuation = contextValuation;
     }
 

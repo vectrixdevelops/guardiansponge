@@ -29,9 +29,6 @@ import com.me4502.modularframework.ShadedModularFramework;
 import com.me4502.modularframework.module.ModuleWrapper;
 import com.me4502.precogs.detection.DetectionType;
 import com.me4502.precogs.service.AntiCheatService;
-import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextController;
-import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.data.tag.PunishmentTagData;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -40,7 +37,6 @@ import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.punishment.PunishmentController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
-import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -48,6 +44,7 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.bstats.MetricsLite;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.entity.living.player.Player;
@@ -64,6 +61,7 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
+import java.nio.file.Path;
 
 @Plugin(
         id = PluginInfo.ID,
@@ -86,39 +84,36 @@ import java.io.File;
                 )
         }
 )
-public class Guardian implements ContextProvider {
+public class Guardian {
 
     /* Injection Fields */
 
     private final ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager;
-    private final File pluginConfig;
+    private final Path pluginConfig;
     private final Logger logger;
     private final PluginContainer pluginContainer;
     private final MetricsLite metrics;
 
     /* Subsystem Fields */
 
-    private final ModuleController<Guardian> moduleSubsystem;
+    private ModuleController<Guardian> moduleSubsystem;
 
     /* Controller Fields */
 
-    private final PunishmentController punishmentController;
-    private final ContextController contextController;
-    private final CheckController checkController;
-    private final SequenceController sequenceController;
+    private PunishmentController punishmentController;
+    private CheckController checkController;
+    private SequenceController sequenceController;
 
-    private final ContextController.ContextControllerTask contextControllerTask;
-    private final CheckController.CheckControllerTask checkControllerTask;
-    private final SequenceController.SequenceControllerTask sequenceControllerTask;
+    private CheckController.CheckControllerTask checkControllerTask;
+    private SequenceController.SequenceControllerTask sequenceControllerTask;
 
 
     /* Service Fields */
 
-    private final GuardianPermission guardianPermission;
-    private final GuardianCommand guardianCommand;
-    private final GuardianConfiguration guardianConfiguration;
-    private final GuardianContext guardianContext;
-    private final GuardianDetection guardianDetection;
+    private GuardianPermission guardianPermission;
+    private GuardianCommand guardianCommand;
+    private GuardianConfiguration guardianConfiguration;
+    private GuardianDetection guardianDetection;
 
     /* Additional Fields */
 
@@ -127,31 +122,13 @@ public class Guardian implements ContextProvider {
 
     @Inject
     public Guardian(@DefaultConfig(sharedRoot = false) ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager,
-                    @DefaultConfig(sharedRoot = false) File pluginConfig, Logger logger, PluginContainer pluginContainer,
+                    @ConfigDir(sharedRoot = false) Path pluginConfig, Logger logger, PluginContainer pluginContainer,
                     MetricsLite metrics) {
         this.pluginConfigManager = pluginConfigManager;
         this.pluginConfig = pluginConfig;
         this.logger = logger;
         this.pluginContainer = pluginContainer;
         this.metrics = metrics;
-
-        this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
-        this.moduleSubsystem.setPluginContainer(pluginContainer);
-
-        this.punishmentController = new PunishmentController(this);
-        this.contextController = new ContextController(this);
-        this.checkController = new CheckController(this);
-        this.sequenceController = new SequenceController(this, this.checkController);
-
-        this.contextControllerTask = new ContextController.ContextControllerTask(this, this.contextController);
-        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
-        this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
-
-        this.guardianPermission = new GuardianPermission(this);
-        this.guardianCommand = new GuardianCommand(this);
-        this.guardianConfiguration = new GuardianConfiguration(this, pluginConfig, pluginConfigManager);
-        this.guardianContext = new GuardianContext(this.contextController);
-        this.guardianDetection = new GuardianDetection(this.moduleSubsystem);
     }
 
     @Listener
@@ -168,16 +145,31 @@ public class Guardian implements ContextProvider {
                 .dataName("GuardianPunishmentTag")
                 .buildAndRegister(this.pluginContainer);
 
-        getLogger().info("Loading configurations.");
+        getLogger().info("Loading system.");
+
+        this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
+        this.moduleSubsystem.setPluginContainer(pluginContainer);
+
+        this.punishmentController = new PunishmentController(this);
+        this.checkController = new CheckController(this);
+        this.sequenceController = new SequenceController(this, this.checkController);
+
+        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
+        this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
+
+        this.guardianPermission = new GuardianPermission(this);
+        this.guardianCommand = new GuardianCommand(this);
+        this.guardianConfiguration = new GuardianConfiguration(this, pluginConfig, pluginConfigManager);
+        this.guardianDetection = new GuardianDetection(this.moduleSubsystem);
+
+        getLogger().info("Loading configuration.");
 
         this.configurationOptions = ConfigurationOptions.defaults();
         this.guardianConfiguration.create();
 
         this.loggingLevel = this.guardianConfiguration.configLoggingLevel.getValue();
 
-        getLogger().info("Discovering internal detections.");
-
-        File detectionDirectory = new File(this.guardianConfiguration.getLocation().getParentFile(), "detection");
+        File detectionDirectory = new File(this.guardianConfiguration.getLocation().toFile().getParentFile(), "detection");
         detectionDirectory.mkdir();
 
         this.moduleSubsystem.setConfigurationDirectory(detectionDirectory);
@@ -185,7 +177,6 @@ public class Guardian implements ContextProvider {
 
         this.guardianPermission.register();
         this.guardianCommand.register();
-        this.guardianContext.register();
         this.guardianDetection.register();
 
         if (this.loggingLevel > 1 && this.moduleSubsystem.getModules().size() == 1) {
@@ -224,7 +215,6 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
-        this.contextControllerTask.start();
         this.checkControllerTask.start();
         this.sequenceControllerTask.start();
 
@@ -250,7 +240,6 @@ public class Guardian implements ContextProvider {
 
         this.sequenceControllerTask.stop();
         this.checkControllerTask.stop();
-        this.contextControllerTask.stop();
 
         this.sequenceController.forceCleanup();
 
@@ -270,8 +259,6 @@ public class Guardian implements ContextProvider {
             return true;
         });
 
-        this.contextController.getContextRegistry().clear();
-
         getLogger().info("Stopped Guardian AntiCheat.");
     }
 
@@ -281,7 +268,6 @@ public class Guardian implements ContextProvider {
 
         this.sequenceControllerTask.stop();
         this.checkControllerTask.stop();
-        this.contextControllerTask.stop();
 
         this.sequenceController.forceCleanup();
 
@@ -291,7 +277,6 @@ public class Guardian implements ContextProvider {
 
         this.sequenceControllerTask.start();
         this.checkControllerTask.start();
-        this.contextControllerTask.start();
 
         getLogger().info("Unfreezed detection checks.");
     }
@@ -300,7 +285,6 @@ public class Guardian implements ContextProvider {
 
     @Listener
     public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First User user, @First Player player) {
-        this.contextController.suspend(player);
         this.sequenceController.forceCleanup(player);
         user.remove(DataKeys.GUARDIAN_PUNISHMENT_TAG);
     }
@@ -379,17 +363,13 @@ public class Guardian implements ContextProvider {
         return this.punishmentController;
     }
 
-    @Override
-    public ContextController getContextController() {
-        return this.contextController;
-    }
 
     /**
-     * Get Context Controller
+     * Get CheckController Controller
      *
-     * <p>Returns the {@link ContextController} for controlling the running of {@link Context}s for {@link Action}s.</p>
+     * <p>Returns the {@link CheckController} for controlling the running of {@link Check}s for their {@link Sequence}.</p>
      *
-     * @return The context controller
+     * @return The check controller
      */
     public CheckController getCheckController() {
         return this.checkController;

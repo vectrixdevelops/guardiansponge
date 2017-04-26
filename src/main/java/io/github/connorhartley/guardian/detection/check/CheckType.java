@@ -23,7 +23,6 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
-import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import org.spongepowered.api.entity.living.player.User;
@@ -31,8 +30,6 @@ import org.spongepowered.api.entity.living.player.User;
 public interface CheckType {
 
     Detection getDetection();
-
-    ContextListener getContextTracker();
 
     SequenceBlueprint getSequence();
 

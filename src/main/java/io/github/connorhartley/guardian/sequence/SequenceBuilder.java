@@ -23,12 +23,12 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.context.listener.ContextListener;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
+import io.github.connorhartley.guardian.sequence.context.ContextHandler;
+import io.github.connorhartley.guardian.sequence.context.Context;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 
@@ -43,16 +43,11 @@ import java.util.List;
  */
 public class SequenceBuilder {
 
-    private ContextProvider contextProvider;
-    private ContextListener contextListener = ContextListener.builder().build();
-
+    private Context[] contexts;
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder context(ContextProvider contextProvider, ContextListener contextListener) {
-        this.contextProvider = contextProvider;
-
-        // TODO: Builder should be refactored.
-        this.contextListener = ContextListener.builder().of(this.contextListener).of(contextListener).build();
+    public SequenceBuilder contexts(Context... contexts) {
+        this.contexts = contexts;
         return this;
     }
 
@@ -74,7 +69,7 @@ public class SequenceBuilder {
         return new SequenceBlueprint(checkType) {
             @Override
             public Sequence create(Player player) {
-                return new Sequence(player, this, checkType, actions, contextProvider, contextListener);
+                return new Sequence(player, this, checkType, actions, new ContextHandler(player, contexts));
             }
         };
     }

@@ -23,8 +23,6 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
 import java.util.List;
 

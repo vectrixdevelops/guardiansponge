@@ -24,10 +24,6 @@
 package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.listener.ContextListener;
-import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
@@ -96,18 +92,13 @@ public class FlyCheck extends Check {
         }
 
         @Override
-        public ContextListener getContextTracker() {
-            return ContextListener.builder()
-                    .listen(PlayerLocationContext.class)
-                    .listen(PlayerPositionContext.Altitude.class)
-                    .build();
-        }
-
-        @Override
         public SequenceBlueprint getSequence() {
             return new SequenceBuilder()
 
-                    .context(this.getDetection().getContextProvider(), this.getContextTracker())
+                    .contexts(
+                            new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                            new PlayerPositionContext.Altitude((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                    )
 
                     .action(MoveEntityEvent.class)
 

@@ -23,16 +23,16 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.listener.ContextListener;
-import io.github.connorhartley.guardian.context.ContextProvider;
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextValuation;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
+import io.github.connorhartley.guardian.sequence.context.Context;
+import io.github.connorhartley.guardian.sequence.context.ContextHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -53,29 +53,33 @@ public class Sequence {
 
     private final Player player;
     private final CheckType checkType;
-    private final ContextProvider contextProvider;
-    private final ContextListener contextListener;
+    private final ContextHandler contextHandler;
 
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
     private final List<Event> incompleteEvents = new ArrayList<>();
 
-    private ContextValuation contextValuation;
     private SequenceBlueprint sequenceBlueprint;
     private SequenceReport sequenceReport = SequenceReport.builder().build(false);
     private int queue = 0;
     private long last = System.currentTimeMillis();
+    private boolean started = false;
     private boolean cancelled = false;
     private boolean finished = false;
 
     public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckType checkType, List<Action> actions,
-                    ContextProvider contextProvider, ContextListener contextListener) {
+                    ContextHandler contextHandler) {
         this.player = player;
         this.sequenceBlueprint = sequenceBlueprint;
         this.checkType = checkType;
-        this.contextProvider = contextProvider;
-        this.contextListener = contextListener;
+        this.contextHandler = contextHandler;
         this.actions.addAll(actions);
+
+        this.contextHandler.setValuation(new ContextValuation((Context[]) this.contextHandler.getContexts().toArray()));
+    }
+
+    public String getId() {
+        return StringUtils.join(this.checkType.getClass().getName().toLowerCase(), ":", this.player.getUniqueId().toString().toLowerCase());
     }
 
     /**
@@ -101,9 +105,10 @@ public class Sequence {
             long now = System.currentTimeMillis();
 
             action.updateReport(this.sequenceReport);
+            action.updateContextValuation(this.contextHandler.getValuation());
 
             if (!action.getEvent().isAssignableFrom(event.getClass())) {
-                return fail(player, event, action, Cause.of(NamedCause.of("INVALID", checkType.getSequence())));
+                return fail(player, event, action, Cause.of(NamedCause.of("INVALID", this.checkType.getSequence())));
             }
 
             if (this.queue > 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
@@ -111,10 +116,10 @@ public class Sequence {
             }
 
             Action<T> typeAction = (Action<T>) action;
-
-            this.testContext(player);
-            typeAction.setContextValuation(this.contextValuation);
-
+            if (!this.started) {
+                this.contextHandler.start();
+                this.started = true;
+            }
 
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
                 return fail(player, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
@@ -132,13 +137,16 @@ public class Sequence {
             this.completeEvents.add(event);
             iterator.remove();
             typeAction.updateReport(this.sequenceReport);
+            typeAction.updateContextValuation(this.contextHandler.getValuation());
             typeAction.succeed(player, event, this.last);
             this.sequenceReport = action.getSequenceReport();
 
             this.last = System.currentTimeMillis();
 
             if (!iterator.hasNext()) {
-                this.contextProvider.getContextController().suspend(this);
+                if (this.started) {
+                    this.contextHandler.stop();
+                }
                 this.finished = true;
             }
         }
@@ -149,6 +157,7 @@ public class Sequence {
     // Called when the player does not meet the requirements.
     boolean fail(User user, Event event, Action action, Cause cause) {
         action.updateReport(this.sequenceReport);
+        action.updateContextValuation(this.contextHandler.getValuation());
 
         this.cancelled = action.fail(user, event, this.last);
         this.sequenceReport = action.getSequenceReport();
@@ -160,23 +169,19 @@ public class Sequence {
         return false;
     }
 
-    void testContext(Player player) {
-        if (this.contextValuation.isEmpty()) {
-            this.contextListener.getListeners().forEach(actionContextClass ->
-                    this.contextProvider.getContextController().construct(this.getProvider().getDetection(),
-                            this, this.contextValuation, player, actionContextClass));
-        }
+    ContextHandler getContextHandler() {
+        return this.contextHandler;
     }
 
     /**
-     * Get Context
+     * Get Context.java
      *
      * <p>Returns a {@link ContextValuation} of data that have been analysed.</p>
      *
      * @return A list of contextValuation
      */
     ContextValuation getContextValuation() {
-        return this.contextValuation;
+        return this.contextHandler.getValuation();
     }
 
     /**
@@ -199,6 +204,10 @@ public class Sequence {
         return this.sequenceBlueprint;
     }
 
+    boolean hasStarted() {
+        return this.started;
+    }
+
     /**
      * Has Expired
      *
@@ -216,7 +225,9 @@ public class Sequence {
         long now = System.currentTimeMillis();
 
         if (action != null && this.last + ((action.getExpire() / 20) * 1000) < now) {
-            this.contextProvider.getContextController().suspend(this);
+            if (this.started) {
+                this.contextHandler.stop();
+            }
             return true;
         }
 

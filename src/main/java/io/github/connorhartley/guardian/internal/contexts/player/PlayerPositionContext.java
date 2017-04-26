@@ -24,53 +24,43 @@
 package io.github.connorhartley.guardian.internal.contexts.player;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.Context;
+import io.github.connorhartley.guardian.sequence.context.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 public class PlayerPositionContext {
 
-    public static class Monitor extends Context {
-
-        public Monitor(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
-            super(plugin, detection, contextValuation, player);
-        }
-
-        @Override
-        public void update() {
-
-        }
-
-        @Override
-        public void suspend() {
-
-        }
-
-        @Override
-        public boolean isSuspended() {
-            return false;
-        }
-
-    }
-
     public static class Altitude extends Context {
 
         private Location<World> depthThreshold;
-        private boolean suspended = false;
 
-        public Altitude(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
-            super(plugin, detection, contextValuation, player);
+        private ContextValuation valuation;
+        private boolean stopped = false;
 
-            this.getContextValuation().set(PlayerPositionContext.class, "position_altitude", 0.0);
+        public Altitude(Guardian plugin, Detection detection) {
+            super(plugin, detection);
         }
 
         @Override
-        public void update() {
+        public ContextValuation getValuation() {
+            return this.valuation;
+        }
+
+        @Override
+        public void start(ContextValuation valuation) {
+            this.valuation = valuation;
+
+            this.getValuation().set(PlayerPositionContext.class, "position_altitude", 0.0);
+            this.getValuation().set(PlayerPositionContext.class, "update", 0);
+        }
+
+        @Override
+        public void update(ContextValuation valuation) {
+            this.valuation = valuation;
+
             Location<World> playerAltitude = null;
             double blockDepth = 0;
 
@@ -102,22 +92,24 @@ public class PlayerPositionContext {
             double altitude = (this.getPlayer().getLocation().getY() - playerAltitude.getY()) - blockDepth;
 
             if (altitude < 0) {
-                this.getContextValuation().transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue);
+                this.getValuation().transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue);
             } else {
-                this.getContextValuation().<PlayerPositionContext, Double>transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue + altitude);
+                this.getValuation().<PlayerPositionContext, Double>transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue + altitude);
             }
-            this.getContextValuation().<PlayerPositionContext, Integer>transform(PlayerPositionContext.class, "update", oldValue -> oldValue + 1);
+
+            this.getValuation().<PlayerPositionContext, Integer>transform(PlayerPositionContext.class, "update", oldValue -> oldValue + 1);
         }
 
         @Override
-        public void suspend() {
-            this.suspended = true;
+        public void stop(ContextValuation valuation) {
+            this.valuation = valuation;
+
+            this.stopped = stopped;
         }
 
         @Override
-        public boolean isSuspended() {
-            return this.suspended;
+        public boolean hasStopped() {
+            return this.stopped;
         }
-
     }
 }
