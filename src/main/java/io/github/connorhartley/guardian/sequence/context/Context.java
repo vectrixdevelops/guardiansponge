@@ -21,40 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context.valuation;
+package io.github.connorhartley.guardian.sequence.context;
 
-import io.github.connorhartley.guardian.context.Context;
+import io.github.connorhartley.guardian.detection.Detection;
+import org.spongepowered.api.entity.living.player.Player;
 
-public class ContextKey<T> {
+public abstract class Context {
 
-    private final String id;
-    private final Class<? extends Context> parentContext;
-    private final T defaultValue;
+    private final Object plugin;
+    private final Detection detection;
+    private Player player;
 
-    public ContextKey(String id, Class<? extends Context> parentContext, T defaultValue) {
-        this.id = id.toLowerCase();
-        this.parentContext = parentContext;
-        this.defaultValue = defaultValue;
+    public Context(Object plugin, Detection detection) {
+        this.plugin = plugin;
+        this.detection = detection;
     }
 
-    public String getName() {
-        return this.id;
+    public Object getPlugin() {
+        return this.plugin;
     }
 
-    public String getId() {
-        return parentContext.getName().toLowerCase() + ":" + this.id;
+    public Detection getDetection() {
+        return this.detection;
     }
 
-    public Class<? extends Context> getParent() {
-        return this.parentContext;
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
-    public Class<T> getValueType() {
-        return (Class<T>) this.defaultValue.getClass();
+    public Player getPlayer() {
+        return this.player;
     }
 
-    public T getDefaultValue() {
-        return this.defaultValue;
-    }
+    public abstract ContextValuation getValuation();
+
+    public abstract void start(ContextValuation valuation);
+
+    public abstract void update(ContextValuation valuation);
+
+    public abstract void stop(ContextValuation valuation);
+
+    public abstract boolean hasStopped();
 
 }

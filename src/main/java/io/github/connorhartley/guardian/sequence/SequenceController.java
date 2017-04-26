@@ -78,6 +78,10 @@ public class SequenceController implements SequenceInvoker {
                 return false;
             }
 
+            if (sequence.hasStarted()) {
+                sequence.getContextHandler().stop();
+            }
+
             SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(),
                     Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContextValuation())));
             Sponge.getEventManager().post(attempt);
@@ -119,6 +123,17 @@ public class SequenceController implements SequenceInvoker {
                 });
 
         this.runningSequences.put(player, currentlyExecuting);
+    }
+
+    public void update() {
+        Sponge.getServer().getOnlinePlayers().forEach(player -> {
+            if (this.runningSequences.get(player) == null || this.runningSequences.get(player).isEmpty()) return;
+            this.runningSequences.get(player).forEach(sequence -> {
+                if (sequence.hasStarted()) {
+                    sequence.getContextHandler().update();
+                }
+            });
+        });
     }
 
     /**
@@ -182,7 +197,8 @@ public class SequenceController implements SequenceInvoker {
         private final SequenceListener sequenceListener;
 
         private Task.Builder taskBuilder = Task.builder();
-        private Task task;
+        private Task cleanTask;
+        private Task updateTask;
 
         public SequenceControllerTask(Guardian plugin, SequenceController sequenceController) {
             this.plugin = plugin;
@@ -197,12 +213,16 @@ public class SequenceController implements SequenceInvoker {
         }
 
         public void start() {
-            this.task = this.taskBuilder.execute(this.sequenceController::cleanup).intervalTicks(1)
-                    .name("Guardian - Sequence Controller Task").submit(this.plugin);
+            this.cleanTask = this.taskBuilder.execute(this.sequenceController::cleanup).intervalTicks(1)
+                    .name("Guardian - Sequence Controller Task - Clean Up").submit(this.plugin);
+
+            this.updateTask = this.taskBuilder.execute(this.sequenceController::update).intervalTicks(1)
+                    .name("Guardian - Sequence Controller Task - Update").submit(this.plugin);
         }
 
         public void stop() {
-            if (this.task != null) this.task.cancel();
+            if (this.cleanTask != null) this.cleanTask.cancel();
+            if (this.updateTask != null) this.updateTask.cancel();
 
             Sponge.getEventManager().unregisterListeners(this.sequenceListener);
         }

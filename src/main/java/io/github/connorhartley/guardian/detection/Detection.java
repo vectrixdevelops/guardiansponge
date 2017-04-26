@@ -25,7 +25,6 @@ package io.github.connorhartley.guardian.detection;
 
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
-import io.github.connorhartley.guardian.context.ContextProvider;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 
 import java.util.List;
@@ -65,15 +64,6 @@ public abstract class Detection extends DetectionType {
      * @return Permission string
      */
     public abstract String getPermission(String permissionTarget);
-
-    /**
-     * Get Context Type
-     *
-     * <p>Returns the {@link ContextProvider} that this detection manages.</p>
-     *
-     * @return The detection context provider
-     */
-    public abstract ContextProvider getContextProvider();
 
     /**
      * Get Plugin

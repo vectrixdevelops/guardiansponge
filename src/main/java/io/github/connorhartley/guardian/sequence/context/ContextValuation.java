@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.context.valuation;
+package io.github.connorhartley.guardian.sequence.context;
 
-import io.github.connorhartley.guardian.context.Context;
 import io.github.connorhartley.guardian.util.Transformer;
 
 import java.util.*;
@@ -45,7 +44,7 @@ public class ContextValuation {
         this.context.add(context);
     }
 
-    public ContextValuation(Context... contexts) {
+    public ContextValuation(Context[] contexts) {
         this.context = new ArrayList<>();
         this.rawMap = new HashMap<>();
 
@@ -55,15 +54,6 @@ public class ContextValuation {
     public ContextValuation addContext(Context context) {
         this.context.add(context);
         return this;
-    }
-
-    public <E> Optional<E> get(ContextKey<E> contextKey) {
-        if (this.contains(contextKey)) {
-            Object value = this.rawMap.get(contextKey.getId());
-            if (value != null)
-                return Optional.of((E) value);
-        }
-        return Optional.empty();
     }
 
     public <C, E> Optional<E> get(Class<C> clazz, String name) {
@@ -76,18 +66,9 @@ public class ContextValuation {
         return Optional.empty();
     }
 
-    public <E> ContextValuation set(ContextKey<E> contextKey) {
-        return this.set(contextKey, contextKey.getDefaultValue());
-    }
-
     public <C, E> ContextValuation set(Class<C> clazz, String name, E value) {
         String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
         this.rawMap.put(combinedId, value);
-        return this;
-    }
-
-    public <E> ContextValuation set(ContextKey<E> contextKey, E value) {
-        this.rawMap.put(contextKey.getId(), value);
         return this;
     }
 
@@ -98,15 +79,10 @@ public class ContextValuation {
         return this;
     }
 
-    public <E> ContextValuation transform(ContextKey<E> contextKey, Transformer<E> transformer) {
-        E value = (E) this.rawMap.get(contextKey.getId());
-        this.set(contextKey, transformer.transform(value));
-        return this;
-    }
-
-    public <E> ContextValuation remove(ContextKey<E> contextKey) {
-        if (this.contains(contextKey)) {
-            this.rawMap.remove(contextKey.getId());
+    public <C> ContextValuation remove(Class<C> clazz, String name) {
+        String combinedId = clazz.getName().toLowerCase() + ":" + name.toLowerCase();
+        if (this.contains(combinedId)) {
+            this.rawMap.remove(combinedId);
         }
         return this;
     }
@@ -123,10 +99,6 @@ public class ContextValuation {
 
     public List<Context> getContexts() {
         return this.context;
-    }
-
-    public <E> boolean contains(ContextKey<E> contextKey) {
-        return this.rawMap.containsKey(contextKey.getId());
     }
 
     public boolean contains(String id) { return this.rawMap.containsKey(id); }

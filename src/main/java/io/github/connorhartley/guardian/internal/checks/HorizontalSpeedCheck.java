@@ -24,9 +24,6 @@
 package io.github.connorhartley.guardian.internal.checks;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.listener.ContextListener;
-import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
@@ -90,19 +87,14 @@ public class HorizontalSpeedCheck extends Check {
         }
 
         @Override
-        public ContextListener getContextTracker() {
-            return ContextListener.builder()
-                    .listen(PlayerLocationContext.class)
-                    .listen(PlayerControlContext.HorizontalSpeed.class)
-                    .listen(MaterialSpeedContext.class)
-                    .build();
-        }
-
-        @Override
         public SequenceBlueprint getSequence() {
             return new SequenceBuilder()
 
-                    .context(this.getDetection().getContextProvider(), this.getContextTracker())
+                    .contexts(
+                            new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                            new PlayerControlContext.HorizontalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                            new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                    )
 
                     // Trigger : Move Entity Event
 

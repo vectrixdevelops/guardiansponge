@@ -24,37 +24,50 @@
 package io.github.connorhartley.guardian.internal.contexts.player;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.Context;
+import io.github.connorhartley.guardian.sequence.context.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
-import org.spongepowered.api.entity.living.player.Player;
 
 public class PlayerLocationContext extends Context {
 
-    private boolean suspended = false;
+    private ContextValuation valuation;
+    private boolean stopped = false;
 
-    public PlayerLocationContext(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
-        super(plugin, detection, contextValuation, player);
-
-        this.getContextValuation().set(PlayerLocationContext.class, "start_location", this.getPlayer().getLocation());
+    public PlayerLocationContext(Guardian plugin, Detection detection) {
+        super(plugin, detection);
     }
 
     @Override
-    public void update() {
-        this.getContextValuation().set(PlayerLocationContext.class, "present_location", this.getPlayer().getLocation());
-
-        this.getContextValuation().<PlayerLocationContext, Integer>transform(PlayerLocationContext.class, "update", oldValue -> oldValue + 1);
+    public ContextValuation getValuation() {
+        return this.valuation;
     }
 
     @Override
-    public void suspend() {
-        this.suspended = true;
+    public void start(ContextValuation valuation) {
+        this.valuation = valuation;
+
+        this.getValuation().set(PlayerLocationContext.class, "start_location", this.getPlayer().getLocation());
+        this.getValuation().set(PlayerLocationContext.class, "update", 0);
     }
 
     @Override
-    public boolean isSuspended() {
-        return this.suspended;
+    public void update(ContextValuation valuation) {
+        this.valuation = valuation;
+
+        this.getValuation().set(PlayerLocationContext.class, "present_location", this.getPlayer().getLocation());
+
+        this.getValuation().<PlayerLocationContext, Integer>transform(PlayerLocationContext.class, "update", oldValue -> oldValue + 1);
     }
 
+    @Override
+    public void stop(ContextValuation valuation) {
+        this.valuation = valuation;
+
+        this.stopped = true;
+    }
+
+    @Override
+    public boolean hasStopped() {
+        return this.stopped;
+    }
 }

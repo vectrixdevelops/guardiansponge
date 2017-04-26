@@ -23,15 +23,13 @@
  */
 package io.github.connorhartley.guardian.util.check;
 
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
-
-import java.util.List;
 
 public class PermissionCheck implements Condition {
 

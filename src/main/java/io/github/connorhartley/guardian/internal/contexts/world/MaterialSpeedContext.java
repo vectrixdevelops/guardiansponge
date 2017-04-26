@@ -24,12 +24,10 @@
 package io.github.connorhartley.guardian.internal.contexts.world;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.context.Context;
-import io.github.connorhartley.guardian.context.ContextTypes;
-import io.github.connorhartley.guardian.context.valuation.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.Context;
+import io.github.connorhartley.guardian.sequence.context.ContextValuation;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.data.property.block.MatterProperty;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Direction;
 
 import java.util.HashMap;
@@ -41,10 +39,11 @@ public class MaterialSpeedContext extends Context {
     private double solidSpeedModifier = 1.025;
     private double liquidSpeedModifier = 1.015;
 
-    private boolean suspended = false;
+    private ContextValuation valuation;
+    private boolean stopped = false;
 
-    public MaterialSpeedContext(Guardian plugin, Detection detection, ContextValuation contextValuation, Player player) {
-        super(plugin, detection, contextValuation, player);
+    public MaterialSpeedContext(Guardian plugin, Detection detection) {
+        super(plugin, detection);
 
         if (this.getDetection().getConfiguration().get("material-values", new HashMap<String, Double>()).isPresent()) {
             Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get("material-values",
@@ -54,41 +53,56 @@ public class MaterialSpeedContext extends Context {
             this.solidSpeedModifier = storageValueMap.get("solid");
             this.liquidSpeedModifier = storageValueMap.get("liquid");
         }
-
-        this.getContextValuation().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
     }
 
     @Override
-    public void update() {
+    public ContextValuation getValuation() {
+        return this.valuation;
+    }
+
+    @Override
+    public void start(ContextValuation valuation) {
+        this.valuation = valuation;
+
+        this.getValuation().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
+        this.getValuation().set(MaterialSpeedContext.class, "update", 0);
+    }
+
+    @Override
+    public void update(ContextValuation valuation) {
+        this.valuation = valuation;
+
         if (!this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
-            this.getContextValuation().<MaterialSpeedContext, Double>transform(
+            this.getValuation().<MaterialSpeedContext, Double>transform(
                     MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
 
         MatterProperty matterProperty = this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
 
         if (matterProperty.getValue() != null) {
             if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
-                this.getContextValuation().<MaterialSpeedContext, Double>transform(
+                this.getValuation().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.liquidSpeedModifier);
             } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.getContextValuation().<MaterialSpeedContext, Double>transform(
+                this.getValuation().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
             } else {
-                this.getContextValuation().<MaterialSpeedContext, Double>transform(
+                this.getValuation().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.solidSpeedModifier);
             }
         }
-        this.getContextValuation().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
+
+        this.getValuation().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
     }
 
     @Override
-    public void suspend() {
-        this.suspended = true;
+    public void stop(ContextValuation valuation) {
+        this.valuation = valuation;
+
+        this.stopped = stopped;
     }
 
     @Override
-    public boolean isSuspended() {
-        return this.suspended;
+    public boolean hasStopped() {
+        return this.stopped;
     }
-
 }

@@ -33,22 +33,23 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-public final class GuardianConfiguration implements StorageProvider<File>, StorageConsumer {
+public final class GuardianConfiguration implements StorageProvider<Path>, StorageConsumer {
 
     private Guardian plugin;
     private CommentedConfigurationNode configurationNode;
 
-    private final File configFile;
+    private final Path configFile;
     private final ConfigurationLoader<CommentedConfigurationNode> configManager;
 
     public StorageValue<String, String> configVersion;
     public StorageValue<String, List<String>> configEnabledDetections;
     public StorageValue<String, Integer> configLoggingLevel;
 
-    public GuardianConfiguration(Guardian plugin, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
+    public GuardianConfiguration(Guardian plugin, Path configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
         this.configFile = configFile;
         this.configManager = configManager;
@@ -58,8 +59,8 @@ public final class GuardianConfiguration implements StorageProvider<File>, Stora
     public void create() {
         try {
             if (!this.exists()) {
-                this.configFile.getParentFile().mkdirs();
-                this.configFile.createNewFile();
+                this.configFile.getParent().toFile().mkdirs();
+                this.configFile.toFile().createNewFile();
             }
 
             this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
@@ -121,11 +122,11 @@ public final class GuardianConfiguration implements StorageProvider<File>, Stora
 
     @Override
     public boolean exists() {
-        return this.configFile.exists();
+        return this.configFile.toFile().exists();
     }
 
     @Override
-    public File getLocation() {
+    public Path getLocation() {
         return this.configFile;
     }
 
