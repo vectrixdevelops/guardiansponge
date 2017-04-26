@@ -68,11 +68,9 @@ public class ContextHandler {
         while(iterator.hasNext()) {
             Context context = iterator.next();
 
-            if (!context.hasStopped()) {
-                context.setPlayer(this.player);
-                context.start(this.contextValuation);
-                this.contextValuation = context.getValuation();
-            }
+            context.setPlayer(this.player);
+            context.start(this.contextValuation);
+            this.contextValuation = context.getValuation();
         }
 
         return this.contextValuation;

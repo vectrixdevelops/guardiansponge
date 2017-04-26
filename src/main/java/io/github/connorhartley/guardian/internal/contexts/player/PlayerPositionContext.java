@@ -52,9 +52,12 @@ public class PlayerPositionContext {
         @Override
         public void start(ContextValuation valuation) {
             this.valuation = valuation;
+            this.stopped = false;
 
-            this.getValuation().set(PlayerPositionContext.class, "position_altitude", 0.0);
-            this.getValuation().set(PlayerPositionContext.class, "update", 0);
+            this.depthThreshold = null;
+
+            this.getValuation().set(PlayerPositionContext.Altitude.class, "position_altitude", 0.0);
+            this.getValuation().set(PlayerPositionContext.Altitude.class, "update", 0);
         }
 
         @Override
@@ -92,19 +95,22 @@ public class PlayerPositionContext {
             double altitude = (this.getPlayer().getLocation().getY() - playerAltitude.getY()) - blockDepth;
 
             if (altitude < 0) {
-                this.getValuation().transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue);
+                this.getValuation().<PlayerPositionContext.Altitude, Double>transform(
+                        PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue);
             } else {
-                this.getValuation().<PlayerPositionContext, Double>transform(PlayerPositionContext.class, "position_altitude", oldValue -> oldValue + altitude);
+                this.getValuation().<PlayerPositionContext.Altitude, Double>transform(
+                        PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue + altitude);
             }
 
-            this.getValuation().<PlayerPositionContext, Integer>transform(PlayerPositionContext.class, "update", oldValue -> oldValue + 1);
+            this.getValuation().<PlayerPositionContext.Altitude, Integer>transform(
+                    PlayerPositionContext.Altitude.class, "update", oldValue -> oldValue + 1);
         }
 
         @Override
         public void stop(ContextValuation valuation) {
             this.valuation = valuation;
 
-            this.stopped = stopped;
+            this.stopped = true;
         }
 
         @Override

@@ -45,6 +45,7 @@ public class PlayerLocationContext extends Context {
     @Override
     public void start(ContextValuation valuation) {
         this.valuation = valuation;
+        this.stopped = false;
 
         this.getValuation().set(PlayerLocationContext.class, "start_location", this.getPlayer().getLocation());
         this.getValuation().set(PlayerLocationContext.class, "update", 0);
