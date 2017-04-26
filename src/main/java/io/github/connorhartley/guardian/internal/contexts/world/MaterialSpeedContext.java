@@ -63,6 +63,7 @@ public class MaterialSpeedContext extends Context {
     @Override
     public void start(ContextValuation valuation) {
         this.valuation = valuation;
+        this.stopped = false;
 
         this.getValuation().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
         this.getValuation().set(MaterialSpeedContext.class, "update", 0);
@@ -98,7 +99,7 @@ public class MaterialSpeedContext extends Context {
     public void stop(ContextValuation valuation) {
         this.valuation = valuation;
 
-        this.stopped = stopped;
+        this.stopped = true;
     }
 
     @Override

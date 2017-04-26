@@ -30,9 +30,7 @@ import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.context.Context;
 import io.github.connorhartley.guardian.sequence.context.ContextHandler;
-import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -70,16 +68,12 @@ public class Sequence {
     public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckType checkType, List<Action> actions,
                     ContextHandler contextHandler) {
         this.player = player;
-        this.sequenceBlueprint = sequenceBlueprint;
         this.checkType = checkType;
         this.contextHandler = contextHandler;
+        this.sequenceBlueprint = sequenceBlueprint;
+
         this.actions.addAll(actions);
-
-        this.contextHandler.setValuation(new ContextValuation((Context[]) this.contextHandler.getContexts().toArray()));
-    }
-
-    public String getId() {
-        return StringUtils.join(this.checkType.getClass().getName().toLowerCase(), ":", this.player.getUniqueId().toString().toLowerCase());
+        this.contextHandler.setValuation(new ContextValuation(this.contextHandler.getContexts()));
     }
 
     /**
@@ -105,10 +99,14 @@ public class Sequence {
             long now = System.currentTimeMillis();
 
             action.updateReport(this.sequenceReport);
-            action.updateContextValuation(this.contextHandler.getValuation());
 
             if (!action.getEvent().isAssignableFrom(event.getClass())) {
                 return fail(player, event, action, Cause.of(NamedCause.of("INVALID", this.checkType.getSequence())));
+            }
+
+            if (!this.started) {
+                this.contextHandler.start();
+                this.started = true;
             }
 
             if (this.queue > 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
@@ -116,10 +114,8 @@ public class Sequence {
             }
 
             Action<T> typeAction = (Action<T>) action;
-            if (!this.started) {
-                this.contextHandler.start();
-                this.started = true;
-            }
+
+            action.updateContextValuation(this.contextHandler.getValuation());
 
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
                 return fail(player, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
@@ -174,7 +170,7 @@ public class Sequence {
     }
 
     /**
-     * Get Context.java
+     * Get Context Valuation
      *
      * <p>Returns a {@link ContextValuation} of data that have been analysed.</p>
      *
