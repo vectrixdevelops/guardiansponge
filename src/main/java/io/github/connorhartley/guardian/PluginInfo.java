@@ -23,6 +23,11 @@
  */
 package io.github.connorhartley.guardian;
 
+/**
+ * Plugin Info
+ *
+ * Contains fields regarding plugin information filled at compile time.
+ */
 public final class PluginInfo {
 
     private PluginInfo() {}

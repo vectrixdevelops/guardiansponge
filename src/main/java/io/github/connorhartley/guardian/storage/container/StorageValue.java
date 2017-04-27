@@ -40,10 +40,6 @@ public class StorageValue<K, E> {
 
     private boolean modified;
 
-    public StorageValue(StorageKey<K> key, String comment, E value) {
-        this(key, comment, value, null);
-    }
-
     public StorageValue(StorageKey<K> key, String comment, E value, TypeToken<E> valueTypeToken) {
         this.key = key;
         this.comment = comment;

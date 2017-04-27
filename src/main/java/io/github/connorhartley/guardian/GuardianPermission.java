@@ -30,6 +30,11 @@ import org.spongepowered.api.text.Text;
 
 import java.util.Optional;
 
+/**
+ * Guardian Permission
+ *
+ * Represents the permission0 registry for Guardian.
+ */
 public final class GuardianPermission {
 
     private final Guardian plugin;

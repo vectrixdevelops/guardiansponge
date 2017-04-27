@@ -23,8 +23,10 @@
  */
 package io.github.connorhartley.guardian.punishment;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.lang.reflect.Constructor;
@@ -44,9 +46,10 @@ public class PunishmentController {
         HashMap<String, Double> detectionPunishLevels = new HashMap<>();
         String currentPunishLevel = "";
 
-        if (detection.getConfiguration().get("punishment-levels", new HashMap<String, Double>()).isPresent()) {
-            detectionPunishLevels =
-                    detection.getConfiguration().get("punishment-levels", new HashMap<String, Double>()).get().getValue();
+        if (detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
+                new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+            detectionPunishLevels = detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
+                            new TypeToken<HashMap<String, Double>>(){}).get().getValue();
         }
 
         for (Map.Entry<String, Double> entry : detectionPunishLevels.entrySet()) {

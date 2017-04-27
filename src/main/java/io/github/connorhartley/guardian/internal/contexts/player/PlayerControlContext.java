@@ -23,10 +23,12 @@
  */
 package io.github.connorhartley.guardian.internal.contexts.player;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.key.Keys;
 
 import java.util.HashMap;
@@ -38,15 +40,15 @@ public class PlayerControlContext {
 
         private double flySpeedControl = 1.065;
 
-        private ContextValuation valuation;
+        private ContextContainer valuation;
         private boolean stopped = false;
 
         public VerticalSpeed(Guardian plugin, Detection detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get("control-values", new HashMap<String, Double>()).isPresent()) {
-                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get("control-values",
-                        new HashMap<String, Double>()).get().getValue();
+            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("control-values"),
+                        new TypeToken<HashMap<String, Double>>(){}).get().getValue();
 
 
                 this.flySpeedControl = storageValueMap.get("fly");
@@ -54,12 +56,12 @@ public class PlayerControlContext {
         }
 
         @Override
-        public ContextValuation getValuation() {
+        public ContextContainer getValuation() {
             return this.valuation;
         }
 
         @Override
-        public void start(ContextValuation valuation) {
+        public void start(ContextContainer valuation) {
             this.valuation = valuation;
             this.stopped = false;
 
@@ -68,7 +70,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void update(ContextValuation valuation) {
+        public void update(ContextContainer valuation) {
             this.valuation = valuation;
 
             if (this.getPlayer().get(Keys.IS_FLYING).isPresent()) {
@@ -82,7 +84,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void stop(ContextValuation valuation) {
+        public void stop(ContextContainer valuation) {
             this.valuation = valuation;
 
             this.stopped = true;
@@ -104,15 +106,15 @@ public class PlayerControlContext {
         private double walkSpeedData = 2;
         private double flySpeedData = 2;
 
-        private ContextValuation valuation;
+        private ContextContainer valuation;
         private boolean stopped = false;
 
         public HorizontalSpeed(Guardian plugin, Detection detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get("control-values", new HashMap<String, Double>()).isPresent()) {
-                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get("control-values",
-                        new HashMap<String, Double>()).get().getValue();
+            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("control-values"),
+                        new TypeToken<HashMap<String, Double>>(){}).get().getValue();
 
                 this.sneakSpeedControl = storageValueMap.get("sneak");
                 this.walkSpeedControl = storageValueMap.get("walk");
@@ -122,12 +124,12 @@ public class PlayerControlContext {
         }
 
         @Override
-        public ContextValuation getValuation() {
+        public ContextContainer getValuation() {
             return this.valuation;
         }
 
         @Override
-        public void start(ContextValuation valuation) {
+        public void start(ContextContainer valuation) {
             this.valuation = valuation;
             this.stopped = false;
 
@@ -146,7 +148,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void update(ContextValuation valuation) {
+        public void update(ContextContainer valuation) {
             this.valuation = valuation;
 
             if (this.getPlayer().get(Keys.IS_SPRINTING).isPresent() && this.getPlayer().get(Keys.IS_SNEAKING).isPresent() &&
@@ -188,7 +190,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void stop(ContextValuation valuation) {
+        public void stop(ContextContainer valuation) {
             this.valuation = valuation;
 
             this.stopped = true;

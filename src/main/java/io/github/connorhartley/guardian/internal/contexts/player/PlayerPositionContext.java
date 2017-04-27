@@ -25,7 +25,7 @@ package io.github.connorhartley.guardian.internal.contexts.player;
 
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.world.Location;
@@ -37,7 +37,7 @@ public class PlayerPositionContext {
 
         private Location<World> depthThreshold;
 
-        private ContextValuation valuation;
+        private ContextContainer valuation;
         private boolean stopped = false;
 
         public Altitude(Guardian plugin, Detection detection) {
@@ -45,12 +45,12 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public ContextValuation getValuation() {
+        public ContextContainer getValuation() {
             return this.valuation;
         }
 
         @Override
-        public void start(ContextValuation valuation) {
+        public void start(ContextContainer valuation) {
             this.valuation = valuation;
             this.stopped = false;
 
@@ -61,7 +61,7 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public void update(ContextValuation valuation) {
+        public void update(ContextContainer valuation) {
             this.valuation = valuation;
 
             Location<World> playerAltitude = null;
@@ -107,7 +107,7 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public void stop(ContextValuation valuation) {
+        public void stop(ContextContainer valuation) {
             this.valuation = valuation;
 
             this.stopped = true;

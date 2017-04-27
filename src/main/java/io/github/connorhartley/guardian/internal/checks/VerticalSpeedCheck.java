@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
@@ -33,6 +34,7 @@ import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.PermissionCheck;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
@@ -69,15 +71,16 @@ public class VerticalSpeedCheck extends Check {
         public Type(Detection detection) {
             this.detection = detection;
 
-            if (this.detection.getConfiguration().get("analysis-time", 2.0).isPresent()) {
-                this.analysisTime = this.detection.getConfiguration().get("analysis-time", 2.0).get().getValue() / 0.05;
+            if (this.detection.getConfiguration().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
+                this.analysisTime = this.detection.getConfiguration().get(new StorageKey<>("analysis-time"),
+                        new TypeToken<Double>(){}).get().getValue() / 0.05;
             }
 
-            if (this.detection.getConfiguration().get("tick-bounds", new HashMap<String, Double>()).isPresent()) {
-                this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get("tick-bounds",
-                        new HashMap<String, Double>()).get().getValue().get("min");
-                this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get("tick-bounds",
-                        new HashMap<String, Double>()).get().getValue().get("max");
+            if (this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+                this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"),
+                        new TypeToken<HashMap<String, Double>>(){}).get().getValue().get("min");
+                this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"),
+                        new TypeToken<HashMap<String, Double>>(){}).get().getValue().get("max");
             }
         }
 

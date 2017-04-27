@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.sequence.context.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextContainer;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
@@ -73,7 +73,7 @@ public class Sequence {
         this.sequenceBlueprint = sequenceBlueprint;
 
         this.actions.addAll(actions);
-        this.contextHandler.setValuation(new ContextValuation(this.contextHandler.getContexts()));
+        this.contextHandler.setContainer(new ContextContainer(this.contextHandler.getContexts()));
     }
 
     /**
@@ -115,7 +115,7 @@ public class Sequence {
 
             Action<T> typeAction = (Action<T>) action;
 
-            action.updateContextValuation(this.contextHandler.getValuation());
+            action.updateContextValuation(this.contextHandler.getContainer());
 
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
                 return fail(player, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
@@ -133,7 +133,7 @@ public class Sequence {
             this.completeEvents.add(event);
             iterator.remove();
             typeAction.updateReport(this.sequenceReport);
-            typeAction.updateContextValuation(this.contextHandler.getValuation());
+            typeAction.updateContextValuation(this.contextHandler.getContainer());
             typeAction.succeed(player, event, this.last);
             this.sequenceReport = action.getSequenceReport();
 
@@ -153,7 +153,7 @@ public class Sequence {
     // Called when the player does not meet the requirements.
     boolean fail(User user, Event event, Action action, Cause cause) {
         action.updateReport(this.sequenceReport);
-        action.updateContextValuation(this.contextHandler.getValuation());
+        action.updateContextValuation(this.contextHandler.getContainer());
 
         this.cancelled = action.fail(user, event, this.last);
         this.sequenceReport = action.getSequenceReport();
@@ -170,14 +170,14 @@ public class Sequence {
     }
 
     /**
-     * Get Context Valuation
+     * Get Context Container
      *
-     * <p>Returns a {@link ContextValuation} of data that have been analysed.</p>
+     * <p>Returns a {@link ContextContainer} of data that have been analysed.</p>
      *
      * @return A list of contextValuation
      */
-    ContextValuation getContextValuation() {
-        return this.contextHandler.getValuation();
+    ContextContainer getContextContainer() {
+        return this.contextHandler.getContainer();
     }
 
     /**

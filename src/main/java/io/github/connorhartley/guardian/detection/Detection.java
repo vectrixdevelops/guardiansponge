@@ -26,7 +26,10 @@ package io.github.connorhartley.guardian.detection;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -77,11 +80,11 @@ public abstract class Detection extends DetectionType {
     /**
      * Get Configuration
      *
-     * <p>Returns a {@link DetectionConfiguration} for this {@link Detection}.</p>
+     * <p>Returns a {@link StorageConsumer<File>} for this {@link Detection}.</p>
      *
      * @return The detections configuration
      */
-    public abstract DetectionConfiguration getConfiguration();
+    public abstract StorageConsumer<File> getConfiguration();
 
     /**
      * Is Ready

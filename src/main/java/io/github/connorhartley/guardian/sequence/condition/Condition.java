@@ -23,13 +23,13 @@
  */
 package io.github.connorhartley.guardian.sequence.condition;
 
-import io.github.connorhartley.guardian.sequence.context.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextContainer;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
 public interface Condition {
 
-    ConditionResult test(User user, Event event, ContextValuation contextValuation, SequenceReport sequenceReport, long lastAction);
+    ConditionResult test(User user, Event event, ContextContainer contextContainer, SequenceReport sequenceReport, long lastAction);
 
 }

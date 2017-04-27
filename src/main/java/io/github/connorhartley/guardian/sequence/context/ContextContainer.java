@@ -27,31 +27,31 @@ import io.github.connorhartley.guardian.util.Transformer;
 
 import java.util.*;
 
-public class ContextValuation {
+public class ContextContainer {
 
     private final List<Context> context;
     private final Map<String, Object> rawMap;
 
-    public ContextValuation() {
+    public ContextContainer() {
         this.context = new ArrayList<>();
         this.rawMap = new HashMap<>();
     }
 
-    public ContextValuation(Context context) {
+    public ContextContainer(Context context) {
         this.context = new ArrayList<>();
         this.rawMap = new HashMap<>();
 
         this.context.add(context);
     }
 
-    public ContextValuation(List<Context> contexts) {
+    public ContextContainer(List<Context> contexts) {
         this.context = new ArrayList<>();
         this.rawMap = new HashMap<>();
 
         this.context.addAll(contexts);
     }
 
-    public ContextValuation addContext(Context context) {
+    public ContextContainer addContext(Context context) {
         this.context.add(context);
         return this;
     }
@@ -67,20 +67,20 @@ public class ContextValuation {
         return Optional.empty();
     }
 
-    public <C, E> ContextValuation set(Class<C> clazz, String name, E value) {
+    public <C, E> ContextContainer set(Class<C> clazz, String name, E value) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         this.rawMap.put(combinedId, value);
         return this;
     }
 
-    public <C, E> ContextValuation transform(Class<C> clazz, String name, Transformer<E> transformer) {
+    public <C, E> ContextContainer transform(Class<C> clazz, String name, Transformer<E> transformer) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         E value = (E) this.rawMap.get(combinedId);
         this.set(clazz, name, transformer.transform(value));
         return this;
     }
 
-    public <C> ContextValuation remove(Class<C> clazz, String name) {
+    public <C> ContextContainer remove(Class<C> clazz, String name) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         if (this.contains(combinedId)) {
             this.rawMap.remove(combinedId);
@@ -114,8 +114,8 @@ public class ContextValuation {
     }
 
     @Override
-    public ContextValuation clone() {
-        ContextValuation shallowClone = new ContextValuation(this.context);
+    public ContextContainer clone() {
+        ContextContainer shallowClone = new ContextContainer(this.context);
         shallowClone.rawMap.putAll(this.rawMap);
         return shallowClone;
     }

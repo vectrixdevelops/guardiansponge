@@ -122,13 +122,13 @@ public class Guardian {
 
     @Inject
     public Guardian(@DefaultConfig(sharedRoot = false) ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager,
-                    @ConfigDir(sharedRoot = false) Path pluginConfig, Logger logger, PluginContainer pluginContainer,
-                    MetricsLite metrics) {
+                    @ConfigDir(sharedRoot = false) Path pluginConfig, PluginContainer pluginContainer, MetricsLite metrics,
+                    Logger logger) {
         this.pluginConfigManager = pluginConfigManager;
-        this.pluginConfig = pluginConfig;
-        this.logger = logger;
         this.pluginContainer = pluginContainer;
+        this.pluginConfig = pluginConfig;
         this.metrics = metrics;
+        this.logger = logger;
     }
 
     @Listener
@@ -289,45 +289,48 @@ public class Guardian {
         user.remove(DataKeys.GUARDIAN_PUNISHMENT_TAG);
     }
 
+    /**
+     * Get Logger
+     *
+     * <p>Returns the {@link Logger} for Guardian.</p>
+     *
+     * @return The guardian logger
+     */
     public Logger getLogger() {
         return this.logger;
     }
 
+    /**
+     * Get Plugin Container
+     *
+     * <p>Returns the {@link PluginContainer} for Guardian.</p>
+     *
+     * @return The guardian plugin container
+     */
     public PluginContainer getPluginContainer() {
         return this.pluginContainer;
     }
 
-
+    /**
+     * Get Configuration Options
+     *
+     * <p>Returns the {@link ConfigurationOptions} for Guardian.</p>
+     *
+     * @return The guardian configuration options
+     */
     public ConfigurationOptions getConfigurationOptions() {
         return this.configurationOptions;
     }
 
+    /**
+     * Get Module Controller
+     *
+     * <p>Returns the {@link ModuleController} for Guardian.</p>
+     *
+     * @return The guardian module controller
+     */
     public ModuleController<Guardian> getModuleController() {
         return this.moduleSubsystem;
-    }
-
-    /**
-     * Get Logging Level
-     *
-     * <p>Returns the logging level.</p>
-     *
-     * @return The logging level
-     */
-    public int getLoggingLevel() {
-        return this.loggingLevel;
-    }
-
-    /**
-     * Set Logging Level
-     *
-     * <p>Sets the logging level.</p>
-     *
-     * @param level The logging level
-     */
-    public void setLoggingLevel(int level) {
-        if (level > 0 && level < 4) {
-            this.loggingLevel = level;
-        }
     }
 
     /**
@@ -384,6 +387,30 @@ public class Guardian {
      */
     public SequenceController getSequenceController() {
         return this.sequenceController;
+    }
+
+    /**
+     * Get Logging Level
+     *
+     * <p>Returns the logging level.</p>
+     *
+     * @return The logging level
+     */
+    public int getLoggingLevel() {
+        return this.loggingLevel;
+    }
+
+    /**
+     * Set Logging Level
+     *
+     * <p>Sets the logging level.</p>
+     *
+     * @param level The logging level
+     */
+    public void setLoggingLevel(int level) {
+        if (level > 0 && level < 4) {
+            this.loggingLevel = level;
+        }
     }
 
 }

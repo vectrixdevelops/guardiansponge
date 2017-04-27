@@ -35,7 +35,7 @@ public class ContextHandler {
     private final Player player;
     private final List<Context> contexts = new ArrayList<>();
 
-    private ContextValuation contextValuation;
+    private ContextContainer contextContainer;
 
     public ContextHandler(Player player) {
         this.player = player;
@@ -54,48 +54,48 @@ public class ContextHandler {
         return this.contexts;
     }
 
-    public void setValuation(ContextValuation contextValuation) {
-        this.contextValuation = contextValuation;
+    public void setContainer(ContextContainer contextContainer) {
+        this.contextContainer = contextContainer;
     }
 
-    public ContextValuation getValuation() {
-        return this.contextValuation;
+    public ContextContainer getContainer() {
+        return this.contextContainer;
     }
 
-    public ContextValuation start() {
+    public ContextContainer start() {
         Iterator<Context> iterator = this.contexts.iterator();
 
         while(iterator.hasNext()) {
             Context context = iterator.next();
 
             context.setPlayer(this.player);
-            context.start(this.contextValuation);
-            this.contextValuation = context.getValuation();
+            context.start(this.contextContainer);
+            this.contextContainer = context.getValuation();
         }
 
-        return this.contextValuation;
+        return this.contextContainer;
     }
 
-    public ContextValuation update() {
+    public ContextContainer update() {
         Iterator<Context> iterator = this.contexts.iterator();
 
         while(iterator.hasNext()) {
             Context context = iterator.next();
 
             if (!context.hasStopped()) {
-                context.update(this.contextValuation);
-                this.contextValuation = context.getValuation();
+                context.update(this.contextContainer);
+                this.contextContainer = context.getValuation();
             }
         }
 
-        return this.contextValuation;
+        return this.contextContainer;
     }
 
     public void stop() {
         for (Context context : this.contexts) {
             if (!context.hasStopped()) {
-                context.stop(this.contextValuation);
-                this.contextValuation = context.getValuation();
+                context.stop(this.contextContainer);
+                this.contextContainer = context.getValuation();
             }
         }
     }

@@ -26,12 +26,10 @@ package io.github.connorhartley.guardian.internal.detections;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.me4502.modularframework.module.Module;
-import com.me4502.modularframework.module.guice.ModuleConfiguration;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.DetectionConfiguration;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
@@ -42,12 +40,17 @@ import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -55,50 +58,60 @@ import java.util.*;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.14",
+        version = "0.0.15",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
-public class FlyDetection extends Detection implements StorageConsumer {
-
-    private static Module moduleAnnotation = FlyDetection.class.getAnnotation(Module.class);
-
-    private Guardian plugin;
-    private List<CheckType> checkTypes;
-    private Configuration configuration;
-    private boolean ready = false;
+public class FlyDetection extends Detection {
 
     @Inject
     @ModuleContainer
     public PluginContainer moduleContainer;
 
-    @Inject
-    @ModuleConfiguration
-    public ConfigurationNode configurationNode;
+    private Guardian plugin;
+    private File configFile;
+    private List<CheckType> checkTypes;
+    private Configuration configuration;
+    private ConfigurationLoader<CommentedConfigurationNode> configManager;
+    private boolean ready = false;
 
-    public FlyDetection() {
+    private final static Module moduleAnnotation = FlyDetection.class.getAnnotation(Module.class);
+
+    public FlyDetection() throws Exception {
         super(moduleAnnotation.id(), moduleAnnotation.name());
     }
 
     @Override
     public void onConstruction() {
-        this.moduleContainer.getInstance().ifPresent(plugin -> this.plugin = (Guardian) plugin);
-
-        this.configuration = new Configuration(this);
-
-        if (Configuration.getLocation().exists()) {
-            for (StorageValue storageValue : this.getStorageNodes()) {
-                storageValue.<ConfigurationNode>loadStorage(this.configurationNode);
-            }
+        if (this.moduleContainer.getInstance().isPresent()) {
+            this.plugin = (Guardian) this.moduleContainer.getInstance().get();
+            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().getParent().toFile(),
+                    "detection" + File.separator + this.getId() + ".conf");
+            this.configManager = HoconConfigurationLoader.builder().setFile(this.configFile)
+                    .setDefaultOptions(this.plugin.getConfigurationOptions()).build();
         }
 
-        DetectionTypes.FLY_DETECTION = Optional.of(this);
-
-        this.checkTypes = Collections.singletonList(new FlyCheck.Type(this));
+        this.configuration = new Configuration(this, this.configFile, this.configManager);
+        this.configuration.create();
 
         this.plugin.getPunishmentController().bind(WarningPunishment.class, this);
+        this.checkTypes = Collections.singletonList(new FlyCheck.Type(this));
 
+        this.configuration.update();
+
+        DetectionTypes.FLY_DETECTION = Optional.of(this);
         this.ready = true;
+    }
+
+    @Override
+    public void onDeconstruction() {
+        this.configuration.update();
+        this.ready = false;
+    }
+
+    @Listener
+    public void onReload(GameReloadEvent event) {
+        this.configuration.load();
     }
 
     @Listener
@@ -135,11 +148,6 @@ public class FlyDetection extends Detection implements StorageConsumer {
     }
 
     @Override
-    public void onDeconstruction() {
-        this.ready = false;
-    }
-
-    @Override
     public String getPermission(String permissionTarget) {
         return StringUtils.join("guardian.detections.", permissionTarget, ".fly");
     }
@@ -165,129 +173,224 @@ public class FlyDetection extends Detection implements StorageConsumer {
     }
 
     @Override
-    public StorageValue<?, ?>[] getStorageNodes() {
-        return new StorageValue<?, ?>[] {
-                this.configuration.configPunishmentProperties, this.configuration.configPunishmentLevels,
-                this.configuration.configSeverityDistribution, this.configuration.configAnalysisTime,
-                this.configuration.configTickBounds, this.configuration.configAltitudeMaximum,
-                this.configuration.configCustomPunishments
-        };
-    }
-
-    @Override
     public boolean isReady() {
         return this.ready;
     }
 
-    public static class Configuration implements DetectionConfiguration {
+    public static class Configuration implements StorageConsumer<File> {
 
-        private static File configFile;
+        public StorageValue<String, Double> configAnalysisTime;
+        public StorageValue<String, Double> configAltitudeMaximum;
+        public StorageValue<String, Map<String, Double>> configTickBounds;
+        public StorageValue<String, Map<String, Double>> configPunishmentLevels;
+        public StorageValue<String, Map<String, String>> configPunishmentProperties;
+        public StorageValue<String, Map<String, List<String>>> configCustomPunishments;
+        public StorageValue<String, Map<String, Double>> configSeverityDistribution;
+
+        private CommentedConfigurationNode configurationNode;
 
         private final FlyDetection flyDetection;
+        private final File configFile;
+        private final ConfigurationLoader<CommentedConfigurationNode> configManager;
 
-        StorageValue<String, Double> configAnalysisTime;
-        StorageValue<String, Double> configAltitudeMaximum;
-        StorageValue<String, Map<String, Double>> configTickBounds;
-        StorageValue<String, Map<String, Double>> configPunishmentLevels;
-        StorageValue<String, Map<String, String>> configPunishmentProperties;
-        StorageValue<String, Map<String, List<String>>> configCustomPunishments;
-        StorageValue<String, Map<String, Double>> configSeverityDistribution;
-
-        private Configuration(FlyDetection flyDetection) {
+        private Configuration(FlyDetection flyDetection, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
             this.flyDetection = flyDetection;
-
-            configFile = new File(this.flyDetection.getPlugin().getGlobalConfiguration()
-                    .getLocation().toFile().getParentFile(), "detection" + File.separator +
-                    this.flyDetection.getId() + ".conf");
-
-            initialize();
+            this.configFile = configFile;
+            this.configManager = configManager;
         }
 
-        private void initialize() {
-            this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
-                    "Time taken to analyse the players air time. 2 seconds is recommended!",
-                    2.0, new TypeToken<Double>() {
-            });
+        @Override
+        public void create() {
+            try {
+                if (!this.exists()) {
+                    this.configFile.getParentFile().mkdirs();
+                    this.configFile.createNewFile();
+                }
 
-            this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
-                    "Maximum vanilla mean altitude the player can go. 3.1 is recommended!",
-                    3.1, new TypeToken<Double>() {
-            });
+                this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
 
-            HashMap<String, Double> tickBounds = new HashMap<>();
-            tickBounds.put("min", 0.75);
-            tickBounds.put("max", 1.5);
+                // Define Config Values
 
-            this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
-                    "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
-                    tickBounds, new TypeToken<Map<String, Double>>() {
-            });
+                this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
+                        "Time taken to analyse the players air time. 2 seconds is recommended!",
+                        2.0, new TypeToken<Double>() {
+                });
 
-            HashMap<String, Double> punishmentLevels = new HashMap<>();
-            punishmentLevels.put("warn", 0.1);
-//            punishmentLevels.put("flag", 0.2);
-//            punishmentLevels.put("report", 0.3);
-//            punishmentLevels.put("kick", 0.5);
+                this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
+                        "Maximum vanilla mean altitude the player can go. 3.1 is recommended!",
+                        3.1, new TypeToken<Double>() {
+                });
 
-            this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
-                    "Punishments that happen when the user reaches the individual severity threshold.",
-                    punishmentLevels, new TypeToken<Map<String, Double>>() {
-            });
+                HashMap<String, Double> tickBounds = new HashMap<>();
+                tickBounds.put("min", 0.75);
+                tickBounds.put("max", 1.5);
 
-            HashMap<String, String> punishmentProperties = new HashMap<>();
-            punishmentProperties.put("channel", "admin");
-            punishmentProperties.put("releasetime", "12096000");
+                this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
+                        "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
+                        tickBounds, new TypeToken<Map<String, Double>>() {
+                });
 
-            this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
-                    "Properties that define certain properties for all the punishments in this detection.",
-                    punishmentProperties, new TypeToken<Map<String, String>>() {
-            });
+                HashMap<String, Double> punishmentLevels = new HashMap<>();
+                punishmentLevels.put("warn", 0.1);
+//              punishmentLevels.put("flag", 0.2);
+//              punishmentLevels.put("report", 0.3);
+//              punishmentLevels.put("kick", 0.5);
 
-            HashMap<String, List<String>> customPunishments = new HashMap<>();
-            customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
+                this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
+                        "Punishments that happen when the user reaches the individual severity threshold.",
+                        punishmentLevels, new TypeToken<Map<String, Double>>() {
+                });
 
-            this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
-                    "Custom punishments that can execute custom commands.",
-                    customPunishments, new TypeToken<Map<String, List<String>>>() {
-            });
+                HashMap<String, String> punishmentProperties = new HashMap<>();
+                punishmentProperties.put("channel", "admin");
+                punishmentProperties.put("releasetime", "12096000");
 
-            HashMap<String, Double> severityDistribution = new HashMap<>();
-            severityDistribution.put("lower", 0d);
-            severityDistribution.put("mean", 10d);
-            severityDistribution.put("standard-deviation", 5d);
+                this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
+                        "Properties that define certain properties for all the punishments in this detection.",
+                        punishmentProperties, new TypeToken<Map<String, String>>() {
+                });
 
-            this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
-                    "Normal distribution properties for calculating the over-shot value from the mean.",
-                    severityDistribution, new TypeToken<Map<String, Double>>() {
-            });
+                HashMap<String, List<String>> customPunishments = new HashMap<>();
+                customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
+
+                this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
+                        "Custom punishments that can execute custom commands.",
+                        customPunishments, new TypeToken<Map<String, List<String>>>() {
+                });
+
+                HashMap<String, Double> severityDistribution = new HashMap<>();
+                severityDistribution.put("lower", 0d);
+                severityDistribution.put("mean", 10d);
+                severityDistribution.put("standard-deviation", 5d);
+
+                this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
+                        "Normal distribution properties for calculating the over-shot value from the mean.",
+                        severityDistribution, new TypeToken<Map<String, Double>>() {
+                });
+
+                // Create Config Values
+
+                this.configAnalysisTime.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configAltitudeMaximum.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configTickBounds.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configPunishmentLevels.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configPunishmentProperties.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configCustomPunishments.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configSeverityDistribution.<ConfigurationNode>createStorage(this.configurationNode);
+
+                this.configManager.save(this.configurationNode);
+            } catch (IOException e) {
+                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to create Guardians global configuration!", e);
+            }
         }
 
-        private static File getLocation() {
+        @Override
+        public void load() {
+            try {
+                if (this.exists()) {
+                    this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
+
+                    this.configAnalysisTime.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configAltitudeMaximum.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configTickBounds.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configPunishmentLevels.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configPunishmentProperties.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configCustomPunishments.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configSeverityDistribution.<ConfigurationNode>loadStorage(this.configurationNode);
+
+                    this.configManager.save(this.configurationNode);
+                }
+            } catch (IOException e) {
+                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
+            }
+        }
+
+        @Override
+        public void update() {
+            try {
+                if (this.exists()) {
+                    this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
+
+                    this.configAnalysisTime.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configAltitudeMaximum.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configTickBounds.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configPunishmentLevels.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configPunishmentProperties.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configCustomPunishments.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configSeverityDistribution.<ConfigurationNode>updateStorage(this.configurationNode);
+
+                    this.configManager.save(this.configurationNode);
+                }
+            } catch (IOException e) {
+                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to update Guardians global configuration!", e);
+            }
+        }
+
+        @Override
+        public boolean exists() {
+            return this.configFile.exists();
+        }
+
+        @Override
+        public File getLocation() {
             return configFile;
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public <K, E> Optional<StorageValue<K, E>> get(K name, E defaultElement) {
-            if (name instanceof String) {
-                if (name.equals("analysis-time")) {
+        public <K, E> Optional<StorageValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken) {
+            if (key.get() instanceof String) {
+                if (key.get().equals("analysis-time") && typeToken.getRawType()
+                        .equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
-                } else if (name.equals("altitude-maximum")) {
+                } else if (key.get().equals("altitude-maximum") && typeToken.getRawType()
+                        .equals(this.configAltitudeMaximum.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configAltitudeMaximum);
-                } else if (name.equals("tick-bounds")) {
+                } else if (key.get().equals("tick-bounds") && typeToken.getRawType()
+                        .equals(this.configTickBounds.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configTickBounds);
-                } else if (name.equals("punishment-properties")) {
+                } else if (key.get().equals("punishment-properties") && typeToken.getRawType()
+                        .equals(this.configPunishmentProperties.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configPunishmentProperties);
-                } else if (name.equals("punishment-levels")) {
+                } else if (key.get().equals("punishment-levels") && typeToken.getRawType()
+                        .equals(this.configPunishmentLevels.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configPunishmentLevels);
-                } else if (name.equals("custom-punishments")) {
+                } else if (key.get().equals("custom-punishments") && typeToken.getRawType()
+                        .equals(this.configCustomPunishments.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configCustomPunishments);
-                } else if (name.equals("severity-distribution")) {
+                } else if (key.get().equals("severity-distribution") && typeToken.getRawType()
+                        .equals(this.configSeverityDistribution.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configSeverityDistribution);
                 }
             }
             return Optional.empty();
         }
-    }
 
+        @Override
+        public <K, E> void set(StorageValue<K, E> storageValue) {
+            if (storageValue.getKey().get() instanceof String) {
+                if (storageValue.getKey().get().equals("analysis-time") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
+                    this.configAnalysisTime = (StorageValue<String, Double>) storageValue;
+                } else if (storageValue.getKey().get().equals("altitude-maximum") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configAltitudeMaximum.getValueTypeToken().getRawType())) {
+                    this.configAltitudeMaximum = (StorageValue<String, Double>) storageValue;
+                } else if (storageValue.getKey().get().equals("tick-bounds") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configTickBounds.getValueTypeToken().getRawType())) {
+                    this.configTickBounds = (StorageValue<String, Map<String, Double>>) storageValue;
+                } else if (storageValue.getKey().get().equals("punishment-properties") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configPunishmentProperties.getValueTypeToken().getRawType())) {
+                    this.configPunishmentProperties = (StorageValue<String, Map<String, String>>) storageValue;
+                } else if (storageValue.getKey().get().equals("punishment-levels") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configPunishmentLevels.getValueTypeToken().getRawType())) {
+                    this.configPunishmentLevels = (StorageValue<String, Map<String, Double>>) storageValue;
+                } else if (storageValue.getKey().get().equals("custom-punishments") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configCustomPunishments.getValueTypeToken().getRawType())) {
+                    this.configCustomPunishments = (StorageValue<String, Map<String, List<String>>>) storageValue;
+                } else if (storageValue.getKey().get().equals("severity-distribution") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configSeverityDistribution.getValueTypeToken().getRawType())) {
+                    this.configSeverityDistribution = (StorageValue<String, Map<String, Double>>) storageValue;
+                }
+            }
+        }
+    }
 }

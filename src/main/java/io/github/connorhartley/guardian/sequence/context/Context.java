@@ -53,13 +53,13 @@ public abstract class Context {
         return this.player;
     }
 
-    public abstract ContextValuation getValuation();
+    public abstract ContextContainer getValuation();
 
-    public abstract void start(ContextValuation valuation);
+    public abstract void start(ContextContainer valuation);
 
-    public abstract void update(ContextValuation valuation);
+    public abstract void update(ContextContainer valuation);
 
-    public abstract void stop(ContextValuation valuation);
+    public abstract void stop(ContextContainer valuation);
 
     public abstract boolean hasStopped();
 

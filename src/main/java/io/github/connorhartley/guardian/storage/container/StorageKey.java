@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.storage.container;
 
-import io.github.connorhartley.guardian.storage.DatabaseQuery;
+import io.github.connorhartley.guardian.storage.database.DatabaseQuery;
 
 public class StorageKey<T> {
 
