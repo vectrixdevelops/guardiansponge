@@ -39,6 +39,7 @@ import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.PermissionCheck;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -107,132 +108,143 @@ public class HorizontalSpeedCheck extends Check {
                     // After 2 Seconds : Move Entity Event
 
                     .action(MoveEntityEvent.class)
-                    .delay(((Double) this.analysisTime).intValue())
-                    .expire(((Double) this.maximumTickRange).intValue())
+                            .delay(((Double) this.analysisTime).intValue())
+                            .expire(((Double) this.maximumTickRange).intValue())
 
-                    .condition(new PermissionCheck(this.detection))
+                            .failure((user, event, contextContainer, sequenceReport, lastAction) -> {
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                            .build(false);
 
-                    .success((user, event, contextValuation, sequenceResult, lastAction) -> {
-                        Guardian plugin = (Guardian) this.getDetection().getPlugin();
+                                if (event instanceof DestructEntityEvent.Death) {
+                                    return new ConditionResult(true, failReport);
+                                }
 
-                        Location<World> start = null;
-                        Location<World> present = null;
+                                return new ConditionResult(false, failReport);
+                            })
 
-                        long playerControlTicks = 0;
-                        long blockModifierTicks = 0;
+                            .condition(new PermissionCheck(this.detection))
 
-                        double playerControlSpeed = 1.0;
-                        double blockModifier = 1.0;
-                        double playerControlModifier = 4.0;
+                            .condition((user, event, contextValuation, sequenceResult, lastAction) -> {
+                                Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
-                        PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
+                                Location<World> start = null;
+                                Location<World> present = null;
 
-                        long currentTime;
+                                long playerControlTicks = 0;
+                                long blockModifierTicks = 0;
 
-                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
-                            start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
-                        }
+                                double playerControlSpeed = 1.0;
+                                double blockModifier = 1.0;
+                                double playerControlModifier = 4.0;
 
-                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
-                            present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
-                        }
+                                PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").isPresent()) {
-                            playerControlSpeed = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").get();
-                        }
+                                long currentTime;
 
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
-                                PlayerControlContext.HorizontalSpeed.class, "update").isPresent()) {
-                            playerControlTicks = contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "update").get();
-                        }
+                                if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
+                                    start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
+                                }
 
-                        if (contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").isPresent()) {
-                            blockModifier = contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").get();
-                        }
+                                if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
+                                    present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
+                                }
 
-                        if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
-                            blockModifierTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
-                        }
+                                if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                       PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").isPresent()) {
+                                    playerControlSpeed = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                            PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").get();
+                                }
 
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                PlayerControlContext.HorizontalSpeed.class, "control_modifier").isPresent()) {
-                            playerControlModifier = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "control_modifier").get();
-                        }
+                                if (contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
+                                        PlayerControlContext.HorizontalSpeed.class, "update").isPresent()) {
+                                    playerControlTicks = contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
+                                            PlayerControlContext.HorizontalSpeed.class, "update").get();
+                                }
 
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
-                                PlayerControlContext.HorizontalSpeed.class, "control_speed_state").isPresent()) {
-                            playerControlState = contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "control_speed_state").get();
-                        }
+                                if (contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").isPresent()) {
+                                    blockModifier = contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").get();
+                                }
 
-                        if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
-                            plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                            SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
-                                    .build(false);
+                                if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
+                                    blockModifierTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
+                                }
 
-                            return new ConditionResult(false, failReport);
-                        } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
-                            SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
-                                    .build(false);
+                                if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                        PlayerControlContext.HorizontalSpeed.class, "control_modifier").isPresent()) {
+                                    playerControlModifier = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                            PlayerControlContext.HorizontalSpeed.class, "control_modifier").get();
+                                }
 
-                            return new ConditionResult(false, failReport);
-                        }
+                                if (contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
+                                        PlayerControlContext.HorizontalSpeed.class, "control_speed_state").isPresent()) {
+                                    playerControlState = contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
+                                            PlayerControlContext.HorizontalSpeed.class, "control_speed_state").get();
+                                }
 
-                        if (user.getPlayer().isPresent() && start != null && present != null) {
-                            // ### For correct movement context ###
-                            if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
-                                if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
+                                if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
+                                    plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
+                                            .build(false);
+
+                                    return new ConditionResult(false, failReport);
+                                } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
                                     SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
                                             .build(false);
 
                                     return new ConditionResult(false, failReport);
                                 }
-                            }
-                            // ####################################
 
-                            currentTime = System.currentTimeMillis();
+                                if (user.getPlayer().isPresent() && start != null && present != null) {
+                                    // ### For correct movement context ###
+                                    if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
+                                        if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
+                                            SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
+                                                   .build(false);
 
-                            long contextTime = (1 / ((playerControlTicks + blockModifierTicks) / 2)) * ((long) this.analysisTime * 1000);
-                            long sequenceTime = (currentTime - lastAction);
+                                            return new ConditionResult(false, failReport);
+                                        }
+                                    }
+                                    // ####################################
 
-                            double travelDisplacement = Math.abs(Math.sqrt((
-                                    (present.getX() - start.getX()) *
-                                            (present.getX() - start.getX())) +
-                                    (present.getZ() - start.getZ()) *
-                                            (present.getZ() - start.getZ())));
+                                    currentTime = System.currentTimeMillis();
 
-                            travelDisplacement += playerControlModifier / 2;
+                                    long contextTime = (1 / ((playerControlTicks + blockModifierTicks) / 2)) * ((long) this.analysisTime * 1000);
+                                    long sequenceTime = (currentTime - lastAction);
 
-                            double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000) + 0.01;
+                                    double travelDisplacement = Math.abs(Math.sqrt((
+                                            (present.getX() - start.getX()) *
+                                                    (present.getX() - start.getX())) +
+                                            (present.getZ() - start.getZ()) *
+                                                    (present.getZ() - start.getZ())));
 
-                            // TODO: Clean up the following...
+                                    travelDisplacement += playerControlModifier / 2;
 
-                            SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceResult)
-                                    .information("Horizontal travel speed should be less than " + maximumSpeed +
-                                            " while they're " + playerControlState.name() + ".");
+                                    double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000) + 0.01;
 
-                            if (travelDisplacement > maximumSpeed) {
-                                successReportBuilder
-                                        .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
-                                        .type("horizontally overspeeding")
-                                        .severity(travelDisplacement - maximumSpeed);
+                                    // TODO: Clean up the following...
 
-                                // TODO : Remove this after testing \/
-                                plugin.getLogger().warn(user.getName() + " has triggered the horizontal speed check and overshot " +
-                                        "the maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
-                            } else {
-                                return new ConditionResult(false, successReportBuilder.build(false));
-                            }
+                                    SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceResult)
+                                            .information("Horizontal travel speed should be less than " + maximumSpeed +
+                                                    " while they're " + playerControlState.name() + ".");
 
-                            return new ConditionResult(true, successReportBuilder.build(true));
-                        }
+                                    if (travelDisplacement > maximumSpeed) {
+                                        successReportBuilder
+                                                .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
+                                                .type("horizontally overspeeding")
+                                                .severity(travelDisplacement - maximumSpeed);
 
-                        return new ConditionResult(false, sequenceResult);
-                    })
+                                        // TODO : Remove this after testing \/
+                                        plugin.getLogger().warn(user.getName() + " has triggered the horizontal speed check and overshot " +
+                                                "the maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
+                                    } else {
+                                        return new ConditionResult(false, successReportBuilder.build(false));
+                                    }
+
+                                    return new ConditionResult(true, successReportBuilder.build(true));
+                                }
+
+                                return new ConditionResult(false, sequenceResult);
+                            })
 
                     .build(this);
         }

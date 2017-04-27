@@ -31,7 +31,7 @@ import org.spongepowered.api.event.Event;
 
 public class ActionBuilder<T extends Event> {
 
-    private final Action<T> action;
+    private final Action action;
     private final SequenceBuilder builder;
 
     public ActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action) {
@@ -64,11 +64,11 @@ public class ActionBuilder<T extends Event> {
         return this;
     }
 
-    public ActionBuilder<T> action(Class<T> clazz) {
+    public <K extends Event> ActionBuilder<K> action(Class<K> clazz) {
         return action(new Action<>(clazz));
     }
 
-    public ActionBuilder<T> action(ActionBlueprint<T> blueprint) {
+    public <K extends Event> ActionBuilder<K> action(ActionBlueprint<K> blueprint) {
         return action(blueprint.create());
     }
 
