@@ -34,10 +34,7 @@ import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class CustomPunishment implements PunishmentType {
 
@@ -71,9 +68,9 @@ public class CustomPunishment implements PunishmentType {
 
         user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
 
-        Optional<StorageValue<String, HashMap<String, List<String>>>> detectionCustomPunishments =
+        Optional<StorageValue<String, Map<String, List<String>>>> detectionCustomPunishments =
                 this.detection.getConfiguration().get(new StorageKey<>("custom-punishments"),
-                        new TypeToken<HashMap<String, List<String>>>() {});
+                        new TypeToken<Map<String, List<String>>>() {});
 
         List<String> customCommandList;
 
