@@ -26,6 +26,11 @@ package io.github.connorhartley.guardian;
 import com.me4502.modularframework.ModuleController;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 
+/**
+ * Guardian Detection
+ *
+ * Represents the detection registry for Guardian.
+ */
 public final class GuardianDetection {
 
     private final ModuleController moduleController;

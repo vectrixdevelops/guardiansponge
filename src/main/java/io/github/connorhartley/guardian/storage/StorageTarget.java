@@ -23,12 +23,43 @@
  */
 package io.github.connorhartley.guardian.storage;
 
+import io.github.connorhartley.guardian.storage.container.StorageValue;
+
+/**
+ * Storage Target
+ *
+ * An annotation attached to a parameter or field to inject a {@link StorageValue}
+ * for by an appropriate {@link StorageProvider}.
+ */
 public @interface StorageTarget {
 
+    /**
+     * Key
+     *
+     * <p>The storage key that holds the {@link StorageValue} you want to inject.</p>
+     *
+     * @return The storage key
+     */
     String key();
 
+    /**
+     * Deep
+     *
+     * <p>If enabled, allows a recursive search through mapped objects to return
+     * the {@link StorageValue}. Disabled by default as it may have performance
+     * implications.</p>
+     *
+     * @return The deep setting
+     */
     boolean deep() default false;
 
-    int deepMax() default 100;
+    /**
+     * Ordinal
+     *
+     * <p>The maximum depth to search through a map if deep is enabled.</p>
+     *
+     * @return The ordinal setting
+     */
+    int ordinal() default 1;
 
 }

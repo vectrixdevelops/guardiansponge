@@ -25,23 +25,26 @@ package io.github.connorhartley.guardian;
 
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
-import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-public final class GuardianConfiguration implements StorageProvider<Path>, StorageConsumer {
+/**
+ * Guardian Configuration
+ *
+ * Represents the configuration implementation for Guardian.
+ */
+public final class GuardianConfiguration implements StorageProvider<Path> {
 
-    private Guardian plugin;
     private CommentedConfigurationNode configurationNode;
 
+    private final Guardian plugin;
     private final Path configFile;
     private final ConfigurationLoader<CommentedConfigurationNode> configManager;
 
@@ -49,7 +52,7 @@ public final class GuardianConfiguration implements StorageProvider<Path>, Stora
     public StorageValue<String, List<String>> configEnabledDetections;
     public StorageValue<String, Integer> configLoggingLevel;
 
-    public GuardianConfiguration(Guardian plugin, Path configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
+    GuardianConfiguration(Guardian plugin, Path configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
         this.configFile = configFile;
         this.configManager = configManager;
@@ -128,11 +131,6 @@ public final class GuardianConfiguration implements StorageProvider<Path>, Stora
     @Override
     public Path getLocation() {
         return this.configFile;
-    }
-
-    @Override
-    public StorageValue<?, ?>[] getStorageNodes() {
-        return new StorageValue<?, ?>[]{ this.configVersion };
     }
 
 }

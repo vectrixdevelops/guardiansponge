@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.util.check;
 
-import io.github.connorhartley.guardian.sequence.context.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
@@ -31,6 +31,14 @@ import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
+/**
+ * Permission Check
+ *
+ * A simple utility for checking if the player needs to be checked based on
+ * if they have the detections bypass permission or not.
+ *
+ * Note: This is to be used inside a sequence condition.
+ */
 public class PermissionCheck implements Condition {
 
     private final Detection detection;
@@ -40,7 +48,7 @@ public class PermissionCheck implements Condition {
     }
 
     @Override
-    public ConditionResult test(User user, Event event, ContextValuation contextValuation, SequenceReport sequenceReport, long lastAction) {
+    public ConditionResult test(User user, Event event, ContextContainer contextContainer, SequenceReport sequenceReport, long lastAction) {
         if (user.getPlayer().isPresent()) {
             if (!user.getPlayer().get().hasPermission(this.detection.getPermission(Detection.PermissionTarget.BYPASS))) {
                 return new ConditionResult(true, sequenceReport);

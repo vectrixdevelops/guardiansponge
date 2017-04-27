@@ -23,10 +23,12 @@
  */
 package io.github.connorhartley.guardian.internal.contexts.world;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.util.Direction;
 
@@ -39,15 +41,15 @@ public class MaterialSpeedContext extends Context {
     private double solidSpeedModifier = 1.025;
     private double liquidSpeedModifier = 1.015;
 
-    private ContextValuation valuation;
+    private ContextContainer valuation;
     private boolean stopped = false;
 
     public MaterialSpeedContext(Guardian plugin, Detection detection) {
         super(plugin, detection);
 
-        if (this.getDetection().getConfiguration().get("material-values", new HashMap<String, Double>()).isPresent()) {
-            Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get("material-values",
-                    new HashMap<String, Double>()).get().getValue();
+        if (this.getDetection().getConfiguration().get(new StorageKey<>("material-values"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+            Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("material-values"),
+                    new TypeToken<HashMap<String, Double>>(){}).get().getValue();
 
             this.gasSpeedModifier = storageValueMap.get("gas");
             this.solidSpeedModifier = storageValueMap.get("solid");
@@ -56,12 +58,12 @@ public class MaterialSpeedContext extends Context {
     }
 
     @Override
-    public ContextValuation getValuation() {
+    public ContextContainer getValuation() {
         return this.valuation;
     }
 
     @Override
-    public void start(ContextValuation valuation) {
+    public void start(ContextContainer valuation) {
         this.valuation = valuation;
         this.stopped = false;
 
@@ -70,7 +72,7 @@ public class MaterialSpeedContext extends Context {
     }
 
     @Override
-    public void update(ContextValuation valuation) {
+    public void update(ContextContainer valuation) {
         this.valuation = valuation;
 
         if (!this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
@@ -96,7 +98,7 @@ public class MaterialSpeedContext extends Context {
     }
 
     @Override
-    public void stop(ContextValuation valuation) {
+    public void stop(ContextContainer valuation) {
         this.valuation = valuation;
 
         this.stopped = true;

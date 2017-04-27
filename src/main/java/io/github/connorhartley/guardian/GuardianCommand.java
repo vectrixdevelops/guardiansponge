@@ -30,6 +30,11 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 
+/**
+ * Guardian Command
+ *
+ * Represents the command registry for Guardian.
+ */
 public final class GuardianCommand {
 
     private final Guardian plugin;

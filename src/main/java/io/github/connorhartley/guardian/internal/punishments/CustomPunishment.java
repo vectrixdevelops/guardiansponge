@@ -23,11 +23,13 @@
  */
 package io.github.connorhartley.guardian.internal.punishments;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.punishment.PunishmentType;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
@@ -70,7 +72,8 @@ public class CustomPunishment implements PunishmentType {
         user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
 
         Optional<StorageValue<String, HashMap<String, List<String>>>> detectionCustomPunishments =
-                this.detection.getConfiguration().get("custom-punishments", new HashMap<String, List<String>>());
+                this.detection.getConfiguration().get(new StorageKey<>("custom-punishments"),
+                        new TypeToken<HashMap<String, List<String>>>() {});
 
         List<String> customCommandList;
 

@@ -25,12 +25,12 @@ package io.github.connorhartley.guardian.internal.contexts.player;
 
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextValuation;
+import io.github.connorhartley.guardian.sequence.context.ContextContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 
 public class PlayerLocationContext extends Context {
 
-    private ContextValuation valuation;
+    private ContextContainer valuation;
     private boolean stopped = false;
 
     public PlayerLocationContext(Guardian plugin, Detection detection) {
@@ -38,12 +38,12 @@ public class PlayerLocationContext extends Context {
     }
 
     @Override
-    public ContextValuation getValuation() {
+    public ContextContainer getValuation() {
         return this.valuation;
     }
 
     @Override
-    public void start(ContextValuation valuation) {
+    public void start(ContextContainer valuation) {
         this.valuation = valuation;
         this.stopped = false;
 
@@ -52,7 +52,7 @@ public class PlayerLocationContext extends Context {
     }
 
     @Override
-    public void update(ContextValuation valuation) {
+    public void update(ContextContainer valuation) {
         this.valuation = valuation;
 
         this.getValuation().set(PlayerLocationContext.class, "present_location", this.getPlayer().getLocation());
@@ -61,7 +61,7 @@ public class PlayerLocationContext extends Context {
     }
 
     @Override
-    public void stop(ContextValuation valuation) {
+    public void stop(ContextContainer valuation) {
         this.valuation = valuation;
 
         this.stopped = true;

@@ -23,18 +23,52 @@
  */
 package io.github.connorhartley.guardian.storage;
 
+import io.github.connorhartley.guardian.storage.container.StorageValue;
+
+/**
+ * Storage Provider
+ *
+ * Represents a storage system that can load and store objects to
+ * a specific location.
+ *
+ * @param <T> The type of storage container location
+ */
 public interface StorageProvider<T> {
 
+    /**
+     * Create
+     *
+     * <p>Requests the creation of this storage container. Used
+     * with the exists check can prove to be a good way to not override
+     * existing data.</p>
+     */
     void create();
 
+    /**
+     * Load
+     *
+     * <p>Requests the load of this storage container.</p>
+     */
     void load();
 
+    /**
+     * Update
+     *
+     * <p>Requests the update of data to the storage container.</p>
+     */
     void update();
 
     default boolean exists() {
         return false;
     }
 
+    /**
+     * Get Location
+     *
+     * <p>Returns the location of a storage container.</p>
+     *
+     * @return The location of a storage container
+     */
     T getLocation();
 
 }
