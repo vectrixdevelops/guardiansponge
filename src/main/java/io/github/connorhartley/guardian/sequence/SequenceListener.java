@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.sequence;
 
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
 
@@ -38,6 +39,11 @@ public class SequenceListener {
 
     @Listener
     public void onEntityMove(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
+        this.sequenceController.invoke(player, event);
+    }
+
+    @Listener
+    public void onEntityDeath(DestructEntityEvent.Death event, @Getter("getTargetEntity") Player player) {
         this.sequenceController.invoke(player, event);
     }
 
