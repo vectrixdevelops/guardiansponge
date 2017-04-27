@@ -47,9 +47,9 @@ public class MaterialSpeedContext extends Context {
     public MaterialSpeedContext(Guardian plugin, Detection detection) {
         super(plugin, detection);
 
-        if (this.getDetection().getConfiguration().get(new StorageKey<>("material-values"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+        if (this.getDetection().getConfiguration().get(new StorageKey<>("material-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
             Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("material-values"),
-                    new TypeToken<HashMap<String, Double>>(){}).get().getValue();
+                    new TypeToken<Map<String, Double>>(){}).get().getValue();
 
             this.gasSpeedModifier = storageValueMap.get("gas");
             this.solidSpeedModifier = storageValueMap.get("solid");

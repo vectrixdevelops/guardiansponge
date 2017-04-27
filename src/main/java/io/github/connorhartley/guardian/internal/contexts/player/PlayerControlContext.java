@@ -46,9 +46,9 @@ public class PlayerControlContext {
         public VerticalSpeed(Guardian plugin, Detection detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
                 Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("control-values"),
-                        new TypeToken<HashMap<String, Double>>(){}).get().getValue();
+                        new TypeToken<Map<String, Double>>(){}).get().getValue();
 
 
                 this.flySpeedControl = storageValueMap.get("fly");
@@ -112,9 +112,9 @@ public class PlayerControlContext {
         public HorizontalSpeed(Guardian plugin, Detection detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
                 Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("control-values"),
-                        new TypeToken<HashMap<String, Double>>(){}).get().getValue();
+                        new TypeToken<Map<String, Double>>(){}).get().getValue();
 
                 this.sneakSpeedControl = storageValueMap.get("sneak");
                 this.walkSpeedControl = storageValueMap.get("walk");

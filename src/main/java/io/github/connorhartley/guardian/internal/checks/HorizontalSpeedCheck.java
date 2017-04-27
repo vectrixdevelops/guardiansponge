@@ -44,6 +44,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class HorizontalSpeedCheck extends Check {
 
@@ -76,11 +77,11 @@ public class HorizontalSpeedCheck extends Check {
                         new TypeToken<Double>(){}).get().getValue() / 0.05;
             }
 
-            if (this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"), new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+            if (this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
                 this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"),
-                        new TypeToken<HashMap<String, Double>>(){}).get().getValue().get("min");
+                        new TypeToken<Map<String, Double>>(){}).get().getValue().get("min");
                 this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"),
-                        new TypeToken<HashMap<String, Double>>(){}).get().getValue().get("max");
+                        new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
             }
         }
 

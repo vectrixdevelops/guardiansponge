@@ -43,13 +43,13 @@ public class PunishmentController {
     }
 
     public void execute(Detection detection, User user, Punishment punishment) {
-        HashMap<String, Double> detectionPunishLevels = new HashMap<>();
+        Map<String, Double> detectionPunishLevels = new HashMap<>();
         String currentPunishLevel = "";
 
         if (detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
-                new TypeToken<HashMap<String, Double>>(){}).isPresent()) {
+                new TypeToken<Map<String, Double>>(){}).isPresent()) {
             detectionPunishLevels = detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
-                            new TypeToken<HashMap<String, Double>>(){}).get().getValue();
+                            new TypeToken<Map<String, Double>>(){}).get().getValue();
         }
 
         for (Map.Entry<String, Double> entry : detectionPunishLevels.entrySet()) {
