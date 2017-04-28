@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.sf.proguard:proguard-gradle:5.3.2'
+    }
+}
+
 plugins {
     id 'java'
     id 'maven'
@@ -84,7 +93,7 @@ jar {
 }
 
 shadowJar {
-    classifier = ''
+    classifier = 'unminified'
     dependencies {
         include(dependency('org.apache.commons:commons-math3:3.6.1'))
 
@@ -103,14 +112,51 @@ shadowJar {
     exclude 'com/me4502/modularframework/ModularFramework.class'
 }
 
+task minifyShadedJar(type: ProGuardTask, group: 'Build', description: 'Minifies the shaded JAR.') {
+    def shadedFile = shadowJar.archivePath
+    def minifiedFile = file(shadedFile.path.replaceFirst('unminified', 'minified'))
+
+    injars shadedFile
+    outjars minifiedFile
+
+    libraryjars files(configurations.runtime.collect())
+    libraryjars file("${System.getProperty('java.home')}/lib/rt.jar")
+
+    dontoptimize
+    dontobfuscate
+    dontwarn
+
+    keepattributes 'Signature, InnerClasses, Annotation'
+    keep "class !com.github.me4502.**,io.github.connorhartley.guardian.** { *; }"
+}
+
 artifacts {
+    tasks.minifyShadedJar.outJarFiles.each {
+        archives it
+    }
+
     archives shadowJar
     archives sourceJar
     archives javadocJar
     archives jar
 }
 
+model {
+    tasks.signArchives {
+        dependsOn tasks.minifyShadedJar
+    }
+}
+
+class ProGuardTask extends proguard.gradle.ProGuardTask {
+    def keepclass(String className) {
+        keep "class ${className},${className}\$* { *; }"
+    }
+}
+
+tasks.minifyShadedJar.dependsOn(shadowJar)
+
 build.dependsOn(shadowJar)
 build.dependsOn(sourceJar)
 build.dependsOn(javadocJar)
 build.dependsOn(jar)
+build.dependsOn(minifyShadedJar)
