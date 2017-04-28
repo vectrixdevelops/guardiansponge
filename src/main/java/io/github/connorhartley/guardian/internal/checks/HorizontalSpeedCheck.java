@@ -143,7 +143,7 @@ public class HorizontalSpeedCheck extends Check {
 
                             // Logic checks.
 
-                            .condition((user, event, contextValuation, sequenceResult, lastAction) -> {
+                            .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
                                 Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
                                 Location<World> start = null;
@@ -202,12 +202,12 @@ public class HorizontalSpeedCheck extends Check {
 
                                 if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
                                     plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
                                             .build(false);
 
                                     return new ConditionResult(false, failReport);
                                 } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
+                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
                                             .build(false);
 
                                     return new ConditionResult(false, failReport);
@@ -215,13 +215,11 @@ public class HorizontalSpeedCheck extends Check {
 
                                 if (user.getPlayer().isPresent() && start != null && present != null) {
                                     // ### For correct movement context ###
-                                    if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
-                                        if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
-                                            SequenceReport failReport = SequenceReport.builder().of(sequenceResult)
-                                                   .build(false);
+                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
+                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                                .build(false);
 
-                                            return new ConditionResult(false, failReport);
-                                        }
+                                        return new ConditionResult(false, failReport);
                                     }
                                     // ####################################
 
@@ -242,7 +240,7 @@ public class HorizontalSpeedCheck extends Check {
 
                                     // TODO: Clean up the following...
 
-                                    SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceResult)
+                                    SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceReport)
                                             .information("Horizontal travel speed should be less than " + maximumSpeed +
                                                     " while they're " + playerControlState.name() + ".");
 
@@ -262,7 +260,7 @@ public class HorizontalSpeedCheck extends Check {
                                     return new ConditionResult(true, successReportBuilder.build(true));
                                 }
 
-                                return new ConditionResult(false, sequenceResult);
+                                return new ConditionResult(false, sequenceReport);
                             })
 
                     .build(this);

@@ -187,13 +187,11 @@ public class VerticalSpeedCheck extends Check {
 
                                 if (user.getPlayer().isPresent() && start.isPresent() && present.isPresent()) {
                                     // ### For correct movement context ###
-                                    if (user.getPlayer().get().get(Keys.IS_SITTING).isPresent()) {
-                                        if (user.getPlayer().get().get(Keys.IS_SITTING).get()) {
-                                            SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                    .build(false);
+                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
+                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                                .build(false);
 
-                                            return new ConditionResult(false, failReport);
-                                        }
+                                        return new ConditionResult(false, failReport);
                                     }
                                     // ####################################
 
