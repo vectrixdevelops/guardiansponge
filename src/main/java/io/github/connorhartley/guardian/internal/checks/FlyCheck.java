@@ -117,18 +117,37 @@ public class FlyCheck extends Check {
                             .delay(((Double) this.analysisTime).intValue())
                             .expire(((Double) this.maximumTickRange).intValue())
 
+                            // Ensures the sequence does not continue if the player dies.
+
                             .failure((user, event, contextContainer, sequenceReport, lastAction) -> {
-                                SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
+                                SequenceReport report = SequenceReport.builder().of(sequenceReport)
                                         .build(false);
 
                                 if (event instanceof DestructEntityEvent.Death) {
-                                    return new ConditionResult(true, failReport);
+                                    return new ConditionResult(true, report);
                                 }
 
-                                return new ConditionResult(false, failReport);
+                                return new ConditionResult(false, report);
                             })
 
+                            // Ensures the sequence does not continue if the player teleports.
+
+                            .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
+                                SequenceReport report = SequenceReport.builder().of(sequenceReport)
+                                        .build(false);
+
+                                if (event instanceof MoveEntityEvent.Teleport) {
+                                    return new ConditionResult(false, report);
+                                }
+
+                                return new ConditionResult(true, report);
+                            })
+
+                            // Does the player have permission?
+
                             .condition(new PermissionCheck(this.detection))
+
+                            // Logic checks.
 
                             .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
                                 Guardian plugin = (Guardian) this.detection.getPlugin();
