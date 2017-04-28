@@ -144,11 +144,14 @@ public class HorizontalSpeedCheck extends Check {
                             // Logic checks.
 
                             .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
+                                SequenceReport.Builder report = SequenceReport.builder().of(sequenceReport);
+
                                 Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
                                 Location<World> start = null;
                                 Location<World> present = null;
 
+                                long currentTime;
                                 long playerControlTicks = 0;
                                 long blockModifierTicks = 0;
 
@@ -157,8 +160,6 @@ public class HorizontalSpeedCheck extends Check {
                                 double playerControlModifier = 4.0;
 
                                 PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
-
-                                long currentTime;
 
                                 if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
                                     start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
@@ -202,31 +203,18 @@ public class HorizontalSpeedCheck extends Check {
 
                                 if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
                                     plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                            .build(false);
-
-                                    return new ConditionResult(false, failReport);
+                                    return new ConditionResult(false, report.build(false));
                                 } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                            .build(false);
-
-                                    return new ConditionResult(false, failReport);
+                                    return new ConditionResult(false, report.build(false));
                                 }
 
                                 if (user.getPlayer().isPresent() && start != null && present != null) {
-                                    // ### For correct movement context ###
-                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
-                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                .build(false);
-
-                                        return new ConditionResult(false, failReport);
-                                    }
-                                    // ####################################
 
                                     currentTime = System.currentTimeMillis();
 
-                                    long contextTime = (1 / ((playerControlTicks + blockModifierTicks) / 2)) * ((long) this.analysisTime * 1000);
-                                    long sequenceTime = (currentTime - lastAction);
+                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
+                                        return new ConditionResult(false, report.build(false));
+                                    }
 
                                     double travelDisplacement = Math.abs(Math.sqrt((
                                             (present.getX() - start.getX()) *
@@ -236,16 +224,16 @@ public class HorizontalSpeedCheck extends Check {
 
                                     travelDisplacement += playerControlModifier / 2;
 
-                                    double maximumSpeed = playerControlSpeed * blockModifier * (((contextTime + sequenceTime) / 2) / 1000) + 0.01;
+                                    double maximumSpeed = playerControlSpeed * blockModifier * (((
+                                            ((1 / ((playerControlTicks + blockModifierTicks) / 2)) *
+                                                    ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) + 0.01;
 
-                                    // TODO: Clean up the following...
-
-                                    SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceReport)
+                                    report
                                             .information("Horizontal travel speed should be less than " + maximumSpeed +
                                                     " while they're " + playerControlState.name() + ".");
 
                                     if (travelDisplacement > maximumSpeed) {
-                                        successReportBuilder
+                                        report
                                                 .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
                                                 .type("horizontally overspeeding")
                                                 .severity(travelDisplacement - maximumSpeed);
@@ -253,13 +241,10 @@ public class HorizontalSpeedCheck extends Check {
                                         // TODO : Remove this after testing \/
                                         plugin.getLogger().warn(user.getName() + " has triggered the horizontal speed check and overshot " +
                                                 "the maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
-                                    } else {
-                                        return new ConditionResult(false, successReportBuilder.build(false));
+
+                                        return new ConditionResult(true, report.build(true));
                                     }
-
-                                    return new ConditionResult(true, successReportBuilder.build(true));
                                 }
-
                                 return new ConditionResult(false, sequenceReport);
                             })
 

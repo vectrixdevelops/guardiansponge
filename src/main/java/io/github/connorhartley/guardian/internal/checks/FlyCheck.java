@@ -150,6 +150,8 @@ public class FlyCheck extends Check {
                             // Logic checks.
 
                             .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
+                                SequenceReport.Builder report = SequenceReport.builder().of(sequenceReport);
+
                                 Guardian plugin = (Guardian) this.detection.getPlugin();
 
                                 Location<World> start = null;
@@ -177,46 +179,28 @@ public class FlyCheck extends Check {
 
                                 if (playerAltitudeGainTicks < this.minimumTickRange) {
                                     plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                            .build(false);
-                                    return new ConditionResult(false, failReport);
+                                    return new ConditionResult(false, report.build(false));
                                 } else if (playerAltitudeGainTicks > this.maximumTickRange) {
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                            .build(false);
-
-                                    return new ConditionResult(false, failReport);
+                                    return new ConditionResult(false, report.build(false));
                                 }
 
                                 if (user.getPlayer().isPresent() && start != null && present != null) {
-                                    // ### For correct movement context ###
-                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
-                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                .build(false);
-
-                                        return new ConditionResult(false, failReport);
-                                    }
-                                    // ####################################
 
                                     currentTime = System.currentTimeMillis();
 
+                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
+                                        return new ConditionResult(false, report.build(false));
+                                    }
+
                                     if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
                                         if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
-                                            SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                    .build(false);
-
-                                            return new ConditionResult(false, failReport);
+                                            return new ConditionResult(false, report.build(false));
                                         }
                                     }
 
                                     if (user.getPlayer().get().getLocation().getY() < -1.25 || !user.getPlayer().get().isLoaded()) {
-                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                .build(false);
-
-                                        return new ConditionResult(false, failReport);
+                                        return new ConditionResult(false, report.build(false));
                                     }
-
-                                    double sequenceTime = (currentTime - lastAction) / 1000;
-                                    double contextTime = (playerAltitudeGainTicks + this.analysisTime) / 2;
 
                                     double altitudeDisplacement = Math.abs(present.getY() - start.getY());
                                     double travelDisplacement = Math.abs(Math.sqrt((
@@ -226,46 +210,29 @@ public class FlyCheck extends Check {
                                                     (present.getZ() - start.getZ())));
 
 
-                                    double meanAltitude = playerAltitudeGain / ((contextTime + sequenceTime) / 2);
+                                    double meanAltitude = playerAltitudeGain / ((
+                                            ((playerAltitudeGainTicks + this.analysisTime) / 2) +
+                                                    ((currentTime - lastAction) / 1000)) / 2);
 
-                                    double finalGain = (altitudeDisplacement / meanAltitude) + meanAltitude;
-
-                                    // TODO: Clean up the following...
-
-                                    SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceReport);
-
-                                    if (altitudeDisplacement < 1 || meanAltitude < 1) {
-                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                .build(false);
-
-                                        return new ConditionResult(false, failReport);
+                                    if (altitudeDisplacement < 1 || meanAltitude < 1 ||
+                                            altitudeDisplacement + this.altitudeMaximum > travelDisplacement) {
+                                        return new ConditionResult(false, report.build(false));
                                     }
 
-                                    // Possible math duplication over the final gain check. (Clean up later)
-
-                                    if (altitudeDisplacement + this.altitudeMaximum > travelDisplacement) {
-                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                .build(false);
-
-                                        return new ConditionResult(false, failReport);
-                                    }
-
-                                    if (finalGain > (this.altitudeMaximum * (this.analysisTime * 0.05))) {
-                                        successReportBuilder
-                                                .information("Result of altitude gain was " + finalGain + ".")
+                                    if (((altitudeDisplacement / meanAltitude) + meanAltitude) > (this.altitudeMaximum *
+                                            (this.analysisTime * 0.05))) {
+                                        report
+                                                .information("Result of altitude gain was " + ((altitudeDisplacement / meanAltitude) + meanAltitude) + ".")
                                                 .type("flying")
-                                                .severity(finalGain);
+                                                .severity(((altitudeDisplacement / meanAltitude) + meanAltitude));
 
                                         // TODO : Remove this after testing \/
                                         plugin.getLogger().warn(user.getName() + " has triggered the flight check and overshot " +
-                                                "the maximum altitude gain by " + finalGain + ".");
-                                    } else {
-                                        return new ConditionResult(false, successReportBuilder.build(false));
+                                                "the maximum altitude gain by " + ((altitudeDisplacement / meanAltitude) + meanAltitude) + ".");
+
+                                        return new ConditionResult(true, report.build(true));
                                     }
-
-                                    return new ConditionResult(true, successReportBuilder.build(true));
                                 }
-
                                 return new ConditionResult(false, sequenceReport);
                             })
 

@@ -143,21 +143,23 @@ public class VerticalSpeedCheck extends Check {
                             // Logic checks.
 
                             .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
+                                SequenceReport.Builder report = SequenceReport.builder().of(sequenceReport);
+
                                 Guardian plugin = (Guardian) this.detection.getPlugin();
 
-                                Optional<Location<World>> start = Optional.empty();
-                                Optional<Location<World>> present = Optional.empty();
+                                Location<World> start = null;
+                                Location<World> present = null;
 
                                 long currentTime;
                                 long playerControlTicks = 0;
                                 double playerControlSpeed = 0;
 
                                 if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
-                                    start = Optional.of(contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get());
+                                    start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
                                 }
 
                                 if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
-                                    present = Optional.of(contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get());
+                                    present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
                                 }
 
                                 if (contextValuation.<PlayerControlContext.VerticalSpeed, Double>get(
@@ -174,48 +176,32 @@ public class VerticalSpeedCheck extends Check {
 
                                 if (playerControlTicks < this.minimumTickRange) {
                                     plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                            .build(false);
-
-                                    return new ConditionResult(false, failReport);
+                                    return new ConditionResult(false, report.build(false));
                                 } else if (playerControlTicks > this.maximumTickRange) {
-                                    SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                            .build(false);
-
-                                    return new ConditionResult(false, failReport);
+                                    return new ConditionResult(false, report.build(false));
                                 }
 
-                                if (user.getPlayer().isPresent() && start.isPresent() && present.isPresent()) {
-                                    // ### For correct movement context ###
-                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
-                                        SequenceReport failReport = SequenceReport.builder().of(sequenceReport)
-                                                .build(false);
-
-                                        return new ConditionResult(false, failReport);
-                                    }
-                                    // ####################################
+                                if (user.getPlayer().isPresent() && start != null && present != null) {
 
                                     currentTime = System.currentTimeMillis();
 
-                                    long contextTime = (1 / playerControlTicks) * ((long) this.analysisTime * 1000);
-                                    long sequenceTime = (currentTime - lastAction);
-
-                                    double travelDisplacement = 0;
-
-                                    if (present.get().getY() - start.get().getY() > 0) {
-                                        travelDisplacement = Math.abs(Math.sqrt(
-                                                (present.get().getY() - start.get().getY()) *
-                                                        (present.get().getY() - start.get().getY())));
+                                    if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
+                                        return new ConditionResult(false, report.build(false));
                                     }
 
-                                    double maximumSpeed = (playerControlSpeed * (playerControlSpeed / 0.2)) * (((contextTime + sequenceTime) / 2) / 1000) + 0.01;
+                                    double travelDisplacement = Math.abs(Math.sqrt(
+                                            (present.getY() - start.getY()) *
+                                                    (present.getY() - start.getY())));
 
-                                    // TODO: Clean up the following...
+                                    double maximumSpeed = (playerControlSpeed * (playerControlSpeed / 0.2)) *
+                                            (((((1 / playerControlTicks) * ((long) this.analysisTime * 1000)) +
+                                                    (currentTime - lastAction)) / 2) / 1000) + 0.01;
 
-                                    SequenceReport.Builder successReportBuilder = SequenceReport.builder().of(sequenceReport);
+                                    report
+                                            .information("Vertical travel speed should be less than " + maximumSpeed + ".");
 
-                                    if (travelDisplacement > maximumSpeed && travelDisplacement > 0) {
-                                        successReportBuilder
+                                    if (travelDisplacement > maximumSpeed && present.getY() - start.getY() > 0) {
+                                        report
                                                 .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
                                                 .type("vertically overspeeding")
                                                 .severity(travelDisplacement - maximumSpeed);
@@ -223,13 +209,10 @@ public class VerticalSpeedCheck extends Check {
                                         // TODO : Remove this after testing \/
                                         plugin.getLogger().warn(user.getName() + " has triggered the vertical speed check and overshot " +
                                                 "the maximum speed by " + (travelDisplacement - maximumSpeed) + ".");
-                                    } else {
-                                        return new ConditionResult(false, successReportBuilder.build(false));
+
+                                        return new ConditionResult(true, report.build(true));
                                     }
-
-                                    return new ConditionResult(true, successReportBuilder.build(true));
                                 }
-
                                 return new ConditionResult(false, sequenceReport);
                             })
 
