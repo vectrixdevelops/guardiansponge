@@ -52,7 +52,11 @@ import org.spongepowered.api.plugin.PluginContainer;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Module(
         id = "fly",

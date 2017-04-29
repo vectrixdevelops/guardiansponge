@@ -25,7 +25,9 @@ package io.github.connorhartley.guardian.sequence.context;
 
 import io.github.connorhartley.guardian.util.Transformer;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Context Container

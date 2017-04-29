@@ -23,8 +23,6 @@
  */
 package io.github.connorhartley.guardian.storage;
 
-import io.github.connorhartley.guardian.storage.container.StorageValue;
-
 /**
  * Storage Provider
  *

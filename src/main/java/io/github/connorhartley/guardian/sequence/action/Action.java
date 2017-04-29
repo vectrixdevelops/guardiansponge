@@ -30,7 +30,9 @@ import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Action<T extends Event> {
 

@@ -55,8 +55,6 @@ public class CheckController {
 
         this.checks.add(check);
 
-        // TODO: Note that the player is being checked.
-
         Sponge.getEventManager().registerListeners(this.plugin, check);
     }
 
