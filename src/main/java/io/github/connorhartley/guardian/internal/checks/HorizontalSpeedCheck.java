@@ -44,7 +44,6 @@ import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class HorizontalSpeedCheck extends Check {

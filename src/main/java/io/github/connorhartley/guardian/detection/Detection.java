@@ -27,7 +27,6 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
-import io.github.connorhartley.guardian.storage.StorageProvider;
 
 import java.io.File;
 import java.util.List;
