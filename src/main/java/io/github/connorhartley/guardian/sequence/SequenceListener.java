@@ -29,11 +29,17 @@ import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
 
+/**
+ * Sequence Listener
+ *
+ * Event listeners to run through the {@link SequenceController} to
+ * apply to the specific {@link Sequence}s.
+ */
 public class SequenceListener {
 
     private final SequenceController sequenceController;
 
-    public SequenceListener(SequenceController sequenceController) {
+    SequenceListener(SequenceController sequenceController) {
         this.sequenceController = sequenceController;
     }
 

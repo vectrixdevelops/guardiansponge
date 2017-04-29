@@ -31,7 +31,6 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.key.Keys;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class PlayerControlContext {
@@ -56,7 +55,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public ContextContainer getValuation() {
+        public ContextContainer getContainer() {
             return this.valuation;
         }
 
@@ -65,8 +64,8 @@ public class PlayerControlContext {
             this.valuation = valuation;
             this.stopped = false;
 
-            this.getValuation().set(PlayerControlContext.VerticalSpeed.class, "vertical_control_speed", 1.0);
-            this.getValuation().set(PlayerControlContext.VerticalSpeed.class, "update", 0);
+            this.getContainer().set(PlayerControlContext.VerticalSpeed.class, "vertical_control_speed", 1.0);
+            this.getContainer().set(PlayerControlContext.VerticalSpeed.class, "update", 0);
         }
 
         @Override
@@ -75,11 +74,11 @@ public class PlayerControlContext {
 
             if (this.getPlayer().get(Keys.IS_FLYING).isPresent()) {
                 if (this.getPlayer().get(Keys.IS_FLYING).get()) {
-                    this.getValuation().<PlayerControlContext.VerticalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.VerticalSpeed, Double>transform(
                             PlayerControlContext.VerticalSpeed.class, "vertical_control_speed", oldValue -> oldValue * this.flySpeedControl);
                 }
             }
-            this.getValuation().<PlayerControlContext.VerticalSpeed, Integer>transform(
+            this.getContainer().<PlayerControlContext.VerticalSpeed, Integer>transform(
                     PlayerControlContext.VerticalSpeed.class, "update", oldValue -> oldValue + 1);
         }
 
@@ -124,7 +123,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public ContextContainer getValuation() {
+        public ContextContainer getContainer() {
             return this.valuation;
         }
 
@@ -141,10 +140,10 @@ public class PlayerControlContext {
                 this.flySpeedData = this.getPlayer().get(Keys.FLYING_SPEED).get();
             }
 
-            this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "control_modifier", 1.0);
-            this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed", 1.0);
-            this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.WALKING);
-            this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "update", 0);
+            this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "control_modifier", 1.0);
+            this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed", 1.0);
+            this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.WALKING);
+            this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "update", 0);
         }
 
         @Override
@@ -154,38 +153,38 @@ public class PlayerControlContext {
             if (this.getPlayer().get(Keys.IS_SPRINTING).isPresent() && this.getPlayer().get(Keys.IS_SNEAKING).isPresent() &&
                     this.getPlayer().get(Keys.IS_FLYING).isPresent()) {
                 if (this.getPlayer().get(Keys.IS_FLYING).get()) {
-                    this.getValuation().<PlayerControlContext.HorizontalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.HorizontalSpeed, Double>transform(
                             PlayerControlContext.HorizontalSpeed.class, "control_modifier", oldValue -> oldValue + (0.05 * this.flySpeedData));
 
-                    this.getValuation().<PlayerControlContext.HorizontalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.HorizontalSpeed, Double>transform(
                             PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.flySpeedControl);
 
-                    this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.FLYING);
+                    this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.FLYING);
                 } else if (this.getPlayer().get(Keys.IS_SPRINTING).get()) {
-                    this.getValuation().<PlayerControlContext.HorizontalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.HorizontalSpeed, Double>transform(
                             PlayerControlContext.HorizontalSpeed.class, "control_modifier", oldValue -> oldValue + (0.05 * this.walkSpeedData));
 
-                    this.getValuation().<PlayerControlContext.HorizontalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.HorizontalSpeed, Double>transform(
                             PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.sprintSpeedControl);
 
-                    this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.SPRINTING);
+                    this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.SPRINTING);
                 } else if (this.getPlayer().get(Keys.IS_SNEAKING).get()) {
-                    this.getValuation().<PlayerControlContext.HorizontalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.HorizontalSpeed, Double>transform(
                             PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.sneakSpeedControl);
 
-                    this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.SNEAKING);
+                    this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.SNEAKING);
                 } else {
-                    this.getValuation().<PlayerControlContext.HorizontalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.HorizontalSpeed, Double>transform(
                             HorizontalSpeed.class, "control_modifier", oldValue -> oldValue + (0.05 * this.walkSpeedControl));
 
-                    this.getValuation().<PlayerControlContext.HorizontalSpeed, Double>transform(
+                    this.getContainer().<PlayerControlContext.HorizontalSpeed, Double>transform(
                             PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed", oldValue -> oldValue * this.walkSpeedControl);
 
-                    this.getValuation().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.WALKING);
+                    this.getContainer().set(PlayerControlContext.HorizontalSpeed.class, "control_speed_state", State.WALKING);
                 }
             }
 
-            this.getValuation().<PlayerControlContext.HorizontalSpeed, Integer>transform(
+            this.getContainer().<PlayerControlContext.HorizontalSpeed, Integer>transform(
                     PlayerControlContext.HorizontalSpeed.class, "update", oldValue -> oldValue + 1);
         }
 

@@ -27,35 +27,31 @@ import io.github.connorhartley.guardian.util.Transformer;
 
 import java.util.*;
 
+/**
+ * Context Container
+ *
+ * A storage for all context data.
+ */
 public class ContextContainer {
 
-    private final List<Context> context;
     private final Map<String, Object> rawMap;
 
     public ContextContainer() {
-        this.context = new ArrayList<>();
         this.rawMap = new HashMap<>();
     }
 
-    public ContextContainer(Context context) {
-        this.context = new ArrayList<>();
-        this.rawMap = new HashMap<>();
-
-        this.context.add(context);
-    }
-
-    public ContextContainer(List<Context> contexts) {
-        this.context = new ArrayList<>();
-        this.rawMap = new HashMap<>();
-
-        this.context.addAll(contexts);
-    }
-
-    public ContextContainer addContext(Context context) {
-        this.context.add(context);
-        return this;
-    }
-
+    /**
+     * Get
+     *
+     * <p>Returns data stored under the {@link Context} path name
+     * and data name. If the data does not exist it will return empty.</p>
+     *
+     * @param clazz The class used for the path name
+     * @param name The name used for the data name
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return The data value if it exists
+     */
     public <C, E> Optional<E> get(Class<C> clazz, String name) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         if (this.contains(combinedId)) {
@@ -67,12 +63,38 @@ public class ContextContainer {
         return Optional.empty();
     }
 
+    /**
+     * Set
+     *
+     * <p>Sets a data value stored under the {@link Context} path name
+     * and data name. If the data already exists it will be overridden.</p>
+     *
+     * @param clazz The class used for the path name
+     * @param name The name used for the data name
+     * @param value The value to store
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return This context container
+     */
     public <C, E> ContextContainer set(Class<C> clazz, String name, E value) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         this.rawMap.put(combinedId, value);
         return this;
     }
 
+    /**
+     * Transform
+     *
+     * <p>Transform uses a lambda function to transform the existing data value
+     * stored under the {@link Context} path name and data name.</p>
+     *
+     * @param clazz The class used for the path name
+     * @param name The name used for the data name
+     * @param transformer Lambda transform function
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return This context container
+     */
     public <C, E> ContextContainer transform(Class<C> clazz, String name, Transformer<E> transformer) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         E value = (E) this.rawMap.get(combinedId);
@@ -80,6 +102,17 @@ public class ContextContainer {
         return this;
     }
 
+    /**
+     * Remove
+     *
+     * <p>Removes a data value stored under the {@link Context} path name
+     * and data name.</p>
+     *
+     * @param clazz The class used for the path name
+     * @param name The name used for the data name
+     * @param <C> The class type
+     * @return This context container
+     */
     public <C> ContextContainer remove(Class<C> clazz, String name) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         if (this.contains(combinedId)) {
@@ -88,34 +121,51 @@ public class ContextContainer {
         return this;
     }
 
+    /**
+     * Get All
+     *
+     * <p>Returns the entire map of data entries.</p>
+     *
+     * @return Map of data entries
+     */
     public Map<String, Object> getAll() {
         return this.rawMap;
     }
 
-    public Map<String, Object> getAllShallow() {
-        Map<String, Object> shallowMap = new HashMap<>();
-        shallowMap.putAll(this.rawMap);
-        return shallowMap;
-    }
-
-    public List<Context> getContexts() {
-        return this.context;
-    }
-
+    /**
+     * Contains
+     *
+     * <p>Returns true if this container contains a data value
+     * under the specified id.</p>
+     *
+     * @param id The id to look for
+     * @return True if it exists
+     */
     public boolean contains(String id) { return this.rawMap.containsKey(id); }
 
+    /**
+     * Clear
+     *
+     * <p>Clears all the data entries from the map.</p>
+     */
     public void clear() {
-        this.context.clear();
         this.rawMap.clear();
     }
 
+    /**
+     * Is Empty
+     *
+     * <p>Returns true if the map is entry.</p>
+     *
+     * @return True if the map is entry
+     */
     public boolean isEmpty() {
         return this.rawMap.isEmpty();
     }
 
     @Override
     public ContextContainer clone() {
-        ContextContainer shallowClone = new ContextContainer(this.context);
+        ContextContainer shallowClone = new ContextContainer();
         shallowClone.rawMap.putAll(this.rawMap);
         return shallowClone;
     }

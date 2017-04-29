@@ -34,7 +34,10 @@ import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class CustomPunishment implements PunishmentType {
 

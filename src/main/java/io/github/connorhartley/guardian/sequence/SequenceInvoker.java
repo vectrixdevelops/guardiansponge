@@ -38,8 +38,8 @@ public interface SequenceInvoker {
      *
      * Invokes an {@link Sequence}.
      *
-     * @param player A {@link Player} to put into the sequence
-     * @param event An {@link Event} to put into the sequence
+     * @param player A player to put into the sequence
+     * @param event An event to put into the sequence
      */
     void invoke(Player player, Event event);
 

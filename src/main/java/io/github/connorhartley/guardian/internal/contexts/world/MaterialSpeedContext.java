@@ -32,7 +32,6 @@ import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.util.Direction;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class MaterialSpeedContext extends Context {
@@ -58,7 +57,7 @@ public class MaterialSpeedContext extends Context {
     }
 
     @Override
-    public ContextContainer getValuation() {
+    public ContextContainer getContainer() {
         return this.valuation;
     }
 
@@ -67,8 +66,8 @@ public class MaterialSpeedContext extends Context {
         this.valuation = valuation;
         this.stopped = false;
 
-        this.getValuation().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
-        this.getValuation().set(MaterialSpeedContext.class, "update", 0);
+        this.getContainer().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
+        this.getContainer().set(MaterialSpeedContext.class, "update", 0);
     }
 
     @Override
@@ -76,25 +75,25 @@ public class MaterialSpeedContext extends Context {
         this.valuation = valuation;
 
         if (!this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
-            this.getValuation().<MaterialSpeedContext, Double>transform(
+            this.getContainer().<MaterialSpeedContext, Double>transform(
                     MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
 
         MatterProperty matterProperty = this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
 
         if (matterProperty.getValue() != null) {
             if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
-                this.getValuation().<MaterialSpeedContext, Double>transform(
+                this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.liquidSpeedModifier);
             } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.getValuation().<MaterialSpeedContext, Double>transform(
+                this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
             } else {
-                this.getValuation().<MaterialSpeedContext, Double>transform(
+                this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.solidSpeedModifier);
             }
         }
 
-        this.getValuation().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
+        this.getContainer().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
     }
 
     @Override

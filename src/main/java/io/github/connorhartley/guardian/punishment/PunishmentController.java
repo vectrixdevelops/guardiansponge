@@ -33,6 +33,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+/**
+ * Punishment Controller
+ *
+ * Controls punishment execution and registration.
+ */
 public class PunishmentController {
 
     private final Guardian plugin;
@@ -42,6 +47,16 @@ public class PunishmentController {
         this.plugin = plugin;
     }
 
+    /**
+     * Execute
+     *
+     * <p>Executes a punishment to be handled by the appropriate handler
+     * bound to the {@link Detection}.</p>
+     *
+     * @param detection The detection
+     * @param user The user
+     * @param punishment Information about this punishment
+     */
     public void execute(Detection detection, User user, Punishment punishment) {
         Map<String, Double> detectionPunishLevels = new HashMap<>();
         String currentPunishLevel = "";
@@ -77,6 +92,14 @@ public class PunishmentController {
         }
     }
 
+    /**
+     * Bind
+     *
+     * <p>Registers a punishment handler to a {@link Detection}.</p>
+     *
+     * @param punishmentClass The punishment handler
+     * @param detection The detection
+     */
     public void bind(Class<? extends PunishmentType> punishmentClass, Detection detection) {
         if (this.registry.get(detection) == null) {
             List<PunishmentType> punishmentTypes = new ArrayList<>();
@@ -116,6 +139,14 @@ public class PunishmentController {
         }
     }
 
+    /**
+     * Unbind
+     *
+     * <p>Unregisters a punishment handler to a {@link Detection}.</p>
+     *
+     * @param punishmentClass The punishment handler
+     * @param detection The detection
+     */
     public void unbind(Class<? extends PunishmentType> punishmentClass, Detection detection) {
         if (this.registry.get(detection) != null) {
             this.registry.get(detection).removeIf(punishmentType -> punishmentType.getClass().equals(punishmentClass));
