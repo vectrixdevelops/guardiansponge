@@ -45,8 +45,8 @@ public abstract class SequenceBlueprint {
      *
      * <p>An abstract method to create a {@link Sequence}.</p>
      *
-     * @param player The {@link Player} to create the sequence for
-     * @return The {@link Sequence} for the {@link Player}.
+     * @param player The player to create the sequence for
+     * @return The sequence for the player
      */
     public abstract Sequence create(Player player);
 
@@ -55,7 +55,7 @@ public abstract class SequenceBlueprint {
      *
      * <p>Returns the {@link CheckType} providing this {@link SequenceBlueprint}.</p>
      *
-     * @return The {@link CheckType}
+     * @return The check type
      */
     public CheckType getCheckProvider() {
         return this.provider;

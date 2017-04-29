@@ -216,7 +216,7 @@ public class SpeedDetection extends Detection {
                         2.0, new TypeToken<Double>() {
                 });
 
-                HashMap<String, Double> tickBounds = new HashMap<>();
+                Map<String, Double> tickBounds = new HashMap<>();
                 tickBounds.put("min", 0.75);
                 tickBounds.put("max", 1.5);
 
@@ -225,7 +225,7 @@ public class SpeedDetection extends Detection {
                         tickBounds, new TypeToken<Map<String, Double>>() {
                 });
 
-                HashMap<String, Double> punishmentLevels = new HashMap<>();
+                Map<String, Double> punishmentLevels = new HashMap<>();
                 punishmentLevels.put("warn", 0.1);
 //            punishmentLevels.put("flag", 0.2);
 //            punishmentLevels.put("report", 0.3);
@@ -236,7 +236,7 @@ public class SpeedDetection extends Detection {
                         punishmentLevels, new TypeToken<Map<String, Double>>() {
                 });
 
-                HashMap<String, String> punishmentProperties = new HashMap<>();
+                Map<String, String> punishmentProperties = new HashMap<>();
                 punishmentProperties.put("channel", "admin");
                 punishmentProperties.put("releasetime", "12096000");
 
@@ -245,7 +245,7 @@ public class SpeedDetection extends Detection {
                         punishmentProperties, new TypeToken<Map<String, String>>() {
                 });
 
-                HashMap<String, List<String>> customPunishments = new HashMap<>();
+                Map<String, List<String>> customPunishments = new HashMap<>();
                 customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
 
                 this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
@@ -253,7 +253,7 @@ public class SpeedDetection extends Detection {
                         customPunishments, new TypeToken<Map<String, List<String>>>() {
                 });
 
-                HashMap<String, Double> severityDistribution = new HashMap<>();
+                Map<String, Double> severityDistribution = new HashMap<>();
                 severityDistribution.put("lower", 0d);
                 severityDistribution.put("mean", 25d);
                 severityDistribution.put("standard-deviation", 15d);
@@ -265,7 +265,7 @@ public class SpeedDetection extends Detection {
 
                 // Player Control
 
-                HashMap<String, Double> controlValues = new HashMap<>();
+                Map<String, Double> controlValues = new HashMap<>();
                 controlValues.put("sneak", 1.015);
                 controlValues.put("walk", 1.035);
                 controlValues.put("sprint", 1.065);
@@ -278,7 +278,7 @@ public class SpeedDetection extends Detection {
 
                 // Block Speed
 
-                HashMap<String, Double> materialValues = new HashMap<>();
+                Map<String, Double> materialValues = new HashMap<>();
                 materialValues.put("gas", 1.04);
                 materialValues.put("solid", 1.025);
                 materialValues.put("liquid", 1.015);
@@ -299,7 +299,7 @@ public class SpeedDetection extends Detection {
                 this.configControlValues.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configMaterialValues.<ConfigurationNode>createStorage(this.configurationNode);
             } catch (IOException e) {
-                this.speedDetection.getPlugin().getLogger().error("A problem occurred attempting to create Guardians global configuration!", e);
+                this.speedDetection.getPlugin().getLogger().error("A problem occurred attempting to create SpeedDetection module's configuration!", e);
             }
         }
 
@@ -321,7 +321,7 @@ public class SpeedDetection extends Detection {
                     this.configManager.save(this.configurationNode);
                 }
             } catch (IOException e) {
-                this.speedDetection.getPlugin().getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
+                this.speedDetection.getPlugin().getLogger().error("A problem occurred attempting to load SpeedDetection module's configuration!", e);
             }
         }
 
@@ -343,7 +343,7 @@ public class SpeedDetection extends Detection {
                     this.configManager.save(this.configurationNode);
                 }
             } catch (IOException e) {
-                this.speedDetection.getPlugin().getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
+                this.speedDetection.getPlugin().getLogger().error("A problem occurred attempting to load SpeedDetection module's configuration!", e);
             }
         }
 

@@ -70,7 +70,7 @@ public class ContextHandler {
 
             context.setPlayer(this.player);
             context.start(this.contextContainer);
-            this.contextContainer = context.getValuation();
+            this.contextContainer = context.getContainer();
         }
 
         return this.contextContainer;
@@ -84,7 +84,7 @@ public class ContextHandler {
 
             if (!context.hasStopped()) {
                 context.update(this.contextContainer);
-                this.contextContainer = context.getValuation();
+                this.contextContainer = context.getContainer();
             }
         }
 
@@ -95,7 +95,7 @@ public class ContextHandler {
         for (Context context : this.contexts) {
             if (!context.hasStopped()) {
                 context.stop(this.contextContainer);
-                this.contextContainer = context.getValuation();
+                this.contextContainer = context.getContainer();
             }
         }
     }

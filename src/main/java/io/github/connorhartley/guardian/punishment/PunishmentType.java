@@ -28,12 +28,42 @@ import org.spongepowered.api.entity.living.player.User;
 
 import java.util.Optional;
 
+/**
+ * Punishment Type
+ *
+ * Represents a punishment handler.
+ */
 public interface PunishmentType {
 
+    /**
+     * Get Name
+     *
+     * <p>Returns the name of this punishment handler.</p>
+     *
+     * @return The name
+     */
     String getName();
 
+    /**
+     * Get Detection
+     *
+     * <p>Returns the detection this punishment was created by.</p>
+     *
+     * @return The detection
+     */
     Optional<Detection> getDetection();
 
+    /**
+     * Handle
+     *
+     * <p>Executed each time to handle a punishment. Returns
+     * true if the punishment was handled.</p>
+     *
+     * @param args Misc arguments
+     * @param user The user to be punished
+     * @param punishment Information about this punishment
+     * @return True if the punishment was handled
+     */
     boolean handle(String[] args, User user, Punishment punishment);
 
 }

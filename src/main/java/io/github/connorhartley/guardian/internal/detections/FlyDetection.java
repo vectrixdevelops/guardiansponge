@@ -221,7 +221,7 @@ public class FlyDetection extends Detection {
                         3.1, new TypeToken<Double>() {
                 });
 
-                HashMap<String, Double> tickBounds = new HashMap<>();
+                Map<String, Double> tickBounds = new HashMap<>();
                 tickBounds.put("min", 0.75);
                 tickBounds.put("max", 1.5);
 
@@ -230,7 +230,7 @@ public class FlyDetection extends Detection {
                         tickBounds, new TypeToken<Map<String, Double>>() {
                 });
 
-                HashMap<String, Double> punishmentLevels = new HashMap<>();
+                Map<String, Double> punishmentLevels = new HashMap<>();
                 punishmentLevels.put("warn", 0.1);
 //              punishmentLevels.put("flag", 0.2);
 //              punishmentLevels.put("report", 0.3);
@@ -241,7 +241,7 @@ public class FlyDetection extends Detection {
                         punishmentLevels, new TypeToken<Map<String, Double>>() {
                 });
 
-                HashMap<String, String> punishmentProperties = new HashMap<>();
+                Map<String, String> punishmentProperties = new HashMap<>();
                 punishmentProperties.put("channel", "admin");
                 punishmentProperties.put("releasetime", "12096000");
 
@@ -250,7 +250,7 @@ public class FlyDetection extends Detection {
                         punishmentProperties, new TypeToken<Map<String, String>>() {
                 });
 
-                HashMap<String, List<String>> customPunishments = new HashMap<>();
+                Map<String, List<String>> customPunishments = new HashMap<>();
                 customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
 
                 this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
@@ -258,7 +258,7 @@ public class FlyDetection extends Detection {
                         customPunishments, new TypeToken<Map<String, List<String>>>() {
                 });
 
-                HashMap<String, Double> severityDistribution = new HashMap<>();
+                Map<String, Double> severityDistribution = new HashMap<>();
                 severityDistribution.put("lower", 0d);
                 severityDistribution.put("mean", 10d);
                 severityDistribution.put("standard-deviation", 5d);
@@ -280,7 +280,7 @@ public class FlyDetection extends Detection {
 
                 this.configManager.save(this.configurationNode);
             } catch (IOException e) {
-                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to create Guardians global configuration!", e);
+                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to create FlyDetection module's configuration!", e);
             }
         }
 
@@ -301,7 +301,7 @@ public class FlyDetection extends Detection {
                     this.configManager.save(this.configurationNode);
                 }
             } catch (IOException e) {
-                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
+                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to load FlyDetection module's configuration!", e);
             }
         }
 
@@ -322,7 +322,7 @@ public class FlyDetection extends Detection {
                     this.configManager.save(this.configurationNode);
                 }
             } catch (IOException e) {
-                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to update Guardians global configuration!", e);
+                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to update FlyDetection module's configuration!", e);
             }
         }
 

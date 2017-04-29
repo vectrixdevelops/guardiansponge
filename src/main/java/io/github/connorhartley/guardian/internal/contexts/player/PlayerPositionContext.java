@@ -45,7 +45,7 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public ContextContainer getValuation() {
+        public ContextContainer getContainer() {
             return this.valuation;
         }
 
@@ -56,8 +56,8 @@ public class PlayerPositionContext {
 
             this.depthThreshold = null;
 
-            this.getValuation().set(PlayerPositionContext.Altitude.class, "position_altitude", 0.0);
-            this.getValuation().set(PlayerPositionContext.Altitude.class, "update", 0);
+            this.getContainer().set(PlayerPositionContext.Altitude.class, "position_altitude", 0.0);
+            this.getContainer().set(PlayerPositionContext.Altitude.class, "update", 0);
         }
 
         @Override
@@ -95,14 +95,14 @@ public class PlayerPositionContext {
             double altitude = (this.getPlayer().getLocation().getY() - playerAltitude.getY()) - blockDepth;
 
             if (altitude < 0) {
-                this.getValuation().<PlayerPositionContext.Altitude, Double>transform(
+                this.getContainer().<PlayerPositionContext.Altitude, Double>transform(
                         PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue);
             } else {
-                this.getValuation().<PlayerPositionContext.Altitude, Double>transform(
+                this.getContainer().<PlayerPositionContext.Altitude, Double>transform(
                         PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue + altitude);
             }
 
-            this.getValuation().<PlayerPositionContext.Altitude, Integer>transform(
+            this.getContainer().<PlayerPositionContext.Altitude, Integer>transform(
                     PlayerPositionContext.Altitude.class, "update", oldValue -> oldValue + 1);
         }
 

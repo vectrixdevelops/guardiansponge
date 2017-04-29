@@ -38,7 +38,7 @@ public class PlayerLocationContext extends Context {
     }
 
     @Override
-    public ContextContainer getValuation() {
+    public ContextContainer getContainer() {
         return this.valuation;
     }
 
@@ -47,17 +47,17 @@ public class PlayerLocationContext extends Context {
         this.valuation = valuation;
         this.stopped = false;
 
-        this.getValuation().set(PlayerLocationContext.class, "start_location", this.getPlayer().getLocation());
-        this.getValuation().set(PlayerLocationContext.class, "update", 0);
+        this.getContainer().set(PlayerLocationContext.class, "start_location", this.getPlayer().getLocation());
+        this.getContainer().set(PlayerLocationContext.class, "update", 0);
     }
 
     @Override
     public void update(ContextContainer valuation) {
         this.valuation = valuation;
 
-        this.getValuation().set(PlayerLocationContext.class, "present_location", this.getPlayer().getLocation());
+        this.getContainer().set(PlayerLocationContext.class, "present_location", this.getPlayer().getLocation());
 
-        this.getValuation().<PlayerLocationContext, Integer>transform(PlayerLocationContext.class, "update", oldValue -> oldValue + 1);
+        this.getContainer().<PlayerLocationContext, Integer>transform(PlayerLocationContext.class, "update", oldValue -> oldValue + 1);
     }
 
     @Override

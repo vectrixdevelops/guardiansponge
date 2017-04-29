@@ -49,18 +49,48 @@ public class SequenceReport {
         return new Builder();
     }
 
+    /**
+     * Get Detection Types
+     *
+     * <p>Returns a list of detection types that were caught.</p>
+     *
+     * @return A list of detection types
+     */
     public List<String> getDetectionTypes() {
         return this.detectionTypes;
     }
 
+    /**
+     * Get Information
+     *
+     * <p>Returns a list of information that was added regarding
+     * detections that were caught.</p>
+     *
+     * @return A list of report information
+     */
     public List<String> getInformation() {
         return this.information;
     }
 
+    /**
+     * Get Severity
+     *
+     * <p>Returns the severity of this report.</p>
+     *
+     * @return Severity of the report
+     */
     public double getSeverity() {
         return this.severity;
     }
 
+    /**
+     * Is Accepted
+     *
+     * <p>Returns true if the report was accepted by the
+     * checks reporter and false if it was not.</p>
+     *
+     * @return True if accepted by the check reporter
+     */
     public boolean isAccepted() {
         return this.accepted;
     }

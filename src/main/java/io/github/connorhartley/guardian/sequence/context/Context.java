@@ -26,6 +26,12 @@ package io.github.connorhartley.guardian.sequence.context;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.entity.living.player.Player;
 
+/**
+ * Context
+ *
+ * Represents context through collecting data in
+ * the period of a sequence.
+ */
 public abstract class Context {
 
     private final Object plugin;
@@ -37,30 +43,94 @@ public abstract class Context {
         this.detection = detection;
     }
 
+    /**
+     * Get Plugin
+     *
+     * <p>Returns the plugin this context was initialized by.</p>
+     *
+     * @return Plugin that initialized
+     */
     public Object getPlugin() {
         return this.plugin;
     }
 
+    /**
+     * Get Detection
+     *
+     * <p>Returns the detection this context was initialized for.</p>
+     *
+     * @return Detection for initialize
+     */
     public Detection getDetection() {
         return this.detection;
     }
 
+    /**
+     * Set Player
+     *
+     * <p>Sets the player to collect data from.</p>
+     *
+     * @param player Player to collect data from
+     */
     public void setPlayer(Player player) {
         this.player = player;
     }
 
+    /**
+     * Get Player
+     *
+     * <p>Returns the player that data is being collected from.</p>
+     *
+     * @return Player collecting data from
+     */
     public Player getPlayer() {
         return this.player;
     }
 
-    public abstract ContextContainer getValuation();
+    /**
+     * Get Container
+     *
+     * <p>Returns the container that data is stored inside.</p>
+     *
+     * @return The data container
+     */
+    public abstract ContextContainer getContainer();
 
+    /**
+     * Start
+     *
+     * <p>Starts the data collection phase.</p>
+     *
+     * @param valuation The data container to update
+     */
     public abstract void start(ContextContainer valuation);
 
+    /**
+     * Update
+     *
+     * <p>Collects a sample of data to be stored.</p>
+     *
+     * @param valuation The data container to update
+     */
     public abstract void update(ContextContainer valuation);
 
+    /**
+     * Stop
+     *
+     * <p>Stops the data collection phase.</p>
+     *
+     * @param valuation The data container to update
+     */
     public abstract void stop(ContextContainer valuation);
 
+    /**
+     * Has Stopped
+     *
+     * <p>Returns true if the data collection phase has
+     * been stopped.</p>
+     *
+     * @return True if data collection phase is stopped
+     */
     public abstract boolean hasStopped();
 
 }

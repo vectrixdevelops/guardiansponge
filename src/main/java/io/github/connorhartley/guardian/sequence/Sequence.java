@@ -29,7 +29,7 @@ import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
-import io.github.connorhartley.guardian.sequence.condition.Condition;
+import io.github.connorhartley.guardian.sequence.context.Context;
 import io.github.connorhartley.guardian.sequence.context.ContextHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -43,7 +43,7 @@ import java.util.*;
 /**
  * Sequence
  *
- * Represents a chain of actions and conditions
+ * Represents a chain of actions and contexts
  * that get run in order, supplying conditions with
  * heuristic reporting.
  */
@@ -52,7 +52,6 @@ public class Sequence {
     private final Player player;
     private final CheckType checkType;
     private final ContextHandler contextHandler;
-
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
     private final List<Event> incompleteEvents = new ArrayList<>();
@@ -73,21 +72,23 @@ public class Sequence {
         this.sequenceBlueprint = sequenceBlueprint;
 
         this.actions.addAll(actions);
-        this.contextHandler.setContainer(new ContextContainer(this.contextHandler.getContexts()));
+        this.contextHandler.setContainer(new ContextContainer());
     }
 
     /**
      * Check
      *
-     * <p>Runs through the list of {@link Action}s and their {@link Condition}s and
-     * carries the {@link SequenceReport} through each allowing it to be
-     * updated through the chain. {@link Action}s that fail will fire the {@link SequenceFailEvent}.
-     * {@link Action}s that succeed will fire the {@link SequenceSucceedEvent}.</p>
+     * <p>Runs through the list of {@link Action}s and {@link Context}s and
+     * carries the {@link SequenceReport} through each {@link Action} allowing it to be
+     * updated through the chain. {@link Context}s follow a similar run and each tick
+     * get passed a {@link ContextContainer} to update values inside the chain.
+     * {@link Action}s that fail will fire the {@link SequenceFailEvent}. {@link Action}s
+     * that succeed will fire the {@link SequenceSucceedEvent}.</p>
      *
-     * @param player The {@link Player} in the sequence
-     * @param event The {@link Event} that triggered the sequence
-     * @param <T> The {@link Event} type
-     * @return True if the sequence should continue, false if the sequence should stop
+     * @param player The player in the sequence
+     * @param event The event that triggered the sequence
+     * @param <T> The event type
+     * @return True if the sequence should continue, false if the sequence should skip
      */
     <T extends Event> boolean check(Player player, T event) {
         Iterator<Action> iterator = this.actions.iterator();
@@ -165,7 +166,14 @@ public class Sequence {
         return false;
     }
 
-    ContextHandler getContextHandler() {
+    /**
+     * Get Context Handler
+     *
+     * <p>Returns the {@link ContextHandler} for this {@link Sequence}.</p>
+     *
+     * @return This context handler
+     */
+    public ContextHandler getContextHandler() {
         return this.contextHandler;
     }
 
@@ -174,9 +182,9 @@ public class Sequence {
      *
      * <p>Returns a {@link ContextContainer} of data that have been analysed.</p>
      *
-     * @return A list of contextValuation
+     * @return A list of context values
      */
-    ContextContainer getContextContainer() {
+    public ContextContainer getContextContainer() {
         return this.contextHandler.getContainer();
     }
 
@@ -185,9 +193,9 @@ public class Sequence {
      *
      * <p>Returns the current {@link SequenceReport} for this {@link Sequence}.</p>
      *
-     * @return This {@link SequenceReport}
+     * @return This sequence report
      */
-    SequenceReport getSequenceReport() {
+    public SequenceReport getSequenceReport() {
         return this.sequenceReport;
     }
 
@@ -196,11 +204,18 @@ public class Sequence {
      *
      * @return
      */
-    SequenceBlueprint getSequenceBlueprint() {
+    public SequenceBlueprint getSequenceBlueprint() {
         return this.sequenceBlueprint;
     }
 
-    boolean hasStarted() {
+    /**
+     * Has Started
+     *
+     * <p>Returns true if the {@link Sequence} has started.</p>
+     *
+     * @return True if the sequence has started
+     */
+    public boolean hasStarted() {
         return this.started;
     }
 
@@ -210,7 +225,7 @@ public class Sequence {
      * <p>Returns true if the {@link Sequence} had an {@link Action} expire. False if
      * it has not.</p>
      *
-     * @return True if the {@link Sequence} has expired
+     * @return True if the sequence has expired
      */
     boolean hasExpired() {
         if (this.actions.isEmpty()) {
@@ -236,7 +251,7 @@ public class Sequence {
      * <p>Returns true if the {@link Sequence} had an {@link Action} event cancel. False
      * if it has not.</p>
      *
-     * @return True if the {@link Sequence} is cancelled
+     * @return True if the sequence is cancelled
      */
     boolean isCancelled() {
         return this.cancelled;
@@ -248,7 +263,7 @@ public class Sequence {
      * <p>Returns true of the {@link Sequence} has completed all it's {@link Action}s successfully.
      * False if it has not.</p>
      *
-     * @return True if the {@link Sequence} is completed successfully
+     * @return True if the sequence is completed successfully
      */
     boolean isFinished() {
         return this.finished;
@@ -259,7 +274,7 @@ public class Sequence {
      *
      * <p>Returns the {@link Player} in the sequence.</p>
      *
-     * @return The {@link Player} in the sequence
+     * @return The player in the sequence
      */
     public Player getPlayer() {
         return this.player;
@@ -271,7 +286,7 @@ public class Sequence {
      * <p>Returns the {@link CheckType} providing the {@link Check} containing
      * this {@link Sequence}.</p>
      *
-     * @return This {@link Sequence}s {@link CheckType}
+     * @return This sequences check type
      */
     public CheckType getProvider() {
         return this.checkType;
@@ -282,7 +297,7 @@ public class Sequence {
      *
      * <p>Returns a {@link List} of {@link Event}s that have been successfully completed.</p>
      *
-     * @return A {@link List} of successful {@link Event}s
+     * @return A list of successful events
      */
     public List<Event> getCompleteEvents() {
         return this.completeEvents;
@@ -293,7 +308,7 @@ public class Sequence {
      *
      * <p>Returns a {@link List} of {@link Event}s that have failed to be completed.</p>
      *
-     * @return A {@link List} of failed {@link Event}s
+     * @return A list of failed events
      */
     public List<Event> getIncompleteEvents() {
         return this.incompleteEvents;
