@@ -27,6 +27,12 @@ import org.spongepowered.api.entity.living.player.User;
 
 import java.util.Optional;
 
+/**
+ * Check
+ *
+ * Represents a handler of the successful result of
+ * a check type.
+ */
 public abstract class Check {
 
     private final CheckType checkType;
