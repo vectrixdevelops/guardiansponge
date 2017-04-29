@@ -35,6 +35,11 @@ import org.spongepowered.api.scheduler.Task;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Check Controller
+ *
+ * Controls check execution and updates.
+ */
 public class CheckController {
 
     private final List<Check> checks = new CopyOnWriteArrayList<>();
@@ -44,6 +49,14 @@ public class CheckController {
         this.plugin = plugin;
     }
 
+    /**
+     * Post
+     *
+     * <p>Executes a check based on the result of the check type.</p>
+     *
+     * @param checkType The check type
+     * @param user The user
+     */
     public void post(CheckType checkType, User user) {
         Check check = checkType.createInstance(user);
 
@@ -58,11 +71,32 @@ public class CheckController {
         Sponge.getEventManager().registerListeners(this.plugin, check);
     }
 
-    public void tick() {
+    /**
+     * End
+     *
+     * <p>Ends a check.</p>
+     *
+     * @param check The check to end
+     */
+    public void end(Check check) {
+        if (!check.getUser().isPresent()) return;
+
+        User user = check.getUser().get();
+
+        CheckEndEvent attempt = new CheckEndEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
+        Sponge.getEventManager().post(attempt);
+
+        Sponge.getEventManager().unregisterListeners(check);
+        check.finish();
+
+        this.checks.remove(check);
+    }
+
+    void tick() {
         this.checks.forEach(Check::update);
     }
 
-    public void cleanup() {
+    void cleanup() {
         this.checks.removeIf(check -> {
            if (check.isChecking()) {
                return false;
@@ -78,20 +112,6 @@ public class CheckController {
 
            return true;
         });
-    }
-
-    public void end(Check check) {
-        if (!check.getUser().isPresent()) return;
-
-        User user = check.getUser().get();
-
-        CheckEndEvent attempt = new CheckEndEvent(check, user, Cause.of(NamedCause.source(this.plugin)));
-        Sponge.getEventManager().post(attempt);
-
-        Sponge.getEventManager().unregisterListeners(check);
-        check.finish();
-
-        this.checks.remove(check);
     }
 
     public static class CheckControllerTask {

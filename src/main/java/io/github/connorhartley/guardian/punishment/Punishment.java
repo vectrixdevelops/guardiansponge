@@ -27,6 +27,11 @@ import io.github.connorhartley.guardian.sequence.SequenceReport;
 
 import java.time.LocalDateTime;
 
+/**
+ * Punishment
+ *
+ * Contains information regarding handling a punishment.
+ */
 public class Punishment {
 
     private final String detectionReason;
@@ -45,18 +50,49 @@ public class Punishment {
         return new Builder();
     }
 
+    /**
+     * Get Detection Reason
+     *
+     * <p>Returns the detection reason this player is being
+     * punished.</p>
+     *
+     * @return The detection punishment reason
+     */
     public String getDetectionReason() {
         return this.detectionReason;
     }
 
+    /**
+     * Get Sequence Report
+     *
+     * <p>Returns the sequence report that accepted this punishment
+     * to be created.</p>
+     *
+     * @return The sequence report
+     */
     public SequenceReport getSequenceReport() {
         return this.sequenceReport;
     }
 
+    /**
+     * Get Local Date And Time
+     *
+     * <p>Returns the {@link LocalDateTime} of when this punishment
+     * was created.</p>
+     *
+     * @return The local date and time
+     */
     public LocalDateTime getLocalDateTime() {
         return this.localDateTime;
     }
 
+    /**
+     * Get Probability
+     *
+     * <p>Returns the probability of this punishments validity.</p>
+     *
+     * @return The punishment validity
+     */
     public Double getProbability() {
         return this.probability;
     }
