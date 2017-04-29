@@ -34,6 +34,7 @@ import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.FlyCheck;
+import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
@@ -99,6 +100,8 @@ public class FlyDetection extends Detection {
         this.configuration.create();
 
         this.plugin.getPunishmentController().bind(WarningPunishment.class, this);
+        this.plugin.getPunishmentController().bind(KickPunishment.class, this);
+
         this.checkTypes = Collections.singletonList(new FlyCheck.Type(this));
 
         this.configuration.update();
