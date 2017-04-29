@@ -25,6 +25,12 @@ package io.github.connorhartley.guardian.sequence.condition;
 
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 
+/**
+ * Condition Result
+ *
+ * Represents the result of a sequence and decides
+ * if it should cancel or not.
+ */
 public class ConditionResult {
 
     private final boolean pass;
@@ -35,10 +41,24 @@ public class ConditionResult {
         this.sequenceReport = sequenceReport;
     }
 
+    /**
+     * Has Passed
+     *
+     * <p>Returns true if the condition result is set to pass.</p>
+     *
+     * @return True if the condition passes
+     */
     public boolean hasPassed() {
         return this.pass;
     }
 
+    /**
+     * Get Sequence Report
+     *
+     * <p>Returns the sequence report.</p>
+     *
+     * @return The sequence report
+     */
     public SequenceReport getSequenceReport() {
         return this.sequenceReport;
     }
