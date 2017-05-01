@@ -100,7 +100,7 @@ public class FlyCheck extends Check {
         public SequenceBlueprint getSequence() {
             return new SequenceBuilder()
 
-                    .contexts(
+                    .capture(
                             new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
                             new PlayerPositionContext.Altitude((Guardian) this.getDetection().getPlugin(), this.getDetection())
                     )

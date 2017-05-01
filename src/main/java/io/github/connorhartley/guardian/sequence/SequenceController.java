@@ -79,11 +79,11 @@ public class SequenceController implements SequenceInvoker {
             }
 
             if (sequence.hasStarted()) {
-                sequence.getContextHandler().stop();
+                sequence.getCaptureHandler().stop();
             }
 
             SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(),
-                    Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContextContainer())));
+                    Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getCaptureContainer())));
             Sponge.getEventManager().post(attempt);
             if (attempt.isCancelled()) {
                 return true;
@@ -101,7 +101,7 @@ public class SequenceController implements SequenceInvoker {
                     Sequence sequence = blueprint.create(player);
 
                     SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, player, sequence.getSequenceReport(),
-                            Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getContextContainer())));
+                            Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getCaptureContainer())));
                     Sponge.getEventManager().post(attempt);
                     if (attempt.isCancelled()) {
                         return;
@@ -130,7 +130,7 @@ public class SequenceController implements SequenceInvoker {
             if (this.runningSequences.get(player) == null || this.runningSequences.get(player).isEmpty()) return;
             this.runningSequences.get(player).forEach(sequence -> {
                 if (sequence.hasStarted()) {
-                    sequence.getContextHandler().update();
+                    sequence.getCaptureHandler().update();
                 }
             });
         });

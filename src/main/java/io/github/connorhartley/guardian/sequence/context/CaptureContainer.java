@@ -30,22 +30,22 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Context Container
+ * CaptureContext Container
  *
  * A storage for all context data.
  */
-public class ContextContainer {
+public class CaptureContainer {
 
     private final Map<String, Object> rawMap;
 
-    public ContextContainer() {
+    public CaptureContainer() {
         this.rawMap = new HashMap<>();
     }
 
     /**
      * Get
      *
-     * <p>Returns data stored under the {@link Context} path name
+     * <p>Returns data stored under the {@link CaptureContext} path name
      * and data name. If the data does not exist it will return empty.</p>
      *
      * @param clazz The class used for the path name
@@ -68,7 +68,7 @@ public class ContextContainer {
     /**
      * Set
      *
-     * <p>Sets a data value stored under the {@link Context} path name
+     * <p>Sets a data value stored under the {@link CaptureContext} path name
      * and data name. If the data already exists it will be overridden.</p>
      *
      * @param clazz The class used for the path name
@@ -78,7 +78,7 @@ public class ContextContainer {
      * @param <E> The data value type
      * @return This context container
      */
-    public <C, E> ContextContainer set(Class<C> clazz, String name, E value) {
+    public <C, E> CaptureContainer set(Class<C> clazz, String name, E value) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         this.rawMap.put(combinedId, value);
         return this;
@@ -88,7 +88,7 @@ public class ContextContainer {
      * Transform
      *
      * <p>Transform uses a lambda function to transform the existing data value
-     * stored under the {@link Context} path name and data name.</p>
+     * stored under the {@link CaptureContext} path name and data name.</p>
      *
      * @param clazz The class used for the path name
      * @param name The name used for the data name
@@ -97,7 +97,7 @@ public class ContextContainer {
      * @param <E> The data value type
      * @return This context container
      */
-    public <C, E> ContextContainer transform(Class<C> clazz, String name, Transformer<E> transformer) {
+    public <C, E> CaptureContainer transform(Class<C> clazz, String name, Transformer<E> transformer) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         E value = (E) this.rawMap.get(combinedId);
         this.set(clazz, name, transformer.transform(value));
@@ -107,7 +107,7 @@ public class ContextContainer {
     /**
      * Remove
      *
-     * <p>Removes a data value stored under the {@link Context} path name
+     * <p>Removes a data value stored under the {@link CaptureContext} path name
      * and data name.</p>
      *
      * @param clazz The class used for the path name
@@ -115,7 +115,7 @@ public class ContextContainer {
      * @param <C> The class type
      * @return This context container
      */
-    public <C> ContextContainer remove(Class<C> clazz, String name) {
+    public <C> CaptureContainer remove(Class<C> clazz, String name) {
         String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
         if (this.contains(combinedId)) {
             this.rawMap.remove(combinedId);
@@ -166,8 +166,8 @@ public class ContextContainer {
     }
 
     @Override
-    public ContextContainer clone() {
-        ContextContainer shallowClone = new ContextContainer();
+    public CaptureContainer clone() {
+        CaptureContainer shallowClone = new CaptureContainer();
         shallowClone.rawMap.putAll(this.rawMap);
         return shallowClone;
     }

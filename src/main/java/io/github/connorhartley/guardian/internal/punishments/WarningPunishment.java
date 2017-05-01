@@ -53,8 +53,7 @@ public class WarningPunishment implements PunishmentType {
 
     @Override
     public Optional<Detection> getDetection() {
-        if (this.detection == null) return Optional.empty();
-        return Optional.of(this.detection);
+        return Optional.ofNullable(this.detection);
     }
 
     @Override
@@ -68,22 +67,13 @@ public class WarningPunishment implements PunishmentType {
 
         user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
 
-        // # Temporary Warning Action #
-
-        Double probability = punishment.getProbability() * 100;
-
         if (user.getPlayer().isPresent()) {
-            Text message = Text.builder().color(TextColors.RED).append(
-                    Text.of("You have been found illegally " + punishment.getDetectionReason() + " with a certainty of %" +
-                            probability.intValue() + ". This has been reported to an administrator.")).build();
-            user.getPlayer().get().sendMessage(message);
+            Text message = Text.of(Guardian.GUARDIAN_PREFIX, TextColors.GRAY, "You have been found illegally ",
+                    TextColors.DARK_AQUA, punishment.getDetectionReason(), TextColors.GRAY, ". This has been reported to an administrator.");
 
+            user.getPlayer().get().sendMessage(message);
             return true;
         }
-
-        // ############################
-
         return false;
     }
-
 }

@@ -93,7 +93,7 @@ public class VerticalSpeedCheck extends Check {
         public SequenceBlueprint getSequence() {
             return new SequenceBuilder()
 
-                    .contexts(
+                    .capture(
                             new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
                             new PlayerControlContext.VerticalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection())
                     )

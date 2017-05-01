@@ -25,8 +25,8 @@ package io.github.connorhartley.guardian.internal.contexts.world;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.property.block.MatterProperty;
@@ -34,13 +34,13 @@ import org.spongepowered.api.util.Direction;
 
 import java.util.Map;
 
-public class MaterialSpeedContext extends Context {
+public class MaterialSpeedContext extends CaptureContext {
 
     private double gasSpeedModifier = 1.045;
     private double solidSpeedModifier = 1.025;
     private double liquidSpeedModifier = 1.015;
 
-    private ContextContainer valuation;
+    private CaptureContainer valuation;
     private boolean stopped = false;
 
     public MaterialSpeedContext(Guardian plugin, Detection detection) {
@@ -57,12 +57,12 @@ public class MaterialSpeedContext extends Context {
     }
 
     @Override
-    public ContextContainer getContainer() {
+    public CaptureContainer getContainer() {
         return this.valuation;
     }
 
     @Override
-    public void start(ContextContainer valuation) {
+    public void start(CaptureContainer valuation) {
         this.valuation = valuation;
         this.stopped = false;
 
@@ -71,7 +71,7 @@ public class MaterialSpeedContext extends Context {
     }
 
     @Override
-    public void update(ContextContainer valuation) {
+    public void update(CaptureContainer valuation) {
         this.valuation = valuation;
 
         if (!this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
@@ -97,7 +97,7 @@ public class MaterialSpeedContext extends Context {
     }
 
     @Override
-    public void stop(ContextContainer valuation) {
+    public void stop(CaptureContainer valuation) {
         this.valuation = valuation;
 
         this.stopped = true;

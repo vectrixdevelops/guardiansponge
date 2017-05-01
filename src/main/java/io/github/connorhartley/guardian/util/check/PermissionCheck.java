@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.util.check;
 
-import io.github.connorhartley.guardian.sequence.context.ContextContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
@@ -48,7 +48,7 @@ public class PermissionCheck implements Condition {
     }
 
     @Override
-    public ConditionResult test(User user, Event event, ContextContainer contextContainer, SequenceReport sequenceReport, long lastAction) {
+    public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceReport sequenceReport, long lastAction) {
         if (user.getPlayer().isPresent()) {
             if (!user.getPlayer().get().hasPermission(this.detection.getPermission(Detection.PermissionTarget.BYPASS))) {
                 return new ConditionResult(true, sequenceReport);

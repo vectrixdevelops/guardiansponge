@@ -94,7 +94,7 @@ public class HorizontalSpeedCheck extends Check {
         public SequenceBlueprint getSequence() {
             return new SequenceBuilder()
 
-                    .contexts(
+                    .capture(
                             new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
                             new PlayerControlContext.HorizontalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection()),
                             new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())

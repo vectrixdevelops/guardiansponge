@@ -24,8 +24,8 @@
 package io.github.connorhartley.guardian.internal.contexts.player;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.world.Location;
@@ -33,11 +33,11 @@ import org.spongepowered.api.world.World;
 
 public class PlayerPositionContext {
 
-    public static class Altitude extends Context {
+    public static class Altitude extends CaptureContext {
 
         private Location<World> depthThreshold;
 
-        private ContextContainer valuation;
+        private CaptureContainer valuation;
         private boolean stopped = false;
 
         public Altitude(Guardian plugin, Detection detection) {
@@ -45,12 +45,12 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public ContextContainer getContainer() {
+        public CaptureContainer getContainer() {
             return this.valuation;
         }
 
         @Override
-        public void start(ContextContainer valuation) {
+        public void start(CaptureContainer valuation) {
             this.valuation = valuation;
             this.stopped = false;
 
@@ -61,7 +61,7 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public void update(ContextContainer valuation) {
+        public void update(CaptureContainer valuation) {
             this.valuation = valuation;
 
             Location<World> playerAltitude = null;
@@ -107,7 +107,7 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public void stop(ContextContainer valuation) {
+        public void stop(CaptureContainer valuation) {
             this.valuation = valuation;
 
             this.stopped = true;

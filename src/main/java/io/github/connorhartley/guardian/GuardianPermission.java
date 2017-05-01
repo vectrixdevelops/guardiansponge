@@ -65,6 +65,11 @@ public final class GuardianPermission {
                         .description(Text.of("Allows the user to toggle the ability to be checked for a <Detection> cheat."))
                         .assign(PermissionDescription.ROLE_STAFF, true)
                         .register();
+
+                builder.id("guardian.punishment.report-channel.<Detection>")
+                        .description(Text.of("Those with this permission will receive reports of cheating players from <Detection>."))
+                        .assign(PermissionDescription.ROLE_STAFF, true)
+                        .register();
             }
         }
     }

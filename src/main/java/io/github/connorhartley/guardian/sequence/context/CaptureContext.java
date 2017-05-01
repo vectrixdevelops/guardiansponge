@@ -27,18 +27,18 @@ import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.entity.living.player.Player;
 
 /**
- * Context
+ * Capture Context
  *
  * Represents context through collecting data in
  * the period of a sequence.
  */
-public abstract class Context {
+public abstract class CaptureContext {
 
     private final Object plugin;
     private final Detection detection;
     private Player player;
 
-    public Context(Object plugin, Detection detection) {
+    public CaptureContext(Object plugin, Detection detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
@@ -94,7 +94,7 @@ public abstract class Context {
      *
      * @return The data container
      */
-    public abstract ContextContainer getContainer();
+    public abstract CaptureContainer getContainer();
 
     /**
      * Start
@@ -103,7 +103,7 @@ public abstract class Context {
      *
      * @param valuation The data container to update
      */
-    public abstract void start(ContextContainer valuation);
+    public abstract void start(CaptureContainer valuation);
 
     /**
      * Update
@@ -112,7 +112,7 @@ public abstract class Context {
      *
      * @param valuation The data container to update
      */
-    public abstract void update(ContextContainer valuation);
+    public abstract void update(CaptureContainer valuation);
 
     /**
      * Stop
@@ -121,7 +121,7 @@ public abstract class Context {
      *
      * @param valuation The data container to update
      */
-    public abstract void stop(ContextContainer valuation);
+    public abstract void stop(CaptureContainer valuation);
 
     /**
      * Has Stopped

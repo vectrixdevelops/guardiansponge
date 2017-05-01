@@ -23,14 +23,14 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.sequence.context.ContextContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
-import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextHandler;
+import io.github.connorhartley.guardian.sequence.context.CaptureHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Sequence
  *
- * Represents a chain of actions and contexts
+ * Represents a chain of actions and capture
  * that get run in order, supplying conditions with
  * heuristic reporting.
  */
@@ -53,7 +53,7 @@ public class Sequence {
 
     private final Player player;
     private final CheckType checkType;
-    private final ContextHandler contextHandler;
+    private final CaptureHandler captureHandler;
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
     private final List<Event> incompleteEvents = new ArrayList<>();
@@ -67,23 +67,23 @@ public class Sequence {
     private boolean finished = false;
 
     public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckType checkType, List<Action> actions,
-                    ContextHandler contextHandler) {
+                    CaptureHandler captureHandler) {
         this.player = player;
         this.checkType = checkType;
-        this.contextHandler = contextHandler;
+        this.captureHandler = captureHandler;
         this.sequenceBlueprint = sequenceBlueprint;
 
         this.actions.addAll(actions);
-        this.contextHandler.setContainer(new ContextContainer());
+        this.captureHandler.setContainer(new CaptureContainer());
     }
 
     /**
      * Check
      *
-     * <p>Runs through the list of {@link Action}s and {@link Context}s and
+     * <p>Runs through the list of {@link Action}s and {@link CaptureContext}s and
      * carries the {@link SequenceReport} through each {@link Action} allowing it to be
-     * updated through the chain. {@link Context}s follow a similar run and each tick
-     * get passed a {@link ContextContainer} to update values inside the chain.
+     * updated through the chain. {@link CaptureContext}s follow a similar run and each tick
+     * get passed a {@link CaptureContainer} to update values inside the chain.
      * {@link Action}s that fail will fire the {@link SequenceFailEvent}. {@link Action}s
      * that succeed will fire the {@link SequenceSucceedEvent}.</p>
      *
@@ -108,7 +108,7 @@ public class Sequence {
             }
 
             if (!this.started) {
-                this.contextHandler.start();
+                this.captureHandler.start();
                 this.started = true;
             }
 
@@ -118,7 +118,7 @@ public class Sequence {
 
             Action<T> typeAction = (Action<T>) action;
 
-            action.updateContextValuation(this.contextHandler.getContainer());
+            action.updateCaptureContainer(this.captureHandler.getContainer());
 
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
                 return fail(player, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
@@ -136,7 +136,7 @@ public class Sequence {
             this.completeEvents.add(event);
             iterator.remove();
             typeAction.updateReport(this.sequenceReport);
-            typeAction.updateContextValuation(this.contextHandler.getContainer());
+            typeAction.updateCaptureContainer(this.captureHandler.getContainer());
             typeAction.succeed(player, event, this.last);
             this.sequenceReport = action.getSequenceReport();
 
@@ -144,7 +144,7 @@ public class Sequence {
 
             if (!iterator.hasNext()) {
                 if (this.started) {
-                    this.contextHandler.stop();
+                    this.captureHandler.stop();
                 }
                 this.finished = true;
             }
@@ -156,7 +156,7 @@ public class Sequence {
     // Called when the player does not meet the requirements.
     boolean fail(User user, Event event, Action action, Cause cause) {
         action.updateReport(this.sequenceReport);
-        action.updateContextValuation(this.contextHandler.getContainer());
+        action.updateCaptureContainer(this.captureHandler.getContainer());
 
         this.cancelled = action.fail(user, event, this.last);
         this.sequenceReport = action.getSequenceReport();
@@ -169,25 +169,25 @@ public class Sequence {
     }
 
     /**
-     * Get Context Handler
+     * Get Capture Handler
      *
-     * <p>Returns the {@link ContextHandler} for this {@link Sequence}.</p>
+     * <p>Returns the {@link CaptureHandler} for this {@link Sequence}.</p>
      *
      * @return This context handler
      */
-    public ContextHandler getContextHandler() {
-        return this.contextHandler;
+    public CaptureHandler getCaptureHandler() {
+        return this.captureHandler;
     }
 
     /**
-     * Get Context Container
+     * Get Capture Container
      *
-     * <p>Returns a {@link ContextContainer} of data that have been analysed.</p>
+     * <p>Returns a {@link CaptureContainer} of data that have been analysed.</p>
      *
      * @return A list of context values
      */
-    public ContextContainer getContextContainer() {
-        return this.contextHandler.getContainer();
+    public CaptureContainer getCaptureContainer() {
+        return this.captureHandler.getContainer();
     }
 
     /**
@@ -239,7 +239,7 @@ public class Sequence {
 
         if (action != null && this.last + ((action.getExpire() / 20) * 1000) < now) {
             if (this.started) {
-                this.contextHandler.stop();
+                this.captureHandler.stop();
             }
             return true;
         }

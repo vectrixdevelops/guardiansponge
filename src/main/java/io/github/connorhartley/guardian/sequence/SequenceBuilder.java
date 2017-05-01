@@ -27,8 +27,8 @@ import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
-import io.github.connorhartley.guardian.sequence.context.ContextHandler;
-import io.github.connorhartley.guardian.sequence.context.Context;
+import io.github.connorhartley.guardian.sequence.context.CaptureHandler;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 
@@ -43,11 +43,11 @@ import java.util.List;
  */
 public class SequenceBuilder {
 
-    private Context[] contexts;
+    private CaptureContext[] captureContexts;
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder contexts(Context... contexts) {
-        this.contexts = contexts;
+    public SequenceBuilder capture(CaptureContext... captureContexts) {
+        this.captureContexts = captureContexts;
         return this;
     }
 
@@ -69,7 +69,7 @@ public class SequenceBuilder {
         return new SequenceBlueprint(checkType) {
             @Override
             public Sequence create(Player player) {
-                return new Sequence(player, this, checkType, actions, new ContextHandler(player, contexts));
+                return new Sequence(player, this, checkType, actions, new CaptureHandler(player, captureContexts));
             }
         };
     }

@@ -59,6 +59,8 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -85,6 +87,9 @@ import java.nio.file.Path;
         }
 )
 public class Guardian {
+
+    public static Text GUARDIAN_PREFIX = Text.of(TextColors.DARK_AQUA, "[", TextColors.AQUA, "Guardian",
+            TextColors.DARK_AQUA, "] ", TextColors.RESET);
 
     /* Injection Fields */
 

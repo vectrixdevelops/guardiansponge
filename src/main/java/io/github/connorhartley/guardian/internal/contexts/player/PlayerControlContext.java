@@ -25,8 +25,8 @@ package io.github.connorhartley.guardian.internal.contexts.player;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.sequence.context.Context;
-import io.github.connorhartley.guardian.sequence.context.ContextContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.key.Keys;
@@ -35,11 +35,11 @@ import java.util.Map;
 
 public class PlayerControlContext {
 
-    public static class VerticalSpeed extends Context {
+    public static class VerticalSpeed extends CaptureContext {
 
         private double flySpeedControl = 1.065;
 
-        private ContextContainer valuation;
+        private CaptureContainer valuation;
         private boolean stopped = false;
 
         public VerticalSpeed(Guardian plugin, Detection detection) {
@@ -55,12 +55,12 @@ public class PlayerControlContext {
         }
 
         @Override
-        public ContextContainer getContainer() {
+        public CaptureContainer getContainer() {
             return this.valuation;
         }
 
         @Override
-        public void start(ContextContainer valuation) {
+        public void start(CaptureContainer valuation) {
             this.valuation = valuation;
             this.stopped = false;
 
@@ -69,7 +69,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void update(ContextContainer valuation) {
+        public void update(CaptureContainer valuation) {
             this.valuation = valuation;
 
             if (this.getPlayer().get(Keys.IS_FLYING).isPresent()) {
@@ -83,7 +83,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void stop(ContextContainer valuation) {
+        public void stop(CaptureContainer valuation) {
             this.valuation = valuation;
 
             this.stopped = true;
@@ -95,7 +95,7 @@ public class PlayerControlContext {
         }
     }
 
-    public static class HorizontalSpeed extends Context {
+    public static class HorizontalSpeed extends CaptureContext {
 
         private double sneakSpeedControl = 1.015;
         private double walkSpeedControl = 1.035;
@@ -105,7 +105,7 @@ public class PlayerControlContext {
         private double walkSpeedData = 2;
         private double flySpeedData = 2;
 
-        private ContextContainer valuation;
+        private CaptureContainer valuation;
         private boolean stopped = false;
 
         public HorizontalSpeed(Guardian plugin, Detection detection) {
@@ -123,12 +123,12 @@ public class PlayerControlContext {
         }
 
         @Override
-        public ContextContainer getContainer() {
+        public CaptureContainer getContainer() {
             return this.valuation;
         }
 
         @Override
-        public void start(ContextContainer valuation) {
+        public void start(CaptureContainer valuation) {
             this.valuation = valuation;
             this.stopped = false;
 
@@ -147,7 +147,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void update(ContextContainer valuation) {
+        public void update(CaptureContainer valuation) {
             this.valuation = valuation;
 
             if (this.getPlayer().get(Keys.IS_SPRINTING).isPresent() && this.getPlayer().get(Keys.IS_SNEAKING).isPresent() &&
@@ -189,7 +189,7 @@ public class PlayerControlContext {
         }
 
         @Override
-        public void stop(ContextContainer valuation) {
+        public void stop(CaptureContainer valuation) {
             this.valuation = valuation;
 
             this.stopped = true;
