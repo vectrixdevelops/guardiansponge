@@ -83,6 +83,10 @@ import java.nio.file.Path;
                         id = "elderguardian",
                         version = PluginInfo.ELDER_VERSION,
                         optional = true
+                ),
+                @Dependency(
+                        id = "nucleus",
+                        optional = true
                 )
         }
 )

@@ -37,6 +37,8 @@ import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.PermissionCheck;
+import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
@@ -118,6 +120,21 @@ public class HorizontalSpeedCheck extends Check {
 
                                 if (event instanceof DestructEntityEvent.Death) {
                                     return new ConditionResult(true, report);
+                                }
+
+                                return new ConditionResult(false, report);
+                            })
+
+                            // Ensures the sequence does not continue if the player teleports through Nucleus.
+
+                            .failure((user, event, captureContainer, sequenceReport, lastAction) -> {
+                                SequenceReport report = SequenceReport.builder().of(sequenceReport)
+                                        .build(false);
+
+                                if (Sponge.getPluginManager().getPlugin("nucleus").isPresent()) {
+                                    if (event instanceof NucleusTeleportEvent) {
+                                        return new ConditionResult(true, report);
+                                    }
                                 }
 
                                 return new ConditionResult(false, report);
