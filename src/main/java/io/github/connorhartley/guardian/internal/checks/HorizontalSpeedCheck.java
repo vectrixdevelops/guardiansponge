@@ -132,7 +132,7 @@ public class HorizontalSpeedCheck extends Check {
                                         .build(false);
 
                                 if (Sponge.getPluginManager().getPlugin("nucleus").isPresent()) {
-                                    if (event instanceof NucleusTeleportEvent) {
+                                    if (event instanceof NucleusTeleportEvent.AboutToTeleport) {
                                         return new ConditionResult(true, report);
                                     }
                                 }
