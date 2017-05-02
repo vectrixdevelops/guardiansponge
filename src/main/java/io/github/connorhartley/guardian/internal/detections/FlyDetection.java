@@ -71,21 +71,18 @@ import java.util.Optional;
 )
 public class FlyDetection extends Detection {
 
-    @Inject
-    @ModuleContainer
-    public PluginContainer moduleContainer;
-
     private Guardian plugin;
     private File configFile;
     private List<CheckType> checkTypes;
     private Configuration configuration;
+    private PluginContainer moduleContainer;
     private ConfigurationLoader<CommentedConfigurationNode> configManager;
     private boolean ready = false;
 
-    private final static Module moduleAnnotation = FlyDetection.class.getAnnotation(Module.class);
-
-    public FlyDetection() throws Exception {
-        super(moduleAnnotation.id(), moduleAnnotation.name());
+    @Inject
+    public FlyDetection(@ModuleContainer PluginContainer moduleContainer) throws Exception {
+        super(moduleContainer.getId(), moduleContainer.getName());
+        this.moduleContainer = moduleContainer;
     }
 
     @Override

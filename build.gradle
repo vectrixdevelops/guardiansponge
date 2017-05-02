@@ -31,7 +31,6 @@ sponge.plugin.id = pluginId
 
 repositories {
     mavenCentral()
-    maven { url 'https://dl.bintray.com/me4502/maven' }
     maven { url 'https://jitpack.io' }
     maven { url 'https://repo.bstats.org/content/groups/public/' }
     maven { url 'http://repo.drnaylor.co.uk/artifactory/list/minecraft' }
@@ -41,9 +40,9 @@ dependencies {
     compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
 
     compile 'org.apache.commons:commons-math3:3.6.1'
-    compile 'com.me4502:ModularFramework:1.8.3'
+    compile 'com.github.me4502:ModularFramework:35dc605747'
 
-    compile 'com.github.Me4502:Precogs:-SNAPSHOT'
+    compile 'com.github.me4502:Precogs:dddc890efc'
     compile 'org.bstats:bstats-sponge-lite:1.2-SNAPSHOT'
 
     compile 'io.github.nucleuspowered:nucleus-api:0.29.0-SNAPSHOT-S6.0'

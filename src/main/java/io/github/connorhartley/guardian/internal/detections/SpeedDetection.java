@@ -71,21 +71,18 @@ import java.util.Optional;
         onDisable = "onDeconstruction")
 public class SpeedDetection extends Detection {
 
-    @Inject
-    @ModuleContainer
-    public PluginContainer moduleContainer;
-
     private Guardian plugin;
     private File configFile;
     private List<CheckType> checkTypes;
     private Configuration configuration;
+    private PluginContainer moduleContainer;
     private ConfigurationLoader<CommentedConfigurationNode> configManager;
     private boolean ready = false;
 
-    private static Module moduleAnnotation = SpeedDetection.class.getAnnotation(Module.class);
-
-    public SpeedDetection() throws Exception {
-        super(moduleAnnotation.id(), moduleAnnotation.name());
+    @Inject
+    public SpeedDetection(@ModuleContainer PluginContainer moduleContainer) throws Exception {
+        super(moduleContainer.getId(), moduleContainer.getName());
+        this.moduleContainer = moduleContainer;
     }
 
     @Override
