@@ -65,7 +65,7 @@ import java.util.Optional;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.15",
+        version = "0.0.16",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
