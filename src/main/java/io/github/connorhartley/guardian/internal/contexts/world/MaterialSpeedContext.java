@@ -74,23 +74,24 @@ public class MaterialSpeedContext extends CaptureContext {
     public void update(CaptureContainer valuation) {
         this.valuation = valuation;
 
-        if (!this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).isPresent())
+        MatterProperty matterBelow = this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class)
+                .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
+        MatterProperty matterInside = this.getPlayer().getLocation().getBlock().getProperty(MatterProperty.class)
+                .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
+        MatterProperty matterAbove = this.getPlayer().getLocation().getBlockRelative(Direction.UP).getProperty(MatterProperty.class)
+                .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
+
+        if (matterBelow.getValue() == MatterProperty.Matter.GAS && matterInside.getValue() == MatterProperty.Matter.GAS &&
+                matterAbove.getValue() == MatterProperty.Matter.GAS) {
             this.getContainer().<MaterialSpeedContext, Double>transform(
-                    MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
-
-        MatterProperty matterProperty = this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class).get();
-
-        if (matterProperty.getValue() != null) {
-            if (matterProperty.getValue().equals(MatterProperty.Matter.LIQUID)) {
-                this.getContainer().<MaterialSpeedContext, Double>transform(
-                        MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.liquidSpeedModifier);
-            } else if (matterProperty.getValue().equals(MatterProperty.Matter.GAS)) {
-                this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
-            } else {
-                this.getContainer().<MaterialSpeedContext, Double>transform(
+        } else if (matterBelow.getValue() == MatterProperty.Matter.LIQUID || matterInside.getValue() == MatterProperty.Matter.LIQUID ||
+                matterAbove.getValue() == MatterProperty.Matter.LIQUID) {
+            this.getContainer().<MaterialSpeedContext, Double>transform(
+                        MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.liquidSpeedModifier);
+        } else {
+            this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.solidSpeedModifier);
-            }
         }
 
         this.getContainer().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
