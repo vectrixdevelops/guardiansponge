@@ -81,7 +81,7 @@ public class FlyDetection extends Detection {
 
     @Inject
     public FlyDetection(@ModuleContainer PluginContainer moduleContainer) throws Exception {
-        super(moduleContainer.getId(), moduleContainer.getName());
+        super("fly", "Fly Detection");
         this.moduleContainer = moduleContainer;
     }
 

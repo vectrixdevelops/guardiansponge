@@ -81,7 +81,7 @@ public class SpeedDetection extends Detection {
 
     @Inject
     public SpeedDetection(@ModuleContainer PluginContainer moduleContainer) throws Exception {
-        super(moduleContainer.getId(), moduleContainer.getName());
+        super("speed", "Speed Detection");
         this.moduleContainer = moduleContainer;
     }
 
