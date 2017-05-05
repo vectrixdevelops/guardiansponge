@@ -1,7 +1,7 @@
 <h1 align="center">Guardian</h1>
 <h5 align="center">An Extensible AntiCheat Plugin For Sponge.</h5>
 
-[![Build Status](https://travis-ci.org/connorhartley/guardian.svg?branch=master)](https://travis-ci.org/connorhartley/guardian) [![Sponge API](https://img.shields.io/badge/sponge--api-6.0.0-orange.svg)](https://github.com/SpongePowered/SpongeAPI) [![Precogs](https://img.shields.io/badge/precogs-1.0--SNAPSHOT-blue.svg)](https://github.com/me4502/Precogs)
+[![Build Status](https://travis-ci.org/ichorpowered/guardian.svg?branch=master)](https://travis-ci.org/ichorpowered/guardian) [![Sponge API](https://img.shields.io/badge/sponge--api-6.0.0-orange.svg)](https://github.com/SpongePowered/SpongeAPI) [![Precogs](https://img.shields.io/badge/precogs-1.0--SNAPSHOT-blue.svg)](https://github.com/me4502/Precogs)
 
 Guardian is an extensible AntiCheat for Sponge that gives you the flexibility to customize the checks to fit your servers needs.
 Guardian also provides a service for Precogs to reduce plugin conflicts with those who integrate with the lightweight service.
@@ -17,7 +17,7 @@ Cheats Guardian can detect so far:
 
 And more coming soon.
 
-Guardian has an optional mixin mod called [ElderGuardian](https://github.com/connorhartley/elderguardian) that allows Guardian to access things beyond the Sponge API.
+Guardian has an optional mixin mod called [ElderGuardian](https://github.com/ichorpowered/elderguardian) that allows Guardian to access things beyond the Sponge API.
 It is recommended that you use it with Guardian to improve accuracy. Some detections may also require it to work.
 
 ## Contributing
