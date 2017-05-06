@@ -89,7 +89,7 @@ public class SpeedDetection extends Detection {
     public void onConstruction() {
         if (this.moduleContainer.getInstance().isPresent()) {
             this.plugin = (Guardian) this.moduleContainer.getInstance().get();
-            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().getParent().toFile(),
+            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().toFile(),
                     "detection" + File.separator + this.getId() + ".conf");
             this.configManager = HoconConfigurationLoader.builder().setFile(this.configFile)
                     .setDefaultOptions(this.plugin.getConfigurationOptions()).build();
@@ -275,10 +275,10 @@ public class SpeedDetection extends Detection {
                 // Player Control
 
                 Map<String, Double> controlValues = new HashMap<>();
-                controlValues.put("sneak", 1.015);
+                controlValues.put("sneak", 1.005);
                 controlValues.put("walk", 1.035);
-                controlValues.put("sprint", 1.065);
-                controlValues.put("fly", 1.075);
+                controlValues.put("sprint", 1.055);
+                controlValues.put("fly", 1.065);
 
                 this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
                         "Magic values for movement the player controls that are added each tick.",
@@ -288,9 +288,9 @@ public class SpeedDetection extends Detection {
                 // Block Speed
 
                 Map<String, Double> materialValues = new HashMap<>();
-                materialValues.put("gas", 1.04);
-                materialValues.put("solid", 1.025);
-                materialValues.put("liquid", 1.015);
+                materialValues.put("gas", 1.055);
+                materialValues.put("solid", 1.035);
+                materialValues.put("liquid", 1.025);
 
                 this.configMaterialValues = new StorageValue<>(new StorageKey<>("material-values"),
                         "Magic values for materials touching the player that affect the players speed which are added each tick.",
@@ -307,6 +307,8 @@ public class SpeedDetection extends Detection {
                 this.configSeverityDistribution.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configControlValues.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configMaterialValues.<ConfigurationNode>createStorage(this.configurationNode);
+
+                this.configManager.save(this.configurationNode);
             } catch (IOException e) {
                 this.speedDetection.getPlugin().getLogger().error("A problem occurred attempting to create SpeedDetection module's configuration!", e);
             }

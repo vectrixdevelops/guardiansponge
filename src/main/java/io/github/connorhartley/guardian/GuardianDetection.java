@@ -45,6 +45,7 @@ public final class GuardianDetection {
     void register() {
         this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
         this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.FlyDetection");
+        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.JesusDetection");
     }
 
 }

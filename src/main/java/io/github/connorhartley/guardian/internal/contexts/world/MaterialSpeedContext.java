@@ -36,9 +36,9 @@ import java.util.Map;
 
 public class MaterialSpeedContext extends CaptureContext {
 
-    private double gasSpeedModifier = 1.045;
-    private double solidSpeedModifier = 1.025;
-    private double liquidSpeedModifier = 1.015;
+    private double gasSpeedModifier = 1.035;
+    private double solidSpeedModifier = 1.02;
+    private double liquidSpeedModifier = 1.01;
 
     private CaptureContainer valuation;
     private boolean stopped = false;
@@ -67,6 +67,9 @@ public class MaterialSpeedContext extends CaptureContext {
         this.stopped = false;
 
         this.getContainer().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
+        this.getContainer().set(MaterialSpeedContext.class, "amplifier_material_gas", 0);
+        this.getContainer().set(MaterialSpeedContext.class, "amplifier_material_liquid", 0);
+        this.getContainer().set(MaterialSpeedContext.class, "amplifier_material_solid", 0);
         this.getContainer().set(MaterialSpeedContext.class, "update", 0);
     }
 
@@ -85,13 +88,19 @@ public class MaterialSpeedContext extends CaptureContext {
                 matterAbove.getValue() == MatterProperty.Matter.GAS) {
             this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
+            this.getContainer().<MaterialSpeedContext, Integer>transform(
+                    MaterialSpeedContext.class, "amplifier_material_gas", oldValue -> oldValue + 1);
         } else if (matterBelow.getValue() == MatterProperty.Matter.LIQUID || matterInside.getValue() == MatterProperty.Matter.LIQUID ||
                 matterAbove.getValue() == MatterProperty.Matter.LIQUID) {
             this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.liquidSpeedModifier);
+            this.getContainer().<MaterialSpeedContext, Integer>transform(
+                    MaterialSpeedContext.class, "amplifier_material_liquid", oldValue -> oldValue + 1);
         } else {
             this.getContainer().<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.solidSpeedModifier);
+            this.getContainer().<MaterialSpeedContext, Integer>transform(
+                    MaterialSpeedContext.class, "amplifier_material_solid", oldValue -> oldValue + 1);
         }
 
         this.getContainer().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);

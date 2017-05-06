@@ -32,11 +32,14 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.internal.checks.JesusCheck;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
 import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
+import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
@@ -45,12 +48,14 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +90,7 @@ public class JesusDetection extends Detection {
     public void onConstruction() {
         if (this.moduleContainer.getInstance().isPresent()) {
             this.plugin = (Guardian) this.moduleContainer.getInstance().get();
-            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().getParent().toFile(),
+            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().toFile(),
                     "detection" + File.separator + this.getId() + ".conf");
             this.configManager = HoconConfigurationLoader.builder().setFile(this.configFile)
                     .setDefaultOptions(this.plugin.getConfigurationOptions()).build();
@@ -99,7 +104,7 @@ public class JesusDetection extends Detection {
         this.plugin.getPunishmentController().bind(KickPunishment.class, this);
         this.plugin.getPunishmentController().bind(ReportPunishment.class, this);
 
-        this.checkTypes = Collections.singletonList(new HorizontalSpeedCheck.Type(this));
+        this.checkTypes = Collections.singletonList(new JesusCheck.Type(this));
 
         this.configuration.update();
 
@@ -116,6 +121,39 @@ public class JesusDetection extends Detection {
     @Listener
     public void onReload(GameReloadEvent event) {
         this.configuration.load();
+    }
+
+    @Listener
+    public void onSequenceFinish(SequenceFinishEvent event) {
+        if (!event.isCancelled()) {
+            for (CheckType checkProvider : this.checkTypes) {
+                if (checkProvider.getSequence().equals(event.getSequence())) {
+                    double lower = this.configuration.configSeverityDistribution.getValue().get("lower");
+                    double mean = this.configuration.configSeverityDistribution.getValue().get("mean");
+                    double standardDeviation = this.configuration.configSeverityDistribution.getValue().get("standard-deviation");
+
+                    NormalDistribution normalDistribution =
+                            new NormalDistribution(mean, standardDeviation);
+
+                    String type = "";
+
+                    if (event.getResult().getDetectionTypes().size() > 0) {
+                        type = event.getResult().getDetectionTypes().get(0);
+                    }
+
+                    double probability = normalDistribution.probability(lower, event.getResult().getSeverity());
+
+                    Punishment punishment = Punishment.builder()
+                            .reason(type)
+                            .time(LocalDateTime.now())
+                            .report(event.getResult())
+                            .probability(probability)
+                            .build();
+
+                    this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
+                }
+            }
+        }
     }
 
     @Override
@@ -151,6 +189,8 @@ public class JesusDetection extends Detection {
     public static class Configuration implements StorageConsumer<File> {
 
         public StorageValue<String, Double> configAnalysisTime;
+        public StorageValue<String, Double> configThreshold;
+        public StorageValue<String, Double> configMinimumWaterTime;
         public StorageValue<String, Map<String, Double>> configTickBounds;
         public StorageValue<String, Map<String, Double>> configControlValues;
         public StorageValue<String, Map<String, Double>> configMaterialValues;
@@ -186,6 +226,16 @@ public class JesusDetection extends Detection {
                 this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                         "Time taken to analyse the players speed. 2 seconds is recommended!",
                         2.0, new TypeToken<Double>() {
+                });
+
+                this.configThreshold = new StorageValue<>(new StorageKey<>("threshold"),
+                        "The threshold before the severity starts being considered in the check. 8.4 is recommended!",
+                        8.4, new TypeToken<Double>() {
+                });
+
+                this.configMinimumWaterTime = new StorageValue<>(new StorageKey<>("minimum-water-time"),
+                        "The minimum amount of ticks a player needs to be in water or on water, for the check to take effect.",
+                        1.35, new TypeToken<Double>() {
                 });
 
                 Map<String, Double> tickBounds = new HashMap<>();
@@ -227,8 +277,8 @@ public class JesusDetection extends Detection {
 
                 Map<String, Double> severityDistribution = new HashMap<>();
                 severityDistribution.put("lower", 0d);
-                severityDistribution.put("mean", 25d);
-                severityDistribution.put("standard-deviation", 15d);
+                severityDistribution.put("mean", 14d);
+                severityDistribution.put("standard-deviation", 5d);
 
                 this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
                         "Normal distribution properties for calculating the over-shot value from the mean.",
@@ -238,10 +288,10 @@ public class JesusDetection extends Detection {
                 // Player Control
 
                 Map<String, Double> controlValues = new HashMap<>();
-                controlValues.put("sneak", 1.015);
+                controlValues.put("sneak", 1.005);
                 controlValues.put("walk", 1.035);
-                controlValues.put("sprint", 1.065);
-                controlValues.put("fly", 1.075);
+                controlValues.put("sprint", 1.055);
+                controlValues.put("fly", 1.065);
 
                 this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
                         "Magic values for movement the player controls that are added each tick.",
@@ -251,9 +301,9 @@ public class JesusDetection extends Detection {
                 // Block Speed
 
                 Map<String, Double> materialValues = new HashMap<>();
-                materialValues.put("gas", 1.04);
-                materialValues.put("solid", 1.025);
-                materialValues.put("liquid", 1.015);
+                materialValues.put("gas", 1.055);
+                materialValues.put("solid", 1.035);
+                materialValues.put("liquid", 0.95);
 
                 this.configMaterialValues = new StorageValue<>(new StorageKey<>("material-values"),
                         "Magic values for materials touching the player that affect the players speed which are added each tick.",
@@ -263,6 +313,8 @@ public class JesusDetection extends Detection {
                 // Create Config Values
 
                 this.configAnalysisTime.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configThreshold.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configMinimumWaterTime.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configTickBounds.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configPunishmentLevels.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configPunishmentProperties.<ConfigurationNode>createStorage(this.configurationNode);
@@ -270,6 +322,8 @@ public class JesusDetection extends Detection {
                 this.configSeverityDistribution.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configControlValues.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configMaterialValues.<ConfigurationNode>createStorage(this.configurationNode);
+
+                this.configManager.save(this.configurationNode);
             } catch (IOException e) {
                 this.jesusDetection.getPlugin().getLogger().error("A problem occurred attempting to create JesusDetection module's configuration!", e);
             }
@@ -282,6 +336,8 @@ public class JesusDetection extends Detection {
                     this.configurationNode = this.configManager.load(this.jesusDetection.getPlugin().getConfigurationOptions());
 
                     this.configAnalysisTime.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configThreshold.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configMinimumWaterTime.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configTickBounds.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configPunishmentLevels.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configPunishmentProperties.<ConfigurationNode>loadStorage(this.configurationNode);
@@ -304,6 +360,8 @@ public class JesusDetection extends Detection {
                     this.configurationNode = this.configManager.load(this.jesusDetection.getPlugin().getConfigurationOptions());
 
                     this.configAnalysisTime.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configThreshold.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configMinimumWaterTime.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configTickBounds.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configPunishmentLevels.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configPunishmentProperties.<ConfigurationNode>updateStorage(this.configurationNode);
@@ -335,6 +393,12 @@ public class JesusDetection extends Detection {
                 if (key.get().equals("analysis-time") && typeToken.getRawType()
                         .equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
+                } else if (key.get().equals("threshold") && typeToken.getRawType()
+                        .equals(this.configThreshold.getValueTypeToken().getRawType())) {
+                    return Optional.of((StorageValue<K, E>) this.configThreshold);
+                } else if (key.get().equals("minimum-water-time") && typeToken.getRawType()
+                        .equals(this.configMinimumWaterTime.getValueTypeToken().getRawType())) {
+                    return Optional.of((StorageValue<K, E>) this.configMinimumWaterTime);
                 } else if (key.get().equals("tick-bounds") && typeToken.getRawType()
                         .equals(this.configTickBounds.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configTickBounds);
@@ -367,6 +431,12 @@ public class JesusDetection extends Detection {
                 if (storageValue.getKey().get().equals("analysis-time") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
                     this.configAnalysisTime = (StorageValue<String, Double>) storageValue;
+                } else if (storageValue.getKey().get().equals("threshold") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configThreshold.getValueTypeToken().getRawType())) {
+                    this.configThreshold = (StorageValue<String, Double>) storageValue;
+                } else if (storageValue.getKey().get().equals("minimum-water-time") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configMinimumWaterTime.getValueTypeToken().getRawType())) {
+                    this.configMinimumWaterTime = (StorageValue<String, Double>) storageValue;
                 } else if (storageValue.getKey().get().equals("tick-bounds") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configTickBounds.getValueTypeToken().getRawType())) {
                     this.configTickBounds = (StorageValue<String, Map<String, Double>>) storageValue;

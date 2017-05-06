@@ -80,7 +80,7 @@ public class FlyDetection extends Detection {
     private boolean ready = false;
 
     @Inject
-    public FlyDetection(@ModuleContainer PluginContainer moduleContainer) throws Exception {
+    public FlyDetection(@ModuleContainer PluginContainer moduleContainer) {
         super("fly", "Fly Detection");
         this.moduleContainer = moduleContainer;
     }
@@ -89,7 +89,7 @@ public class FlyDetection extends Detection {
     public void onConstruction() {
         if (this.moduleContainer.getInstance().isPresent()) {
             this.plugin = (Guardian) this.moduleContainer.getInstance().get();
-            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().getParent().toFile(),
+            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().toFile(),
                     "detection" + File.separator + this.getId() + ".conf");
             this.configManager = HoconConfigurationLoader.builder().setFile(this.configFile)
                     .setDefaultOptions(this.plugin.getConfigurationOptions()).build();
