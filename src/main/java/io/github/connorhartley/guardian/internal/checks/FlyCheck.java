@@ -35,12 +35,10 @@ import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.util.check.PermissionCheck;
-import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
-import org.spongepowered.api.Sponge;
+import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
+import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -117,52 +115,19 @@ public class FlyCheck extends Check {
                             .delay(((Double) this.analysisTime).intValue())
                             .expire(((Double) this.maximumTickRange).intValue())
 
-                            // Ensures the sequence does not continue if the player dies.
-
-                            .failure((user, event, contextContainer, sequenceReport, lastAction) -> {
-                                SequenceReport report = SequenceReport.builder().of(sequenceReport)
-                                        .build(false);
-
-                                if (event instanceof DestructEntityEvent.Death) {
-                                    return new ConditionResult(true, report);
-                                }
-
-                                return new ConditionResult(false, report);
-                            })
-
-                            // Ensures the sequence does not continue if the player teleports through Nucleus.
-
-                            .failure((user, event, captureContainer, sequenceReport, lastAction) -> {
-                                SequenceReport report = SequenceReport.builder().of(sequenceReport)
-                                        .build(false);
-
-                                if (Sponge.getPluginManager().getPlugin("nucleus").isPresent()) {
-                                    if (event instanceof NucleusTeleportEvent.AboutToTeleport) {
-                                        return new ConditionResult(true, report);
-                                    }
-                                }
-
-                                return new ConditionResult(false, report);
-                            })
-
-                            // Ensures the sequence does not continue if the player teleports.
-
-                            .condition((user, event, contextContainer, sequenceReport, lastAction) -> {
-                                SequenceReport report = SequenceReport.builder().of(sequenceReport)
-                                        .build(false);
-
-                                if (event instanceof MoveEntityEvent.Teleport) {
-                                    return new ConditionResult(false, report);
-                                }
-
-                                return new ConditionResult(true, report);
-                            })
+                            /*
+                             * Cancels the sequence if the player being tracked, dies, teleports,
+                             * teleports through Nucleus and mounts or dismounts a vehicle. This
+                             * is due to the location comparison at the beginning and end of a check
+                             * which these events change the behaviour of.
+                             */
+                            .failure(new CommonMovementConditions.DeathCondition(this.detection))
+                            .failure(new CommonMovementConditions.NucleusTeleportCondition(this.detection))
+                            .failure(new CommonMovementConditions.VehicleMountCondition(this.detection))
+                            .condition(new CommonMovementConditions.TeleportCondition(this.detection))
 
                             // Does the player have permission?
-
-                            .condition(new PermissionCheck(this.detection))
-
-                            // Logic checks.
+                            .condition(new PermissionCheckCondition(this.detection))
 
                             .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
                                 SequenceReport.Builder report = SequenceReport.builder().of(sequenceReport);

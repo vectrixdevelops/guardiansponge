@@ -39,11 +39,11 @@ import org.spongepowered.api.event.Event;
  *
  * Note: This is to be used inside a sequence condition.
  */
-public class PermissionCheck implements Condition {
+public class PermissionCheckCondition implements Condition {
 
     private final Detection detection;
 
-    public PermissionCheck(Detection detection) {
+    public PermissionCheckCondition(Detection detection) {
         this.detection = detection;
     }
 
