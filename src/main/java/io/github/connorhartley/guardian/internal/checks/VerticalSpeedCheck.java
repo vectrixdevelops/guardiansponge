@@ -32,16 +32,13 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlCo
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
-import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
-import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;

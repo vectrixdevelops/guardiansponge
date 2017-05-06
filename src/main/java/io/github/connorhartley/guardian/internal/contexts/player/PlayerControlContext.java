@@ -25,9 +25,9 @@ package io.github.connorhartley.guardian.internal.contexts.player;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.sequence.context.CaptureContext;
-import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.key.Keys;
 

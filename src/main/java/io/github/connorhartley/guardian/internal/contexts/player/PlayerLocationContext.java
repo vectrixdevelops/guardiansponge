@@ -24,9 +24,9 @@
 package io.github.connorhartley.guardian.internal.contexts.player;
 
 import io.github.connorhartley.guardian.Guardian;
-import io.github.connorhartley.guardian.sequence.context.CaptureContext;
-import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
 
 public class PlayerLocationContext extends CaptureContext {
 

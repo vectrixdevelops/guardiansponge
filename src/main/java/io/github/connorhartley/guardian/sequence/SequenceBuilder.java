@@ -27,8 +27,8 @@ import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
-import io.github.connorhartley.guardian.sequence.context.CaptureHandler;
 import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import io.github.connorhartley.guardian.sequence.context.CaptureHandler;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 

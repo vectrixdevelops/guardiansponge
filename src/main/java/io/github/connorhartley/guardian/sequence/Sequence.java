@@ -23,13 +23,13 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.sequence.context.CaptureContext;
-import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
+import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
+import io.github.connorhartley.guardian.sequence.context.CaptureContext;
 import io.github.connorhartley.guardian.sequence.context.CaptureHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;

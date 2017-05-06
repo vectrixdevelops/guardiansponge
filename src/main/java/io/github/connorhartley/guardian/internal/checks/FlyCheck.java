@@ -32,8 +32,8 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationC
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
-import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
