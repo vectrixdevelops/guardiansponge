@@ -73,17 +73,23 @@ public class PlayerPositionContext {
                 if (!this.getPlayer().getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
                     Location<World> currentDepth = this.getPlayer().getLocation().sub(0, i, 0);
                     if (this.depthThreshold != null && this.depthThreshold.getY() == currentDepth.getY()) {
-                        playerAltitude = currentDepth.add(0, 1, 0);
+                        playerAltitude = currentDepth.add(0, 0.25, 0);
                         blockDepth = 1;
+                        break;
                     } else if (this.depthThreshold != null && this.depthThreshold.getY() < currentDepth.getY()) {
-                        playerAltitude = currentDepth.add(0, 1, 0);
-                        blockDepth = currentDepth.getY() - this.depthThreshold.getY();
+                        playerAltitude = currentDepth.add(0, 0.25, 0);
+                        blockDepth = (currentDepth.getY() - this.depthThreshold.getY()) < 1 ?
+                                1 : currentDepth.getY() - this.depthThreshold.getY();
+                        break;
                     } else if (this.depthThreshold != null && this.depthThreshold.getY() > currentDepth.getY()) {
-                        playerAltitude = currentDepth.add(0, 1, 0);
-                        blockDepth = this.depthThreshold.getY() - currentDepth.getY();
+                        playerAltitude = currentDepth.add(0, 0.25, 0);
+                        blockDepth = (this.depthThreshold.getY() - currentDepth.getY()) < 1 ?
+                                1 : this.depthThreshold.getY() - currentDepth.getY();
+                        break;
                     } else if (this.depthThreshold == null) {
                         this.depthThreshold = currentDepth;
-                        playerAltitude = currentDepth.add(0, 1, 0);
+                        playerAltitude = currentDepth.add(0, 0.25, 0);
+                        break;
                     }
                 }
             }

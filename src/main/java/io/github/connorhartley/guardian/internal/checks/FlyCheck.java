@@ -182,7 +182,7 @@ public class FlyCheck extends Check {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
-                                    double altitudeDisplacement = Math.abs(present.getY() - start.getY());
+                                    double altitudeDisplacement = present.getY() - start.getY();
                                     double travelDisplacement = Math.abs(Math.sqrt((
                                             (present.getX() - start.getX()) *
                                                     (present.getX() - start.getX())) +
