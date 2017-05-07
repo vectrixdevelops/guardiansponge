@@ -93,6 +93,7 @@ public class CommonMovementConditions {
                     .build(false);
 
             if (event instanceof RideEntityEvent) {
+                System.out.println("Mount of Dismount Checked");
                 return new ConditionResult(true, report);
             }
 

@@ -178,7 +178,7 @@ public class Guardian {
 
         this.loggingLevel = this.guardianConfiguration.configLoggingLevel.getValue();
 
-        File detectionDirectory = new File(this.guardianConfiguration.getLocation().toFile().getParentFile(), "detection");
+        File detectionDirectory = new File(this.guardianConfiguration.getLocation().toFile(), "detection");
         detectionDirectory.mkdir();
 
         this.moduleSubsystem.setConfigurationDirectory(detectionDirectory);

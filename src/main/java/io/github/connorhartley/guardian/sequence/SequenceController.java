@@ -29,6 +29,7 @@ import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceBeginEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
+import io.github.connorhartley.guardian.util.compatibility.NucleusSequenceListener;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -196,6 +197,7 @@ public class SequenceController implements SequenceInvoker {
         private final SequenceController sequenceController;
         private final SequenceListener sequenceListener;
 
+        private NucleusSequenceListener nucleusSequenceListener;
         private Task.Builder taskBuilder = Task.builder();
         private Task cleanTask;
         private Task updateTask;
@@ -205,11 +207,19 @@ public class SequenceController implements SequenceInvoker {
             this.sequenceController = sequenceController;
             this.sequenceListener = new SequenceListener(this.sequenceController);
 
+            if (Sponge.getPluginManager().getPlugin("nucleus").isPresent()) {
+                this.nucleusSequenceListener = new NucleusSequenceListener(this.sequenceController);
+            }
+
             register();
         }
 
         public void register() {
             Sponge.getEventManager().registerListeners(this.plugin, this.sequenceListener);
+
+            if (Sponge.getPluginManager().getPlugin("nucleus").isPresent() && this.nucleusSequenceListener != null) {
+                Sponge.getEventManager().registerListeners(this.plugin, this.nucleusSequenceListener);
+            }
         }
 
         public void start() {
@@ -225,6 +235,8 @@ public class SequenceController implements SequenceInvoker {
             if (this.updateTask != null) this.updateTask.cancel();
 
             Sponge.getEventManager().unregisterListeners(this.sequenceListener);
+
+            if (nucleusSequenceListener != null) Sponge.getEventManager().unregisterListeners(this.nucleusSequenceListener);
         }
 
     }

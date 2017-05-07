@@ -37,7 +37,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
+    compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
 
     compile 'org.apache.commons:commons-math3:3.6.1'
     compile 'com.github.me4502:ModularFramework:35dc605747'
