@@ -118,7 +118,7 @@ shadowJar {
 
 task minifyShadedJar(type: ProGuardTask, group: 'Build', description: 'Minifies the shaded JAR.') {
     def shadedFile = shadowJar.archivePath
-    def minifiedFile = file(shadedFile.path.replaceFirst('unminified', 'minified'))
+    def minifiedFile = file(shadedFile.path.replaceFirst('-unminified', ''))
 
     injars shadedFile
     outjars minifiedFile
