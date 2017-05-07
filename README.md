@@ -14,6 +14,7 @@ Cheats Guardian can detect so far:
 - Vertical Speed
 - Flight
 - JetPack
+- Jesus (walking on water)
 
 And more coming soon.
 
