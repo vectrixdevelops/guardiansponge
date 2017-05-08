@@ -36,6 +36,7 @@ public class CaptureHandler {
     private final List<CaptureContext> captureContexts = new ArrayList<>();
 
     private CaptureContainer captureContainer;
+    private boolean stopped = false;
 
     public CaptureHandler(Player player) {
         this.player = player;
@@ -61,6 +62,11 @@ public class CaptureHandler {
     public CaptureContainer start() {
         Iterator<CaptureContext> iterator = this.captureContexts.iterator();
 
+        if (this.stopped) {
+            this.captureContainer.clear();
+            this.stopped = false;
+        }
+
         while(iterator.hasNext()) {
             CaptureContext captureContext = iterator.next();
 
@@ -73,10 +79,10 @@ public class CaptureHandler {
     public CaptureContainer update() {
         Iterator<CaptureContext> iterator = this.captureContexts.iterator();
 
-        while(iterator.hasNext()) {
-            CaptureContext captureContext = iterator.next();
+        if (!this.stopped) {
+            while (iterator.hasNext()) {
+                CaptureContext captureContext = iterator.next();
 
-            if (!captureContext.hasStopped()) {
                 this.captureContainer = captureContext.update(this.player, this.captureContainer);
             }
         }
@@ -90,10 +96,10 @@ public class CaptureHandler {
         while(iterator.hasNext()) {
             CaptureContext captureContext = iterator.next();
 
-            if (!captureContext.hasStopped()) {
-                this.captureContainer = captureContext.stop(this.player, this.captureContainer);
-            }
+            this.captureContainer = captureContext.stop(this.player, this.captureContainer);
         }
+
+        this.stopped = true;
     }
 
 }

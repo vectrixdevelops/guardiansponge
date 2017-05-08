@@ -91,14 +91,4 @@ public abstract class CaptureContext {
      */
     public abstract CaptureContainer stop(Player player, CaptureContainer valuation);
 
-    /**
-     * Has Stopped
-     *
-     * <p>Returns true if the data collection phase has
-     * been stopped.</p>
-     *
-     * @return True if data collection phase is stopped
-     */
-    public abstract boolean hasStopped();
-
 }

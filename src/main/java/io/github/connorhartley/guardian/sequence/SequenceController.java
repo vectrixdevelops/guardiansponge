@@ -131,7 +131,7 @@ public class SequenceController implements SequenceInvoker {
             if (this.runningSequences.get(player) == null || this.runningSequences.get(player).isEmpty()) return;
             this.runningSequences.get(player).forEach(sequence -> {
                 if (sequence.hasStarted()) {
-                    sequence.getCaptureHandler().update();
+                    sequence.getCaptureHandler().setContainer(sequence.getCaptureHandler().update());
                 }
             });
         });

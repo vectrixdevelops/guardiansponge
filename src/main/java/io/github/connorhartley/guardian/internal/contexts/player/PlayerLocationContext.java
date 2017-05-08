@@ -31,16 +31,12 @@ import org.spongepowered.api.entity.living.player.Player;
 
 public class PlayerLocationContext extends CaptureContext {
 
-    private boolean stopped = false;
-
     public PlayerLocationContext(Guardian plugin, Detection detection) {
         super(plugin, detection);
     }
 
     @Override
     public CaptureContainer start(Player player, CaptureContainer valuation) {
-        this.stopped = false;
-
         valuation.set(PlayerLocationContext.class, "start_location", player.getLocation());
         valuation.set(PlayerLocationContext.class, "update", 0);
 
@@ -57,13 +53,6 @@ public class PlayerLocationContext extends CaptureContext {
 
     @Override
     public CaptureContainer stop(Player player, CaptureContainer valuation) {
-        this.stopped = true;
-
         return valuation;
-    }
-
-    @Override
-    public boolean hasStopped() {
-        return this.stopped;
     }
 }

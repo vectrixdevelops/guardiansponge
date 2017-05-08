@@ -40,8 +40,6 @@ public class PlayerControlContext {
 
         private double flySpeedControl = 1.065;
 
-        private boolean stopped = false;
-
         public VerticalSpeed(Guardian plugin, Detection detection) {
             super(plugin, detection);
 
@@ -56,8 +54,6 @@ public class PlayerControlContext {
 
         @Override
         public CaptureContainer start(Player player, CaptureContainer valuation) {
-            this.stopped = false;
-
             valuation.set(PlayerControlContext.VerticalSpeed.class, "vertical_control_speed", 1.0);
             valuation.set(PlayerControlContext.VerticalSpeed.class, "update", 0);
 
@@ -80,14 +76,7 @@ public class PlayerControlContext {
 
         @Override
         public CaptureContainer stop(Player player, CaptureContainer valuation) {
-            this.stopped = true;
-
             return valuation;
-        }
-
-        @Override
-        public boolean hasStopped() {
-            return this.stopped;
         }
     }
 
@@ -100,8 +89,6 @@ public class PlayerControlContext {
 
         private double walkSpeedData = 2;
         private double flySpeedData = 2;
-
-        private boolean stopped = false;
 
         public HorizontalSpeed(Guardian plugin, Detection detection) {
             super(plugin, detection);
@@ -119,8 +106,6 @@ public class PlayerControlContext {
 
         @Override
         public CaptureContainer start(Player player, CaptureContainer valuation) {
-            this.stopped = false;
-
             if (player.get(Keys.WALKING_SPEED).isPresent()) {
                 this.walkSpeedData = player.get(Keys.WALKING_SPEED).get();
             }
@@ -181,14 +166,7 @@ public class PlayerControlContext {
 
         @Override
         public CaptureContainer stop(Player player, CaptureContainer valuation) {
-            this.stopped = true;
-
             return valuation;
-        }
-
-        @Override
-        public boolean hasStopped() {
-            return this.stopped;
         }
 
         public enum State {

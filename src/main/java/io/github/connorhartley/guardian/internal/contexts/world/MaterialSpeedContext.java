@@ -41,8 +41,6 @@ public class MaterialSpeedContext extends CaptureContext {
     private double solidSpeedModifier = 1.02;
     private double liquidSpeedModifier = 1.01;
 
-    private boolean stopped = false;
-
     public MaterialSpeedContext(Guardian plugin, Detection detection) {
         super(plugin, detection);
 
@@ -58,8 +56,6 @@ public class MaterialSpeedContext extends CaptureContext {
 
     @Override
     public CaptureContainer start(Player player, CaptureContainer valuation) {
-        this.stopped = false;
-
         valuation.set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
         valuation.set(MaterialSpeedContext.class, "amplifier_material_gas", 0);
         valuation.set(MaterialSpeedContext.class, "amplifier_material_liquid", 0);
@@ -104,13 +100,6 @@ public class MaterialSpeedContext extends CaptureContext {
 
     @Override
     public CaptureContainer stop(Player player, CaptureContainer valuation) {
-        this.stopped = true;
-
         return valuation;
-    }
-
-    @Override
-    public boolean hasStopped() {
-        return this.stopped;
     }
 }
