@@ -118,11 +118,11 @@ public class Sequence {
 
             Action<T> typeAction = (Action<T>) action;
 
-            action.updateCaptureContainer(this.captureHandler.getContainer());
-
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
                 return fail(player, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
+
+            action.updateCaptureContainer(this.captureHandler.getContainer());
 
             if (!typeAction.testConditions(player, event, this.last)) {
                 return fail(player, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));

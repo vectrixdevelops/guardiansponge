@@ -38,16 +38,12 @@ public class PlayerPositionContext {
 
         private Location<World> depthThreshold;
 
-        private boolean stopped = false;
-
         public Altitude(Guardian plugin, Detection detection) {
             super(plugin, detection);
         }
 
         @Override
         public CaptureContainer start(Player player, CaptureContainer valuation) {
-            this.stopped = false;
-
             this.depthThreshold = null;
 
             valuation.set(PlayerPositionContext.Altitude.class, "position_altitude", 0.0);
@@ -110,14 +106,7 @@ public class PlayerPositionContext {
 
         @Override
         public CaptureContainer stop(Player player, CaptureContainer valuation) {
-            this.stopped = true;
-
             return valuation;
-        }
-
-        @Override
-        public boolean hasStopped() {
-            return this.stopped;
         }
     }
 }

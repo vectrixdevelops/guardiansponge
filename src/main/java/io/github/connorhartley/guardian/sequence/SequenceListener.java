@@ -23,7 +23,6 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
@@ -58,7 +57,6 @@ public class SequenceListener {
     @Listener
     public void onRideEntity(RideEntityEvent event, @Getter("getTargetEntity") Player player) {
         this.sequenceController.invoke(player, event);
-        System.out.println("Mount of Dismount Occured");
     }
 
 }
