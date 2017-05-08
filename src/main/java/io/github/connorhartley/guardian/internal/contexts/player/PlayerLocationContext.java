@@ -27,10 +27,10 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import org.spongepowered.api.entity.living.player.Player;
 
 public class PlayerLocationContext extends CaptureContext {
 
-    private CaptureContainer valuation;
     private boolean stopped = false;
 
     public PlayerLocationContext(Guardian plugin, Detection detection) {
@@ -38,33 +38,28 @@ public class PlayerLocationContext extends CaptureContext {
     }
 
     @Override
-    public CaptureContainer getContainer() {
-        return this.valuation;
-    }
-
-    @Override
-    public void start(CaptureContainer valuation) {
-        this.valuation = valuation;
+    public CaptureContainer start(Player player, CaptureContainer valuation) {
         this.stopped = false;
 
-        this.getContainer().set(PlayerLocationContext.class, "start_location", this.getPlayer().getLocation());
-        this.getContainer().set(PlayerLocationContext.class, "update", 0);
+        valuation.set(PlayerLocationContext.class, "start_location", player.getLocation());
+        valuation.set(PlayerLocationContext.class, "update", 0);
+
+        return valuation;
     }
 
     @Override
-    public void update(CaptureContainer valuation) {
-        this.valuation = valuation;
+    public CaptureContainer update(Player player, CaptureContainer valuation) {
+        valuation.set(PlayerLocationContext.class, "present_location", player.getLocation());
+        valuation.<PlayerLocationContext, Integer>transform(PlayerLocationContext.class, "update", oldValue -> oldValue + 1);
 
-        this.getContainer().set(PlayerLocationContext.class, "present_location", this.getPlayer().getLocation());
-
-        this.getContainer().<PlayerLocationContext, Integer>transform(PlayerLocationContext.class, "update", oldValue -> oldValue + 1);
+        return valuation;
     }
 
     @Override
-    public void stop(CaptureContainer valuation) {
-        this.valuation = valuation;
-
+    public CaptureContainer stop(Player player, CaptureContainer valuation) {
         this.stopped = true;
+
+        return valuation;
     }
 
     @Override
