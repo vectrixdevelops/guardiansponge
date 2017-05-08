@@ -119,7 +119,17 @@ public class SpeedDetection extends Detection {
 
     @Listener
     public void onReload(GameReloadEvent event) {
+        this.configuration.update();
+
+        getChecks().forEach(check -> this.plugin.getSequenceController().unregister(check));
+        this.checkTypes.clear();
+
         this.configuration.load();
+
+        this.checkTypes = Arrays.asList(new HorizontalSpeedCheck.Type(this), new VerticalSpeedCheck.Type(this));
+        getChecks().forEach(check -> this.plugin.getSequenceController().register(check));
+
+        this.configuration.update();
     }
 
     @Listener
