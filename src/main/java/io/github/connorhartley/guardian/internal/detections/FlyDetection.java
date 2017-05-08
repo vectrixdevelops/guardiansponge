@@ -119,7 +119,17 @@ public class FlyDetection extends Detection {
 
     @Listener
     public void onReload(GameReloadEvent event) {
+        this.configuration.update();
+
+        getChecks().forEach(check -> this.plugin.getSequenceController().unregister(check));
+        this.checkTypes.clear();
+
         this.configuration.load();
+
+        this.checkTypes = Collections.singletonList(new FlyCheck.Type(this));
+        getChecks().forEach(check -> this.plugin.getSequenceController().register(check));
+
+        this.configuration.update();
     }
 
     @Listener
