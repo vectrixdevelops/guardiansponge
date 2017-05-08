@@ -30,6 +30,7 @@ import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.context.CaptureContext;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.property.block.MatterProperty;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Direction;
 
 import java.util.Map;
@@ -40,7 +41,6 @@ public class MaterialSpeedContext extends CaptureContext {
     private double solidSpeedModifier = 1.02;
     private double liquidSpeedModifier = 1.01;
 
-    private CaptureContainer valuation;
     private boolean stopped = false;
 
     public MaterialSpeedContext(Guardian plugin, Detection detection) {
@@ -57,60 +57,56 @@ public class MaterialSpeedContext extends CaptureContext {
     }
 
     @Override
-    public CaptureContainer getContainer() {
-        return this.valuation;
-    }
-
-    @Override
-    public void start(CaptureContainer valuation) {
-        this.valuation = valuation;
+    public CaptureContainer start(Player player, CaptureContainer valuation) {
         this.stopped = false;
 
-        this.getContainer().set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
-        this.getContainer().set(MaterialSpeedContext.class, "amplifier_material_gas", 0);
-        this.getContainer().set(MaterialSpeedContext.class, "amplifier_material_liquid", 0);
-        this.getContainer().set(MaterialSpeedContext.class, "amplifier_material_solid", 0);
-        this.getContainer().set(MaterialSpeedContext.class, "update", 0);
+        valuation.set(MaterialSpeedContext.class, "speed_amplifier", 1.0);
+        valuation.set(MaterialSpeedContext.class, "amplifier_material_gas", 0);
+        valuation.set(MaterialSpeedContext.class, "amplifier_material_liquid", 0);
+        valuation.set(MaterialSpeedContext.class, "amplifier_material_solid", 0);
+        valuation.set(MaterialSpeedContext.class, "update", 0);
+
+        return valuation;
     }
 
     @Override
-    public void update(CaptureContainer valuation) {
-        this.valuation = valuation;
-
-        MatterProperty matterBelow = this.getPlayer().getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class)
+    public CaptureContainer update(Player player, CaptureContainer valuation) {
+        MatterProperty matterBelow = player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class)
                 .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
-        MatterProperty matterInside = this.getPlayer().getLocation().getBlock().getProperty(MatterProperty.class)
+        MatterProperty matterInside = player.getLocation().getBlock().getProperty(MatterProperty.class)
                 .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
-        MatterProperty matterAbove = this.getPlayer().getLocation().getBlockRelative(Direction.UP).getProperty(MatterProperty.class)
+        MatterProperty matterAbove = player.getLocation().getBlockRelative(Direction.UP).getProperty(MatterProperty.class)
                 .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
 
         if (matterBelow.getValue() == MatterProperty.Matter.GAS && matterInside.getValue() == MatterProperty.Matter.GAS &&
                 matterAbove.getValue() == MatterProperty.Matter.GAS) {
-            this.getContainer().<MaterialSpeedContext, Double>transform(
+            valuation.<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.gasSpeedModifier);
-            this.getContainer().<MaterialSpeedContext, Integer>transform(
+            valuation.<MaterialSpeedContext, Integer>transform(
                     MaterialSpeedContext.class, "amplifier_material_gas", oldValue -> oldValue + 1);
         } else if (matterBelow.getValue() == MatterProperty.Matter.LIQUID || matterInside.getValue() == MatterProperty.Matter.LIQUID ||
                 matterAbove.getValue() == MatterProperty.Matter.LIQUID) {
-            this.getContainer().<MaterialSpeedContext, Double>transform(
+            valuation.<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.liquidSpeedModifier);
-            this.getContainer().<MaterialSpeedContext, Integer>transform(
+            valuation.<MaterialSpeedContext, Integer>transform(
                     MaterialSpeedContext.class, "amplifier_material_liquid", oldValue -> oldValue + 1);
         } else {
-            this.getContainer().<MaterialSpeedContext, Double>transform(
+            valuation.<MaterialSpeedContext, Double>transform(
                         MaterialSpeedContext.class, "speed_amplifier", oldValue -> oldValue * this.solidSpeedModifier);
-            this.getContainer().<MaterialSpeedContext, Integer>transform(
+            valuation.<MaterialSpeedContext, Integer>transform(
                     MaterialSpeedContext.class, "amplifier_material_solid", oldValue -> oldValue + 1);
         }
 
-        this.getContainer().<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
+        valuation.<MaterialSpeedContext, Integer>transform(MaterialSpeedContext.class, "update", oldValue -> oldValue + 1);
+
+        return valuation;
     }
 
     @Override
-    public void stop(CaptureContainer valuation) {
-        this.valuation = valuation;
-
+    public CaptureContainer stop(Player player, CaptureContainer valuation) {
         this.stopped = true;
+
+        return valuation;
     }
 
     @Override

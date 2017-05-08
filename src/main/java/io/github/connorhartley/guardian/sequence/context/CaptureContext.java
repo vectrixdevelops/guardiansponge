@@ -36,7 +36,6 @@ public abstract class CaptureContext {
 
     private final Object plugin;
     private final Detection detection;
-    private Player player;
 
     public CaptureContext(Object plugin, Detection detection) {
         this.plugin = plugin;
@@ -66,44 +65,13 @@ public abstract class CaptureContext {
     }
 
     /**
-     * Set Player
-     *
-     * <p>Sets the player to collect data from.</p>
-     *
-     * @param player Player to collect data from
-     */
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    /**
-     * Get Player
-     *
-     * <p>Returns the player that data is being collected from.</p>
-     *
-     * @return Player collecting data from
-     */
-    public Player getPlayer() {
-        return this.player;
-    }
-
-    /**
-     * Get Container
-     *
-     * <p>Returns the container that data is stored inside.</p>
-     *
-     * @return The data container
-     */
-    public abstract CaptureContainer getContainer();
-
-    /**
      * Start
      *
      * <p>Starts the data collection phase.</p>
      *
      * @param valuation The data container to update
      */
-    public abstract void start(CaptureContainer valuation);
+    public abstract CaptureContainer start(Player player, CaptureContainer valuation);
 
     /**
      * Update
@@ -112,7 +80,7 @@ public abstract class CaptureContext {
      *
      * @param valuation The data container to update
      */
-    public abstract void update(CaptureContainer valuation);
+    public abstract CaptureContainer update(Player player, CaptureContainer valuation);
 
     /**
      * Stop
@@ -121,7 +89,7 @@ public abstract class CaptureContext {
      *
      * @param valuation The data container to update
      */
-    public abstract void stop(CaptureContainer valuation);
+    public abstract CaptureContainer stop(Player player, CaptureContainer valuation);
 
     /**
      * Has Stopped

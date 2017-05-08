@@ -46,14 +46,6 @@ public class CaptureHandler {
         this.captureContexts.addAll(Arrays.asList(captureContexts));
     }
 
-    public void addContext(CaptureContext captureContext) {
-        this.captureContexts.add(captureContext);
-    }
-
-    public List<CaptureContext> getCaptureContexts() {
-        return this.captureContexts;
-    }
-
     public void setContainer(CaptureContainer captureContainer) {
         this.captureContainer = captureContainer;
     }
@@ -62,15 +54,17 @@ public class CaptureHandler {
         return this.captureContainer;
     }
 
+    public Player getPlayer() {
+        return this.player;
+    }
+
     public CaptureContainer start() {
         Iterator<CaptureContext> iterator = this.captureContexts.iterator();
 
         while(iterator.hasNext()) {
             CaptureContext captureContext = iterator.next();
 
-            captureContext.setPlayer(this.player);
-            captureContext.start(this.captureContainer);
-            this.captureContainer = captureContext.getContainer();
+            this.captureContainer = captureContext.start(this.player, this.captureContainer);
         }
 
         return this.captureContainer;
@@ -83,8 +77,7 @@ public class CaptureHandler {
             CaptureContext captureContext = iterator.next();
 
             if (!captureContext.hasStopped()) {
-                captureContext.update(this.captureContainer);
-                this.captureContainer = captureContext.getContainer();
+                this.captureContainer = captureContext.update(this.player, this.captureContainer);
             }
         }
 
@@ -92,10 +85,13 @@ public class CaptureHandler {
     }
 
     public void stop() {
-        for (CaptureContext captureContext : this.captureContexts) {
+        Iterator<CaptureContext> iterator = this.captureContexts.iterator();
+
+        while(iterator.hasNext()) {
+            CaptureContext captureContext = iterator.next();
+
             if (!captureContext.hasStopped()) {
-                captureContext.stop(this.captureContainer);
-                this.captureContainer = captureContext.getContainer();
+                this.captureContainer = captureContext.stop(this.player, this.captureContainer);
             }
         }
     }

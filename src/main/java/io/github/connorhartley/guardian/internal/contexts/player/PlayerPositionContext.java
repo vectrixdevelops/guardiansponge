@@ -28,6 +28,7 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.context.CaptureContext;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -37,7 +38,6 @@ public class PlayerPositionContext {
 
         private Location<World> depthThreshold;
 
-        private CaptureContainer valuation;
         private boolean stopped = false;
 
         public Altitude(Guardian plugin, Detection detection) {
@@ -45,33 +45,27 @@ public class PlayerPositionContext {
         }
 
         @Override
-        public CaptureContainer getContainer() {
-            return this.valuation;
-        }
-
-        @Override
-        public void start(CaptureContainer valuation) {
-            this.valuation = valuation;
+        public CaptureContainer start(Player player, CaptureContainer valuation) {
             this.stopped = false;
 
             this.depthThreshold = null;
 
-            this.getContainer().set(PlayerPositionContext.Altitude.class, "position_altitude", 0.0);
-            this.getContainer().set(PlayerPositionContext.Altitude.class, "update", 0);
+            valuation.set(PlayerPositionContext.Altitude.class, "position_altitude", 0.0);
+            valuation.set(PlayerPositionContext.Altitude.class, "update", 0);
+
+            return valuation;
         }
 
         @Override
-        public void update(CaptureContainer valuation) {
-            this.valuation = valuation;
-
+        public CaptureContainer update(Player player, CaptureContainer valuation) {
             Location<World> playerAltitude = null;
             double blockDepth = 0;
 
-            for (int n = 0; n < this.getPlayer().getLocation().getY(); n++) {
+            for (int n = 0; n < player.getLocation().getY(); n++) {
                 double i = Math.round(0.25 * n);
 
-                if (!this.getPlayer().getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
-                    Location<World> currentDepth = this.getPlayer().getLocation().sub(0, i, 0);
+                if (!player.getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
+                    Location<World> currentDepth = player.getLocation().sub(0, i, 0);
                     if (this.depthThreshold != null && this.depthThreshold.getY() == currentDepth.getY()) {
                         playerAltitude = currentDepth.add(0, 0.25, 0);
                         blockDepth = 1;
@@ -95,28 +89,30 @@ public class PlayerPositionContext {
             }
 
             if (this.depthThreshold == null || playerAltitude == null) {
-                playerAltitude = new Location<>(this.getPlayer().getWorld(), this.getPlayer().getLocation().getX(), 0, this.getPlayer().getLocation().getZ());
+                playerAltitude = new Location<>(player.getWorld(), player.getLocation().getX(), 0, player.getLocation().getZ());
             }
 
-            double altitude = (this.getPlayer().getLocation().getY() - playerAltitude.getY()) - blockDepth;
+            double altitude = (player.getLocation().getY() - playerAltitude.getY()) - blockDepth;
 
             if (altitude < 0) {
-                this.getContainer().<PlayerPositionContext.Altitude, Double>transform(
+                valuation.<PlayerPositionContext.Altitude, Double>transform(
                         PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue);
             } else {
-                this.getContainer().<PlayerPositionContext.Altitude, Double>transform(
+                valuation.<PlayerPositionContext.Altitude, Double>transform(
                         PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue + altitude);
             }
 
-            this.getContainer().<PlayerPositionContext.Altitude, Integer>transform(
+            valuation.<PlayerPositionContext.Altitude, Integer>transform(
                     PlayerPositionContext.Altitude.class, "update", oldValue -> oldValue + 1);
+
+            return valuation;
         }
 
         @Override
-        public void stop(CaptureContainer valuation) {
-            this.valuation = valuation;
-
+        public CaptureContainer stop(Player player, CaptureContainer valuation) {
             this.stopped = true;
+
+            return valuation;
         }
 
         @Override
