@@ -122,7 +122,7 @@ public class SpeedDetection extends Detection {
         this.configuration.update();
 
         getChecks().forEach(check -> this.plugin.getSequenceController().unregister(check));
-        this.checkTypes.clear();
+        this.checkTypes = null;
 
         this.configuration.load();
 
