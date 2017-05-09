@@ -217,6 +217,12 @@ public class JesusCheck extends Check {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
+                                    if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
+                                        if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
+                                            return new ConditionResult(false, report.build(false));
+                                        }
+                                    }
+
                                     double travelDisplacement = Math.abs(Math.sqrt((
                                             (present.getX() - start.getX()) *
                                                     (present.getX() - start.getX())) +

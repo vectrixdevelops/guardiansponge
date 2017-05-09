@@ -65,7 +65,7 @@ import java.util.Optional;
         id = "jesus",
         name = "Jesus Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.1",
+        version = "0.0.2",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
