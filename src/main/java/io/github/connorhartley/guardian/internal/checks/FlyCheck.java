@@ -183,19 +183,12 @@ public class FlyCheck extends Check {
                                     }
 
                                     double altitudeDisplacement = present.getY() - start.getY();
-                                    double travelDisplacement = Math.abs(Math.sqrt((
-                                            (present.getX() - start.getX()) *
-                                                    (present.getX() - start.getX())) +
-                                            (present.getZ() - start.getZ()) *
-                                                    (present.getZ() - start.getZ())));
-
 
                                     double meanAltitude = playerAltitudeGain / ((
                                             ((playerAltitudeGainTicks + this.analysisTime) / 2) +
                                                     ((currentTime - lastAction) / 1000)) / 2);
 
-                                    if (altitudeDisplacement < 1 || meanAltitude < 1 ||
-                                            altitudeDisplacement + this.altitudeMaximum > travelDisplacement) {
+                                    if (altitudeDisplacement < 1 || meanAltitude < 1) {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
