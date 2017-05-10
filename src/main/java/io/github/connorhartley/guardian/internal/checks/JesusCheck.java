@@ -66,7 +66,7 @@ public class JesusCheck extends Check {
         private final Detection detection;
 
         private double analysisTime = 40;
-        private double threshold = 2.5;
+        private double threshold = 1.35;
         private double minimumWaterTime = 0;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
@@ -152,9 +152,7 @@ public class JesusCheck extends Check {
                                 double blockModifier = 1.0;
                                 double playerControlModifier = 4.0;
 
-                                int materialGas = 0;
                                 int materialLiquid = 0;
-                                int materialSolid = 0;
 
                                 PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 

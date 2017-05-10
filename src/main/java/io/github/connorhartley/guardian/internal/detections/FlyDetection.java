@@ -65,7 +65,7 @@ import java.util.Optional;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.16",
+        version = "0.0.17",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -198,6 +198,7 @@ public class FlyDetection extends Detection {
     public static class Configuration implements StorageConsumer<File> {
 
         public StorageValue<String, Double> configAnalysisTime;
+        public StorageValue<String, Double> configMinimumAirTime;
         public StorageValue<String, Double> configAltitudeMaximum;
         public StorageValue<String, Map<String, Double>> configTickBounds;
         public StorageValue<String, Map<String, Double>> configPunishmentLevels;
@@ -232,6 +233,11 @@ public class FlyDetection extends Detection {
                 this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
                         "Time taken to analyse the players air time. 2 seconds is recommended!",
                         2.0, new TypeToken<Double>() {
+                });
+
+                this.configMinimumAirTime = new StorageValue<>(new StorageKey<>("minimum-air-time"),
+                        "The minimum amount of ticks a player needs to be in the air, for the check to take effect.",
+                        1.35, new TypeToken<Double>() {
                 });
 
                 this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
@@ -289,6 +295,7 @@ public class FlyDetection extends Detection {
                 // Create Config Values
 
                 this.configAnalysisTime.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configMinimumAirTime.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configAltitudeMaximum.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configTickBounds.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configPunishmentLevels.<ConfigurationNode>createStorage(this.configurationNode);
@@ -309,6 +316,7 @@ public class FlyDetection extends Detection {
                     this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
 
                     this.configAnalysisTime.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configMinimumAirTime.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configAltitudeMaximum.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configTickBounds.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configPunishmentLevels.<ConfigurationNode>loadStorage(this.configurationNode);
@@ -330,6 +338,7 @@ public class FlyDetection extends Detection {
                     this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
 
                     this.configAnalysisTime.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configMinimumAirTime.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configAltitudeMaximum.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configTickBounds.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configPunishmentLevels.<ConfigurationNode>updateStorage(this.configurationNode);
@@ -360,6 +369,9 @@ public class FlyDetection extends Detection {
                 if (key.get().equals("analysis-time") && typeToken.getRawType()
                         .equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
+                } else if (key.get().equals("minimum-air-time") && typeToken.getRawType()
+                        .equals(this.configMinimumAirTime.getValueTypeToken().getRawType())) {
+                    return Optional.of((StorageValue<K, E>) this.configMinimumAirTime);
                 } else if (key.get().equals("altitude-maximum") && typeToken.getRawType()
                         .equals(this.configAltitudeMaximum.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configAltitudeMaximum);
@@ -389,6 +401,9 @@ public class FlyDetection extends Detection {
                 if (storageValue.getKey().get().equals("analysis-time") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
                     this.configAnalysisTime = (StorageValue<String, Double>) storageValue;
+                } else if (storageValue.getKey().get().equals("minimum-air-time") && storageValue.getValueTypeToken()
+                        .getRawType().equals(this.configMinimumAirTime.getValueTypeToken().getRawType())) {
+                    this.configMinimumAirTime = (StorageValue<String, Double>) storageValue;
                 } else if (storageValue.getKey().get().equals("altitude-maximum") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configAltitudeMaximum.getValueTypeToken().getRawType())) {
                     this.configAltitudeMaximum = (StorageValue<String, Double>) storageValue;

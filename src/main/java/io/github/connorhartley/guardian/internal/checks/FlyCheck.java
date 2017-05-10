@@ -30,6 +30,7 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionContext;
+import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
@@ -66,6 +67,7 @@ public class FlyCheck extends Check {
 
         private double analysisTime = 40;
         private double altitudeMaximum = 3.1;
+        private double minimumAirTime = 1.35;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
 
@@ -76,6 +78,11 @@ public class FlyCheck extends Check {
             if (this.detection.getConfiguration().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
                 this.analysisTime = this.detection.getConfiguration().get(new StorageKey<>("analysis-time"),
                         new TypeToken<Double>(){}).get().getValue() / 0.05;
+            }
+
+            if (this.detection.getConfiguration().get(new StorageKey<>("minimum-air-time"), new TypeToken<Double>() {}).isPresent()) {
+                this.minimumAirTime = this.detection.getConfiguration().get(new StorageKey<>("minimum-air-time"),
+                        new TypeToken<Double>() {}).get().getValue();
             }
 
             if (this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
@@ -102,7 +109,8 @@ public class FlyCheck extends Check {
 
                     .capture(
                             new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new PlayerPositionContext.Altitude((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                            new PlayerPositionContext.Altitude((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                            new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())
                     )
 
                     // Trigger : Move Entity Event
@@ -139,6 +147,9 @@ public class FlyCheck extends Check {
 
                                 long currentTime;
                                 long playerAltitudeGainTicks = 0;
+                                int materialUpdateTicks = 0;
+
+                                int materialGas = 0;
                                 double playerAltitudeGain = 0;
 
                                 if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
@@ -155,6 +166,14 @@ public class FlyCheck extends Check {
 
                                 if (contextValuation.<PlayerPositionContext.Altitude, Double>get(PlayerPositionContext.Altitude.class, "position_altitude").isPresent()) {
                                     playerAltitudeGain = contextValuation.<PlayerPositionContext.Altitude, Double>get(PlayerPositionContext.Altitude.class, "position_altitude").get();
+                                }
+
+                                if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_gas").isPresent()) {
+                                    materialGas = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_gas").get();
+                                }
+
+                                if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
+                                    materialUpdateTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
                                 }
 
                                 if (playerAltitudeGainTicks < this.minimumTickRange) {
@@ -182,13 +201,17 @@ public class FlyCheck extends Check {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
-                                    double altitudeDisplacement = present.getY() - start.getY();
+                                    double altitudeDisplacement = ((present.getY() - start.getY()) == 0) ? this.altitudeMaximum : present.getY() - start.getY();
+
+                                    double airTime = materialGas * (((
+                                            ((1 / ((playerAltitudeGainTicks + materialUpdateTicks) / 2)) *
+                                                    ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) * 0.05;
 
                                     double meanAltitude = playerAltitudeGain / ((
                                             ((playerAltitudeGainTicks + this.analysisTime) / 2) +
                                                     ((currentTime - lastAction) / 1000)) / 2);
 
-                                    if (altitudeDisplacement < 1 || meanAltitude < 1) {
+                                    if (altitudeDisplacement <= 1 || meanAltitude <= 1 || airTime < this.minimumAirTime) {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
