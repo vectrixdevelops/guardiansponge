@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.sequence.context;
 
 import io.github.connorhartley.guardian.util.Transformer;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -55,12 +56,23 @@ public class CaptureContainer {
      * @return The data value if it exists
      */
     public <C, E> Optional<E> get(Class<C> clazz, String name) {
-        String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
-        if (this.contains(combinedId)) {
-            E value = (E) this.rawMap.get(combinedId);
-            if (value != null) {
-                return Optional.of(value);
-            }
+        return this.get(new CaptureKey<C, E>(clazz, name));
+    }
+
+    /**
+     * Get
+     *
+     * <p>Returns data stored under the {@link CaptureContext} path name
+     * and data name. If the data does not exist it will return empty.</p>
+     *
+     * @param captureKey The capture key for path name and value type
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return The data value if it exists
+     */
+    public <C, E> Optional<E> get(CaptureKey<C, E> captureKey) {
+        if (this.contains(captureKey.getId())) {
+            return Optional.ofNullable(captureKey.transformValue(this.rawMap.get(captureKey.getId())));
         }
         return Optional.empty();
     }
@@ -79,8 +91,23 @@ public class CaptureContainer {
      * @return This context container
      */
     public <C, E> CaptureContainer set(Class<C> clazz, String name, E value) {
-        String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
-        this.rawMap.put(combinedId, value);
+        return this.set(new CaptureKey<>(clazz, name), value);
+    }
+
+    /**
+     * Set
+     *
+     * <p>Sets a data value stored under the {@link CaptureContext} path name
+     * and data name. If the data already exists it will be overridden.</p>
+     *
+     * @param captureKey The capture key for path name and value type
+     * @param value The value to store
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return This context container
+     */
+    public <C, E> CaptureContainer set(CaptureKey<C, E> captureKey, @Nullable E value) {
+        this.rawMap.put(captureKey.getId(), captureKey.transformValue(value));
         return this;
     }
 
@@ -98,9 +125,23 @@ public class CaptureContainer {
      * @return This context container
      */
     public <C, E> CaptureContainer transform(Class<C> clazz, String name, Transformer<E> transformer) {
-        String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
-        E value = (E) this.rawMap.get(combinedId);
-        this.set(clazz, name, transformer.transform(value));
+        return this.transform(new CaptureKey<>(clazz, name), transformer);
+    }
+
+    /**
+     * Transform
+     *
+     * <p>Transform uses a lambda function to transform the existing data value
+     * stored under the {@link CaptureContext} path name and data name.</p>
+     *
+     * @param captureKey The capture key for path name and value type
+     * @param transformer Lambda transform function
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return This context container
+     */
+    public <C, E> CaptureContainer transform(CaptureKey<C, E> captureKey, Transformer<E> transformer) {
+        this.set(captureKey, transformer.transform(captureKey.transformValue(this.rawMap.get(captureKey.getId()))));
         return this;
     }
 
@@ -113,12 +154,27 @@ public class CaptureContainer {
      * @param clazz The class used for the path name
      * @param name The name used for the data name
      * @param <C> The class type
+     * @param <E> The data value type
      * @return This context container
      */
-    public <C> CaptureContainer remove(Class<C> clazz, String name) {
-        String combinedId = clazz.getCanonicalName().toLowerCase() + ":" + name.toLowerCase();
-        if (this.contains(combinedId)) {
-            this.rawMap.remove(combinedId);
+    public <C, E> CaptureContainer remove(Class<C> clazz, String name) {
+        return this.remove(new CaptureKey<C, E>(clazz, name));
+    }
+
+    /**
+     * Remove
+     *
+     * <p>Removes a data value stored under the {@link CaptureContext} path name
+     * and data name.</p>
+     *
+     * @param captureKey The capture key for path name and value type
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return This context container
+     */
+    public <C, E> CaptureContainer remove(CaptureKey<C, E> captureKey) {
+        if (this.contains(captureKey.getId())) {
+            this.rawMap.remove(captureKey.getId());
         }
         return this;
     }
