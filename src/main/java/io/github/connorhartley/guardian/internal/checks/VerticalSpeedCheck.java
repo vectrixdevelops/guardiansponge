@@ -95,7 +95,8 @@ public class VerticalSpeedCheck extends Check {
 
                     .capture(
                             new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new PlayerControlContext.VerticalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                            new PlayerControlContext.VerticalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                            new PlayerControlContext.InvalidMove((Guardian) this.getDetection().getPlugin(), this.getDetection())
                     )
 
                     // Trigger : Move Entity Event

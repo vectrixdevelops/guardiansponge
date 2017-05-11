@@ -23,18 +23,79 @@
  */
 package io.github.connorhartley.guardian.internal.contexts.player;
 
+import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import io.github.connorhartley.guardian.sequence.context.CaptureKey;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.util.Tuple;
 
 import java.util.Map;
+import java.util.Set;
 
 public class PlayerControlContext {
+
+    public static class InvalidMove extends CaptureContext {
+
+        public static CaptureKey<InvalidMove, Set<Tuple<String, String>>> invalidMoves =
+                new CaptureKey<>(InvalidMove.class, "invalid_movements", Sets.newHashSet());
+
+        public InvalidMove(Guardian plugin, Detection detection) {
+            super(plugin, detection);
+        }
+
+        @Override
+        public CaptureContainer start(Player player, CaptureContainer valuation) {
+            valuation.set(InvalidMove.invalidMoves, null);
+
+            return valuation;
+        }
+
+        @Override
+        public CaptureContainer update(Player player, CaptureContainer valuation) {
+            if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
+                if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
+                    valuation.transform(InvalidMove.invalidMoves, oldValue -> {
+                        if (!oldValue.contains(Tuple.of("sneaking", "sprinting"))) {
+                            oldValue.add(Tuple.of("sneaking", "sprinting"));
+                            return oldValue;
+                        }
+                        return oldValue;
+                    });
+                }
+            } else if (player.get(Keys.IS_SITTING).isPresent() && player.get(Keys.IS_SITTING).get()) {
+                if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
+                    valuation.transform(InvalidMove.invalidMoves, oldValue -> {
+                        if (!oldValue.contains(Tuple.of("sitting", "sprinting"))) {
+                            oldValue.add(Tuple.of("sitting", "sprinting"));
+                            return oldValue;
+                        }
+                        return oldValue;
+                    });
+                } else if (player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get()) {
+                    valuation.transform(InvalidMove.invalidMoves, oldValue -> {
+                        if (!oldValue.contains(Tuple.of("sitting", "flying"))) {
+                            oldValue.add(Tuple.of("sitting", "flying"));
+                            return oldValue;
+                        }
+                        return oldValue;
+                    });
+                }
+            }
+
+            return valuation;
+        }
+
+        @Override
+        public CaptureContainer stop(Player player, CaptureContainer valuation) {
+            return valuation;
+        }
+    }
 
     public static class VerticalSpeed extends CaptureContext {
 
