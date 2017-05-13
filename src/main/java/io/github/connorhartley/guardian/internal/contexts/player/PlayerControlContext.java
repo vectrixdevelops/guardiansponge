@@ -40,18 +40,18 @@ import java.util.Set;
 
 public class PlayerControlContext {
 
-    public static class InvalidMove extends CaptureContext {
+    public static class InvalidControl extends CaptureContext {
 
-        public static CaptureKey<InvalidMove, Set<Tuple<String, String>>> invalidMoves =
-                new CaptureKey<>(InvalidMove.class, "invalid_movements", Sets.newHashSet());
+        public static CaptureKey<InvalidControl, Set<Tuple<String, String>>> invalidMoves =
+                new CaptureKey<>(InvalidControl.class, "invalid_movements", Sets.newHashSet());
 
-        public InvalidMove(Guardian plugin, Detection detection) {
+        public InvalidControl(Guardian plugin, Detection detection) {
             super(plugin, detection);
         }
 
         @Override
         public CaptureContainer start(Player player, CaptureContainer valuation) {
-            valuation.set(InvalidMove.invalidMoves, null);
+            valuation.set(InvalidControl.invalidMoves, null);
 
             return valuation;
         }
@@ -60,7 +60,7 @@ public class PlayerControlContext {
         public CaptureContainer update(Player player, CaptureContainer valuation) {
             if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                    valuation.transform(InvalidMove.invalidMoves, oldValue -> {
+                    valuation.transform(InvalidControl.invalidMoves, oldValue -> {
                         if (!oldValue.contains(Tuple.of("sneaking", "sprinting"))) {
                             oldValue.add(Tuple.of("sneaking", "sprinting"));
                             return oldValue;
@@ -70,7 +70,7 @@ public class PlayerControlContext {
                 }
             } else if (player.get(Keys.IS_SITTING).isPresent() && player.get(Keys.IS_SITTING).get()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                    valuation.transform(InvalidMove.invalidMoves, oldValue -> {
+                    valuation.transform(InvalidControl.invalidMoves, oldValue -> {
                         if (!oldValue.contains(Tuple.of("sitting", "sprinting"))) {
                             oldValue.add(Tuple.of("sitting", "sprinting"));
                             return oldValue;
@@ -78,7 +78,7 @@ public class PlayerControlContext {
                         return oldValue;
                     });
                 } else if (player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get()) {
-                    valuation.transform(InvalidMove.invalidMoves, oldValue -> {
+                    valuation.transform(InvalidControl.invalidMoves, oldValue -> {
                         if (!oldValue.contains(Tuple.of("sitting", "flying"))) {
                             oldValue.add(Tuple.of("sitting", "flying"));
                             return oldValue;

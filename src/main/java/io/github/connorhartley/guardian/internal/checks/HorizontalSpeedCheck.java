@@ -110,8 +110,7 @@ public class HorizontalSpeedCheck extends Check {
                     .capture(
                             new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
                             new PlayerControlContext.HorizontalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new PlayerControlContext.InvalidMove((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                            new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())
                     )
 
                     // Trigger : Move Entity Event

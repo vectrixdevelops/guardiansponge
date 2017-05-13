@@ -100,11 +100,7 @@ public class PlayerPositionContext {
 
             double altitude = (player.getLocation().getY() - playerAltitude.getY()) - Math.abs(blockDepth);
 
-//            if (altitude < 0) {
-//                valuation.transform(Altitude.positionAltitude, oldValue -> oldValue);
-//            } else {
-                valuation.transform(Altitude.positionAltitude, oldValue -> oldValue + altitude);
-//            }
+            valuation.transform(Altitude.positionAltitude, oldValue -> oldValue + altitude);
 
             valuation.transform(Altitude.update, oldValue -> oldValue + 1);
 

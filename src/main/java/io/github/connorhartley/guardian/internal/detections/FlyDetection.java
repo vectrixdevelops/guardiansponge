@@ -65,7 +65,7 @@ import java.util.Optional;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.17",
+        version = "0.0.18",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -237,7 +237,7 @@ public class FlyDetection extends Detection {
 
                 this.configMinimumAirTime = new StorageValue<>(new StorageKey<>("minimum-air-time"),
                         "The minimum amount of ticks a player needs to be in the air, for the check to take effect.",
-                        1.35, new TypeToken<Double>() {
+                        1.85, new TypeToken<Double>() {
                 });
 
                 this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),

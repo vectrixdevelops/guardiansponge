@@ -65,7 +65,7 @@ import java.util.Optional;
         id = "jesus",
         name = "Jesus Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.2",
+        version = "0.0.3",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -244,7 +244,7 @@ public class JesusDetection extends Detection {
 
                 this.configMinimumWaterTime = new StorageValue<>(new StorageKey<>("minimum-water-time"),
                         "The minimum amount of ticks a player needs to be in water or on water, for the check to take effect.",
-                        1.35, new TypeToken<Double>() {
+                        0.5, new TypeToken<Double>() {
                 });
 
                 Map<String, Double> tickBounds = new HashMap<>();
