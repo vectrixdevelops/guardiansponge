@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian;
 
 import com.me4502.modularframework.ModuleController;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Guardian Detection
@@ -43,9 +44,12 @@ public final class GuardianDetection {
     }
 
     void register() {
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.SpeedDetection");
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.FlyDetection");
-        this.moduleController.registerModule("io.github.connorhartley.guardian.internal.detections.JesusDetection");
+        String internalDetectionPath = "io.github.connorhartley.guardian.internal.detections.";
+
+        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "SpeedDetection"));
+        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "FlyDetection"));
+        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "JesusDetection"));
+        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "InvalidMovementDetection"));
     }
 
 }

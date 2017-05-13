@@ -212,7 +212,8 @@ public class SpeedDetection extends Detection {
         private final File configFile;
         private final ConfigurationLoader<CommentedConfigurationNode> configManager;
 
-        private Configuration(SpeedDetection speedDetection, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
+        private Configuration(SpeedDetection speedDetection, File configFile,
+                              ConfigurationLoader<CommentedConfigurationNode> configManager) {
             this.speedDetection = speedDetection;
             this.configFile = configFile;
             this.configManager = configManager;
@@ -375,7 +376,7 @@ public class SpeedDetection extends Detection {
 
         @Override
         public File getLocation() {
-            return configFile;
+            return this.configFile;
         }
 
         @Override

@@ -33,7 +33,7 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
-import io.github.connorhartley.guardian.internal.checks.FlyCheck;
+import io.github.connorhartley.guardian.internal.checks.InvalidMoveCheck;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
 import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
@@ -55,6 +55,7 @@ import org.spongepowered.api.plugin.PluginContainer;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -62,14 +63,14 @@ import java.util.Map;
 import java.util.Optional;
 
 @Module(
-        id = "fly",
-        name = "Fly Detection",
+        id = "invalidmovement",
+        name = "Invalid Movement Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.18",
+        version = "0.0.1",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
-public class FlyDetection extends Detection {
+public class InvalidMovementDetection extends Detection {
 
     private Guardian plugin;
     private File configFile;
@@ -80,8 +81,8 @@ public class FlyDetection extends Detection {
     private boolean ready = false;
 
     @Inject
-    public FlyDetection(@ModuleContainer PluginContainer moduleContainer) {
-        super("fly", "Fly Detection");
+    public InvalidMovementDetection(@ModuleContainer PluginContainer moduleContainer) {
+        super("invalidmovement", "Invalid Movement Detection");
         this.moduleContainer = moduleContainer;
     }
 
@@ -103,11 +104,11 @@ public class FlyDetection extends Detection {
         this.plugin.getPunishmentController().bind(KickPunishment.class, this);
         this.plugin.getPunishmentController().bind(ReportPunishment.class, this);
 
-        this.checkTypes = Collections.singletonList(new FlyCheck.Type(this));
+        this.checkTypes = Collections.singletonList(new InvalidMoveCheck.Type(this));
 
         this.configuration.update();
 
-        DetectionTypes.FLY_DETECTION = Optional.of(this);
+        DetectionTypes.INVALID_MOVEMENT_DETECTION = Optional.of(this);
         this.ready = true;
     }
 
@@ -126,7 +127,7 @@ public class FlyDetection extends Detection {
 
         this.configuration.load();
 
-        this.checkTypes = Collections.singletonList(new FlyCheck.Type(this));
+        this.checkTypes = Collections.singletonList(new InvalidMoveCheck.Type(this));
         getChecks().forEach(check -> this.plugin.getSequenceController().register(check));
 
         this.configuration.update();
@@ -167,7 +168,7 @@ public class FlyDetection extends Detection {
 
     @Override
     public String getPermission(String permissionTarget) {
-        return StringUtils.join("guardian.detections.", permissionTarget, ".fly");
+        return StringUtils.join("guardian.detections.", permissionTarget, ".invalidmovement");
     }
 
     @Override
@@ -186,7 +187,7 @@ public class FlyDetection extends Detection {
     }
 
     @Override
-    public FlyDetection.Configuration getConfiguration() {
+    public StorageConsumer<File> getConfiguration() {
         return this.configuration;
     }
 
@@ -198,8 +199,6 @@ public class FlyDetection extends Detection {
     public static class Configuration implements StorageConsumer<File> {
 
         public StorageValue<String, Double> configAnalysisTime;
-        public StorageValue<String, Double> configMinimumAirTime;
-        public StorageValue<String, Double> configAltitudeMaximum;
         public StorageValue<String, Map<String, Double>> configTickBounds;
         public StorageValue<String, Map<String, Double>> configPunishmentLevels;
         public StorageValue<String, Map<String, String>> configPunishmentProperties;
@@ -208,12 +207,13 @@ public class FlyDetection extends Detection {
 
         private CommentedConfigurationNode configurationNode;
 
-        private final FlyDetection flyDetection;
+        private final InvalidMovementDetection invalidMovementDetection;
         private final File configFile;
         private final ConfigurationLoader<CommentedConfigurationNode> configManager;
 
-        private Configuration(FlyDetection flyDetection, File configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
-            this.flyDetection = flyDetection;
+        private Configuration(InvalidMovementDetection invalidMovementDetection, File configFile,
+                              ConfigurationLoader<CommentedConfigurationNode> configManager) {
+            this.invalidMovementDetection = invalidMovementDetection;
             this.configFile = configFile;
             this.configManager = configManager;
         }
@@ -226,23 +226,13 @@ public class FlyDetection extends Detection {
                     this.configFile.createNewFile();
                 }
 
-                this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
+                this.configurationNode = this.configManager.load(this.invalidMovementDetection.getPlugin().getConfigurationOptions());
 
                 // Define Config Values
 
                 this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
-                        "Time taken to analyse the players air time. 2 seconds is recommended!",
+                        "Time taken to analyse the players movement. 2 seconds is recommended!",
                         2.0, new TypeToken<Double>() {
-                });
-
-                this.configMinimumAirTime = new StorageValue<>(new StorageKey<>("minimum-air-time"),
-                        "The minimum amount of ticks a player needs to be in the air, for the check to take effect.",
-                        1.85, new TypeToken<Double>() {
-                });
-
-                this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
-                        "Maximum vanilla mean altitude the player can go. 3.1 is recommended!",
-                        3.1, new TypeToken<Double>() {
                 });
 
                 Map<String, Double> tickBounds = new HashMap<>();
@@ -256,9 +246,9 @@ public class FlyDetection extends Detection {
 
                 Map<String, Double> punishmentLevels = new HashMap<>();
                 punishmentLevels.put("warn", 0.1);
-//              punishmentLevels.put("flag", 0.2);
-//              punishmentLevels.put("report", 0.3);
-//              punishmentLevels.put("kick", 0.5);
+//            punishmentLevels.put("flag", 0.2);
+//            punishmentLevels.put("report", 0.3);
+//            punishmentLevels.put("kick", 0.5);
 
                 this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
                         "Punishments that happen when the user reaches the individual severity threshold.",
@@ -284,8 +274,8 @@ public class FlyDetection extends Detection {
 
                 Map<String, Double> severityDistribution = new HashMap<>();
                 severityDistribution.put("lower", 0d);
-                severityDistribution.put("mean", 10d);
-                severityDistribution.put("standard-deviation", 5d);
+                severityDistribution.put("mean", 25d);
+                severityDistribution.put("standard-deviation", 15d);
 
                 this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
                         "Normal distribution properties for calculating the over-shot value from the mean.",
@@ -295,8 +285,6 @@ public class FlyDetection extends Detection {
                 // Create Config Values
 
                 this.configAnalysisTime.<ConfigurationNode>createStorage(this.configurationNode);
-                this.configMinimumAirTime.<ConfigurationNode>createStorage(this.configurationNode);
-                this.configAltitudeMaximum.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configTickBounds.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configPunishmentLevels.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configPunishmentProperties.<ConfigurationNode>createStorage(this.configurationNode);
@@ -305,7 +293,7 @@ public class FlyDetection extends Detection {
 
                 this.configManager.save(this.configurationNode);
             } catch (IOException e) {
-                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to create FlyDetection module's configuration!", e);
+                this.invalidMovementDetection.getPlugin().getLogger().error("A problem occurred attempting to create InvalidMovementDetection module's configuration!", e);
             }
         }
 
@@ -313,11 +301,9 @@ public class FlyDetection extends Detection {
         public void load() {
             try {
                 if (this.exists()) {
-                    this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
+                    this.configurationNode = this.configManager.load(this.invalidMovementDetection.getPlugin().getConfigurationOptions());
 
                     this.configAnalysisTime.<ConfigurationNode>loadStorage(this.configurationNode);
-                    this.configMinimumAirTime.<ConfigurationNode>loadStorage(this.configurationNode);
-                    this.configAltitudeMaximum.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configTickBounds.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configPunishmentLevels.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configPunishmentProperties.<ConfigurationNode>loadStorage(this.configurationNode);
@@ -327,7 +313,7 @@ public class FlyDetection extends Detection {
                     this.configManager.save(this.configurationNode);
                 }
             } catch (IOException e) {
-                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to load FlyDetection module's configuration!", e);
+                this.invalidMovementDetection.getPlugin().getLogger().error("A problem occurred attempting to load InvalidMovementDetection module's configuration!", e);
             }
         }
 
@@ -335,11 +321,9 @@ public class FlyDetection extends Detection {
         public void update() {
             try {
                 if (this.exists()) {
-                    this.configurationNode = this.configManager.load(this.flyDetection.getPlugin().getConfigurationOptions());
+                    this.configurationNode = this.configManager.load(this.invalidMovementDetection.getPlugin().getConfigurationOptions());
 
                     this.configAnalysisTime.<ConfigurationNode>updateStorage(this.configurationNode);
-                    this.configMinimumAirTime.<ConfigurationNode>updateStorage(this.configurationNode);
-                    this.configAltitudeMaximum.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configTickBounds.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configPunishmentLevels.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configPunishmentProperties.<ConfigurationNode>updateStorage(this.configurationNode);
@@ -349,7 +333,7 @@ public class FlyDetection extends Detection {
                     this.configManager.save(this.configurationNode);
                 }
             } catch (IOException e) {
-                this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to update FlyDetection module's configuration!", e);
+                this.invalidMovementDetection.getPlugin().getLogger().error("A problem occurred attempting to load InvalidMovementDetection module's configuration!", e);
             }
         }
 
@@ -369,12 +353,6 @@ public class FlyDetection extends Detection {
                 if (key.get().equals("analysis-time") && typeToken.getRawType()
                         .equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
-                } else if (key.get().equals("minimum-air-time") && typeToken.getRawType()
-                        .equals(this.configMinimumAirTime.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configMinimumAirTime);
-                } else if (key.get().equals("altitude-maximum") && typeToken.getRawType()
-                        .equals(this.configAltitudeMaximum.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configAltitudeMaximum);
                 } else if (key.get().equals("tick-bounds") && typeToken.getRawType()
                         .equals(this.configTickBounds.getValueTypeToken().getRawType())) {
                     return Optional.of((StorageValue<K, E>) this.configTickBounds);
@@ -401,12 +379,6 @@ public class FlyDetection extends Detection {
                 if (storageValue.getKey().get().equals("analysis-time") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
                     this.configAnalysisTime = (StorageValue<String, Double>) storageValue;
-                } else if (storageValue.getKey().get().equals("minimum-air-time") && storageValue.getValueTypeToken()
-                        .getRawType().equals(this.configMinimumAirTime.getValueTypeToken().getRawType())) {
-                    this.configMinimumAirTime = (StorageValue<String, Double>) storageValue;
-                } else if (storageValue.getKey().get().equals("altitude-maximum") && storageValue.getValueTypeToken()
-                        .getRawType().equals(this.configAltitudeMaximum.getValueTypeToken().getRawType())) {
-                    this.configAltitudeMaximum = (StorageValue<String, Double>) storageValue;
                 } else if (storageValue.getKey().get().equals("tick-bounds") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configTickBounds.getValueTypeToken().getRawType())) {
                     this.configTickBounds = (StorageValue<String, Map<String, Double>>) storageValue;

@@ -393,7 +393,7 @@ public class JesusDetection extends Detection {
 
         @Override
         public File getLocation() {
-            return configFile;
+            return this.configFile;
         }
 
         @Override
