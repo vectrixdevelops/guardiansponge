@@ -27,16 +27,26 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.context.CaptureContext;
+import io.github.connorhartley.guardian.sequence.context.CaptureKey;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.util.Optional;
+
 public class PlayerPositionContext {
 
     public static class Altitude extends CaptureContext {
 
-        private Location<World> depthThreshold;
+        public static CaptureKey<Altitude, Location<World>> depthThreshold =
+                new CaptureKey<>(Altitude.class, "depth_threshold", null);
+
+        public static CaptureKey<Altitude, Double> positionAltitude =
+                new CaptureKey<>(Altitude.class, "position_altitude", 0.0);
+
+        public static CaptureKey<Altitude, Integer> update =
+                new CaptureKey<>(Altitude.class, "update", 0);
 
         public Altitude(Guardian plugin, Detection detection) {
             super(plugin, detection);
@@ -44,10 +54,9 @@ public class PlayerPositionContext {
 
         @Override
         public CaptureContainer start(Player player, CaptureContainer valuation) {
-            this.depthThreshold = null;
-
-            valuation.set(PlayerPositionContext.Altitude.class, "position_altitude", 0.0);
-            valuation.set(PlayerPositionContext.Altitude.class, "update", 0);
+            valuation.set(Altitude.depthThreshold);
+            valuation.set(Altitude.positionAltitude);
+            valuation.set(Altitude.update);
 
             return valuation;
         }
@@ -59,47 +68,45 @@ public class PlayerPositionContext {
 
             for (int n = 0; n < player.getLocation().getY(); n++) {
                 double i = Math.round(0.25 * n);
+                Optional<Location<World>> maxDepth = valuation.get(Altitude.depthThreshold);
 
                 if (!player.getLocation().sub(0, i, 0).getBlockType().equals(BlockTypes.AIR)) {
                     Location<World> currentDepth = player.getLocation().sub(0, i, 0);
-                    if (this.depthThreshold != null && this.depthThreshold.getY() == currentDepth.getY()) {
+                    if (maxDepth.isPresent() && maxDepth.get().getY() == currentDepth.getY()) {
                         playerAltitude = currentDepth.add(0, 0.25, 0);
                         blockDepth = 1;
                         break;
-                    } else if (this.depthThreshold != null && this.depthThreshold.getY() < currentDepth.getY()) {
+                    } else if (maxDepth.isPresent() && maxDepth.get().getY() < currentDepth.getY()) {
                         playerAltitude = currentDepth.add(0, 0.25, 0);
-                        blockDepth = (currentDepth.getY() - this.depthThreshold.getY()) < 1 ?
-                                1 : currentDepth.getY() - this.depthThreshold.getY();
+                        blockDepth = (currentDepth.getY() - maxDepth.get().getY()) > -1 ?
+                                -1 : currentDepth.getY() - maxDepth.get().getY();
                         break;
-                    } else if (this.depthThreshold != null && this.depthThreshold.getY() > currentDepth.getY()) {
+                    } else if (maxDepth.isPresent() && maxDepth.get().getY() > currentDepth.getY()) {
                         playerAltitude = currentDepth.add(0, 0.25, 0);
-                        blockDepth = (this.depthThreshold.getY() - currentDepth.getY()) < 1 ?
-                                1 : this.depthThreshold.getY() - currentDepth.getY();
+                        blockDepth = (maxDepth.get().getY() - currentDepth.getY()) < 1 ?
+                                1 : maxDepth.get().getY() - currentDepth.getY();
                         break;
-                    } else if (this.depthThreshold == null) {
-                        this.depthThreshold = currentDepth;
+                    } else if (!maxDepth.isPresent()) {
+                        valuation.set(Altitude.depthThreshold, currentDepth);
                         playerAltitude = currentDepth.add(0, 0.25, 0);
                         break;
                     }
                 }
             }
 
-            if (this.depthThreshold == null || playerAltitude == null) {
+            if (!valuation.get(Altitude.depthThreshold).isPresent() || playerAltitude == null) {
                 playerAltitude = new Location<>(player.getWorld(), player.getLocation().getX(), 0, player.getLocation().getZ());
             }
 
-            double altitude = (player.getLocation().getY() - playerAltitude.getY()) - blockDepth;
+            double altitude = (player.getLocation().getY() - playerAltitude.getY()) - Math.abs(blockDepth);
 
-            if (altitude < 0) {
-                valuation.<PlayerPositionContext.Altitude, Double>transform(
-                        PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue);
-            } else {
-                valuation.<PlayerPositionContext.Altitude, Double>transform(
-                        PlayerPositionContext.Altitude.class, "position_altitude", oldValue -> oldValue + altitude);
-            }
+//            if (altitude < 0) {
+//                valuation.transform(Altitude.positionAltitude, oldValue -> oldValue);
+//            } else {
+                valuation.transform(Altitude.positionAltitude, oldValue -> oldValue + altitude);
+//            }
 
-            valuation.<PlayerPositionContext.Altitude, Integer>transform(
-                    PlayerPositionContext.Altitude.class, "update", oldValue -> oldValue + 1);
+            valuation.transform(Altitude.update, oldValue -> oldValue + 1);
 
             return valuation;
         }
