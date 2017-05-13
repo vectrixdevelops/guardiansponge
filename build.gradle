@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'net.sf.proguard:proguard-gradle:5.3.2'
+        classpath 'net.sf.proguard:proguard-gradle:5.3.3'
     }
 }
 
@@ -13,9 +13,9 @@ plugins {
     id 'idea'
     id 'eclipse'
     id 'signing'
-    id 'com.github.hierynomus.license' version '0.13.1'
+    id 'com.github.hierynomus.license' version '0.14.0'
     id 'ninja.miserable.blossom' version '1.0.1'
-    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id 'com.github.johnrengelman.shadow' version '2.0.0'
     id 'org.spongepowered.plugin' version '0.8.1'
 }
 
