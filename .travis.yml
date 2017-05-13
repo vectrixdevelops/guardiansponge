@@ -6,4 +6,4 @@ jdk:
   - openjdk8
   - oraclejdk8
 
-script: gradle build
+script: ./gradlew build
