@@ -117,7 +117,7 @@ public class HorizontalSpeedCheck extends Check {
 
                     .action(MoveEntityEvent.class)
 
-                    // After 2 Seconds : Move Entity Event
+                    // After Analysis Time : Move Entity Event
 
                     .action(MoveEntityEvent.class)
                             .delay(((Double) this.analysisTime).intValue())
