@@ -101,6 +101,21 @@ public class CaptureContainer {
      * and data name. If the data already exists it will be overridden.</p>
      *
      * @param captureKey The capture key for path name and value type
+     * @param <C> The class type
+     * @param <E> The data value type
+     * @return This context container
+     */
+    public <C, E> CaptureContainer set(CaptureKey<C, E> captureKey) {
+        return this.set(captureKey, null);
+    }
+
+    /**
+     * Set
+     *
+     * <p>Sets a data value stored under the {@link CaptureContext} path name
+     * and data name. If the data already exists it will be overridden.</p>
+     *
+     * @param captureKey The capture key for path name and value type
      * @param value The value to store
      * @param <C> The class type
      * @param <E> The data value type

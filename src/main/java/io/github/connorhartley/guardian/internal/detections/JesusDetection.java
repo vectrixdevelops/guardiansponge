@@ -33,7 +33,7 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
-import io.github.connorhartley.guardian.internal.checks.JesusCheck;
+import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
 import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
@@ -103,7 +103,7 @@ public class JesusDetection extends Detection {
         this.plugin.getPunishmentController().bind(KickPunishment.class, this);
         this.plugin.getPunishmentController().bind(ReportPunishment.class, this);
 
-        this.checkTypes = Collections.singletonList(new JesusCheck.Type(this));
+        this.checkTypes = Collections.singletonList(new HorizontalSpeedCheck.Type(this));
 
         this.configuration.update();
 
@@ -126,7 +126,7 @@ public class JesusDetection extends Detection {
 
         this.configuration.load();
 
-        this.checkTypes = Collections.singletonList(new JesusCheck.Type(this));
+        this.checkTypes = Collections.singletonList(new HorizontalSpeedCheck.Type(this));
         getChecks().forEach(check -> this.plugin.getSequenceController().register(check));
 
         this.configuration.update();
