@@ -41,6 +41,7 @@ import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -211,7 +212,8 @@ public class FlyCheck extends Check {
                                             ((playerAltitudeGainTicks + this.analysisTime) / 2) +
                                                     ((currentTime - lastAction) / 1000)) / 2);
 
-                                    if (altitudeDisplacement <= 1 || meanAltitude <= 1 || airTime < this.minimumAirTime) {
+                                    if (altitudeDisplacement <= 1 || meanAltitude <= 1 || airTime < this.minimumAirTime
+                                            || user.getPlayer().get().getLocation().getRelative(Direction.DOWN).hasBlock()) {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
