@@ -245,12 +245,16 @@ public class HorizontalSpeedCheck extends Check {
                                                     " while they're " + playerControlState.name() + ".");
 
                                     if (travelDisplacement > maximumSpeed) {
-                                        if (this.detection instanceof JesusDetection && waterTime > this.minimumWaterTime &&
-                                                (travelDisplacement - maximumSpeed) > this.threshold) {
-                                            report
-                                                    .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
-                                                    .type("walking on water (jesus)")
-                                                    .severity(travelDisplacement - maximumSpeed);
+                                        if (this.detection instanceof JesusDetection) {
+                                            if (waterTime > this.minimumWaterTime &&
+                                                    (travelDisplacement - maximumSpeed) > this.threshold) {
+                                                report
+                                                        .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
+                                                        .type("walking on water (jesus)")
+                                                        .severity(travelDisplacement - maximumSpeed);
+                                            } else {
+                                                return new ConditionResult(false, sequenceReport);
+                                            }
                                         }
 
                                         report
