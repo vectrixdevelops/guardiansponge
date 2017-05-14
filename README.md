@@ -9,14 +9,23 @@ Guardian also provides a service for Precogs to reduce plugin conflicts with tho
 The plugin is a work in progress and there are plans for more detections to be added. Make sure to come chat with us on the
 [Guardian Discord](https://discord.gg/pvSFtMm) or the [IchorPowered Discord](https://discord.gg/NzfKazX).
 
-Cheats Guardian can detect so far:
+Movement Cheats Detected:
 
-- Horizontal Speed
-- Vertical Speed
-- Flight
-- JetPack
-- Jesus (walking on water)
-- Invalid Movement (auto sneak and many others)
+- [x] Horizontal Speed (Speed)
+- [x] Vertical Speed (Speed)
+- [x] Flight (Flight, Speed)
+- [x] JetPack (Flight, Speed) [Lacks specific]
+- [x] Jesus (Speed)
+- [x] Blink (Speed) [Lacks specific]
+- [x] Spider / WallClimb (Flight, Speed) [Lacks specific]
+- [x] Timer (Speed) [Lacks specific]
+- [x] Sneak (InvalidMovement, Speed)
+- [ ] FastLadder
+- [ ] Phase/NoClip
+- [ ] MiniJump
+- [ ] Glide
+- [ ] SelfDamage
+- [ ] HighJump / LongJump
 
 And more coming soon.
 
