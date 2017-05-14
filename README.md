@@ -52,7 +52,7 @@ Ensure that the SpongeAPI version is the same for the one you are using on your 
 
 ## Credits
 
- - [me4502](https://github.com/me4502) from making Precogs to spending some of his time and knowledge to improving this AntiCheat, your help is hugely appreciated.
+ - [me4502](https://github.com/me4502) for making Precogs to spending some of his time and knowledge to improving this AntiCheat, your help is hugely appreciated.
 
  - [ModularFramework](https://github.com/me4502/ModularFramework) providing a modular class loading system.
  - [Precogs](https://github.com/me4502/Precogs) providing a service for plugins to integrate with the AntiCheat. 
