@@ -55,7 +55,6 @@ import org.spongepowered.api.plugin.PluginContainer;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

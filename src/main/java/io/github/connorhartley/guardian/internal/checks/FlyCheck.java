@@ -28,7 +28,6 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
-import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerPositionContext;
 import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedContext;
