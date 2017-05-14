@@ -16,6 +16,7 @@ Cheats Guardian can detect so far:
 - Flight
 - JetPack
 - Jesus (walking on water)
+- Invalid Movement (auto sneak and many others)
 
 And more coming soon.
 
