@@ -213,7 +213,8 @@ public class FlyCheck extends Check {
                                                     ((currentTime - lastAction) / 1000)) / 2);
 
                                     if (altitudeDisplacement <= 1 || meanAltitude <= 1 || airTime < this.minimumAirTime
-                                            || user.getPlayer().get().getLocation().getRelative(Direction.DOWN).hasBlock()) {
+                                            || user.getPlayer().get().getLocation().sub(0, -1, 0).hasBlock()
+                                            || user.getPlayer().get().getLocation().sub(0, -2, 0).hasBlock()) {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
