@@ -38,6 +38,7 @@ import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -213,8 +214,8 @@ public class FlyCheck extends Check {
                                                     ((currentTime - lastAction) / 1000)) / 2);
 
                                     if (altitudeDisplacement <= 1 || meanAltitude <= 1 || airTime < this.minimumAirTime
-                                            || user.getPlayer().get().getLocation().sub(0, -1, 0).hasBlock()
-                                            || user.getPlayer().get().getLocation().sub(0, -2, 0).hasBlock()) {
+                                            || !user.getPlayer().get().getLocation().sub(0, -1, 0).getBlock().getType().equals(BlockTypes.AIR)
+                                            || !user.getPlayer().get().getLocation().sub(0, -2, 0).getBlock().getType().equals(BlockTypes.AIR)) {
                                         return new ConditionResult(false, report.build(false));
                                     }
 
