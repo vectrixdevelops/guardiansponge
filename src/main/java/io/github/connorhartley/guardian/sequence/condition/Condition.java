@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.sequence.condition;
 
 import io.github.connorhartley.guardian.sequence.SequenceReport;
-import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
+import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 
@@ -43,7 +43,7 @@ public interface Condition {
      *
      * @param user The user to check
      * @param event The event that caused the check
-     * @param captureContainer The context container with context data
+     * @param captureContainer The capture container with capture data
      * @param sequenceReport The sequenced report chained down
      * @param lastAction The time since the last action
      * @return The result of the condition

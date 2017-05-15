@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian;
 
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
@@ -38,9 +39,11 @@ import io.github.connorhartley.guardian.punishment.PunishmentController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
+import io.github.connorhartley.guardian.util.TupleSerializer;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.MetricsLite;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -61,6 +64,7 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.util.Tuple;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -153,6 +157,8 @@ public class Guardian {
                 .manipulatorId("punishmenttag")
                 .dataName("GuardianPunishmentTag")
                 .buildAndRegister(this.pluginContainer);
+
+        TypeSerializers.getDefaultSerializers().registerType(new TypeToken<Tuple<?, ?>>() {}, new TupleSerializer());
 
         getLogger().info("Loading system.");
 

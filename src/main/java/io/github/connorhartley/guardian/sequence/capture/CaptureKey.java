@@ -21,32 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.util.compatibility;
+package io.github.connorhartley.guardian.sequence.capture;
 
-import io.github.connorhartley.guardian.sequence.Sequence;
-import io.github.connorhartley.guardian.sequence.SequenceController;
-import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.filter.Getter;
+public class CaptureKey<C, E> {
 
-/**
- * Sequence Listener
- *
- * Event listeners to run through the {@link SequenceController} to
- * apply to the specific {@link Sequence}s specific .
- */
-public class NucleusSequenceListener {
+    private E value;
 
-    private final SequenceController sequenceController;
+    private final String clazz;
+    private final String name;
 
-    public NucleusSequenceListener(SequenceController sequenceController) {
-        this.sequenceController = sequenceController;
+    public CaptureKey(Class<C> clazz, String name) {
+        this(clazz, name, null);
     }
 
-    @Listener
-    public void onNucleusTeleport(NucleusTeleportEvent event, @Getter("getTargetEntity") Player player) {
-        this.sequenceController.invoke(player, event);
+    public CaptureKey(Class<C> clazz, String name, E value) {
+        this.clazz = clazz.getCanonicalName().toLowerCase();
+        this.name = name.toLowerCase();
+        this.value = value;
+    }
+
+    public String getId() {
+        return this.clazz + ":" + this.name;
+    }
+
+    @SuppressWarnings("unchecked")
+    public E transformValue(Object object) {
+        if (object == null) return this.value;
+        return (E) object;
     }
 
 }

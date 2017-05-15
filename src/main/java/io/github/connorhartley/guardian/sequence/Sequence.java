@@ -28,9 +28,9 @@ import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
-import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
-import io.github.connorhartley.guardian.sequence.context.CaptureContext;
-import io.github.connorhartley.guardian.sequence.context.CaptureHandler;
+import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
+import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
+import io.github.connorhartley.guardian.sequence.capture.CaptureHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -173,7 +173,7 @@ public class Sequence {
      *
      * <p>Returns the {@link CaptureHandler} for this {@link Sequence}.</p>
      *
-     * @return This context handler
+     * @return This capture handler
      */
     public CaptureHandler getCaptureHandler() {
         return this.captureHandler;
@@ -184,7 +184,7 @@ public class Sequence {
      *
      * <p>Returns a {@link CaptureContainer} of data that have been analysed.</p>
      *
-     * @return A list of context values
+     * @return A list of capture values
      */
     public CaptureContainer getCaptureContainer() {
         return this.captureHandler.getContainer();

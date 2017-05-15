@@ -25,9 +25,9 @@ package io.github.connorhartley.guardian.util.check;
 
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
-import io.github.connorhartley.guardian.sequence.context.CaptureContainer;
 import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
@@ -40,7 +40,7 @@ import org.spongepowered.api.event.entity.RideEntityEvent;
  * Common Movement Conditions
  *
  * Commonly used movement based conditions for
- * small compatibility or optimization fixes.
+ * small compat or optimization fixes.
  */
 public class CommonMovementConditions {
 

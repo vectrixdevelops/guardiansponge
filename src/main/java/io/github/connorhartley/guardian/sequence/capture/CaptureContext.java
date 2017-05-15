@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence.context;
+package io.github.connorhartley.guardian.sequence.capture;
 
 import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.entity.living.player.Player;
@@ -29,7 +29,7 @@ import org.spongepowered.api.entity.living.player.Player;
 /**
  * Capture Context
  *
- * Represents context through collecting data in
+ * Represents capture through collecting data in
  * the period of a sequence.
  */
 public abstract class CaptureContext {
@@ -45,7 +45,7 @@ public abstract class CaptureContext {
     /**
      * Get Plugin
      *
-     * <p>Returns the plugin this context was initialized by.</p>
+     * <p>Returns the plugin this capture was initialized by.</p>
      *
      * @return Plugin that initialized
      */
@@ -56,7 +56,7 @@ public abstract class CaptureContext {
     /**
      * Get Detection
      *
-     * <p>Returns the detection this context was initialized for.</p>
+     * <p>Returns the detection this capture was initialized for.</p>
      *
      * @return Detection for initialize
      */

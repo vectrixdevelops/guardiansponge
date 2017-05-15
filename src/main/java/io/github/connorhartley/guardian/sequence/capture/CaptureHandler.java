@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence.context;
+package io.github.connorhartley.guardian.sequence.capture;
 
 import org.spongepowered.api.entity.living.player.Player;
 

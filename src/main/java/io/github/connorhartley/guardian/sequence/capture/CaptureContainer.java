@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence.context;
+package io.github.connorhartley.guardian.sequence.capture;
 
 import io.github.connorhartley.guardian.util.Transformer;
 
@@ -33,7 +33,7 @@ import java.util.Optional;
 /**
  * CaptureContext Container
  *
- * A storage for all context data.
+ * A storage for all capture data.
  */
 public class CaptureContainer {
 
@@ -88,7 +88,7 @@ public class CaptureContainer {
      * @param value The value to store
      * @param <C> The class type
      * @param <E> The data value type
-     * @return This context container
+     * @return This capture container
      */
     public <C, E> CaptureContainer set(Class<C> clazz, String name, E value) {
         return this.set(new CaptureKey<>(clazz, name), value);
@@ -103,7 +103,7 @@ public class CaptureContainer {
      * @param captureKey The capture key for path name and value type
      * @param <C> The class type
      * @param <E> The data value type
-     * @return This context container
+     * @return This capture container
      */
     public <C, E> CaptureContainer set(CaptureKey<C, E> captureKey) {
         return this.set(captureKey, null);
@@ -119,7 +119,7 @@ public class CaptureContainer {
      * @param value The value to store
      * @param <C> The class type
      * @param <E> The data value type
-     * @return This context container
+     * @return This capture container
      */
     public <C, E> CaptureContainer set(CaptureKey<C, E> captureKey, @Nullable E value) {
         this.rawMap.put(captureKey.getId(), captureKey.transformValue(value));
@@ -137,7 +137,7 @@ public class CaptureContainer {
      * @param transformer Lambda transform function
      * @param <C> The class type
      * @param <E> The data value type
-     * @return This context container
+     * @return This capture container
      */
     public <C, E> CaptureContainer transform(Class<C> clazz, String name, Transformer<E> transformer) {
         return this.transform(new CaptureKey<>(clazz, name), transformer);
@@ -153,7 +153,7 @@ public class CaptureContainer {
      * @param transformer Lambda transform function
      * @param <C> The class type
      * @param <E> The data value type
-     * @return This context container
+     * @return This capture container
      */
     public <C, E> CaptureContainer transform(CaptureKey<C, E> captureKey, Transformer<E> transformer) {
         this.set(captureKey, transformer.transform(captureKey.transformValue(this.rawMap.get(captureKey.getId()))));
@@ -170,7 +170,7 @@ public class CaptureContainer {
      * @param name The name used for the data name
      * @param <C> The class type
      * @param <E> The data value type
-     * @return This context container
+     * @return This capture container
      */
     public <C, E> CaptureContainer remove(Class<C> clazz, String name) {
         return this.remove(new CaptureKey<C, E>(clazz, name));
@@ -185,7 +185,7 @@ public class CaptureContainer {
      * @param captureKey The capture key for path name and value type
      * @param <C> The class type
      * @param <E> The data value type
-     * @return This context container
+     * @return This capture container
      */
     public <C, E> CaptureContainer remove(CaptureKey<C, E> captureKey) {
         if (this.contains(captureKey.getId())) {

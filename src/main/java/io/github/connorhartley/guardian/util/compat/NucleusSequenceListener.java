@@ -21,33 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence.context;
+package io.github.connorhartley.guardian.util.compat;
 
-public class CaptureKey<C, E> {
+import io.github.connorhartley.guardian.sequence.Sequence;
+import io.github.connorhartley.guardian.sequence.SequenceController;
+import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.filter.Getter;
 
-    private E value;
+/**
+ * Sequence Listener
+ *
+ * Event listeners to run through the {@link SequenceController} to
+ * apply to the specific {@link Sequence}s specific .
+ */
+public class NucleusSequenceListener {
 
-    private final String clazz;
-    private final String name;
+    private final SequenceController sequenceController;
 
-    public CaptureKey(Class<C> clazz, String name) {
-        this(clazz, name, null);
+    public NucleusSequenceListener(SequenceController sequenceController) {
+        this.sequenceController = sequenceController;
     }
 
-    public CaptureKey(Class<C> clazz, String name, E value) {
-        this.clazz = clazz.getCanonicalName().toLowerCase();
-        this.name = name.toLowerCase();
-        this.value = value;
-    }
-
-    public String getId() {
-        return this.clazz + ":" + this.name;
-    }
-
-    @SuppressWarnings("unchecked")
-    public E transformValue(Object object) {
-        if (object == null) return this.value;
-        return (E) object;
+    @Listener
+    public void onNucleusTeleport(NucleusTeleportEvent event, @Getter("getTargetEntity") Player player) {
+        this.sequenceController.invoke(player, event);
     }
 
 }

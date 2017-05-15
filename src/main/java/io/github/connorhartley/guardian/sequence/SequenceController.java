@@ -29,7 +29,7 @@ import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceBeginEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
-import io.github.connorhartley.guardian.util.compatibility.NucleusSequenceListener;
+import io.github.connorhartley.guardian.util.compat.NucleusSequenceListener;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
