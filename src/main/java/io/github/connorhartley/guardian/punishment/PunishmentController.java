@@ -27,7 +27,9 @@ import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
+import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.util.Tuple;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -61,36 +63,32 @@ public class PunishmentController {
      * @param punishment Information about this punishment
      */
     public void execute(Detection detection, User user, Punishment punishment) {
-        Map<String, Double> detectionPunishLevels = new HashMap<>();
-        String currentPunishLevel = "";
+        Map<String, Tuple<Double, Double>> detectionPunishLevels = new HashMap<>();
+        List<String> currentPunishLevels = new ArrayList<>();
 
         if (detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
-                new TypeToken<Map<String, Double>>(){}).isPresent()) {
+                new TypeToken<Map<String, Tuple<Double, Double>>>(){}).isPresent()) {
             detectionPunishLevels = detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
-                            new TypeToken<Map<String, Double>>(){}).get().getValue();
+                            new TypeToken<Map<String, Tuple<Double, Double>>>(){}).get().getValue();
         }
 
-        for (Map.Entry<String, Double> entry : detectionPunishLevels.entrySet()) {
-            if (punishment.getProbability() >= entry.getValue() && entry.getValue() != -1) {
-                currentPunishLevel = entry.getKey();
+        for (Map.Entry<String, Tuple<Double, Double>> entry : detectionPunishLevels.entrySet()) {
+            if (punishment.getProbability() >= entry.getValue().getFirst() &&
+                    punishment.getProbability() <= entry.getValue().getSecond() &&
+                    entry.getValue().getFirst() != -1 && entry.getValue().getSecond() != -1) {
+                currentPunishLevels.add(entry.getKey());
             }
         }
 
         if (this.registry.get(detection) != null) {
             for (PunishmentType punishmentType : this.registry.get(detection)) {
-                if (currentPunishLevel.startsWith("custom:")) {
-                    if (punishmentType.getName().equals("custom")) {
-                        punishmentType.handle(
-                                new String[]{ currentPunishLevel.replace("custom:", "") },
-                                user, punishment);
-                        break;
-                    }
-                }
+                currentPunishLevels.forEach(currentPunishLevel -> {
+                    String[] level = StringUtils.split(currentPunishLevel, "&");
 
-                if (punishmentType.getName().equals(currentPunishLevel)) {
-                    punishmentType.handle(null, user, punishment);
-                    break;
-                }
+                    if (punishmentType.getName().equals(level[1])) {
+                        punishmentType.handle(new String[]{ level[2] }, user, punishment);
+                    }
+                });
             }
         }
     }
