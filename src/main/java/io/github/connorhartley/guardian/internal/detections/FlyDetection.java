@@ -42,6 +42,7 @@ import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
+import io.github.connorhartley.guardian.util.ConfigurationCommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -232,17 +233,44 @@ public class FlyDetection extends Detection {
                 // Define Config Values
 
                 this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
-                        "Time taken to analyse the players air time. 2 seconds is recommended!",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Analysis Time")
+                                        .addParagraph(new String[]{
+                                                "Refers to the time taken to run a sequence ",
+                                                "of collecting data and after analyzing.",
+                                                "",
+                                                "Recommended time is 2.0 seconds."
+                                        })
+                                        .export(),
                         2.0, new TypeToken<Double>() {
                 });
 
                 this.configMinimumAirTime = new StorageValue<>(new StorageKey<>("minimum-air-time"),
-                        "The minimum amount of ticks a player needs to be in the air, for the check to take effect.",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Minimum Air Time")
+                                        .addParagraph(new String[]{
+                                                "Refers to the amount of ticks the player ",
+                                                "must be flying, in order for the check to ",
+                                                "become valid.",
+                                                "",
+                                                "Recommended time is 1.85 percent."
+                                        })
+                                        .export(),
                         1.85, new TypeToken<Double>() {
                 });
 
                 this.configAltitudeMaximum = new StorageValue<>(new StorageKey<>("altitude-maximum"),
-                        "Maximum vanilla mean altitude the player can go. 3.1 is recommended!",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Altitude Maximum")
+                                        .addParagraph(new String[]{
+                                                "Refers to the maximum altitude the player ",
+                                                "can reach before they're considered flying.",
+                                                "",
+                                                "DEPRECATED",
+                                                "",
+                                                "Recommended 3.1 blocks."
+                                        })
+                                        .export(),
                         3.1, new TypeToken<Double>() {
                 });
 
@@ -251,7 +279,17 @@ public class FlyDetection extends Detection {
                 tickBounds.put("max", 1.5);
 
                 this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
-                        "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Tick Bounds")
+                                        .addParagraph(new String[]{
+                                                "Refers to the minimum and maximum tick ",
+                                                "bounds in order for a check to be valid.",
+                                                "",
+                                                "DEPRECATED",
+                                                "",
+                                                "Recommended 0.75 and 1.5 percent."
+                                        })
+                                        .export(),
                         tickBounds, new TypeToken<Map<String, Double>>() {
                 });
 
@@ -262,7 +300,15 @@ public class FlyDetection extends Detection {
 //              punishmentLevels.put("kick", 0.5);
 
                 this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
-                        "Punishments that happen when the user reaches the individual severity threshold.",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Punishment Levels")
+                                        .addParagraph(new String[]{
+                                                "Refers to the level bounds set ",
+                                                "for a specific punishment to take ",
+                                                "place on a player. Includes custom and ",
+                                                "warning."
+                                        })
+                                        .export(),
                         punishmentLevels, new TypeToken<Map<String, Tuple<Double, Double>>>() {
                 });
 
@@ -271,7 +317,15 @@ public class FlyDetection extends Detection {
                 punishmentProperties.put("releasetime", "12096000");
 
                 this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
-                        "Properties that define certain properties for all the punishments in this detection.",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Punishment Properties")
+                                        .addParagraph(new String[]{
+                                                "Refers to properties the punishements may use ",
+                                                "for certain actions to take place.",
+                                                "",
+                                                "DEPRECATED"
+                                        })
+                                        .export(),
                         punishmentProperties, new TypeToken<Map<String, String>>() {
                 });
 
@@ -279,7 +333,13 @@ public class FlyDetection extends Detection {
                 customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
 
                 this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
-                        "Custom punishments that can execute custom commands.",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Custom Punishements")
+                                        .addParagraph(new String[]{
+                                                "Allows you to setup custom punishements ",
+                                                "with various options and commands."
+                                        })
+                                        .export(),
                         customPunishments, new TypeToken<Map<String, List<String>>>() {
                 });
 
@@ -289,7 +349,16 @@ public class FlyDetection extends Detection {
                 severityDistribution.put("standard-deviation", 5d);
 
                 this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
-                        "Normal distribution properties for calculating the over-shot value from the mean.",
+                        new ConfigurationCommentDocument(45, " ")
+                                        .addHeader("Severity Distribution")
+                                        .addParagraph(new String[]{
+                                                "Refers to the normal distribution used ",
+                                                "to calculate the severity from the value ",
+                                                "recieved by the check.",
+                                                "",
+                                                "Recommended to use 0 as the lower mean as 10 and standard deviation as 5."
+                                        })
+                                        .export(),
                         severityDistribution, new TypeToken<Map<String, Double>>() {
                 });
 
@@ -305,7 +374,7 @@ public class FlyDetection extends Detection {
                 this.configSeverityDistribution.<ConfigurationNode>createStorage(this.configurationNode);
 
                 this.configManager.save(this.configurationNode);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 this.flyDetection.getPlugin().getLogger().error("A problem occurred attempting to create FlyDetection module's configuration!", e);
             }
         }
