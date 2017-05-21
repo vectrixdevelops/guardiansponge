@@ -68,7 +68,8 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
 
             this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
-            this.configVersion = new StorageValue<>(new StorageKey<>("version"), "Do not edit this! Internal use only!",
+            this.configVersion = new StorageValue<>(new StorageKey<>("version"),
+                    "Do not edit this! Internal use only!",
                     this.plugin.getPluginContainer().getVersion().orElse("unknown"), null);
             this.configEnabledDetections = new StorageValue<>(new StorageKey<>("enabled"), "Detections in this list will be enabled.",
                     Arrays.asList("speed", "fly", "jesus", "invalidmovement"), null);
