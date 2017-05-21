@@ -25,6 +25,9 @@ package io.github.connorhartley.guardian.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ConfigurationCommentDocument {
 
     public static final String[] LOGO = {
@@ -49,7 +52,7 @@ public class ConfigurationCommentDocument {
     private final int width;
     private final String padding;
 
-    private String[] document = { "" };
+    private List<String> document = new ArrayList<>();
 
     public ConfigurationCommentDocument() throws Exception {
         this(MIN_WIDTH, " ");
@@ -61,7 +64,7 @@ public class ConfigurationCommentDocument {
         this.width = width;
         this.padding = padding;
 
-        this.document[0] = NEW_LINE;
+        this.document.add(NEW_LINE);
     }
 
     public ConfigurationCommentDocument addLogo(String[] logo) throws Exception {
@@ -92,26 +95,26 @@ public class ConfigurationCommentDocument {
 
         for (String index : logo) {
             if (index.length() == logoWidth) {
-                this.document[this.document.length + 1] = StringUtils.join(
+                this.document.add(StringUtils.join(
                         StringUtils.repeat(" ", ((Double) leftPad).intValue()),
                         index,
                         StringUtils.repeat(" ", ((Double) rightPad).intValue()),
                         NEW_LINE
-                );
+                ));
             } else {
                 double additionalRightPad = logoWidth - index.length();
 
-                this.document[this.document.length + 1] = StringUtils.join(
+                this.document.add(StringUtils.join(
                         StringUtils.repeat(" ", ((Double) leftPad).intValue()),
                         index,
                         StringUtils.repeat(" ", ((Double) additionalRightPad).intValue()),
                         StringUtils.repeat(" ", ((Double) rightPad).intValue()),
                         NEW_LINE
-                );
+                ));
             }
         }
 
-        this.document[this.document.length + 1] = NEW_LINE;
+        this.document.add(NEW_LINE);
 
         return this;
     }
@@ -133,7 +136,7 @@ public class ConfigurationCommentDocument {
             rightPad = Math.ceil(((this.width - (leftHeaderWing + text.length() + rightHeaderWing)) / 2));
         }
 
-        this.document[this.document.length + 1] = StringUtils.join(
+        this.document.add(StringUtils.join(
                 HEADER_DELCARATION[0],
                 StringUtils.repeat(" ", ((Double) leftPad).intValue()),
                 HEADER_DELCARATION[1],
@@ -142,24 +145,26 @@ public class ConfigurationCommentDocument {
                 StringUtils.repeat(" ", ((Double) rightPad).intValue()),
                 HEADER_DELCARATION[3],
                 NEW_LINE
-        );
+        ));
 
-        this.document[this.document.length + 1] = NEW_LINE;
+        this.document.add(NEW_LINE);
 
         return this;
     }
 
     public ConfigurationCommentDocument addParagraph(String[] text) {
         for (String index : text) {
-            this.document[this.document.length + 1] = StringUtils.join(
-                    text,
+            this.document.add(StringUtils.join(
+                    index,
                     NEW_LINE
-            );
+            ));
         }
 
-        this.document[this.document.length + 1] = NEW_LINE;
-
         return this;
+    }
+
+    public String export() {
+        return StringUtils.join(this.document, "");
     }
 
 }
