@@ -51,6 +51,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.util.Tuple;
 
 import java.io.File;
 import java.io.IOException;
@@ -203,7 +204,7 @@ public class JesusDetection extends Detection {
         public StorageValue<String, Map<String, Double>> configTickBounds;
         public StorageValue<String, Map<String, Double>> configControlValues;
         public StorageValue<String, Map<String, Double>> configMaterialValues;
-        public StorageValue<String, Map<String, Double>> configPunishmentLevels;
+        public StorageValue<String, Map<String, Tuple<Double, Double>>> configPunishmentLevels;
         public StorageValue<String, Map<String, String>> configPunishmentProperties;
         public StorageValue<String, Map<String, List<String>>> configCustomPunishments;
         public StorageValue<String, Map<String, Double>> configSeverityDistribution;
@@ -256,15 +257,15 @@ public class JesusDetection extends Detection {
                         tickBounds, new TypeToken<Map<String, Double>>() {
                 });
 
-                Map<String, Double> punishmentLevels = new HashMap<>();
-                punishmentLevels.put("warn", 0.1);
+                Map<String, Tuple<Double, Double>> punishmentLevels = new HashMap<>();
+                punishmentLevels.put("warn", Tuple.of(0.1, 0.2));
 //            punishmentLevels.put("flag", 0.2);
 //            punishmentLevels.put("report", 0.3);
 //            punishmentLevels.put("kick", 0.5);
 
                 this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
                         "Punishments that happen when the user reaches the individual severity threshold.",
-                        punishmentLevels, new TypeToken<Map<String, Double>>() {
+                        punishmentLevels, new TypeToken<Map<String, Tuple<Double, Double>>>() {
                 });
 
                 Map<String, String> punishmentProperties = new HashMap<>();
@@ -454,7 +455,7 @@ public class JesusDetection extends Detection {
                     this.configPunishmentProperties = (StorageValue<String, Map<String, String>>) storageValue;
                 } else if (storageValue.getKey().get().equals("punishment-levels") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configPunishmentLevels.getValueTypeToken().getRawType())) {
-                    this.configPunishmentLevels = (StorageValue<String, Map<String, Double>>) storageValue;
+                    this.configPunishmentLevels = (StorageValue<String, Map<String, Tuple<Double, Double>>>) storageValue;
                 } else if (storageValue.getKey().get().equals("custom-punishments") && storageValue.getValueTypeToken()
                         .getRawType().equals(this.configCustomPunishments.getValueTypeToken().getRawType())) {
                     this.configCustomPunishments = (StorageValue<String, Map<String, List<String>>>) storageValue;
