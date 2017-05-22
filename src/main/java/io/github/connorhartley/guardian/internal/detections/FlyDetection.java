@@ -320,7 +320,7 @@ public class FlyDetection extends Detection {
                         new ConfigurationCommentDocument(45, " ")
                                         .addHeader("Punishment Properties")
                                         .addParagraph(new String[]{
-                                                "Refers to properties the punishements may use ",
+                                                "Refers to properties the punishments may use ",
                                                 "for certain actions to take place.",
                                                 "",
                                                 "DEPRECATED"
@@ -334,9 +334,9 @@ public class FlyDetection extends Detection {
 
                 this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
                         new ConfigurationCommentDocument(45, " ")
-                                        .addHeader("Custom Punishements")
+                                        .addHeader("Custom Punishments")
                                         .addParagraph(new String[]{
-                                                "Allows you to setup custom punishements ",
+                                                "Allows you to setup custom punishments ",
                                                 "with various options and commands."
                                         })
                                         .export(),
@@ -354,7 +354,7 @@ public class FlyDetection extends Detection {
                                         .addParagraph(new String[]{
                                                 "Refers to the normal distribution used ",
                                                 "to calculate the severity from the value ",
-                                                "recieved by the check.",
+                                                "received by the check.",
                                                 "",
                                                 "Recommended to use 0 as the lower mean as 10 and standard deviation as 5."
                                         })
