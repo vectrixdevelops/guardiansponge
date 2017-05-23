@@ -42,6 +42,7 @@ import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.storage.container.StorageValue;
+import io.github.connorhartley.guardian.util.ConfigurationCommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -234,17 +235,44 @@ public class JesusDetection extends Detection {
                 // Define Config Values
 
                 this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
-                        "Time taken to analyse the players speed. 2 seconds is recommended!",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Analysis Time")
+                                .addParagraph(new String[]{
+                                        "Refers to the time taken to run a sequence ",
+                                        "of collecting data and after analyzing.",
+                                        "",
+                                        "Recommended time is 2.0 seconds."
+                                })
+                                .export(),
                         2.0, new TypeToken<Double>() {
                 });
 
                 this.configThreshold = new StorageValue<>(new StorageKey<>("threshold"),
-                        "The threshold before the severity starts being considered in the check. 8.4 is recommended!",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Threshold")
+                                .addParagraph(new String[]{
+                                        "The threshold the maximum value must ",
+                                        "reach before it is considered valid.",
+                                        "",
+                                        "DEPRECATED",
+                                        "",
+                                        "Recommended 8.4"
+                                })
+                                .export(),
                         8.4, new TypeToken<Double>() {
                 });
 
                 this.configMinimumWaterTime = new StorageValue<>(new StorageKey<>("minimum-water-time"),
-                        "The minimum amount of ticks a player needs to be in water or on water, for the check to take effect.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Minimum Water Time")
+                                .addParagraph(new String[]{
+                                        "Refers to the amount of ticks the player ",
+                                        "must be on / in water, in order for the check to ",
+                                        "become valid.",
+                                        "",
+                                        "Recommended time is 0.5 percent."
+                                })
+                                .export(),
                         0.5, new TypeToken<Double>() {
                 });
 
@@ -253,18 +281,36 @@ public class JesusDetection extends Detection {
                 tickBounds.put("max", 1.5);
 
                 this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
-                        "Percentage of the analysis-time in ticks to compare the check time to ensure accurate reports.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Tick Bounds")
+                                .addParagraph(new String[]{
+                                        "Refers to the minimum and maximum tick ",
+                                        "bounds in order for a check to be valid.",
+                                        "",
+                                        "DEPRECATED",
+                                        "",
+                                        "Recommended 0.75 and 1.5 percent."
+                                })
+                                .export(),
                         tickBounds, new TypeToken<Map<String, Double>>() {
                 });
 
                 Map<String, Tuple<Double, Double>> punishmentLevels = new HashMap<>();
                 punishmentLevels.put("warn", Tuple.of(0.1, 0.2));
-//            punishmentLevels.put("flag", 0.2);
-//            punishmentLevels.put("report", 0.3);
-//            punishmentLevels.put("kick", 0.5);
+//              punishmentLevels.put("flag", 0.2);
+//              punishmentLevels.put("report", 0.3);
+//              punishmentLevels.put("kick", 0.5);
 
                 this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
-                        "Punishments that happen when the user reaches the individual severity threshold.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Punishment Levels")
+                                .addParagraph(new String[]{
+                                        "Refers to the level bounds set ",
+                                        "for a specific punishment to take ",
+                                        "place on a player. Includes custom and ",
+                                        "warning."
+                                })
+                                .export(),
                         punishmentLevels, new TypeToken<Map<String, Tuple<Double, Double>>>() {
                 });
 
@@ -273,7 +319,15 @@ public class JesusDetection extends Detection {
                 punishmentProperties.put("releasetime", "12096000");
 
                 this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
-                        "Properties that define certain properties for all the punishments in this detection.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Punishment Properties")
+                                .addParagraph(new String[]{
+                                        "Refers to properties the punishments may use ",
+                                        "for certain actions to take place.",
+                                        "",
+                                        "DEPRECATED"
+                                })
+                                .export(),
                         punishmentProperties, new TypeToken<Map<String, String>>() {
                 });
 
@@ -281,17 +335,32 @@ public class JesusDetection extends Detection {
                 customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
 
                 this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
-                        "Custom punishments that can execute custom commands.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Custom Punishments")
+                                .addParagraph(new String[]{
+                                        "Allows you to setup custom punishments ",
+                                        "with various options and commands."
+                                })
+                                .export(),
                         customPunishments, new TypeToken<Map<String, List<String>>>() {
                 });
 
                 Map<String, Double> severityDistribution = new HashMap<>();
                 severityDistribution.put("lower", 0d);
-                severityDistribution.put("mean", 14d);
+                severityDistribution.put("mean", 10d);
                 severityDistribution.put("standard-deviation", 5d);
 
                 this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
-                        "Normal distribution properties for calculating the over-shot value from the mean.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Severity Distribution")
+                                .addParagraph(new String[]{
+                                        "Refers to the normal distribution used ",
+                                        "to calculate the severity from the value ",
+                                        "received by the check.",
+                                        "",
+                                        "Recommended to use 0 as the lower mean as 10 and standard deviation as 5."
+                                })
+                                .export(),
                         severityDistribution, new TypeToken<Map<String, Double>>() {
                 });
 
@@ -304,7 +373,16 @@ public class JesusDetection extends Detection {
                 controlValues.put("fly", 1.065);
 
                 this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
-                        "Magic values for movement the player controls that are added each tick.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Control Values")
+                                .addParagraph(new String[]{
+                                        "Refers to the incremented amount towards maximum ",
+                                        "speed each tick from user controls during a sequences ",
+                                        "capture phase.",
+                                        "",
+                                        "Recommended to use 1.005 as sneak, 1.035 as walk, 1.055 as sprint and 1.065 as fly."
+                                })
+                                .export(),
                         controlValues, new TypeToken<Map<String, Double>>() {
                 });
 
@@ -316,7 +394,16 @@ public class JesusDetection extends Detection {
                 materialValues.put("liquid", 0.95);
 
                 this.configMaterialValues = new StorageValue<>(new StorageKey<>("material-values"),
-                        "Magic values for materials touching the player that affect the players speed which are added each tick.",
+                        new ConfigurationCommentDocument(45, " ")
+                                .addHeader("Control Values")
+                                .addParagraph(new String[]{
+                                        "Refers to the incremented amount towards maximum ",
+                                        "speed each tick from world materials during a sequences ",
+                                        "capture phase.",
+                                        "",
+                                        "Recommended to use 1.055 for gas, 1.035 for solid and 0.95 for liquid."
+                                })
+                                .export(),
                         materialValues, new TypeToken<Map<String, Double>>() {
                 });
 
@@ -334,7 +421,7 @@ public class JesusDetection extends Detection {
                 this.configMaterialValues.<ConfigurationNode>createStorage(this.configurationNode);
 
                 this.configManager.save(this.configurationNode);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 this.jesusDetection.getPlugin().getLogger().error("A problem occurred attempting to create JesusDetection module's configuration!", e);
             }
         }
