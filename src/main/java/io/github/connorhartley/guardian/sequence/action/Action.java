@@ -123,7 +123,7 @@ public class Action<T extends Event> {
         return this.expire;
     }
 
-    public Class getEvent() {
+    public Class<?> getEvent() {
         return this.event;
     }
 

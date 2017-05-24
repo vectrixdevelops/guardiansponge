@@ -112,20 +112,20 @@ public class Sequence {
                 this.started = true;
             }
 
-            if (this.queue > 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
-                return fail(player, event, action, Cause.of(NamedCause.of("DELAY", action.getDelay())));
-            }
-
             Action<T> typeAction = (Action<T>) action;
 
+            if (this.queue > 1 && this.last + ((action.getDelay() / 20) * 1000) > now) {
+                return fail(player, event, typeAction, Cause.of(NamedCause.of("DELAY", action.getDelay())));
+            }
+
             if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < now) {
-                return fail(player, event, action, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
+                return fail(player, event, typeAction, Cause.of(NamedCause.of("EXPIRE", action.getExpire())));
             }
 
             action.updateCaptureContainer(this.captureHandler.getContainer());
 
             if (!typeAction.testConditions(player, event, this.last)) {
-                return fail(player, event, action, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
+                return this.fail(player, event, typeAction, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
             this.sequenceReport = action.getSequenceReport();
@@ -154,7 +154,7 @@ public class Sequence {
     }
 
     // Called when the player does not meet the requirements.
-    boolean fail(User user, Event event, Action action, Cause cause) {
+    <T extends Event> boolean fail(User user, T event, Action<T> action, Cause cause) {
         action.updateReport(this.sequenceReport);
         action.updateCaptureContainer(this.captureHandler.getContainer());
 
