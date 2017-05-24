@@ -43,7 +43,7 @@ dependencies {
     compile 'com.github.me4502:ModularFramework:35dc605747'
 
     compile 'com.github.me4502:Precogs:dddc890efc'
-    compile 'org.bstats:bstats-sponge-lite:1.2-SNAPSHOT'
+    compile 'org.bstats:bstats-sponge-lite:1.1'
 
     compile 'io.github.nucleuspowered:nucleus-api:0.29.0-SNAPSHOT-S6.0'
 }

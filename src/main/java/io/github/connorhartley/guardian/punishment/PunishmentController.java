@@ -85,8 +85,8 @@ public class PunishmentController {
                 currentPunishLevels.forEach(currentPunishLevel -> {
                     String[] level = StringUtils.split(currentPunishLevel, "&");
 
-                    if (punishmentType.getName().equals(level[1])) {
-                        punishmentType.handle(new String[]{ level[2] }, user, punishment);
+                    if (punishmentType.getName().equals(level[0])) {
+                        punishmentType.handle(new String[]{ level[1] }, user, punishment);
                     }
                 });
             }

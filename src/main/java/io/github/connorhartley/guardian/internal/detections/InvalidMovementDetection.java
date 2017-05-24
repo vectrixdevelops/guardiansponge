@@ -264,10 +264,7 @@ public class InvalidMovementDetection extends Detection {
                 });
 
                 Map<String, Tuple<Double, Double>> punishmentLevels = new HashMap<>();
-                punishmentLevels.put("warn", Tuple.of(0.1, 0.2));
-//            punishmentLevels.put("flag", 0.2);
-//            punishmentLevels.put("report", 0.3);
-//            punishmentLevels.put("kick", 0.5);
+                punishmentLevels.put("warn&default", Tuple.of(0.1, 1.0));
 
                 this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
                         new ConfigurationCommentDocument(45, " ")
