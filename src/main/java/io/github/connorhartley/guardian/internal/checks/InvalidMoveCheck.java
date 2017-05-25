@@ -160,8 +160,10 @@ public class InvalidMoveCheck extends Check {
                                     }
 
                                     if (!invalidControls.isEmpty()) {
-                                        report.information("Recieved invalid controls of " + StringUtils.join(invalidControls, ", ") + ".")
+                                        report
+                                                .information("Recieved invalid controls of " + StringUtils.join(invalidControls, ", ") + ".")
                                                 .type("using invalid controls of " + StringUtils.join(invalidControls, ", "))
+                                                .initialLocation(start.copy())
                                                 .severity(100);
 
                                         return new ConditionResult(true, report.build(true));

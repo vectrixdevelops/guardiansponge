@@ -223,6 +223,7 @@ public class FlyCheck extends Check {
                                         report
                                                 .information("Result of altitude gain was " + ((altitudeDisplacement / meanAltitude) + meanAltitude) + ".")
                                                 .type("flying")
+                                                .initialLocation(start.copy())
                                                 .severity(((altitudeDisplacement / meanAltitude) + meanAltitude));
 
                                         // TODO : Remove this after testing \/

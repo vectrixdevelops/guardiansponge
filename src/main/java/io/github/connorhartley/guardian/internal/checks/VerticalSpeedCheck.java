@@ -184,6 +184,7 @@ public class VerticalSpeedCheck extends Check {
                                         report
                                                 .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
                                                 .type("vertically overspeeding")
+                                                .initialLocation(start.copy())
                                                 .severity(travelDisplacement - maximumSpeed);
 
                                         // TODO : Remove this after testing \/

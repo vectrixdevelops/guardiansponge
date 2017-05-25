@@ -39,14 +39,12 @@ public class Punishment {
     private final String detectionReason;
     private final SequenceReport sequenceReport;
     private final LocalDateTime localDateTime;
-    private final Location<World> initialLocation;
     private final Double probability;
 
     public Punishment(Builder builder) {
         this.detectionReason = builder.detectionReason;
         this.sequenceReport = builder.sequenceReport;
         this.localDateTime = builder.localDateTime;
-        this.initialLocation = builder.initialLocation;
         this.probability = builder.probability;
     }
 
@@ -90,10 +88,6 @@ public class Punishment {
         return this.localDateTime;
     }
 
-    public Location<World> getInitialLocation() {
-        return this.initialLocation;
-    }
-
     /**
      * Get Probability
      *
@@ -110,7 +104,6 @@ public class Punishment {
         private String detectionReason;
         private SequenceReport sequenceReport;
         private LocalDateTime localDateTime;
-        private Location<World> initialLocation;
         private Double probability;
 
         public Builder() {}
@@ -132,11 +125,6 @@ public class Punishment {
 
         public Builder probability(Double probability) {
             this.probability = probability;
-            return this;
-        }
-
-        public Builder initialLocation(Location<World> location) {
-            this.initialLocation = location;
             return this;
         }
 

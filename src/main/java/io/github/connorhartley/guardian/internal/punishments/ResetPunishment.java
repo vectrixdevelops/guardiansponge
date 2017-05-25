@@ -23,35 +23,32 @@
  */
 package io.github.connorhartley.guardian.internal.punishments;
 
-import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.punishment.PunishmentType;
-import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.storage.container.StorageValue;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-public class CustomPunishment implements PunishmentType {
+public class ResetPunishment implements PunishmentType {
 
     private final Guardian plugin;
     private final Detection detection;
 
-    public CustomPunishment(Guardian plugin, Detection detection) {
+    public ResetPunishment(Guardian plugin, Detection detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
 
     @Override
     public String getName() {
-        return "custom";
+        return "reset";
     }
 
     @Override
@@ -70,31 +67,14 @@ public class CustomPunishment implements PunishmentType {
 
         user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
 
-        Optional<StorageValue<String, Map<String, List<String>>>> detectionCustomPunishments =
-                this.detection.getConfiguration().get(new StorageKey<>("custom-punishments"),
-                        new TypeToken<Map<String, List<String>>>() {});
+        if (user.getPlayer().isPresent()) {
+            Player player = user.getPlayer().get();
 
-        List<String> customCommandList;
-
-        if (detectionCustomPunishments.isPresent()) {
-            if (!detectionCustomPunishments.get().getValue().isEmpty() && detectionCustomPunishments.get().getValue()
-                    .get(args[0]) != null) {
-                customCommandList = detectionCustomPunishments.get().getValue().get(args[0]);
-            } else {
-                return false;
+            if (punishment.getSequenceReport().getInitialLocation().isPresent()) {
+                return player.setLocation(punishment.getSequenceReport().getInitialLocation().get());
             }
-        } else {
-            return false;
         }
 
-        for (String command : customCommandList) {
-            String commandModified = command.replace("%player%", user.getName())
-                    .replace("%probability%", punishment.getProbability().toString())
-                    .replace("%detection%", this.detection.getName());
-
-            Sponge.getCommandManager().process(Sponge.getServer().getConsole(), commandModified);
-        }
-
-        return true;
+        return false;
     }
 }
