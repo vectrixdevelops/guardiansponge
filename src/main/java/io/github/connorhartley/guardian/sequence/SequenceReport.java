@@ -23,8 +23,15 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import com.google.common.base.Preconditions;
+import com.sun.istack.internal.NotNull;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Sequence Report
@@ -35,12 +42,14 @@ public class SequenceReport {
 
     private final List<String> detectionTypes = new ArrayList<>();
     private final List<String> information = new ArrayList<>();
+    private final Location<World> initialLocation;
     private final double severity;
     private final boolean accepted;
 
     public SequenceReport(Builder builder) {
         this.detectionTypes.addAll(builder.detectionTypes);
         this.information.addAll(builder.information);
+        this.initialLocation = builder.initialLocation;
         this.severity = builder.severity;
         this.accepted = builder.accepted;
     }
@@ -83,6 +92,10 @@ public class SequenceReport {
         return this.severity;
     }
 
+    public Optional<Location<World>> getInitialLocation() {
+        return Optional.ofNullable(this.initialLocation);
+    }
+
     /**
      * Is Accepted
      *
@@ -99,10 +112,13 @@ public class SequenceReport {
 
         private List<String> detectionTypes = new ArrayList<>();
         private List<String> information = new ArrayList<>();
+        private Location<World> initialLocation;
         private double severity = 0.0;
         private boolean accepted = false;
 
-        public Builder() {}
+        public Builder() {
+
+        }
 
         public Builder of(SequenceReport sequenceReport) {
             this.detectionTypes = sequenceReport.detectionTypes;
@@ -124,6 +140,11 @@ public class SequenceReport {
 
         public Builder severity(double severity) {
             this.severity = severity;
+            return this;
+        }
+
+        public Builder initialLocation(Location<World> location) {
+            this.initialLocation = location;
             return this;
         }
 

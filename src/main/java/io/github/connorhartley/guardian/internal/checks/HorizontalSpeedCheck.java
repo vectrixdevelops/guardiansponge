@@ -251,6 +251,7 @@ public class HorizontalSpeedCheck extends Check {
                                                 report
                                                         .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
                                                         .type("walking on water (jesus)")
+                                                        .initialLocation(start.copy())
                                                         .severity(travelDisplacement - maximumSpeed);
                                             } else {
                                                 return new ConditionResult(false, sequenceReport);
@@ -260,6 +261,7 @@ public class HorizontalSpeedCheck extends Check {
                                         report
                                                 .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
                                                 .type("horizontally overspeeding")
+                                                .initialLocation(start.copy())
                                                 .severity(travelDisplacement - maximumSpeed);
 
                                         // TODO : Remove this after testing \/

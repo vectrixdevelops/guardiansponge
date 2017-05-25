@@ -58,8 +58,7 @@ public class ReportPunishment implements PunishmentType {
 
     @Override
     public Optional<Detection> getDetection() {
-        if (this.detection == null) return Optional.empty();
-        return Optional.of(this.detection);
+        return Optional.ofNullable(this.detection);
     }
 
     @Override

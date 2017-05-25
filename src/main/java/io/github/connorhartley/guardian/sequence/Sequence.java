@@ -37,6 +37,8 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -60,6 +62,7 @@ public class Sequence {
 
     private SequenceBlueprint sequenceBlueprint;
     private SequenceReport sequenceReport = SequenceReport.builder().build(false);
+    private Location<World> initialLocation;
     private int queue = 0;
     private long last = System.currentTimeMillis();
     private boolean started = false;
@@ -110,6 +113,8 @@ public class Sequence {
             if (!this.started) {
                 this.captureHandler.start();
                 this.started = true;
+
+                this.initialLocation = player.getLocation();
             }
 
             Action<T> typeAction = (Action<T>) action;
@@ -166,6 +171,10 @@ public class Sequence {
 
         this.incompleteEvents.add(event);
         return false;
+    }
+
+    public Location<World> getInitialLocation() {
+        return this.initialLocation;
     }
 
     /**
