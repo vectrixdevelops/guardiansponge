@@ -34,7 +34,6 @@ import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
-import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
 import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
