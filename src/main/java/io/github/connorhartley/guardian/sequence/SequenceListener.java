@@ -29,6 +29,7 @@ import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.entity.RideEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
+import org.spongepowered.api.event.filter.type.Exclude;
 
 /**
  * Sequence Listener
@@ -44,7 +45,13 @@ public class SequenceListener {
         this.sequenceController = sequenceController;
     }
 
+    /*
+     * Excludes Teleport for conflicts with ResetPunishment.
+     *
+     * This should be changed after the cause system overhaul.
+     */
     @Listener
+    @Exclude(MoveEntityEvent.Teleport.class)
     public void onEntityMove(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
         this.sequenceController.invoke(player, event);
     }

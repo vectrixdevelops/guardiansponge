@@ -23,9 +23,6 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import com.google.common.base.Preconditions;
-import com.sun.istack.internal.NotNull;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -108,6 +105,17 @@ public class SequenceReport {
         return this.accepted;
     }
 
+    /**
+     * Copy
+     *
+     * <p>Returns a copy of this sequence report.</p>
+     *
+     * @return A copy of this
+     */
+    public SequenceReport copy() {
+        return new SequenceReport.Builder().of(this).build(this.accepted);
+    }
+
     public static class Builder {
 
         private List<String> detectionTypes = new ArrayList<>();
@@ -125,6 +133,11 @@ public class SequenceReport {
             this.information = sequenceReport.information;
             this.severity = sequenceReport.severity;
             this.accepted = sequenceReport.accepted;
+
+            if (sequenceReport.initialLocation != null) {
+                this.initialLocation = sequenceReport.initialLocation.copy();
+            }
+
             return this;
         }
 
@@ -144,7 +157,7 @@ public class SequenceReport {
         }
 
         public Builder initialLocation(Location<World> location) {
-            this.initialLocation = location;
+            this.initialLocation = location.copy();
             return this;
         }
 

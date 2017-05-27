@@ -40,6 +40,7 @@ import org.spongepowered.api.scheduler.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -62,39 +63,54 @@ public class SequenceController implements SequenceInvoker {
 
     @Override
     public void invoke(Player player, Event event) {
-        List<Sequence> currentlyExecuting;
+        List<Sequence> currentlyExecuting = new ArrayList<>();
 
         if (!this.runningSequences.containsKey(player)) {
-            currentlyExecuting = new ArrayList<>();
-            runningSequences.put(player, currentlyExecuting);
-        } else {
-            currentlyExecuting = this.runningSequences.get(player);
+            this.runningSequences.put(player, currentlyExecuting);
         }
 
-        currentlyExecuting.forEach(sequence -> sequence.check(player, event));
-        currentlyExecuting.removeIf(Sequence::isCancelled);
-        currentlyExecuting.removeIf(Sequence::hasExpired);
-        currentlyExecuting.removeIf(sequence -> {
-            if (!sequence.isFinished()) {
-                return false;
+        currentlyExecuting.addAll(this.runningSequences.get(player));
+
+        Iterator<Sequence> sequenceIterator = currentlyExecuting.iterator();
+        while (sequenceIterator.hasNext()) {
+            Sequence sequence = sequenceIterator.next();
+
+            // 1. Check the event
+
+            sequence.check(player, event);
+
+            // 2. Check if the sequence is cancelled, or has expired and stop capture and remove.
+
+            if (sequence.isCancelled() || sequence.hasExpired()) {
+                if (sequence.hasStarted()) {
+                    sequence.getCaptureHandler().stop();
+                }
+
+                sequenceIterator.remove();
             }
 
-            if (sequence.hasStarted()) {
-                sequence.getCaptureHandler().stop();
-            }
+            // 3. Check if the sequence has finished, and fire the event, execute the check and remove.
 
-            SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport(),
+            if (sequence.isFinished()) {
+                if (sequence.hasStarted()) {
+                    sequence.getCaptureHandler().stop();
+                }
+
+                SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceReport().copy(),
                     Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getCaptureContainer())));
-            Sponge.getEventManager().post(attempt);
-            if (attempt.isCancelled()) {
-                return true;
+
+                Sponge.getEventManager().post(attempt);
+                if (attempt.isCancelled()) {
+                    continue;
+                }
+
+                CheckType checkType = sequence.getProvider();
+                this.checkController.post(checkType, player);
+
+                sequenceIterator.remove();
             }
 
-            CheckType checkType = sequence.getProvider();
-            this.checkController.post(checkType, player);
-            return true;
-        });
-        this.runningSequences.put(player, currentlyExecuting);
+        }
 
         this.blueprints.stream()
                 .filter(blueprint -> !currentlyExecuting.contains(blueprint))

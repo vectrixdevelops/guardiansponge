@@ -71,7 +71,10 @@ public class ResetPunishment implements PunishmentType {
             Player player = user.getPlayer().get();
 
             if (punishment.getSequenceReport().getInitialLocation().isPresent()) {
-                return player.setLocation(punishment.getSequenceReport().getInitialLocation().get());
+                Sponge.getTeleportHelper()
+                        .getSafeLocation(punishment.getSequenceReport().getInitialLocation().get(), 64, 5)
+                        .ifPresent(player::setLocationSafely);
+                return true;
             }
         }
 
