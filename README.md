@@ -1,15 +1,18 @@
 <h1 align="center">Guardian</h1>
 <h5 align="center">An Extensible AntiCheat Plugin For Sponge.</h5>
 
-[![Build Status](https://travis-ci.org/ichorpowered/guardian.svg?branch=master)](https://travis-ci.org/ichorpowered/guardian) [![Sponge API](https://img.shields.io/badge/sponge--api-6.0.0-orange.svg)](https://github.com/SpongePowered/SpongeAPI) [![Precogs](https://img.shields.io/badge/precogs-1.0--SNAPSHOT-blue.svg)](https://github.com/me4502/Precogs)
+[![Build Status](https://travis-ci.org/ichorpowered/guardian.svg?branch=master)](https://travis-ci.org/ichorpowered/guardian) [![Sponge API](https://img.shields.io/badge/sponge--api-6.0.0-orange.svg)](https://github.com/SpongePowered/SpongeAPI) [![Precogs](https://img.shields.io/badge/precogs-1.1--SNAPSHOT-blue.svg)](https://github.com/me4502/Precogs)
 
 Guardian is an extensible AntiCheat for Sponge that gives you the flexibility to customize the checks to fit your servers needs.
-Guardian also provides a service for Precogs to reduce plugin conflicts with those who integrate with the lightweight service.
+Guardian also provides a service for [Precogs](https://ore.spongepowered.org/me4502/Precogs) to reduce plugin conflicts with those
+who integrate with the lightweight service.
 
 The plugin is a work in progress and there are plans for more detections to be added. Make sure to come chat with us on the
 [Guardian Discord](https://discord.gg/pvSFtMm) or the [IchorPowered Discord](https://discord.gg/NzfKazX).
 
-Movement Cheats Detected:
+##### Cheats Detected:
+
+###### Movement:
 
 - [x] Horizontal Speed (Speed)
 - [x] Vertical Speed (Speed)
@@ -28,6 +31,16 @@ Movement Cheats Detected:
 - [ ] HighJump / LongJump
 
 And more coming soon.
+
+##### Built-In Punishments:
+
+- [x] Warning
+- [x] Location Reset
+- [x] Staff Report
+- [x] Kick
+- [ ] Ban
+- [ ] Temporary Ban
+- [x] Custom
 
 Guardian has an optional mixin mod called [ElderGuardian](https://github.com/ichorpowered/elderguardian) that allows Guardian to access things beyond the Sponge API.
 It is recommended that you use it with Guardian to improve accuracy. Some detections may also require it to work.
