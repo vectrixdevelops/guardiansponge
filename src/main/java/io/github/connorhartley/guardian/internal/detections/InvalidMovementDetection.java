@@ -80,6 +80,7 @@ public class InvalidMovementDetection extends Detection {
     private Configuration configuration;
     private PluginContainer moduleContainer;
     private ConfigurationLoader<CommentedConfigurationNode> configManager;
+    private boolean punish = true;
     private boolean ready = false;
 
     @Inject
@@ -138,7 +139,7 @@ public class InvalidMovementDetection extends Detection {
 
     @Listener
     public void onSequenceFinish(SequenceFinishEvent event) {
-        if (!event.isCancelled()) {
+        if (!event.isCancelled() && this.punish) {
             for (CheckType checkProvider : this.checkTypes) {
                 if (checkProvider.getSequence().equals(event.getSequence())) {
                     double lower = this.configuration.configSeverityDistribution.getValue().get("lower");
@@ -192,6 +193,16 @@ public class InvalidMovementDetection extends Detection {
     @Override
     public StorageConsumer<File> getConfiguration() {
         return this.configuration;
+    }
+
+    @Override
+    public boolean canPunish() {
+        return this.punish;
+    }
+
+    @Override
+    public void setPunish(boolean enable) {
+        this.punish = enable;
     }
 
     @Override

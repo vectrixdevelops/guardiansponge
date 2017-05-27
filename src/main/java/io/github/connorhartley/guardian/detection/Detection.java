@@ -96,6 +96,24 @@ public abstract class Detection extends DetectionType {
     public abstract boolean isReady();
 
     /**
+     * Can Punish
+     *
+     * <p>True if the detection is allowed to pass on punishments.</p>
+     *
+     * @return True if allowed
+     */
+    public abstract boolean canPunish();
+
+    /**
+     * Set Punish
+     *
+     * <p>Sets whether the detection can pass on punishments.</p>
+     *
+     * @param enable Set whether this will execute punishments
+     */
+    public abstract void setPunish(boolean enable);
+
+    /**
      * Get Checks
      *
      * <p>Returns the {@link CheckType}s that this {@link Detection} uses.</p>

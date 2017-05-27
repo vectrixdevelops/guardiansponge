@@ -25,19 +25,25 @@ package io.github.connorhartley.guardian.service;
 
 import com.me4502.precogs.detection.DetectionType;
 import com.me4502.precogs.service.BypassTicket;
+import io.github.connorhartley.guardian.detection.Detection;
 import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.List;
 
 public class GuardianBypassTicket implements BypassTicket {
 
-    private Player player;
-    private List<DetectionType> detectionTypes;
+    private final Object plugin;
+    private final Player player;
+    private final List<DetectionType> detectionTypes;
 
-    public GuardianBypassTicket(Player player, List<DetectionType> detectionTypes) {
+    private boolean isClosed = false;
+
+    public GuardianBypassTicket(Object plugin, Player player, List<DetectionType> detectionTypes) {
+        this.plugin = plugin;
         this.player = player;
         this.detectionTypes = detectionTypes;
-        // TODO Disable the detections.
+
+        this.detectionTypes.forEach(detectionType -> ((Detection) detectionType).setPunish(false));
     }
 
     @Override
@@ -51,7 +57,14 @@ public class GuardianBypassTicket implements BypassTicket {
     }
 
     @Override
+    public boolean isClosed() {
+        return this.isClosed;
+    }
+
+    @Override
     public void close() {
-        // TODO Enable the detections.
+        this.detectionTypes.forEach(detectionType -> ((Detection) detectionType).setPunish(true));
+
+        this.isClosed = true;
     }
 }

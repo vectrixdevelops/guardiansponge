@@ -35,18 +35,25 @@ import java.util.Optional;
 public class GuardianAntiCheatService implements AntiCheatService {
 
     @Override
-    public Optional<BypassTicket> requestBypassTicket(Player player, List<DetectionType> list) {
-        return Optional.of(new GuardianBypassTicket(player, list));
+    public Optional<BypassTicket> requestBypassTicket(Player player, List<DetectionType> list, Object plugin) {
+        // TODO: More stuff here soon.
+
+        return Optional.of(new GuardianBypassTicket(plugin, player, list));
     }
 
     @Override
     public double getViolationLevel(User user, DetectionType detectionType) {
-        // TODO
+        // TODO: Detection History API
         return 0;
     }
 
     @Override
-    public void logViolation(User user, DetectionType detectionType, double v) {
-        // TODO
+    public void logViolation(User user, DetectionType detectionType, double value) {
+        // TODO: Detection History API
+    }
+
+    @Override
+    public void logViolation(User user, DetectionType detectionType, double value, String info) {
+        // TODO: Detection History API
     }
 }
