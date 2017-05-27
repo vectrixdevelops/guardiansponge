@@ -1,7 +1,14 @@
-<h1 align="center">Guardian</h1>
-<h5 align="center">An Extensible AntiCheat Plugin For Sponge.</h5>
+<h1 align="center">
+  <img src="https://forums-cdn.spongepowered.org/uploads/default/original/3X/f/9/f97c66af122e9aed4ef7387b59460778234bd690.png" width="620">
+</h1>
+<p align="center">An Extensible AntiCheat Plugin For Sponge.</p>
 
-[![Build Status](https://travis-ci.org/ichorpowered/guardian.svg?branch=master)](https://travis-ci.org/ichorpowered/guardian) [![Sponge API](https://img.shields.io/badge/sponge--api-6.0.0-orange.svg)](https://github.com/SpongePowered/SpongeAPI) [![Precogs](https://img.shields.io/badge/precogs-1.1--SNAPSHOT-blue.svg)](https://github.com/me4502/Precogs)
+<p align="center">
+  <a href="https://travis-ci.org/ichorpowered/guardian"><img alt="Build Status" src="https://travis-ci.org/ichorpowered/guardian.svg?branch=master"></a>
+  <a href="https://github.com/SpongePowered/SpongeAPI"><img alt="Sponge Version" src="https://img.shields.io/badge/sponge--api-7.0.0-red.svg"></a>
+  <a href="https://ore.spongepowered.org/me4502/Precogs"><img alt="Precogs Version" src="https://img.shields.io/badge/precogs-1.1--SNAPSHOT-blue.svg"></a>
+  <a href="https://discord.gg/pvSFtMm"><img alt="Join Discord" src="https://img.shields.io/badge/Join-Discord-blue.svg?style=flat-square"></a>
+</p>
 
 Guardian is an extensible AntiCheat for Sponge that gives you the flexibility to customize the checks to fit your servers needs.
 Guardian also provides a service for [Precogs](https://ore.spongepowered.org/me4502/Precogs) to reduce plugin conflicts with those
