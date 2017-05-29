@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://travis-ci.org/ichorpowered/guardian"><img alt="Build Status" src="https://travis-ci.org/ichorpowered/guardian.svg?branch=master"></a>
   <a href="https://github.com/SpongePowered/SpongeAPI"><img alt="Sponge Version" src="https://img.shields.io/badge/sponge--api-7.0.0-red.svg"></a>
-  <a href="https://ore.spongepowered.org/me4502/Precogs"><img alt="Precogs Version" src="https://img.shields.io/badge/precogs-1.1--SNAPSHOT-blue.svg"></a>
+  <a href="https://ore.spongepowered.org/me4502/Precogs"><img alt="Precogs Version" src="https://img.shields.io/badge/precogs-1.1-blue.svg"></a>
   <a href="https://discord.gg/pvSFtMm"><img alt="Join Discord" src="https://img.shields.io/badge/Join-Discord-blue.svg?style=flat-square"></a>
 </p>
 

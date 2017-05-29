@@ -39,13 +39,20 @@ repositories {
 dependencies {
     compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
 
-    compile 'org.apache.commons:commons-math3:3.6.1'
-    compile 'com.github.me4502:ModularFramework:35dc605747'
+    // External Dependencies
 
     compile 'com.github.me4502:Precogs:04c53049ea'
+    compile 'com.github.ichorpowered:elderguardian:-SNAPSHOT'
+
+    // Shaded Dependencies
+
+    compile 'org.apache.commons:commons-math3:3.6.1'
+    compile 'com.github.me4502:ModularFramework:35dc605747'
     compile 'org.bstats:bstats-sponge-lite:1.1'
 
-    compile 'io.github.nucleuspowered:nucleus-api:0.29.0-SNAPSHOT-S6.0'
+    // Compatibility Dependencies
+
+    compile 'io.github.nucleuspowered:nucleus-api:0.29.3-SNAPSHOT-S6.0'
 }
 
 blossom {
