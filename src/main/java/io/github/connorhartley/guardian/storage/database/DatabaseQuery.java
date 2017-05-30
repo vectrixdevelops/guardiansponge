@@ -23,54 +23,94 @@
  */
 package io.github.connorhartley.guardian.storage.database;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DatabaseQuery {
 
     private final Connection connection;
     private final String query;
+    private final PreparedStatement preparedStatement;
+
+    private boolean virtual = true;
 
     private DatabaseQuery(Builder builder) {
         this.connection = builder.connection;
         this.query = builder.query;
+        this.preparedStatement = builder.preparedStatement;
+    }
+
+    public static Builder builder(Connection connection) {
+        return new Builder(connection);
     }
 
     public Connection getConnection() {
         return this.connection;
     }
 
-    public String getQuery() {
+    public String getRawQuery() {
         return this.query;
+    }
+
+    public PreparedStatement getQuery() {
+        return this.preparedStatement;
+    }
+
+    public boolean execute() throws SQLException {
+        this.virtual = false;
+
+        return this.preparedStatement.execute();
+    }
+
+    public ResultSet executeQuery() throws SQLException {
+        this.virtual = false;
+
+        return this.preparedStatement.executeQuery();
+    }
+
+    public void reset() {
+        this.virtual = true;
+    }
+
+    public boolean isVirtual() {
+        return this.virtual;
     }
 
     public static class Builder {
 
-        private final Connection connection;
         private String query;
+        private PreparedStatement preparedStatement;
+
+        private final Connection connection;
 
         public Builder(Connection connection) {
             this.connection = connection;
         }
 
         public Builder append(String query) {
-            this.query = new StringBuilder()
-                    .append(this.query)
-                    .append(" ")
-                    .append(query)
-                    .toString();
+            this.query = StringUtils.join(
+                    this.query,
+                    " ",
+                    query
+            );
             return this;
         }
 
         public Builder append(DatabaseQuery query) {
-            this.query = new StringBuilder()
-                    .append(this.query)
-                    .append(" ")
-                    .append(query.getQuery())
-                    .toString();
+            this.query = StringUtils.join(
+                    this.query,
+                    " ",
+                    query.getRawQuery()
+            );
             return this;
         }
 
-        public DatabaseQuery build() {
+        public DatabaseQuery build() throws SQLException {
+            this.preparedStatement = this.connection.prepareStatement(this.query);
             return new DatabaseQuery(this);
         }
 

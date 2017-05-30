@@ -93,7 +93,7 @@ public class InvalidMovementDetection extends Detection {
     public void onConstruction() {
         if (this.moduleContainer.getInstance().isPresent()) {
             this.plugin = (Guardian) this.moduleContainer.getInstance().get();
-            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().toFile(),
+            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().get().toFile(),
                     "detection" + File.separator + this.getId() + ".conf");
             this.configManager = HoconConfigurationLoader.builder().setFile(this.configFile)
                     .setDefaultOptions(this.plugin.getConfigurationOptions()).build();
@@ -404,8 +404,8 @@ public class InvalidMovementDetection extends Detection {
         }
 
         @Override
-        public File getLocation() {
-            return this.configFile;
+        public Optional<File> getLocation() {
+            return Optional.of(this.configFile);
         }
 
         @Override

@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Guardian Configuration
@@ -55,7 +56,8 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
     private ConfigurationCommentDocument globalHeader;
 
     public StorageValue<String, Integer> configHeader;
-    public StorageValue<String, String> configVersion;
+    public StorageValue<String, String> configDatabaseVersion;
+    public StorageValue<String, Boolean> configDatabaseMigration;
     public StorageValue<String, List<String>> configEnabledDetections;
     public StorageValue<String, Integer> configLoggingLevel;
 
@@ -108,16 +110,31 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                     1, new TypeToken<Integer>() {
             });
 
-            this.configVersion = new StorageValue<>(new StorageKey<>("version"),
+            this.configDatabaseVersion = new StorageValue<>(new StorageKey<>("database-version"),
                     new ConfigurationCommentDocument(50, " ")
-                                    .addHeader("Guardian Version")
+                                    .addHeader("Database Version")
                                     .addParagraph(new String[]{
-                                            "VOLATILE: Do not touch this!",
-                                            "Defines the version of Guardian for configuration ",
-                                            "purposes."
+                                            "VOLATILE: Do not touch this unless you know what you're doing!",
+                                            "",
+                                            "Defines the database version to use. This may be auto incremented ",
+                                            "to the discretion of the Plugin if you have the 'auto-migration' enabled."
                                     })
                                     .export(),
                     this.plugin.getPluginContainer().getVersion().orElse("unknown"), new TypeToken<String>() {
+            });
+
+            this.configDatabaseMigration = new StorageValue<>(new StorageKey<>("auto-migration"),
+                    new ConfigurationCommentDocument(50, " ")
+                                    .addHeader("Auto Migration")
+                                    .addParagraph(new String[]{
+                                            "Set whether the database should automatically migrate after a minor ",
+                                            "change in database format.",
+                                            "",
+                                            "This MAY not cover major changes in databases, which may require to be ",
+                                            "migrated manually."
+                                    })
+                                    .export(),
+                    true, new TypeToken<Boolean>() {
             });
 
             this.configEnabledDetections = new StorageValue<>(new StorageKey<>("enabled"),
@@ -150,7 +167,8 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
             });
 
             this.configHeader.<ConfigurationNode>createStorage(this.configurationNode);
-            this.configVersion.<ConfigurationNode>createStorage(this.configurationNode);
+            this.configDatabaseVersion.<ConfigurationNode>createStorage(this.configurationNode);
+            this.configDatabaseMigration.<ConfigurationNode>createStorage(this.configurationNode);
             this.configEnabledDetections.<ConfigurationNode>createStorage(this.configurationNode);
             this.configLoggingLevel.<ConfigurationNode>createStorage(this.configurationNode);
 
@@ -167,7 +185,8 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                 this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
                 this.configHeader.<ConfigurationNode>loadStorage(this.configurationNode);
-                this.configVersion.<ConfigurationNode>loadStorage(this.configurationNode);
+                this.configDatabaseVersion.<ConfigurationNode>loadStorage(this.configurationNode);
+                this.configDatabaseMigration.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configEnabledDetections.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configLoggingLevel.<ConfigurationNode>loadStorage(this.configurationNode);
 
@@ -185,7 +204,8 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                 this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
                 this.configHeader.<ConfigurationNode>updateStorage(this.configurationNode);
-                this.configVersion.<ConfigurationNode>updateStorage(this.configurationNode);
+                this.configDatabaseVersion.<ConfigurationNode>updateStorage(this.configurationNode);
+                this.configDatabaseMigration.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configEnabledDetections.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configLoggingLevel.<ConfigurationNode>updateStorage(this.configurationNode);
 
@@ -206,8 +226,8 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
     }
 
     @Override
-    public Path getLocation() {
-        return this.configFile;
+    public Optional<Path> getLocation() {
+        return Optional.ofNullable(this.configFile);
     }
 
 }
