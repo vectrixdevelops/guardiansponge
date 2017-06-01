@@ -23,14 +23,14 @@
  */
 package io.github.connorhartley.guardian.storage.container;
 
-import io.github.connorhartley.guardian.storage.database.DatabaseQuery;
+import tech.ferus.util.sql.databases.Database;
 
 public class StorageKey<T> {
 
     private T key;
 
     public StorageKey(T key) {
-        if (key instanceof String || key instanceof DatabaseQuery) {
+        if (key instanceof String || key instanceof Database) {
             this.key = key;
         } else throw new RuntimeException("Incorrect key type.");
     }
@@ -40,7 +40,7 @@ public class StorageKey<T> {
     }
 
     public void set(T key) {
-        if (key instanceof String || key instanceof DatabaseQuery) {
+        if (key instanceof String || key instanceof Database) {
             this.key = key;
         } else throw new RuntimeException("Incorrect key type.");
     }

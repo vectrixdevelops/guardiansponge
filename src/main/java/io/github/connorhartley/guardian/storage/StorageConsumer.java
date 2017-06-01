@@ -24,15 +24,15 @@
 package io.github.connorhartley.guardian.storage;
 
 import com.google.common.reflect.TypeToken;
+import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.storage.container.StorageValue;
 
 import java.util.Optional;
 
 public interface StorageConsumer<T> extends StorageProvider<T> {
 
-    <K, E> Optional<StorageValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken);
+    <K, E> Optional<ConfigurationValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken);
 
-    <K, E> void set(StorageValue<K, E> storageValue);
+    <K, E> void set(ConfigurationValue<K, E> configurationValue);
 
 }

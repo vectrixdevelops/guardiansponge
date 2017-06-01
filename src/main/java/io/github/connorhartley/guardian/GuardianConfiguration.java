@@ -25,8 +25,8 @@ package io.github.connorhartley.guardian;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.storage.StorageProvider;
+import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.storage.container.StorageValue;
 import io.github.connorhartley.guardian.util.ConfigurationCommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -55,11 +55,11 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
 
     private ConfigurationCommentDocument globalHeader;
 
-    public StorageValue<String, Integer> configHeader;
-    public StorageValue<String, String> configDatabaseVersion;
-    public StorageValue<String, Boolean> configDatabaseMigration;
-    public StorageValue<String, List<String>> configEnabledDetections;
-    public StorageValue<String, Integer> configLoggingLevel;
+    public ConfigurationValue<String, Integer> configHeader;
+    public ConfigurationValue<String, String> configDatabaseVersion;
+    public ConfigurationValue<String, Boolean> configDatabaseMigration;
+    public ConfigurationValue<String, List<String>> configEnabledDetections;
+    public ConfigurationValue<String, Integer> configLoggingLevel;
 
     GuardianConfiguration(Guardian plugin, Path configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
         this.plugin = plugin;
@@ -105,12 +105,12 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                             "you take caution when modifying this file."
                     });
 
-            this.configHeader = new StorageValue<>(new StorageKey<>("a"),
+            this.configHeader = new ConfigurationValue<>(new StorageKey<>("a"),
                     this.globalHeader.export(),
                     1, new TypeToken<Integer>() {
             });
 
-            this.configDatabaseVersion = new StorageValue<>(new StorageKey<>("database-version"),
+            this.configDatabaseVersion = new ConfigurationValue<>(new StorageKey<>("database-version"),
                     new ConfigurationCommentDocument(50, " ")
                                     .addHeader("Database Version")
                                     .addParagraph(new String[]{
@@ -123,7 +123,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                     this.plugin.getPluginContainer().getVersion().orElse("unknown"), new TypeToken<String>() {
             });
 
-            this.configDatabaseMigration = new StorageValue<>(new StorageKey<>("auto-migration"),
+            this.configDatabaseMigration = new ConfigurationValue<>(new StorageKey<>("auto-migration"),
                     new ConfigurationCommentDocument(50, " ")
                                     .addHeader("Auto Migration")
                                     .addParagraph(new String[]{
@@ -137,7 +137,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                     true, new TypeToken<Boolean>() {
             });
 
-            this.configEnabledDetections = new StorageValue<>(new StorageKey<>("enabled"),
+            this.configEnabledDetections = new ConfigurationValue<>(new StorageKey<>("enabled"),
                     new ConfigurationCommentDocument(50, " ")
                                     .addHeader("Enabled Modules")
                                     .addParagraph(new String[]{
@@ -151,7 +151,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                     Arrays.asList("speed", "fly", "jesus", "invalidmovement"), new TypeToken<List<String>>() {
             });
 
-            this.configLoggingLevel = new StorageValue<>(new StorageKey<>("logging-level"),
+            this.configLoggingLevel = new ConfigurationValue<>(new StorageKey<>("logging-level"),
                     new ConfigurationCommentDocument(50, " ")
                                     .addHeader("Logging Level")
                                     .addParagraph(new String[]{

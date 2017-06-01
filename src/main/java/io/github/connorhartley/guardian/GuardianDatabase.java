@@ -24,100 +24,80 @@
 package io.github.connorhartley.guardian;
 
 import io.github.connorhartley.guardian.storage.StorageProvider;
-import io.github.connorhartley.guardian.storage.database.DatabaseQuery;
+import io.github.connorhartley.guardian.storage.container.DatabaseValue;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.apache.commons.lang3.StringUtils;
-import org.spongepowered.api.service.sql.SqlService;
+import tech.ferus.util.sql.databases.Database;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Optional;
 
-public final class GuardianDatabase implements StorageProvider<Connection> {
-
-    private Connection connection;
+public final class GuardianDatabase implements StorageProvider<Database> {
 
     private final Guardian plugin;
-    private final String connectionPath;
-    private final SqlService sqlService;
+    private final Database database;
 
-    public DatabaseQuery databaseVersionTable;
-    public DatabaseQuery databasePunishmentTable;
-    public DatabaseQuery databaseLocationTable;
-    public DatabaseQuery databasePlayerTable;
+    public DatabaseValue databaseVersionTable;
+    public DatabaseValue databasePunishmentTable;
+    public DatabaseValue databaseLocationTable;
+    public DatabaseValue databasePlayerTable;
 
-    public GuardianDatabase(Guardian plugin, String connectionPath, SqlService sqlService) {
+    public GuardianDatabase(Guardian plugin, Database database) {
         this.plugin = plugin;
-        this.connectionPath = connectionPath;
-        this.sqlService = sqlService;
+        this.database = database;
     }
 
     @Override
     public void create() {
-        try {
-            this.connection = this.sqlService.getDataSource(this.plugin, this.connectionPath).getConnection();
+        this.databaseVersionTable = new DatabaseValue(new StorageKey<>(this.database),
+                StringUtils.join("(",
+                        "GUARDIAN_VERSION varchar(24) NOT NULL, ",
+                        "DATABASE_VERSION integer NOT NULL, ",
+                        "SYNCHRONIZE_TIME timestamp NOT NULL, ",
+                        "PUNISHMENT_TABLE varchar(24) NOT NULL, ",
+                        "LOCATION_TABLE varchar(24) NOT NULL, ",
+                        "PLAYER_TABLE varchar(24) NOT NULL, ",
+                        "PRIMARY KEY(DATABASE_VERSION) )"
+                ));
 
-            this.databaseVersionTable = DatabaseQuery.builder(this.connection)
-                    .append("CREATE TABLE IF NOT EXISTS GUARDIAN")
-                    .append(StringUtils.join("(",
-                            "GUARDIAN_VERSION varchar(24) NOT NULL, ",
-                            "DATABASE_VERSION integer NOT NULL, ",
-                            "SYNCHRONIZE_TIME timestamp NOT NULL, ",
-                            "PUNISHMENT_TABLE varchar(24) NOT NULL, ",
-                            "LOCATION_TABLE varchar(24) NOT NULL, ",
-                            "PLAYER_TABLE varchar(24) NOT NULL, ",
-                            "PRIMARY KEY(DATABASE_VERSION)"))
-                    .append(")")
-                    .build();
+        this.databasePunishmentTable = new DatabaseValue(new StorageKey<>(this.database),
+                StringUtils.join("(",
+                        "ID integer NOT NULL, ",
+                        "DATABASE_VERSION integer NOT NULL, ",
+                        "PLAYER_UUID varchar(36) NOT NULL, ",
+                        "PUNISHMENT_TYPE varchar(64) NOT NULL, ",
+                        "PUNISHMENT_REASON varchar(1024) NOT NULL, ",
+                        "PUNISHMENT_TIME timestamp NOT NULL, ",
+                        "PUNISHMENT_PROBABILITY double precision NOT NULL, ",
+                        "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
+                        "PRIMARY KEY(ID) )"
+                ));
 
-            this.databasePunishmentTable = DatabaseQuery.builder(this.connection)
-                    .append("CREATE TABLE IF NOT EXISTS GUARDIAN_PUNISHMENT")
-                    .append(StringUtils.join("(",
-                            "ID integer NOT NULL, ",
-                            "DATABASE_VERSION integer NOT NULL, ",
-                            "PLAYER_UUID varchar(36) NOT NULL, ",
-                            "PUNISHMENT_TYPE varchar(64) NOT NULL, ",
-                            "PUNISHMENT_REASON varchar(1024) NOT NULL, ",
-                            "PUNISHMENT_TIME timestamp NOT NULL, ",
-                            "PUNISHMENT_PROBABILITY double precision NOT NULL, ",
-                            "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
-                            "PRIMARY KEY(ID)"))
-                    .append(")")
-                    .build();
+        this.databaseLocationTable = new DatabaseValue(new StorageKey<>(this.database),
+                StringUtils.join("(",
+                        "PUNISHMENT_ID integer NOT NULL, ",
+                        "DATABASE_VERSION integer NOT NULL, ",
+                        "PUNISHMENT_ORDINAL integer NOT NULL, ",
+                        "WORLD_UUID varchar(36) NOT NULL, ",
+                        "X double precision NOT NULL, ",
+                        "Y double precision NOT NULL, ",
+                        "Z double precision NOT NULL, ",
+                        "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
+                        "PRIMARY KEY(PUNISHMENT_ID, PUNISHMENT_ORDINAL) )"
+                ));
 
-            this.databaseLocationTable = DatabaseQuery.builder(this.connection)
-                    .append("CREATE TABLE IF NOT EXISTS GUARDIAN_LOCATION")
-                    .append(StringUtils.join("(",
-                            "PUNISHMENT_ID integer NOT NULL, ",
-                            "DATABASE_VERSION integer NOT NULL, ",
-                            "PUNISHMENT_ORDINAL integer NOT NULL, ",
-                            "WORLD_UUID varchar(36) NOT NULL, ",
-                            "X double precision NOT NULL, ",
-                            "Y double precision NOT NULL, ",
-                            "Z double precision NOT NULL, ",
-                            "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
-                            "PRIMARY KEY(PUNISHMENT_ID, PUNISHMENT_ORDINAL)"))
-                    .append(")")
-                    .build();
+        this.databasePlayerTable = new DatabaseValue(new StorageKey<>(this.database),
+                StringUtils.join("(",
+                        "PUNISHMENT_ID integer NOT NULL, ",
+                        "DATABASE_VERSION integer NOT NULL, ",
+                        "PLAYER_UUID varchar(36) NOT NULL, ",
+                        "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
+                        "FOREIGN KEY(PUNISHMENT_ID) REFERENCES GUARDIAN_PUNISHMENT(ID) )"
+                ));
 
-            this.databasePlayerTable = DatabaseQuery.builder(this.connection)
-                    .append("CREATE TABLE IF NOT EXISTS GUARDIAN_PLAYER")
-                    .append(StringUtils.join("(",
-                            "PUNISHMENT_ID integer NOT NULL, ",
-                            "DATABASE_VERSION integer NOT NULL, ",
-                            "PLAYER_UUID varchar(36) NOT NULL, ",
-                            "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
-                            "FOREIGN KEY(PUNISHMENT_ID) REFERENCES GUARDIAN_PUNISHMENT(ID)"))
-                    .append(")")
-                    .build();
-
-            this.databaseVersionTable.execute();
-            this.databasePunishmentTable.execute();
-            this.databaseLocationTable.execute();
-            this.databasePlayerTable.execute();
-
-        } catch (SQLException e) {
-            this.plugin.getLogger().error("A problem occurred attempting to create Guardians global database!", e);
-        }
+        this.databaseVersionTable.execute();
+        this.databasePunishmentTable.execute();
+        this.databaseLocationTable.execute();
+        this.databasePlayerTable.execute();
     }
 
     @Override
@@ -131,7 +111,7 @@ public final class GuardianDatabase implements StorageProvider<Connection> {
     }
 
     @Override
-    public Optional<Connection> getLocation() {
-        return Optional.ofNullable(this.connection);
+    public Optional<Database> getLocation() {
+        return Optional.ofNullable(this.database);
     }
 }

@@ -41,8 +41,8 @@ import io.github.connorhartley.guardian.internal.punishments.ResetPunishment;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.storage.container.StorageValue;
 import io.github.connorhartley.guardian.util.ConfigurationCommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -73,6 +73,8 @@ import java.util.Optional;
         onDisable = "onDeconstruction"
 )
 public class JesusDetection extends Detection {
+
+    // TODO: Prepare for seperation from speed check.
 
     private Guardian plugin;
     private File configFile;
@@ -212,16 +214,16 @@ public class JesusDetection extends Detection {
 
     public static class Configuration implements StorageConsumer<File> {
 
-        public StorageValue<String, Double> configAnalysisTime;
-        public StorageValue<String, Double> configThreshold;
-        public StorageValue<String, Double> configMinimumWaterTime;
-        public StorageValue<String, Map<String, Double>> configTickBounds;
-        public StorageValue<String, Map<String, Double>> configControlValues;
-        public StorageValue<String, Map<String, Double>> configMaterialValues;
-        public StorageValue<String, Map<String, Tuple<Double, Double>>> configPunishmentLevels;
-        public StorageValue<String, Map<String, String>> configPunishmentProperties;
-        public StorageValue<String, Map<String, List<String>>> configCustomPunishments;
-        public StorageValue<String, Map<String, Double>> configSeverityDistribution;
+        public ConfigurationValue<String, Double> configAnalysisTime;
+        public ConfigurationValue<String, Double> configThreshold;
+        public ConfigurationValue<String, Double> configMinimumWaterTime;
+        public ConfigurationValue<String, Map<String, Double>> configTickBounds;
+        public ConfigurationValue<String, Map<String, Double>> configControlValues;
+        public ConfigurationValue<String, Map<String, Double>> configMaterialValues;
+        public ConfigurationValue<String, Map<String, Tuple<Double, Double>>> configPunishmentLevels;
+        public ConfigurationValue<String, Map<String, String>> configPunishmentProperties;
+        public ConfigurationValue<String, Map<String, List<String>>> configCustomPunishments;
+        public ConfigurationValue<String, Map<String, Double>> configSeverityDistribution;
 
         private CommentedConfigurationNode configurationNode;
 
@@ -247,7 +249,7 @@ public class JesusDetection extends Detection {
 
                 // Define Config Values
 
-                this.configAnalysisTime = new StorageValue<>(new StorageKey<>("analysis-time"),
+                this.configAnalysisTime = new ConfigurationValue<>(new StorageKey<>("analysis-time"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Analysis Time")
                                 .addParagraph(new String[]{
@@ -260,7 +262,7 @@ public class JesusDetection extends Detection {
                         2.0, new TypeToken<Double>() {
                 });
 
-                this.configThreshold = new StorageValue<>(new StorageKey<>("threshold"),
+                this.configThreshold = new ConfigurationValue<>(new StorageKey<>("threshold"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Threshold")
                                 .addParagraph(new String[]{
@@ -275,7 +277,7 @@ public class JesusDetection extends Detection {
                         8.4, new TypeToken<Double>() {
                 });
 
-                this.configMinimumWaterTime = new StorageValue<>(new StorageKey<>("minimum-water-time"),
+                this.configMinimumWaterTime = new ConfigurationValue<>(new StorageKey<>("minimum-water-time"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Minimum Water Time")
                                 .addParagraph(new String[]{
@@ -283,17 +285,17 @@ public class JesusDetection extends Detection {
                                         "must be on / in water, in order for the check to ",
                                         "become valid.",
                                         "",
-                                        "Recommended time is 0.5 percent."
+                                        "Recommended time is 0.85 percent."
                                 })
                                 .export(),
-                        0.5, new TypeToken<Double>() {
+                        0.85, new TypeToken<Double>() {
                 });
 
                 Map<String, Double> tickBounds = new HashMap<>();
                 tickBounds.put("min", 0.75);
                 tickBounds.put("max", 1.5);
 
-                this.configTickBounds = new StorageValue<>(new StorageKey<>("tick-bounds"),
+                this.configTickBounds = new ConfigurationValue<>(new StorageKey<>("tick-bounds"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Tick Bounds")
                                 .addParagraph(new String[]{
@@ -312,7 +314,7 @@ public class JesusDetection extends Detection {
                 punishmentLevels.put("warn&default", Tuple.of(0.1, 1.0));
                 punishmentLevels.put("reset&default", Tuple.of(0.1, 1.0));
 
-                this.configPunishmentLevels = new StorageValue<>(new StorageKey<>("punishment-levels"),
+                this.configPunishmentLevels = new ConfigurationValue<>(new StorageKey<>("punishment-levels"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Punishment Levels")
                                 .addParagraph(new String[]{
@@ -329,7 +331,7 @@ public class JesusDetection extends Detection {
                 punishmentProperties.put("channel", "admin");
                 punishmentProperties.put("releasetime", "12096000");
 
-                this.configPunishmentProperties = new StorageValue<>(new StorageKey<>("punishment-properties"),
+                this.configPunishmentProperties = new ConfigurationValue<>(new StorageKey<>("punishment-properties"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Punishment Properties")
                                 .addParagraph(new String[]{
@@ -345,7 +347,7 @@ public class JesusDetection extends Detection {
                 Map<String, List<String>> customPunishments = new HashMap<>();
                 customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
 
-                this.configCustomPunishments = new StorageValue<>(new StorageKey<>("custom-punishments"),
+                this.configCustomPunishments = new ConfigurationValue<>(new StorageKey<>("custom-punishments"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Custom Punishments")
                                 .addParagraph(new String[]{
@@ -361,7 +363,7 @@ public class JesusDetection extends Detection {
                 severityDistribution.put("mean", 10d);
                 severityDistribution.put("standard-deviation", 5d);
 
-                this.configSeverityDistribution = new StorageValue<>(new StorageKey<>("severity-distribution"),
+                this.configSeverityDistribution = new ConfigurationValue<>(new StorageKey<>("severity-distribution"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Severity Distribution")
                                 .addParagraph(new String[]{
@@ -383,7 +385,7 @@ public class JesusDetection extends Detection {
                 controlValues.put("sprint", 1.055);
                 controlValues.put("fly", 1.065);
 
-                this.configControlValues = new StorageValue<>(new StorageKey<>("control-values"),
+                this.configControlValues = new ConfigurationValue<>(new StorageKey<>("control-values"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Control Values")
                                 .addParagraph(new String[]{
@@ -404,7 +406,7 @@ public class JesusDetection extends Detection {
                 materialValues.put("solid", 1.035);
                 materialValues.put("liquid", 0.95);
 
-                this.configMaterialValues = new StorageValue<>(new StorageKey<>("material-values"),
+                this.configMaterialValues = new ConfigurationValue<>(new StorageKey<>("material-values"),
                         new ConfigurationCommentDocument(45, " ")
                                 .addHeader("Control Values")
                                 .addParagraph(new String[]{
@@ -496,76 +498,76 @@ public class JesusDetection extends Detection {
         }
 
         @Override
-        public <K, E> Optional<StorageValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken) {
+        public <K, E> Optional<ConfigurationValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken) {
             if (key.get() instanceof String) {
                 if (key.get().equals("analysis-time") && typeToken.getRawType()
                         .equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configAnalysisTime);
+                    return Optional.of((ConfigurationValue<K, E>) this.configAnalysisTime);
                 } else if (key.get().equals("threshold") && typeToken.getRawType()
                         .equals(this.configThreshold.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configThreshold);
+                    return Optional.of((ConfigurationValue<K, E>) this.configThreshold);
                 } else if (key.get().equals("minimum-water-time") && typeToken.getRawType()
                         .equals(this.configMinimumWaterTime.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configMinimumWaterTime);
+                    return Optional.of((ConfigurationValue<K, E>) this.configMinimumWaterTime);
                 } else if (key.get().equals("tick-bounds") && typeToken.getRawType()
                         .equals(this.configTickBounds.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configTickBounds);
+                    return Optional.of((ConfigurationValue<K, E>) this.configTickBounds);
                 } else if (key.get().equals("punishment-properties") && typeToken.getRawType()
                         .equals(this.configPunishmentProperties.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configPunishmentProperties);
+                    return Optional.of((ConfigurationValue<K, E>) this.configPunishmentProperties);
                 } else if (key.get().equals("punishment-levels") && typeToken.getRawType()
                         .equals(this.configPunishmentLevels.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configPunishmentLevels);
+                    return Optional.of((ConfigurationValue<K, E>) this.configPunishmentLevels);
                 } else if (key.get().equals("custom-punishments") && typeToken.getRawType()
                         .equals(this.configCustomPunishments.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configCustomPunishments);
+                    return Optional.of((ConfigurationValue<K, E>) this.configCustomPunishments);
                 } else if (key.get().equals("severity-distribution") && typeToken.getRawType()
                         .equals(this.configSeverityDistribution.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configSeverityDistribution);
+                    return Optional.of((ConfigurationValue<K, E>) this.configSeverityDistribution);
                 } else if (key.get().equals("control-values") && typeToken.getRawType()
                         .equals(this.configControlValues.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configControlValues);
+                    return Optional.of((ConfigurationValue<K, E>) this.configControlValues);
                 } else if (key.get().equals("material-values") && typeToken.getRawType()
                         .equals(this.configMaterialValues.getValueTypeToken().getRawType())) {
-                    return Optional.of((StorageValue<K, E>) this.configMaterialValues);
+                    return Optional.of((ConfigurationValue<K, E>) this.configMaterialValues);
                 }
             }
             return Optional.empty();
         }
 
         @Override
-        public <K, E> void set(StorageValue<K, E> storageValue) {
-            if (storageValue.getKey().get() instanceof String) {
-                if (storageValue.getKey().get().equals("analysis-time") && storageValue.getValueTypeToken()
+        public <K, E> void set(ConfigurationValue<K, E> configurationValue) {
+            if (configurationValue.getKey().get() instanceof String) {
+                if (configurationValue.getKey().get().equals("analysis-time") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configAnalysisTime.getValueTypeToken().getRawType())) {
-                    this.configAnalysisTime = (StorageValue<String, Double>) storageValue;
-                } else if (storageValue.getKey().get().equals("threshold") && storageValue.getValueTypeToken()
+                    this.configAnalysisTime = (ConfigurationValue<String, Double>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("threshold") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configThreshold.getValueTypeToken().getRawType())) {
-                    this.configThreshold = (StorageValue<String, Double>) storageValue;
-                } else if (storageValue.getKey().get().equals("minimum-water-time") && storageValue.getValueTypeToken()
+                    this.configThreshold = (ConfigurationValue<String, Double>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("minimum-water-time") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configMinimumWaterTime.getValueTypeToken().getRawType())) {
-                    this.configMinimumWaterTime = (StorageValue<String, Double>) storageValue;
-                } else if (storageValue.getKey().get().equals("tick-bounds") && storageValue.getValueTypeToken()
+                    this.configMinimumWaterTime = (ConfigurationValue<String, Double>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("tick-bounds") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configTickBounds.getValueTypeToken().getRawType())) {
-                    this.configTickBounds = (StorageValue<String, Map<String, Double>>) storageValue;
-                } else if (storageValue.getKey().get().equals("punishment-properties") && storageValue.getValueTypeToken()
+                    this.configTickBounds = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("punishment-properties") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configPunishmentProperties.getValueTypeToken().getRawType())) {
-                    this.configPunishmentProperties = (StorageValue<String, Map<String, String>>) storageValue;
-                } else if (storageValue.getKey().get().equals("punishment-levels") && storageValue.getValueTypeToken()
+                    this.configPunishmentProperties = (ConfigurationValue<String, Map<String, String>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("punishment-levels") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configPunishmentLevels.getValueTypeToken().getRawType())) {
-                    this.configPunishmentLevels = (StorageValue<String, Map<String, Tuple<Double, Double>>>) storageValue;
-                } else if (storageValue.getKey().get().equals("custom-punishments") && storageValue.getValueTypeToken()
+                    this.configPunishmentLevels = (ConfigurationValue<String, Map<String, Tuple<Double, Double>>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("custom-punishments") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configCustomPunishments.getValueTypeToken().getRawType())) {
-                    this.configCustomPunishments = (StorageValue<String, Map<String, List<String>>>) storageValue;
-                } else if (storageValue.getKey().get().equals("severity-distribution") && storageValue.getValueTypeToken()
+                    this.configCustomPunishments = (ConfigurationValue<String, Map<String, List<String>>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("severity-distribution") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configSeverityDistribution.getValueTypeToken().getRawType())) {
-                    this.configSeverityDistribution = (StorageValue<String, Map<String, Double>>) storageValue;
-                } else if (storageValue.getKey().get().equals("control-values") && storageValue.getValueTypeToken()
+                    this.configSeverityDistribution = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("control-values") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configControlValues.getValueTypeToken().getRawType())) {
-                    this.configControlValues = (StorageValue<String, Map<String, Double>>) storageValue;
-                } else if (storageValue.getKey().get().equals("material-values") && storageValue.getValueTypeToken()
+                    this.configControlValues = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("material-values") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configMaterialValues.getValueTypeToken().getRawType())) {
-                    this.configMaterialValues = (StorageValue<String, Map<String, Double>>) storageValue;
+                    this.configMaterialValues = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
                 }
             }
         }

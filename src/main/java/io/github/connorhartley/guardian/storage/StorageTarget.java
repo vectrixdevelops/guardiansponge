@@ -23,12 +23,12 @@
  */
 package io.github.connorhartley.guardian.storage;
 
-import io.github.connorhartley.guardian.storage.container.StorageValue;
+import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 
 /**
  * Storage Target
  *
- * An annotation attached to a parameter or field to inject a {@link StorageValue}
+ * An annotation attached to a parameter or field to inject a {@link ConfigurationValue}
  * for by an appropriate {@link StorageProvider}.
  */
 public @interface StorageTarget {
@@ -36,7 +36,7 @@ public @interface StorageTarget {
     /**
      * Key
      *
-     * <p>The storage key that holds the {@link StorageValue} you want to inject.</p>
+     * <p>The storage key that holds the {@link ConfigurationValue} you want to inject.</p>
      *
      * @return The storage key
      */
@@ -46,7 +46,7 @@ public @interface StorageTarget {
      * Deep
      *
      * <p>If enabled, allows a recursive search through mapped objects to return
-     * the {@link StorageValue}. Disabled by default as it may have performance
+     * the {@link ConfigurationValue}. Disabled by default as it may have performance
      * implications.</p>
      *
      * @return The deep setting
