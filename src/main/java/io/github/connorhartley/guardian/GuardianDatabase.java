@@ -29,9 +29,14 @@ import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.apache.commons.lang3.StringUtils;
 import tech.ferus.util.sql.databases.Database;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public final class GuardianDatabase implements StorageProvider<Database> {
+
+    private static final Integer databaseVersion = 1;
+    private static final String[] databaseTableNames = { "GUARDIAN_PUNISHMENT", "GUARDIAN_LOCATION", "GUARDIAN_PLAYER" };
 
     private final Guardian plugin;
     private final Database database;
@@ -49,18 +54,18 @@ public final class GuardianDatabase implements StorageProvider<Database> {
     @Override
     public void create() {
         this.databaseVersionTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("(",
-                        "GUARDIAN_VERSION varchar(24) NOT NULL, ",
+                StringUtils.join("CREATE TABLE IF NOT EXISTS GUARDIAN (",
+                        "ID integer AUTO_INCREMENT, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "SYNCHRONIZE_TIME timestamp NOT NULL, ",
                         "PUNISHMENT_TABLE varchar(24) NOT NULL, ",
                         "LOCATION_TABLE varchar(24) NOT NULL, ",
                         "PLAYER_TABLE varchar(24) NOT NULL, ",
-                        "PRIMARY KEY(DATABASE_VERSION) )"
+                        "PRIMARY KEY(ID) )"
                 ));
 
         this.databasePunishmentTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("(",
+                StringUtils.join("CREATE TABLE IF NOT EXISTS GUARDIAN_PUNISHMENT (",
                         "ID integer NOT NULL, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PLAYER_UUID varchar(36) NOT NULL, ",
@@ -73,7 +78,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 ));
 
         this.databaseLocationTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("(",
+                StringUtils.join("CREATE TABLE IF NOT EXISTS GUARDIAN_LOCATION (",
                         "PUNISHMENT_ID integer NOT NULL, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PUNISHMENT_ORDINAL integer NOT NULL, ",
@@ -86,7 +91,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 ));
 
         this.databasePlayerTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("(",
+                StringUtils.join("CREATE TABLE IF NOT EXISTS GUARDIAN_PLAYER (",
                         "PUNISHMENT_ID integer NOT NULL, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PLAYER_UUID varchar(36) NOT NULL, ",
@@ -98,6 +103,35 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         this.databasePunishmentTable.execute();
         this.databaseLocationTable.execute();
         this.databasePlayerTable.execute();
+
+        // Temporary as there is no migration system.
+
+        int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
+        )).returnQuery(
+                s -> s.setInt(1, databaseVersion),
+                r -> r.getInt("ID")
+        ).orElseGet(() -> {
+            new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                    "INSERT INTO GUARDIAN (",
+                    "DATABASE_VERSION, ",
+                    "SYNCHRONIZE_TIME, ",
+                    "PUNISHMENT_TABLE, ",
+                    "LOCATION_TABLE, ",
+                    "PLAYER_TABLE) ",
+                    "VALUES (?, ?, ?, ?, ?)"
+            )).execute(
+                    s -> {
+                        s.setInt(1, databaseVersion);
+                        s.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                        s.setString(3, databaseTableNames[0]);
+                        s.setString(4, databaseTableNames[1]);
+                        s.setString(5, databaseTableNames[2]);
+                    }
+            );
+
+            return databaseVersion;
+        });
     }
 
     @Override

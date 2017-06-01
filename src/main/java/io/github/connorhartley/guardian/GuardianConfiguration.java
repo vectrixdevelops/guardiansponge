@@ -58,7 +58,6 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
     private CommentDocument globalHeader;
 
     public ConfigurationValue<String, Integer> configHeader;
-    public ConfigurationValue<String, String> configDatabaseVersion;
     public ConfigurationValue<String, Map<String, String>> configDatabaseCredentials;
     public ConfigurationValue<String, Boolean> configDatabaseMigration;
     public ConfigurationValue<String, List<String>> configEnabledDetections;
@@ -111,19 +110,6 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
             this.configHeader = new ConfigurationValue<>(new StorageKey<>("a"),
                     this.globalHeader.export(),
                     1, new TypeToken<Integer>() {
-            });
-
-            this.configDatabaseVersion = new ConfigurationValue<>(new StorageKey<>("database-version"),
-                    new CommentDocument(50, " ")
-                                    .addHeader("Database Version")
-                                    .addParagraph(new String[]{
-                                            "VOLATILE: Do not touch this unless you know what you're doing!",
-                                            "",
-                                            "Defines the database version to use. This may be auto incremented ",
-                                            "to the discretion of the Plugin if you have the 'auto-migration' enabled."
-                                    })
-                                    .export(),
-                    this.plugin.getPluginContainer().getVersion().orElse("unknown"), new TypeToken<String>() {
             });
 
             Map<String, String> databaseCredentials = new HashMap<>();
@@ -188,7 +174,6 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
             });
 
             this.configHeader.<ConfigurationNode>createStorage(this.configurationNode);
-            this.configDatabaseVersion.<ConfigurationNode>createStorage(this.configurationNode);
             this.configDatabaseCredentials.<ConfigurationNode>createStorage(this.configurationNode);
             this.configDatabaseMigration.<ConfigurationNode>createStorage(this.configurationNode);
             this.configEnabledDetections.<ConfigurationNode>createStorage(this.configurationNode);
@@ -207,7 +192,6 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                 this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
                 this.configHeader.<ConfigurationNode>loadStorage(this.configurationNode);
-                this.configDatabaseVersion.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configDatabaseCredentials.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configDatabaseMigration.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configEnabledDetections.<ConfigurationNode>loadStorage(this.configurationNode);
@@ -227,7 +211,6 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                 this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
                 this.configHeader.<ConfigurationNode>updateStorage(this.configurationNode);
-                this.configDatabaseVersion.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configDatabaseCredentials.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configDatabaseMigration.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configEnabledDetections.<ConfigurationNode>updateStorage(this.configurationNode);
