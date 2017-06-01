@@ -43,7 +43,7 @@ import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageConsumer;
 import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.util.ConfigurationCommentDocument;
+import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -245,7 +245,7 @@ public class InvalidMovementDetection extends Detection {
                 // Define Config Values
 
                 this.configAnalysisTime = new ConfigurationValue<>(new StorageKey<>("analysis-time"),
-                        new ConfigurationCommentDocument(45, " ")
+                        new CommentDocument(45, " ")
                                 .addHeader("Analysis Time")
                                 .addParagraph(new String[]{
                                         "Refers to the time taken to run a sequence ",
@@ -262,7 +262,7 @@ public class InvalidMovementDetection extends Detection {
                 tickBounds.put("max", 1.5);
 
                 this.configTickBounds = new ConfigurationValue<>(new StorageKey<>("tick-bounds"),
-                        new ConfigurationCommentDocument(45, " ")
+                        new CommentDocument(45, " ")
                                 .addHeader("Tick Bounds")
                                 .addParagraph(new String[]{
                                         "Refers to the minimum and maximum tick ",
@@ -281,7 +281,7 @@ public class InvalidMovementDetection extends Detection {
                 punishmentLevels.put("reset&default", Tuple.of(0.1, 1.0));
 
                 this.configPunishmentLevels = new ConfigurationValue<>(new StorageKey<>("punishment-levels"),
-                        new ConfigurationCommentDocument(45, " ")
+                        new CommentDocument(45, " ")
                                 .addHeader("Punishment Levels")
                                 .addParagraph(new String[]{
                                         "Refers to the level bounds set ",
@@ -298,7 +298,7 @@ public class InvalidMovementDetection extends Detection {
                 punishmentProperties.put("releasetime", "12096000");
 
                 this.configPunishmentProperties = new ConfigurationValue<>(new StorageKey<>("punishment-properties"),
-                        new ConfigurationCommentDocument(45, " ")
+                        new CommentDocument(45, " ")
                                 .addHeader("Punishment Properties")
                                 .addParagraph(new String[]{
                                         "Refers to properties the punishments may use ",
@@ -314,7 +314,7 @@ public class InvalidMovementDetection extends Detection {
                 customPunishments.put("example", Collections.singletonList("msg %player% You have been prosecuted for illegal action!"));
 
                 this.configCustomPunishments = new ConfigurationValue<>(new StorageKey<>("custom-punishments"),
-                        new ConfigurationCommentDocument(45, " ")
+                        new CommentDocument(45, " ")
                                 .addHeader("Custom Punishments")
                                 .addParagraph(new String[]{
                                         "Allows you to setup custom punishments ",
@@ -330,7 +330,7 @@ public class InvalidMovementDetection extends Detection {
                 severityDistribution.put("standard-deviation", 15d);
 
                 this.configSeverityDistribution = new ConfigurationValue<>(new StorageKey<>("severity-distribution"),
-                        new ConfigurationCommentDocument(45, " ")
+                        new CommentDocument(45, " ")
                                 .addHeader("Severity Distribution")
                                 .addParagraph(new String[]{
                                         "Refers to the normal distribution used ",

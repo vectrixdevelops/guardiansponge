@@ -27,7 +27,7 @@ import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.util.ConfigurationCommentDocument;
+import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -37,7 +37,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -53,10 +55,11 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
     private final Path configFile;
     private final ConfigurationLoader<CommentedConfigurationNode> configManager;
 
-    private ConfigurationCommentDocument globalHeader;
+    private CommentDocument globalHeader;
 
     public ConfigurationValue<String, Integer> configHeader;
     public ConfigurationValue<String, String> configDatabaseVersion;
+    public ConfigurationValue<String, Map<String, String>> configDatabaseCredentials;
     public ConfigurationValue<String, Boolean> configDatabaseMigration;
     public ConfigurationValue<String, List<String>> configEnabledDetections;
     public ConfigurationValue<String, Integer> configLoggingLevel;
@@ -77,8 +80,8 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
 
             this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
 
-            this.globalHeader = new ConfigurationCommentDocument(50, " ");
-            this.globalHeader.addLogo(ConfigurationCommentDocument.LOGO)
+            this.globalHeader = new CommentDocument(50, " ");
+            this.globalHeader.addLogo(CommentDocument.LOGO)
                     .addHeader("AntiCheat")
                     .addParagraph(new String[]{
                             StringUtils.join("Date: ", LocalDate.now().toString()),
@@ -111,7 +114,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
             });
 
             this.configDatabaseVersion = new ConfigurationValue<>(new StorageKey<>("database-version"),
-                    new ConfigurationCommentDocument(50, " ")
+                    new CommentDocument(50, " ")
                                     .addHeader("Database Version")
                                     .addParagraph(new String[]{
                                             "VOLATILE: Do not touch this unless you know what you're doing!",
@@ -123,8 +126,26 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
                     this.plugin.getPluginContainer().getVersion().orElse("unknown"), new TypeToken<String>() {
             });
 
+            Map<String, String> databaseCredentials = new HashMap<>();
+            databaseCredentials.put("type", "mysql");
+            databaseCredentials.put("hostname", "localhost");
+            databaseCredentials.put("port", "3306");
+            databaseCredentials.put("username", "sql-admin");
+            databaseCredentials.put("password", "secret-password");
+
+            this.configDatabaseCredentials = new ConfigurationValue<>(new StorageKey<>("database-credentials"),
+                    new CommentDocument(50, " ")
+                            .addHeader("Database Credentials")
+                            .addParagraph(new String[]{
+                                    "Allows you to set the database type, address, username and password of ",
+                                    "the database you want Guardian to use."
+                            })
+                            .export(),
+                    databaseCredentials, new TypeToken<Map<String, String>>() {
+            });
+
             this.configDatabaseMigration = new ConfigurationValue<>(new StorageKey<>("auto-migration"),
-                    new ConfigurationCommentDocument(50, " ")
+                    new CommentDocument(50, " ")
                                     .addHeader("Auto Migration")
                                     .addParagraph(new String[]{
                                             "Set whether the database should automatically migrate after a minor ",
@@ -138,7 +159,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
             });
 
             this.configEnabledDetections = new ConfigurationValue<>(new StorageKey<>("enabled"),
-                    new ConfigurationCommentDocument(50, " ")
+                    new CommentDocument(50, " ")
                                     .addHeader("Enabled Modules")
                                     .addParagraph(new String[]{
                                             "Module ID's placed in here will be enabled ",
@@ -152,7 +173,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
             });
 
             this.configLoggingLevel = new ConfigurationValue<>(new StorageKey<>("logging-level"),
-                    new ConfigurationCommentDocument(50, " ")
+                    new CommentDocument(50, " ")
                                     .addHeader("Logging Level")
                                     .addParagraph(new String[]{
                                             "Sets the logging level of core and detections ",
@@ -168,6 +189,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
 
             this.configHeader.<ConfigurationNode>createStorage(this.configurationNode);
             this.configDatabaseVersion.<ConfigurationNode>createStorage(this.configurationNode);
+            this.configDatabaseCredentials.<ConfigurationNode>createStorage(this.configurationNode);
             this.configDatabaseMigration.<ConfigurationNode>createStorage(this.configurationNode);
             this.configEnabledDetections.<ConfigurationNode>createStorage(this.configurationNode);
             this.configLoggingLevel.<ConfigurationNode>createStorage(this.configurationNode);
@@ -186,6 +208,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
 
                 this.configHeader.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configDatabaseVersion.<ConfigurationNode>loadStorage(this.configurationNode);
+                this.configDatabaseCredentials.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configDatabaseMigration.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configEnabledDetections.<ConfigurationNode>loadStorage(this.configurationNode);
                 this.configLoggingLevel.<ConfigurationNode>loadStorage(this.configurationNode);
@@ -205,6 +228,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
 
                 this.configHeader.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configDatabaseVersion.<ConfigurationNode>updateStorage(this.configurationNode);
+                this.configDatabaseCredentials.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configDatabaseMigration.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configEnabledDetections.<ConfigurationNode>updateStorage(this.configurationNode);
                 this.configLoggingLevel.<ConfigurationNode>updateStorage(this.configurationNode);
