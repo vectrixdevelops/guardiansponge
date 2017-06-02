@@ -29,6 +29,8 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
+import java.util.Map;
+
 public class ConfigurationValue<K, E> {
 
     private StorageKey<K> key;

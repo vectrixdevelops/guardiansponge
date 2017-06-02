@@ -114,6 +114,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
 
             Map<String, String> databaseCredentials = new HashMap<>();
             databaseCredentials.put("type", "mysql");
+            databaseCredentials.put("version", "1");
             databaseCredentials.put("hostname", "localhost");
             databaseCredentials.put("port", "3306");
             databaseCredentials.put("username", "sql-admin");

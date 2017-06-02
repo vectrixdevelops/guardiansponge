@@ -23,15 +23,23 @@
  */
 package io.github.connorhartley.guardian;
 
+import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.DatabaseValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.apache.commons.lang3.StringUtils;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 import tech.ferus.util.sql.databases.Database;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 public final class GuardianDatabase implements StorageProvider<Database> {
 
@@ -65,7 +73,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 ));
 
         this.databasePunishmentTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("CREATE TABLE IF NOT EXISTS GUARDIAN_PUNISHMENT (",
+                StringUtils.join("CREATE TABLE IF NOT EXISTS " + databaseTableNames[0] + " (",
                         "ID integer NOT NULL, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PLAYER_UUID varchar(36) NOT NULL, ",
@@ -78,7 +86,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 ));
 
         this.databaseLocationTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("CREATE TABLE IF NOT EXISTS GUARDIAN_LOCATION (",
+                StringUtils.join("CREATE TABLE IF NOT EXISTS " + databaseTableNames[1] + " (",
                         "PUNISHMENT_ID integer NOT NULL, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PUNISHMENT_ORDINAL integer NOT NULL, ",
@@ -91,7 +99,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 ));
 
         this.databasePlayerTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("CREATE TABLE IF NOT EXISTS GUARDIAN_PLAYER (",
+                StringUtils.join("CREATE TABLE IF NOT EXISTS " + databaseTableNames[2] + " (",
                         "PUNISHMENT_ID integer NOT NULL, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PLAYER_UUID varchar(36) NOT NULL, ",
@@ -104,7 +112,70 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         this.databaseLocationTable.execute();
         this.databasePlayerTable.execute();
 
-        // Temporary as there is no migration system.
+        // Older versions are priority to list for migration.
+
+        int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
+        )).returnQuery(
+                s -> s.setInt(1, Integer.valueOf(this.plugin.getGlobalConfiguration().configDatabaseCredentials.getValue().get("version"))),
+                r -> r.getInt("ID")
+        ).orElseGet(() -> {
+            new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                    "INSERT INTO GUARDIAN (",
+                    "DATABASE_VERSION, ",
+                    "SYNCHRONIZE_TIME, ",
+                    "PUNISHMENT_TABLE, ",
+                    "LOCATION_TABLE, ",
+                    "PLAYER_TABLE) ",
+                    "VALUES (?, ?, ?, ?, ?)"
+            )).execute(
+                    s -> {
+                        s.setInt(1, databaseVersion);
+                        s.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                        s.setString(3, databaseTableNames[0]);
+                        s.setString(4, databaseTableNames[1]);
+                        s.setString(5, databaseTableNames[2]);
+                    }
+            );
+
+            return databaseVersion;
+        });
+    }
+
+    @Override
+    public void load() {
+        this.databaseVersionTable.execute();
+        this.databasePunishmentTable.execute();
+        this.databaseLocationTable.execute();
+        this.databasePlayerTable.execute();
+
+        // Load new version as priority. Fallback to older versions if that is not possible.
+
+        int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
+        )).returnQuery(
+                s -> s.setInt(1, databaseVersion),
+                r -> r.getInt("ID")
+        ).orElse(Integer.valueOf(this.plugin.getGlobalConfiguration().configDatabaseCredentials.getValue().get("version")));
+
+        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+           "UPDATE GUARDIAN SET SYNCHRONIZE_TIME = ? WHERE ID = ?"
+        )).execute(
+                s -> {
+                    s.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+                    s.setInt(2, currentId);
+                }
+        );
+    }
+
+    @Override
+    public void update() {
+        this.databaseVersionTable.execute();
+        this.databasePunishmentTable.execute();
+        this.databaseLocationTable.execute();
+        this.databasePlayerTable.execute();
+
+        // Load new version as priority. Fallback to older versions if that is not possible.
 
         int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
                 "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
@@ -132,16 +203,86 @@ public final class GuardianDatabase implements StorageProvider<Database> {
 
             return databaseVersion;
         });
+
+        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "UPDATE GUARDIAN SET SYNCHRONIZE_TIME = ? WHERE ID = ?"
+        )).execute(
+                s -> {
+                    s.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+                    s.setInt(2, currentId);
+                }
+        );
     }
 
-    @Override
-    public void load() {
+    //////////////////////////////////
+    //       Database Getters       //
+    //////////////////////////////////
 
+    //         Punishments          //
+
+    public Optional<Punishment> getPunishmentById(int id) {
+        return new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "SELECT * FROM ",
+                databaseTableNames[0],
+                " WHERE ID = ?"
+        )).returnQuery(
+                s -> s.setInt(1, id),
+                r -> Punishment.builder()
+                        .reason(r.getString("PUNISHMENT_TYPE"))
+                        .report(SequenceReport.builder()
+                                .information(r.getString("PUNISHMENT_REASON"))
+                                .type(r.getString("PUNISHMENT_TYPE"))
+                                .build(true))
+                        .time(r.getTimestamp("PUNISHMENT_TIME").toLocalDateTime())
+                        .probability(r.getDouble("PUNISHMENT_PROBABILITY"))
+                        .build()
+        );
     }
 
-    @Override
-    public void update() {
+    public Set<Location<World>> getPunishmentLocationsById(int id) {
+        final Set<Location<World>> locations = new HashSet<>();
 
+        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "SELECT WORLD_UUID, X, Y, Z FROM ",
+                databaseTableNames[1],
+                " WHERE ",
+                databaseTableNames[1],
+                ".PUNISHMENT_ID = ?"
+        )).query(
+                s -> s.setInt(1, id),
+                h -> {
+                    while (h.next()) {
+                        final Optional<World> world = Sponge.getServer().getWorld(UUID.fromString(h.getString("WORLD_UUID")));
+
+                        if (world.isPresent()) {
+                            locations.add(world.get().getLocation(h.getDouble("X"), h.getDouble("Y"), h.getDouble("Z")));
+                        }
+                    }
+                }
+        );
+
+        return locations;
+    }
+
+    public Set<UUID> getPunishedPlayersById(int id) {
+        final Set<UUID> players = new HashSet<>();
+
+        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+           "SELECT PLAYER_UUID FROM ",
+                databaseTableNames[2],
+                " WHERE ",
+                databaseTableNames[2],
+                ".PUNISHMENT_ID = ?"
+        )).query(
+                s -> s.setInt(1, id),
+                h -> {
+                    while (h.next()) {
+                        players.add(UUID.fromString(h.getString("PLAYER_UUID")));
+                    }
+                }
+        );
+
+        return players;
     }
 
     @Override
