@@ -30,9 +30,10 @@ import io.github.connorhartley.guardian.storage.container.DatabaseValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import tech.ferus.util.sql.databases.Database;
+import tech.ferus.util.sql.api.Database;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -74,7 +75,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
 
         this.databasePunishmentTable = new DatabaseValue(new StorageKey<>(this.database),
                 StringUtils.join("CREATE TABLE IF NOT EXISTS " + databaseTableNames[0] + " (",
-                        "ID integer NOT NULL, ",
+                        "ID integer AUTO_INCREMENT, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PLAYER_UUID varchar(36) NOT NULL, ",
                         "PUNISHMENT_TYPE varchar(64) NOT NULL, ",
@@ -283,6 +284,77 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         );
 
         return players;
+    }
+
+    //         Punishments          //
+
+    public void addPunishment(Player player, Punishment punishment) {
+        int punishmentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "INSERT INTO ",
+                databaseTableNames[0],
+                " (",
+                "DATABASE_VERSION, ",
+                "PLAYER_UUID, ",
+                "PUNISHMENT_TYPE, ",
+                "PUNISHMENT_REASON, ",
+                "PUNISHMENT_TIME, ",
+                "PUNISHMENT_PROBABILITY) ",
+                "VALUES (?, ?, ?, ?, ?, ?)"
+        )).returnQuery(
+                s -> {
+                    s.setInt(1, databaseVersion);
+                    s.setString(2, player.getUniqueId().toString());
+                    s.setString(3, punishment.getDetectionReason());
+                    s.setString(4, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
+                    s.setTimestamp(5, Timestamp.valueOf(punishment.getLocalDateTime()));
+                    s.setDouble(6, punishment.getProbability());
+                },
+                r -> r.getInt("ID")
+        ).orElseThrow(Error::new);
+
+        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "INSERTS INTO ",
+                databaseTableNames[1],
+                " (",
+                "PUNISHMENT_ID, ",
+                "DATABASE_VERSION, ",
+                "PUNISHMENT_ORDINAL, ",
+                "WORLD_UUID, ",
+                "X, ",
+                "Y, ",
+                "Z) ",
+                "VALUES (?, ?, ?, ?, ?, ?, ?)"
+        )).execute(
+                s -> {
+                    s.setInt(1, punishmentId);
+                    s.setInt(2, databaseVersion);
+                    s.setInt(3, 1); // Needs to be dynamic.
+                    s.setString(4, punishment.getSequenceReport().getInitialLocation()
+                            .get().getExtent().getUniqueId().toString());
+                    s.setDouble(5, punishment.getSequenceReport().getInitialLocation()
+                            .get().getX());
+                    s.setDouble(6, punishment.getSequenceReport().getInitialLocation()
+                            .get().getY());
+                    s.setDouble(7, punishment.getSequenceReport().getInitialLocation()
+                            .get().getZ());
+                }
+        );
+
+        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
+                "INSERTS INTO ",
+                databaseTableNames[2],
+                " (",
+                "PUNISHMENT_ID, ",
+                "DATABASE_VERSION, ",
+                "PLAYER_UUID, ",
+                "VALUES (?, ?, ?)"
+        )).execute(
+                s -> {
+                    s.setInt(1, punishmentId);
+                    s.setInt(2, databaseVersion);
+                    s.setString(3, player.getUniqueId().toString());
+                }
+        );
     }
 
     @Override

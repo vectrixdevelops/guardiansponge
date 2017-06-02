@@ -65,8 +65,9 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
-import tech.ferus.util.sql.databases.MySqlDatabase;
-import tech.ferus.util.sql.databases.SqliteDatabase;
+import tech.ferus.util.sql.h2.H2Database;
+import tech.ferus.util.sql.mysql.MySqlDatabase;
+import tech.ferus.util.sql.sqlite.SqliteDatabase;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -204,6 +205,12 @@ public class Guardian {
         this.databaseCredentials = this.guardianConfiguration.configDatabaseCredentials.getValue();
 
         switch (this.databaseCredentials.get("type")) {
+            case "h2": {
+                this.guardianDatabase = new GuardianDatabase(this,
+                        new H2Database(
+                                this.databaseCredentials.get("host")
+                        ));
+            }
             case "mysql": {
                 this.guardianDatabase = new GuardianDatabase(this,
                         new MySqlDatabase(

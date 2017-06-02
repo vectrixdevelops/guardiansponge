@@ -24,11 +24,11 @@
 package io.github.connorhartley.guardian.storage.container;
 
 import io.github.connorhartley.guardian.util.Transformer;
-import tech.ferus.util.sql.BasicSql;
-import tech.ferus.util.sql.HandleResults;
-import tech.ferus.util.sql.Preparer;
-import tech.ferus.util.sql.ReturnResults;
-import tech.ferus.util.sql.databases.Database;
+import tech.ferus.util.sql.api.Database;
+import tech.ferus.util.sql.api.HandleResults;
+import tech.ferus.util.sql.api.Preparer;
+import tech.ferus.util.sql.api.ReturnResults;
+import tech.ferus.util.sql.core.BasicSql;
 
 import java.util.Optional;
 

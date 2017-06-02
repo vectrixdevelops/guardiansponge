@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.storage.container;
 
-import tech.ferus.util.sql.databases.Database;
+import tech.ferus.util.sql.api.Database;
 
 public class StorageKey<T> {
 
