@@ -71,6 +71,7 @@ import tech.ferus.util.sql.sqlite.SqliteDatabase;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 @Plugin(
@@ -208,7 +209,8 @@ public class Guardian {
             case "h2": {
                 this.guardianDatabase = new GuardianDatabase(this,
                         new H2Database(
-                                this.databaseCredentials.get("host")
+                                new File(this.guardianConfiguration.getLocation().get().toFile()
+                                        .toString(), this.databaseCredentials.get("host")).toString()
                         ));
             }
             case "mysql": {
@@ -224,7 +226,8 @@ public class Guardian {
             case "sqlite": {
                 this.guardianDatabase = new GuardianDatabase(this,
                         new SqliteDatabase(
-                           this.databaseCredentials.get("host")
+                                new File(this.guardianConfiguration.getLocation().get().toFile()
+                                        .toString(), this.databaseCredentials.get("host")).toString()
                         ));
             }
         }
