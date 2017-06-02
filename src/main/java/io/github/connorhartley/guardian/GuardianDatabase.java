@@ -44,7 +44,6 @@ import java.util.UUID;
 
 public final class GuardianDatabase implements StorageProvider<Database> {
 
-    private static final Integer databaseVersion = 1;
     private static final String[] databaseTableNames = { "GUARDIAN_PUNISHMENT", "GUARDIAN_LOCATION", "GUARDIAN_PLAYER" };
 
     private final Guardian plugin;
@@ -131,7 +130,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                     "VALUES (?, ?, ?, ?, ?)"
             )).execute(
                     s -> {
-                        s.setInt(1, databaseVersion);
+                        s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                         s.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                         s.setString(3, databaseTableNames[0]);
                         s.setString(4, databaseTableNames[1]);
@@ -139,7 +138,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                     }
             );
 
-            return databaseVersion;
+            return Integer.valueOf(PluginInfo.DATABASE_VERSION);
         });
     }
 
@@ -155,7 +154,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
                 "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
         )).returnQuery(
-                s -> s.setInt(1, databaseVersion),
+                s -> s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION)),
                 r -> r.getInt("ID")
         ).orElse(Integer.valueOf(this.plugin.getGlobalConfiguration().configDatabaseCredentials.getValue().get("version")));
 
@@ -181,7 +180,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
                 "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
         )).returnQuery(
-                s -> s.setInt(1, databaseVersion),
+                s -> s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION)),
                 r -> r.getInt("ID")
         ).orElseGet(() -> {
             new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
@@ -194,7 +193,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                     "VALUES (?, ?, ?, ?, ?)"
             )).execute(
                     s -> {
-                        s.setInt(1, databaseVersion);
+                        s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                         s.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                         s.setString(3, databaseTableNames[0]);
                         s.setString(4, databaseTableNames[1]);
@@ -202,7 +201,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                     }
             );
 
-            return databaseVersion;
+            return Integer.valueOf(PluginInfo.DATABASE_VERSION);
         });
 
         new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
@@ -302,7 +301,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 "VALUES (?, ?, ?, ?, ?, ?)"
         )).returnQuery(
                 s -> {
-                    s.setInt(1, databaseVersion);
+                    s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                     s.setString(2, player.getUniqueId().toString());
                     s.setString(3, punishment.getDetectionReason());
                     s.setString(4, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
@@ -327,7 +326,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         )).execute(
                 s -> {
                     s.setInt(1, punishmentId);
-                    s.setInt(2, databaseVersion);
+                    s.setInt(2, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                     s.setInt(3, 1); // Needs to be dynamic.
                     s.setString(4, punishment.getSequenceReport().getInitialLocation()
                             .get().getExtent().getUniqueId().toString());
@@ -351,7 +350,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         )).execute(
                 s -> {
                     s.setInt(1, punishmentId);
-                    s.setInt(2, databaseVersion);
+                    s.setInt(2, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                     s.setString(3, player.getUniqueId().toString());
                 }
         );

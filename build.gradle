@@ -66,6 +66,7 @@ blossom {
     replaceToken '@name@', project.pluginName, location
     replaceToken '@version@', version, location
     replaceToken '@description@', project.pluginDescription, location
+    replaceToken '@databaseversion@', project.databaseVersion, location
     replaceToken '@elderversion@', project.elderVersion, location
     replaceToken '@precogsversion@', project.precogsVersion, location
 }

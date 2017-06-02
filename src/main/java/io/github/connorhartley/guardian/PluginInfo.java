@@ -37,6 +37,8 @@ public final class PluginInfo {
     public static final String VERSION = "@version@";
     public static final String DESCRIPTION = "@description@";
 
+    public static final String DATABASE_VERSION = "@databaseversion@";
+
     public static final String ELDER_VERSION = "@elderversion@";
     public static final String PRECOGS_VERSION = "@precogsversion";
 
