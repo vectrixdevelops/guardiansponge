@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.util;
+package io.github.connorhartley.guardian.storage.configuration;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConfigurationCommentDocument {
+public class CommentDocument {
 
     public static final String[] LOGO = {
             " _____               _ _         ",
@@ -54,11 +54,11 @@ public class ConfigurationCommentDocument {
 
     private List<String> document = new ArrayList<>();
 
-    public ConfigurationCommentDocument() throws Exception {
+    public CommentDocument() throws Exception {
         this(MIN_WIDTH, " ");
     }
 
-    public ConfigurationCommentDocument(int width, String padding) throws Exception {
+    public CommentDocument(int width, String padding) throws Exception {
         if (width < MIN_WIDTH) throw new Exception("Document width is less than the minimum width allowed.");
 
         this.width = width;
@@ -67,7 +67,7 @@ public class ConfigurationCommentDocument {
         this.document.add(NEW_LINE);
     }
 
-    public ConfigurationCommentDocument addLogo(String[] logo) throws Exception {
+    public CommentDocument addLogo(String[] logo) throws Exception {
         int indexWidth = 0;
 
         for (String index : logo) {
@@ -79,7 +79,7 @@ public class ConfigurationCommentDocument {
         return this.addLogo(logo, indexWidth);
     }
 
-    public ConfigurationCommentDocument addLogo(String[] logo, int logoWidth) throws Exception {
+    public CommentDocument addLogo(String[] logo, int logoWidth) throws Exception {
         if (logoWidth > this.width) throw new Exception("Logo width is more than the document width.");
 
         double leftPad;
@@ -119,7 +119,7 @@ public class ConfigurationCommentDocument {
         return this;
     }
 
-    public ConfigurationCommentDocument addHeader(String text) throws Exception {
+    public CommentDocument addHeader(String text) throws Exception {
         int leftHeaderWing = HEADER_DELCARATION[0].length() + HEADER_DELCARATION[1].length();
         int rightHeaderWing = HEADER_DELCARATION[2].length() + HEADER_DELCARATION[3].length();
 
@@ -152,7 +152,7 @@ public class ConfigurationCommentDocument {
         return this;
     }
 
-    public ConfigurationCommentDocument addParagraph(String[] text) {
+    public CommentDocument addParagraph(String[] text) {
         for (String index : text) {
             this.document.add(StringUtils.join(
                     index,

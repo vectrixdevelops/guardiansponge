@@ -39,7 +39,7 @@ import io.github.connorhartley.guardian.punishment.PunishmentController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
-import io.github.connorhartley.guardian.util.TupleSerializer;
+import io.github.connorhartley.guardian.storage.configuration.TupleSerializer;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -65,9 +65,14 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
+import tech.ferus.util.sql.h2.H2Database;
+import tech.ferus.util.sql.mysql.MySqlDatabase;
+import tech.ferus.util.sql.sqlite.SqliteDatabase;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 @Plugin(
         id = PluginInfo.ID,
@@ -127,10 +132,12 @@ public class Guardian {
     private GuardianCommand guardianCommand;
     private GuardianConfiguration guardianConfiguration;
     private GuardianDetection guardianDetection;
+    private GuardianDatabase guardianDatabase;
 
     /* Additional Fields */
 
     private int loggingLevel = 2;
+    private Map<String, String> databaseCredentials;
     private ConfigurationOptions configurationOptions;
 
     @Inject
@@ -184,7 +191,7 @@ public class Guardian {
 
         this.loggingLevel = this.guardianConfiguration.configLoggingLevel.getValue();
 
-        File detectionDirectory = new File(this.guardianConfiguration.getLocation().toFile(), "detection");
+        File detectionDirectory = new File(this.guardianConfiguration.getLocation().get().toFile(), "detection");
         detectionDirectory.mkdir();
 
         this.moduleSubsystem.setConfigurationDirectory(detectionDirectory);
@@ -193,6 +200,39 @@ public class Guardian {
         this.guardianPermission.register();
         this.guardianCommand.register();
         this.guardianDetection.register();
+
+        getLogger().info("Loading database.");
+
+        this.databaseCredentials = this.guardianConfiguration.configDatabaseCredentials.getValue();
+
+        switch (this.databaseCredentials.get("type")) {
+            case "h2": {
+                this.guardianDatabase = new GuardianDatabase(this,
+                        new H2Database(
+                                new File(this.guardianConfiguration.getLocation().get().toFile()
+                                        .toString(), this.databaseCredentials.get("host")).toString()
+                        ));
+            }
+            case "mysql": {
+                this.guardianDatabase = new GuardianDatabase(this,
+                        new MySqlDatabase(
+                                this.databaseCredentials.get("host"),
+                                Integer.valueOf(this.databaseCredentials.get("port")),
+                                "database",
+                                this.databaseCredentials.get("username"),
+                                this.databaseCredentials.get("password")
+                        ));
+            }
+            case "sqlite": {
+                this.guardianDatabase = new GuardianDatabase(this,
+                        new SqliteDatabase(
+                                new File(this.guardianConfiguration.getLocation().get().toFile()
+                                        .toString(), this.databaseCredentials.get("host")).toString()
+                        ));
+            }
+        }
+
+        this.guardianDatabase.create();
 
         if (this.loggingLevel > 1 && this.moduleSubsystem.getModules().size() == 1) {
             getLogger().info("Discovered " + this.moduleSubsystem.getModules().size() + " module.");

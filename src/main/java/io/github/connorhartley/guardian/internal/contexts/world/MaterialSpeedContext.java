@@ -67,6 +67,8 @@ public class MaterialSpeedContext extends CaptureContext {
 
     @Override
     public CaptureContainer update(Player player, CaptureContainer valuation) {
+        // TODO: Change relative positions to real numbers to become more accurate.
+
         MatterProperty matterBelow = player.getLocation().getBlockRelative(Direction.DOWN).getProperty(MatterProperty.class)
                 .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
         MatterProperty matterInside = player.getLocation().getBlock().getProperty(MatterProperty.class)

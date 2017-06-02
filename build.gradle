@@ -50,6 +50,10 @@ dependencies {
     compile 'com.github.me4502:ModularFramework:35dc605747'
     compile 'org.bstats:bstats-sponge-lite:1.1'
 
+    compile 'tech.ferus.util:basicsql-h2:2.0.0'
+    compile 'tech.ferus.util:basicsql-mysql:2.0.0'
+    compile 'tech.ferus.util:basicsql-sqlite:2.0.0'
+
     // Compatibility Dependencies
 
     compile 'io.github.nucleuspowered:nucleus-api:0.29.3-SNAPSHOT-S6.0'
@@ -109,8 +113,12 @@ shadowJar {
         include(dependency('org.apache.commons:commons-math3:3.6.1'))
 
         relocate ('com.me4502.modularframework', 'io.github.connorhartley.guardian.util.module') {
-            include dependency('com.github.me4502:ModularFramework')
+            include(dependency('com.github.me4502:ModularFramework'))
             exclude 'com.me4502.modularframework.ModularFramework'
+        }
+
+        relocate ('tech.ferus.util.sql', 'io.github.connorhartley.guardian.storage.database') {
+            include(dependency('tech.ferus.util:BasicSql'))
         }
 
         relocate ('org.bstats', 'io.github.connorhartley.guardian.util.metrics') {

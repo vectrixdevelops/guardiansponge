@@ -29,7 +29,9 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
-public class StorageValue<K, E> {
+import java.util.Map;
+
+public class ConfigurationValue<K, E> {
 
     private StorageKey<K> key;
     private String comment;
@@ -40,7 +42,7 @@ public class StorageValue<K, E> {
 
     private boolean modified;
 
-    public StorageValue(StorageKey<K> key, String comment, E value, TypeToken<E> valueTypeToken) {
+    public ConfigurationValue(StorageKey<K> key, String comment, E value, TypeToken<E> valueTypeToken) {
         this.key = key;
         this.comment = comment;
         this.defaultValue = value;
@@ -56,7 +58,7 @@ public class StorageValue<K, E> {
      * @param <T> A handler type.
      * @return This class.
      */
-    public <T> StorageValue<K, E> createStorage(T storageHandler) {
+    public <T> ConfigurationValue<K, E> createStorage(T storageHandler) {
         if (storageHandler instanceof ConfigurationNode) {
             this.value = this.getInternalValue(storageHandler);
             this.updateStorage(storageHandler);
@@ -71,7 +73,7 @@ public class StorageValue<K, E> {
      * @param <T> A handler type.
      * @return This class.
      */
-    public <T> StorageValue<K, E> loadStorage(T storageHandler) {
+    public <T> ConfigurationValue<K, E> loadStorage(T storageHandler) {
         if (storageHandler instanceof ConfigurationNode) {
             this.value = this.getInternalValue(storageHandler);
             this.updateStorage(storageHandler);
@@ -86,7 +88,7 @@ public class StorageValue<K, E> {
      * @param <T> A handler type.
      * @return This class.
      */
-    public <T> StorageValue<K, E> updateStorage(T storageHandler) {
+    public <T> ConfigurationValue<K, E> updateStorage(T storageHandler) {
         if (storageHandler instanceof ConfigurationNode) {
             this.setInternalValue(storageHandler);
         }

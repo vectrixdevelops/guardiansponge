@@ -23,6 +23,8 @@
  */
 package io.github.connorhartley.guardian.storage;
 
+import java.util.Optional;
+
 /**
  * Storage Provider
  *
@@ -67,6 +69,6 @@ public interface StorageProvider<T> {
      *
      * @return The location of a storage container
      */
-    T getLocation();
+    Optional<T> getLocation();
 
 }
