@@ -50,9 +50,9 @@ dependencies {
     compile 'com.github.me4502:ModularFramework:35dc605747'
     compile 'org.bstats:bstats-sponge-lite:1.1'
 
-    compile 'tech.ferus.util:basicsql-h2:2.0.0'
-    compile 'tech.ferus.util:basicsql-mysql:2.0.0'
-    compile 'tech.ferus.util:basicsql-sqlite:2.0.0'
+    compile 'tech.ferus.util:basicsql-h2:2.0.1'
+    compile 'tech.ferus.util:basicsql-mysql:2.0.1'
+    compile 'tech.ferus.util:basicsql-sqlite:2.0.1'
 
     // Compatibility Dependencies
 
@@ -113,13 +113,20 @@ shadowJar {
     dependencies {
         include(dependency('org.apache.commons:commons-math3:3.6.1'))
 
+        relocate ('com.mchange', 'io.github.connorhartley.guardian.util.database.mchange') {
+            include(dependency('com.mchange:c3p0'))
+            include(dependency('com.mchange:mchange-commons-java'))
+        }
+
+        relocate ('tech.ferus.util', 'io.github.connorhartley.guardian.util.database.basicsql') {
+            include(dependency('tech.ferus.util:basicsql-h2'))
+            include(dependency('tech.ferus.util:basicsql-mysql'))
+            include(dependency('tech.ferus.util:basicsql-sqlite'))
+        }
+
         relocate ('com.me4502.modularframework', 'io.github.connorhartley.guardian.util.module') {
             include(dependency('com.github.me4502:ModularFramework'))
             exclude 'com.me4502.modularframework.ModularFramework'
-        }
-
-        relocate ('tech.ferus.util.sql', 'io.github.connorhartley.guardian.storage.database') {
-            include(dependency('tech.ferus.util:BasicSql'))
         }
 
         relocate ('org.bstats', 'io.github.connorhartley.guardian.util.metrics') {

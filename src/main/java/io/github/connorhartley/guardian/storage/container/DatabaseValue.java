@@ -63,7 +63,7 @@ public class DatabaseValue {
     }
 
     public <T> Optional<T> returnQuery(Preparer preparer, ReturnResults<T> returnResults) {
-        return BasicSql.returnQuery(storageKey.get(), storageQuery, s -> {}, returnResults);
+        return BasicSql.returnQuery(storageKey.get(), storageQuery, preparer, returnResults);
     }
 
     public StorageKey<Database> getKey() {

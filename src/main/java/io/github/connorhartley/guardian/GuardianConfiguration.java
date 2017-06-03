@@ -115,7 +115,7 @@ public final class GuardianConfiguration implements StorageProvider<Path> {
             Map<String, String> databaseCredentials = new HashMap<>();
             databaseCredentials.put("type", "sqlite");
             databaseCredentials.put("version", "1");
-            databaseCredentials.put("hostname", "database.db");
+            databaseCredentials.put("host", "database.db");
             databaseCredentials.put("port", "3306");
             databaseCredentials.put("username", "sql-admin");
             databaseCredentials.put("password", "secret-password");

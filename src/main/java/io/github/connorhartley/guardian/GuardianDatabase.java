@@ -34,6 +34,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import tech.ferus.util.sql.api.Database;
+import tech.ferus.util.sql.core.BasicSql;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -114,32 +115,34 @@ public final class GuardianDatabase implements StorageProvider<Database> {
 
         // Older versions are priority to list for migration.
 
-        int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
-                "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
-        )).returnQuery(
+        BasicSql.query(
+                this.database,
+                "SELECT ID FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?",
                 s -> s.setInt(1, Integer.valueOf(this.plugin.getGlobalConfiguration().configDatabaseCredentials.getValue().get("version"))),
-                r -> r.getInt("ID")
-        ).orElseGet(() -> {
-            new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
-                    "INSERT INTO GUARDIAN (",
-                    "DATABASE_VERSION, ",
-                    "SYNCHRONIZE_TIME, ",
-                    "PUNISHMENT_TABLE, ",
-                    "LOCATION_TABLE, ",
-                    "PLAYER_TABLE) ",
-                    "VALUES (?, ?, ?, ?, ?)"
-            )).execute(
-                    s -> {
-                        s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
-                        s.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-                        s.setString(3, databaseTableNames[0]);
-                        s.setString(4, databaseTableNames[1]);
-                        s.setString(5, databaseTableNames[2]);
+                h -> {
+                    if (!h.next()) {
+                        BasicSql.execute(
+                                this.database,
+                                StringUtils.join(
+                                "INSERT INTO GUARDIAN (",
+                                "DATABASE_VERSION, ",
+                                "SYNCHRONIZE_TIME, ",
+                                "PUNISHMENT_TABLE, ",
+                                "LOCATION_TABLE, ",
+                                "PLAYER_TABLE) ",
+                                "VALUES (?, ?, ?, ?, ?)"
+                                ),
+                                s -> {
+                                    s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
+                                    s.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                                    s.setString(3, databaseTableNames[0]);
+                                    s.setString(4, databaseTableNames[1]);
+                                    s.setString(5, databaseTableNames[2]);
+                                }
+                        );
                     }
-            );
-
-            return Integer.valueOf(PluginInfo.DATABASE_VERSION);
-        });
+                }
+        );
     }
 
     @Override
@@ -152,7 +155,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         // Load new version as priority. Fallback to older versions if that is not possible.
 
         int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
-                "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
+                "SELECT ID FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
         )).returnQuery(
                 s -> s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION)),
                 r -> r.getInt("ID")
@@ -178,7 +181,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         // Load new version as priority. Fallback to older versions if that is not possible.
 
         int currentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
-                "SELECT * FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
+                "SELECT ID FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?"
         )).returnQuery(
                 s -> s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION)),
                 r -> r.getInt("ID")
