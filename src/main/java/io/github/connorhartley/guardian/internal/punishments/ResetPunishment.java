@@ -39,9 +39,9 @@ import java.util.Optional;
 public class ResetPunishment implements PunishmentType {
 
     private final Guardian plugin;
-    private final Detection detection;
+    private final Detection<?, ?> detection;
 
-    public ResetPunishment(Guardian plugin, Detection detection) {
+    public ResetPunishment(Guardian plugin, Detection<?, ?> detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
@@ -52,7 +52,7 @@ public class ResetPunishment implements PunishmentType {
     }
 
     @Override
-    public Optional<Detection> getDetection() {
+    public Optional<Detection<?, ?>> getDetection() {
         return Optional.ofNullable(this.detection);
     }
 

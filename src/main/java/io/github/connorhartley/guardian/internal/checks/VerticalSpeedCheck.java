@@ -34,6 +34,7 @@ import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
@@ -43,6 +44,7 @@ import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.io.File;
 import java.util.Map;
 
 public class VerticalSpeedCheck extends Check {
@@ -60,32 +62,32 @@ public class VerticalSpeedCheck extends Check {
         this.setChecking(false);
     }
 
-    public static class Type implements CheckType {
+    public static class Type<E, F extends StorageSupplier<File>> implements CheckType<E, F> {
 
-        private final Detection detection;
+        private final Detection<E, F> detection;
 
         private double analysisTime = 40;
         private double minimumTickRange = 30;
         private double maximumTickRange = 50;
 
-        public Type(Detection detection) {
+        public Type(Detection<E, F> detection) {
             this.detection = detection;
 
-            if (this.detection.getConfiguration().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
-                this.analysisTime = this.detection.getConfiguration().get(new StorageKey<>("analysis-time"),
+            if (this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
+                this.analysisTime = this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"),
                         new TypeToken<Double>(){}).get().getValue() / 0.05;
             }
 
-            if (this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-                this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"),
+            if (this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
+                this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
                         new TypeToken<Map<String, Double>>(){}).get().getValue().get("min");
-                this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get(new StorageKey<>("tick-bounds"),
+                this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
                         new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
             }
         }
 
         @Override
-        public Detection getDetection() {
+        public Detection<E, F> getDetection() {
             return this.detection;
         }
 

@@ -25,11 +25,24 @@ package io.github.connorhartley.guardian.detection;
 
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
+import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.detection.check.CheckSupplier;
 import io.github.connorhartley.guardian.detection.check.CheckType;
-import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.punishment.PunishmentType;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
+import ninja.leaping.configurate.ConfigurationOptions;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.apache.commons.lang3.StringUtils;
+import org.spongepowered.api.plugin.PluginContainer;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Detection
@@ -37,10 +50,23 @@ import java.util.List;
  * Represents a cheat / hack / exploit internal that is loaded
  * by the global detection manager.
  */
-public abstract class Detection extends DetectionType {
+public abstract class Detection<E, F extends StorageSupplier<File>> extends DetectionType {
 
-    public Detection(String id, String name) {
+    private E plugin;
+    private File configFile;
+    private List<CheckType> checkTypes;
+    private CheckSupplier checkSupplier;
+    private F configuration;
+    private PluginContainer pluginContainer;
+    private ConfigurationLoader<CommentedConfigurationNode> configLoader;
+    private boolean punish = true;
+    private boolean ready = false;
+
+    public Detection(PluginContainer pluginContainer, String id, String name) {
         super(id, name);
+
+        // Sets the plugin container.
+        this.pluginContainer = pluginContainer;
     }
 
     /**
@@ -58,14 +84,87 @@ public abstract class Detection extends DetectionType {
     public abstract void onDeconstruction();
 
     /**
-     * Get Permission
+     * Get Category
      *
-     * <p>Returns the permission string for the associated {@link PermissionTarget}.</p>
+     * <p>Returns the {@link CommonDetectionTypes.Category} for this detection.</p>
      *
-     * @param permissionTarget The associated permission target
-     * @return Permission string
+     * @return this detection category
      */
-    public abstract String getPermission(String permissionTarget);
+    public abstract CommonDetectionTypes.Category getCategory();
+
+    /**
+     * Construct
+     *
+     * <p>Creates most of the startup properties if they
+     * do not exist already. This is mostly targeted at
+     * Guardians internal detections.
+     *
+     * Sets these optionally:</p>
+     * <ul>
+     *     <li>Config File</li>
+     *     <li>Config Loader</li>
+     *     <li>Detection Configuration Supplier</li>
+     *     <li>Punishment Bindings</li>
+     * </ul>
+     *
+     * <p>Sets these always:</p>
+     * <ul>
+     *     <li>Plugin Instance</li>
+     *     <li>Check Supplier</li>
+     *     <li>Check Types</li>
+     * </ul>
+     *
+     * @param detection the detection that these properties are being constructed for
+     * @param checkSupplier the supplier of check type creation
+     * @param configurationSupplier the supplier of configuration creation
+     * @param punishmentTypes the punishment classes that will be bound
+     * @param <T> the detection type
+     */
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
+    public final <T extends Detection> void construct(@Nonnull T detection,
+                                                                                       @Nonnull CheckSupplier checkSupplier,
+                                                                                       @Nullable Supplier<F> configurationSupplier,
+                                                                                       @Nullable Class<? extends PunishmentType>... punishmentTypes) {
+        if (this.pluginContainer.getInstance().isPresent()) {
+            this.plugin = (E) this.pluginContainer.getInstance().get();
+            this.checkSupplier = checkSupplier;
+
+            if (this.plugin instanceof Guardian) {
+
+                if (this.configFile == null) {
+                    this.configFile = new File(((Guardian) this.plugin).getGlobalConfiguration().getLocation().get().toFile(),
+                            StringUtils.join("detection", File.separator, this.getId(), ".conf"));
+                }
+
+                if (this.configLoader == null) {
+                    this.configLoader = HoconConfigurationLoader.builder().setFile(this.configFile)
+                            .setDefaultOptions(((Guardian) this.plugin).getConfigurationOptions()).build();
+                }
+
+                if (configurationSupplier != null) {
+                    this.configuration = configurationSupplier.get();
+                    this.configuration.create();
+                }
+
+                if (punishmentTypes != null) {
+                    for (Class<? extends PunishmentType> punishmentType : punishmentTypes) {
+                        ((Guardian) this.plugin).getPunishmentController().bind(punishmentType, detection);
+                    }
+                }
+            } else {
+
+                if (configurationSupplier != null) {
+                    this.configuration = configurationSupplier.get();
+                    this.configuration.create();
+                }
+            }
+
+            this.checkTypes = this.checkSupplier.create();
+
+            this.configuration.update();
+        }
+    }
 
     /**
      * Get Plugin
@@ -74,16 +173,112 @@ public abstract class Detection extends DetectionType {
      *
      * @return The owner of this detection
      */
-    public abstract Object getPlugin();
+    public E getPlugin() {
+        return this.plugin;
+    }
+
+    /**
+     * Get Permission
+     *
+     * <p>Returns the permission string for the associated {@link PermissionTarget}.</p>
+     *
+     * @param permissionTarget the associated permission target
+     * @return permission string
+     */
+    public String getPermission(@Nonnull String permissionTarget) {
+        return StringUtils.join("guardian.detections.", permissionTarget, ".", this.getId());
+    }
+
+    /**
+     * Get Config File
+     *
+     * <p>Returns an optional configuration file path for
+     * this detection.
+     *
+     * If this is for an internal detection, this
+     * will be adjacent to the detection directory
+     * path.</p>
+     *
+     * @return an optional configuration file path
+     */
+    public Optional<File> getConfigFile() {
+        return Optional.ofNullable(this.configFile);
+    }
+
+    /**
+     * Set Config File
+     *
+     * <p>Sets a custom path for a configuration file
+     * to be used with a {@link StorageSupplier}.
+     *
+     * This should be used if you do not provide
+     * a {@link Supplier<? extends StorageSupplier<File>>} on
+     * the construct method.</p>
+     *
+     * @param configFile the custom configuration file path
+     */
+    public void setConfigFile(@Nullable File configFile) {
+        this.configFile = configFile;
+    }
+
+    /**
+     * Get Config Loader
+     *
+     * <p>Returns an optional {@link ConfigurationLoader<CommentedConfigurationNode>}
+     * for this detection.
+     *
+     * If this is for an internal detection, this
+     * will have the internal {@link ConfigurationOptions} applied.</p>
+     *
+     * @return an optional configuration loader
+     */
+    public Optional<ConfigurationLoader<CommentedConfigurationNode>> getConfigLoader() {
+        return Optional.ofNullable(this.configLoader);
+    }
+
+    /**
+     * Set Config Loader
+     *
+     * <p>Sets a custom {@link ConfigurationLoader<CommentedConfigurationNode>}
+     * to be used with a {@link StorageSupplier}.
+     *
+     * This should be used if you do not provide
+     * a {@link Supplier<? extends StorageSupplier<File>>} on
+     * the construct method.</p>
+     *
+     * @param configLoader the custom config loader
+     */
+    public void setConfigLoader(@Nullable ConfigurationLoader<CommentedConfigurationNode> configLoader) {
+        this.configLoader = configLoader;
+    }
 
     /**
      * Get Configuration
      *
-     * <p>Returns a {@link StorageConsumer<File>} for this {@link Detection}.</p>
+     * <p>Returns an optional {@link StorageSupplier<File>}
+     * for this detection.</p>
      *
-     * @return The detections configuration
+     * @return an optional configuration
      */
-    public abstract StorageConsumer<File> getConfiguration();
+    public Optional<F> getConfiguration() {
+        return Optional.ofNullable(this.configuration);
+    }
+
+    /**
+     * Set Configuration
+     *
+     * <p>Sets a custom {@link StorageSupplier<File>} to be used with this
+     * detection.
+     *
+     * This should be used if you do not provide
+     * a {@link Supplier<? extends StorageSupplier<File>>} on
+     * the construct method.</p>
+     *
+     * @param configuration the custom configuration
+     */
+    public void setConfiguration(@Nullable F configuration) {
+        this.configuration = configuration;
+    }
 
     /**
      * Is Ready
@@ -91,45 +286,79 @@ public abstract class Detection extends DetectionType {
      * <p>True when the detection has finished loading and false when it is not,
      * or being deconstructed.</p>
      *
-     * @return True when ready, false when not
+     * @return true when ready, false when not
      */
-    public abstract boolean isReady();
+    public boolean isReady() {
+        return this.ready;
+    }
+
+    /**
+     * Set Ready
+     *
+     * <p>Set to true when the detection has finished to loader and set to false
+     * when it is not, or being deconstructed.</p>
+     *
+     * @param ready true when ready, false when not
+     */
+    public void setReady(@Nonnull boolean ready) {
+        this.ready = ready;
+    }
 
     /**
      * Can Punish
      *
      * <p>True if the detection is allowed to pass on punishments.</p>
      *
-     * @return True if allowed
+     * @return true if allowed
      */
-    public abstract boolean canPunish();
+    public boolean canPunish() {
+        return this.punish;
+    }
 
     /**
      * Set Punish
      *
      * <p>Sets whether the detection can pass on punishments.</p>
      *
-     * @param enable Set whether this will execute punishments
+     * @param punish set whether this will execute punishments
      */
-    public abstract void setPunish(boolean enable);
+    public void setPunish(@Nonnull boolean punish) {
+        this.punish = punish;
+    }
+
+    /**
+     * Get Check Supplier
+     *
+     * <p>Returns the {@link CheckSupplier} for creating this detections
+     * {@link CheckType}s.</p>
+     *
+     * @return
+     */
+    public CheckSupplier getCheckSupplier() {
+        return checkSupplier;
+    }
 
     /**
      * Get Checks
      *
-     * <p>Returns the {@link CheckType}s that this {@link Detection} uses.</p>
+     * <p>Returns the {@link CheckType}s that this detection uses.</p>
      *
-     * @return Check providers for this detection
+     * @return check types for this detection
      */
-    public abstract List<CheckType> getChecks();
+    public List<CheckType> getChecks() {
+        return this.checkTypes;
+    }
 
     /**
-     * Get Category
+     * Set Checks
      *
-     * <p>Returns the {@link CommonDetectionTypes.Category} for this {@link Detection}.</p>
+     * <p>Sets the {@link CheckType}s that this detection uses.</p>
      *
-     * @return This detection category
+     * @param checks check types to set
      */
-    public abstract CommonDetectionTypes.Category getCategory();
+    public void setChecks(@Nullable List<CheckType> checks) {
+        this.checkTypes = checks;
+    }
 
     public static class PermissionTarget {
 

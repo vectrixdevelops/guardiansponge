@@ -24,7 +24,10 @@
 package io.github.connorhartley.guardian.sequence.capture;
 
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import org.spongepowered.api.entity.living.player.Player;
+
+import java.io.File;
 
 /**
  * Capture Context
@@ -32,12 +35,12 @@ import org.spongepowered.api.entity.living.player.Player;
  * Represents capture through collecting data in
  * the period of a sequence.
  */
-public abstract class CaptureContext {
+public abstract class CaptureContext<E, F extends StorageSupplier<File>> {
 
     private final Object plugin;
-    private final Detection detection;
+    private final Detection<E, F> detection;
 
-    public CaptureContext(Object plugin, Detection detection) {
+    public CaptureContext(Object plugin, Detection<E, F> detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
@@ -60,7 +63,7 @@ public abstract class CaptureContext {
      *
      * @return Detection for initialize
      */
-    public Detection getDetection() {
+    public Detection<E, F> getDetection() {
         return this.detection;
     }
 

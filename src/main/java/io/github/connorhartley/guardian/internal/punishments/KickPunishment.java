@@ -40,9 +40,9 @@ import java.util.Optional;
 public class KickPunishment implements PunishmentType {
 
     private final Guardian plugin;
-    private final Detection detection;
+    private final Detection<?, ?> detection;
 
-    public KickPunishment(Guardian plugin, Detection detection) {
+    public KickPunishment(Guardian plugin, Detection<?, ?> detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
@@ -53,7 +53,7 @@ public class KickPunishment implements PunishmentType {
     }
 
     @Override
-    public Optional<Detection> getDetection() {
+    public Optional<Detection<?, ?>> getDetection() {
         return Optional.ofNullable(this.detection);
     }
 

@@ -51,7 +51,7 @@ public interface PunishmentType {
      *
      * @return The detection
      */
-    Optional<Detection> getDetection();
+    Optional<Detection<?, ?>> getDetection();
 
     /**
      * Handle

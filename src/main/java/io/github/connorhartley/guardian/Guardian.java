@@ -71,7 +71,6 @@ import tech.ferus.util.sql.sqlite.SqliteDatabase;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 @Plugin(
@@ -257,7 +256,7 @@ public class Guardian {
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
                     if (moduleWrapper.getModule().get() instanceof Detection) {
-                        Detection detection = (Detection) moduleWrapper.getModule().get();
+                        Detection<?, ?> detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().register(check));
 
@@ -303,7 +302,7 @@ public class Guardian {
                 .forEach(moduleWrapper -> {
                     if (!moduleWrapper.getModule().isPresent()) return;
                     if (moduleWrapper.getModule().get() instanceof Detection) {
-                        Detection detection = (Detection) moduleWrapper.getModule().get();
+                        Detection<?, ?> detection = (Detection) moduleWrapper.getModule().get();
 
                         detection.getChecks().forEach(check -> this.getSequenceController().unregister(check));
                     }

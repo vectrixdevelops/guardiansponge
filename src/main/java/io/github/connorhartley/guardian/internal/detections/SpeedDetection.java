@@ -41,15 +41,14 @@ import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ResetPunishment;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
 import io.github.connorhartley.guardian.punishment.Punishment;
-import io.github.connorhartley.guardian.storage.StorageConsumer;
+import io.github.connorhartley.guardian.storage.StorageProvider;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
 import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
@@ -72,79 +71,58 @@ import java.util.Optional;
         version = "0.0.24",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction")
-public class SpeedDetection extends Detection {
-
-    private Guardian plugin;
-    private File configFile;
-    private List<CheckType> checkTypes;
-    private Configuration configuration;
-    private PluginContainer moduleContainer;
-    private ConfigurationLoader<CommentedConfigurationNode> configManager;
-    private boolean punish = true;
-    private boolean ready = false;
+public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configuration> {
 
     @Inject
     public SpeedDetection(@ModuleContainer PluginContainer moduleContainer) throws Exception {
-        super("speed", "Speed Detection");
-        this.moduleContainer = moduleContainer;
+        super(moduleContainer, "speed", "Speed Detection");
     }
 
     @Override
     public void onConstruction() {
-        if (this.moduleContainer.getInstance().isPresent()) {
-            this.plugin = (Guardian) this.moduleContainer.getInstance().get();
-            this.configFile = new File(this.plugin.getGlobalConfiguration().getLocation().get().toFile(),
-                    "detection" + File.separator + this.getId() + ".conf");
-            this.configManager = HoconConfigurationLoader.builder().setFile(this.configFile)
-                    .setDefaultOptions(this.plugin.getConfigurationOptions()).build();
-        }
-
-        this.configuration = new Configuration(this, this.configFile, this.configManager);
-        this.configuration.create();
-
-        this.plugin.getPunishmentController().bind(CustomPunishment.class, this);
-        this.plugin.getPunishmentController().bind(ResetPunishment.class, this);
-        this.plugin.getPunishmentController().bind(WarningPunishment.class, this);
-        this.plugin.getPunishmentController().bind(KickPunishment.class, this);
-        this.plugin.getPunishmentController().bind(ReportPunishment.class, this);
-
-        this.checkTypes = Arrays.asList(new HorizontalSpeedCheck.Type(this), new VerticalSpeedCheck.Type(this));
-
-        this.configuration.update();
+        super.construct(
+                this,
+                () -> Arrays.asList(new HorizontalSpeedCheck.Type<>(this), new VerticalSpeedCheck.Type<>(this)),
+                () -> new Configuration(this, this.getConfigFile().orElseThrow(Error::new), this.getConfigLoader().orElseThrow(Error::new)),
+                CustomPunishment.class, ResetPunishment.class,
+                WarningPunishment.class, KickPunishment.class,
+                ReportPunishment.class
+        );
 
         DetectionTypes.SPEED_DETECTION = Optional.of(this);
-        this.ready = true;
+        this.setReady(true);
     }
 
     @Override
     public void onDeconstruction() {
-        this.configuration.update();
-        this.ready = false;
+        this.setReady(false);
+
+        this.getConfiguration().ifPresent(StorageProvider::update);
     }
 
     @Listener
     public void onReload(GameReloadEvent event) {
-        this.configuration.update();
+        this.getConfiguration().ifPresent(StorageProvider::update);
 
-        getChecks().forEach(check -> this.plugin.getSequenceController().unregister(check));
-        this.checkTypes = null;
+        getChecks().forEach(check -> this.getPlugin().getSequenceController().unregister(check));
+        this.setChecks(null);
 
-        this.configuration.load();
+        this.getConfiguration().ifPresent(StorageProvider::load);
 
-        this.checkTypes = Arrays.asList(new HorizontalSpeedCheck.Type(this), new VerticalSpeedCheck.Type(this));
-        getChecks().forEach(check -> this.plugin.getSequenceController().register(check));
+        this.setChecks(this.getCheckSupplier().create());
+        getChecks().forEach(check -> this.getPlugin().getSequenceController().register(check));
 
-        this.configuration.update();
+        this.getConfiguration().ifPresent(StorageProvider::update);
     }
 
     @Listener
     public void onSequenceFinish(SequenceFinishEvent event) {
-        if (!event.isCancelled() && this.punish) {
-            for (CheckType checkProvider : this.checkTypes) {
+        if (!event.isCancelled() && this.canPunish()) {
+            for (CheckType checkProvider : this.getChecks()) {
                 if (checkProvider.getSequence().equals(event.getSequence())) {
-                    double lower = this.configuration.configSeverityDistribution.getValue().get("lower");
-                    double mean = this.configuration.configSeverityDistribution.getValue().get("mean");
-                    double standardDeviation = this.configuration.configSeverityDistribution.getValue().get("standard-deviation");
+                    double lower = this.getConfiguration().get().configSeverityDistribution.getValue().get("lower");
+                    double mean = this.getConfiguration().get().configSeverityDistribution.getValue().get("mean");
+                    double standardDeviation = this.getConfiguration().get().configSeverityDistribution.getValue().get("standard-deviation");
 
                     NormalDistribution normalDistribution =
                             new NormalDistribution(mean, standardDeviation);
@@ -171,46 +149,11 @@ public class SpeedDetection extends Detection {
     }
 
     @Override
-    public String getPermission(String permissionTarget) {
-        return StringUtils.join("guardian.detections.", permissionTarget, ".speed");
-    }
-
-    @Override
     public CommonDetectionTypes.Category getCategory() {
         return CommonDetectionTypes.Category.MOVEMENT;
     }
 
-    @Override
-    public Guardian getPlugin() {
-        return this.plugin;
-    }
-
-    @Override
-    public List<CheckType> getChecks() {
-        return this.checkTypes;
-    }
-
-    @Override
-    public SpeedDetection.Configuration getConfiguration() {
-        return this.configuration;
-    }
-
-    @Override
-    public boolean canPunish() {
-        return this.punish;
-    }
-
-    @Override
-    public void setPunish(boolean enable) {
-        this.punish = enable;
-    }
-
-    @Override
-    public boolean isReady() {
-        return this.ready;
-    }
-
-    public static class Configuration implements StorageConsumer<File> {
+    public static class Configuration implements StorageSupplier<File> {
 
         public ConfigurationValue<String, Double> configAnalysisTime;
         public ConfigurationValue<String, Map<String, Double>> configTickBounds;

@@ -29,7 +29,7 @@ import io.github.connorhartley.guardian.storage.container.StorageKey;
 
 import java.util.Optional;
 
-public interface StorageConsumer<T> extends StorageProvider<T> {
+public interface StorageSupplier<T> extends StorageProvider<T> {
 
     <K, E> Optional<ConfigurationValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken);
 

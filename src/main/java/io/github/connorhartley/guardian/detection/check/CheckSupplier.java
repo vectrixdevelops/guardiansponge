@@ -23,50 +23,10 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
-import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.sequence.Sequence;
-import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
-import org.spongepowered.api.entity.living.player.User;
+import java.util.List;
 
-import java.io.File;
+public interface CheckSupplier {
 
-/**
- * Check Type
- *
- * Represents a service that checks a player
- * for a specific cheat in a certain way.
- */
-public interface CheckType<E, F extends StorageSupplier<File>> {
-
-    /**
-     * Get Detection
-     *
-     * <p>Returns the {@link Detection} this check type is for.</p>
-     *
-     * @return The detection
-     */
-    Detection<E, F> getDetection();
-
-    /**
-     * Get Sequence
-     *
-     * <p>Returns the {@link SequenceBlueprint} that contains a
-     * {@link Sequence} to check the player for a cheat in a
-     * certain way.</p>
-     *
-     * @return The sequence blueprint
-     */
-    SequenceBlueprint getSequence();
-
-    /**
-     * Create Instance
-     *
-     * <p>Creates a check instance if the sequence is successful.</p>
-     *
-     * @param user The user
-     * @return The check
-     */
-    Check createInstance(User user);
+    List<CheckType> create();
 
 }

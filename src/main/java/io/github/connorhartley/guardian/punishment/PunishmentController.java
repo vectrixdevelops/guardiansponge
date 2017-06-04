@@ -26,11 +26,13 @@ package io.github.connorhartley.guardian.punishment;
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.util.Tuple;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -62,13 +64,13 @@ public class PunishmentController {
      * @param user The user
      * @param punishment Information about this punishment
      */
-    public void execute(Detection detection, User user, Punishment punishment) {
+     public <E, F extends StorageSupplier<File>> void execute(Detection<E, F> detection, User user, Punishment punishment) {
         Map<String, Tuple<Double, Double>> detectionPunishLevels = new HashMap<>();
         List<String> currentPunishLevels = new ArrayList<>();
 
-        if (detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
+        if (detection.getConfiguration().get().get(new StorageKey<>("punishment-levels"),
                 new TypeToken<Map<String, Tuple<Double, Double>>>(){}).isPresent()) {
-            detectionPunishLevels = detection.getConfiguration().get(new StorageKey<>("punishment-levels"),
+            detectionPunishLevels = detection.getConfiguration().get().get(new StorageKey<>("punishment-levels"),
                             new TypeToken<Map<String, Tuple<Double, Double>>>(){}).get().getValue();
         }
 

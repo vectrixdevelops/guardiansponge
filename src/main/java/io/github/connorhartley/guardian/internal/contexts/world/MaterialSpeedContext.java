@@ -28,24 +28,26 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Direction;
 
+import java.io.File;
 import java.util.Map;
 
-public class MaterialSpeedContext extends CaptureContext {
+public class MaterialSpeedContext<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
 
     private double gasSpeedModifier = 1.035;
     private double solidSpeedModifier = 1.02;
     private double liquidSpeedModifier = 1.01;
 
-    public MaterialSpeedContext(Guardian plugin, Detection detection) {
+    public MaterialSpeedContext(Guardian plugin, Detection<E, F> detection) {
         super(plugin, detection);
 
-        if (this.getDetection().getConfiguration().get(new StorageKey<>("material-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-            Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("material-values"),
+        if (this.getDetection().getConfiguration().get().get(new StorageKey<>("material-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
+            Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get().get(new StorageKey<>("material-values"),
                     new TypeToken<Map<String, Double>>(){}).get().getValue();
 
             this.gasSpeedModifier = storageValueMap.get("gas");

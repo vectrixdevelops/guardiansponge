@@ -42,9 +42,9 @@ public class ReportPunishment implements PunishmentType {
     private MessageChannel reportChannel;
 
     private final Guardian plugin;
-    private final Detection detection;
+    private final Detection<?, ?> detection;
 
-    public ReportPunishment(Guardian plugin, Detection detection) {
+    public ReportPunishment(Guardian plugin, Detection<?, ?> detection) {
         this.plugin = plugin;
         this.detection = detection;
 
@@ -57,7 +57,7 @@ public class ReportPunishment implements PunishmentType {
     }
 
     @Override
-    public Optional<Detection> getDetection() {
+    public Optional<Detection<?, ?>> getDetection() {
         return Optional.ofNullable(this.detection);
     }
 

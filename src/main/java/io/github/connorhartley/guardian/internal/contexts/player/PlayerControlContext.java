@@ -30,22 +30,24 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
 import io.github.connorhartley.guardian.sequence.capture.CaptureKey;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Tuple;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Set;
 
 public class PlayerControlContext {
 
-    public static class InvalidControl extends CaptureContext {
+    public static class InvalidControl<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
 
         public static CaptureKey<InvalidControl, Set<Tuple<String, String>>> invalidMoves =
                 new CaptureKey<>(InvalidControl.class, "invalid_movements", Sets.newHashSet());
 
-        public InvalidControl(Guardian plugin, Detection detection) {
+        public InvalidControl(Guardian plugin, Detection<E, F> detection) {
             super(plugin, detection);
         }
 
@@ -97,15 +99,15 @@ public class PlayerControlContext {
         }
     }
 
-    public static class VerticalSpeed extends CaptureContext {
+    public static class VerticalSpeed<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
 
         private double flySpeedControl = 1.065;
 
-        public VerticalSpeed(Guardian plugin, Detection detection) {
+        public VerticalSpeed(Guardian plugin, Detection<E, F> detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("control-values"),
+            if (this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
+                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"),
                         new TypeToken<Map<String, Double>>(){}).get().getValue();
 
 
@@ -141,7 +143,7 @@ public class PlayerControlContext {
         }
     }
 
-    public static class HorizontalSpeed extends CaptureContext {
+    public static class HorizontalSpeed<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
 
         private double sneakSpeedControl = 1.015;
         private double walkSpeedControl = 1.035;
@@ -151,11 +153,11 @@ public class PlayerControlContext {
         private double walkSpeedData = 2;
         private double flySpeedData = 2;
 
-        public HorizontalSpeed(Guardian plugin, Detection detection) {
+        public HorizontalSpeed(Guardian plugin, Detection<E, F> detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get(new StorageKey<>("control-values"),
+            if (this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
+                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"),
                         new TypeToken<Map<String, Double>>(){}).get().getValue();
 
                 this.sneakSpeedControl = storageValueMap.get("sneak");

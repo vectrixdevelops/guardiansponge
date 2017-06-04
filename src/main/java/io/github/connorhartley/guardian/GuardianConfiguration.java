@@ -25,9 +25,9 @@ package io.github.connorhartley.guardian;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.storage.StorageProvider;
+import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
 import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
-import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;

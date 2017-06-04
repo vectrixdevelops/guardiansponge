@@ -42,9 +42,9 @@ import java.util.Optional;
 public class CustomPunishment implements PunishmentType {
 
     private final Guardian plugin;
-    private final Detection detection;
+    private final Detection<?, ?> detection;
 
-    public CustomPunishment(Guardian plugin, Detection detection) {
+    public CustomPunishment(Guardian plugin, Detection<?, ?> detection) {
         this.plugin = plugin;
         this.detection = detection;
     }
@@ -55,7 +55,7 @@ public class CustomPunishment implements PunishmentType {
     }
 
     @Override
-    public Optional<Detection> getDetection() {
+    public Optional<Detection<?, ?>> getDetection() {
         return Optional.ofNullable(this.detection);
     }
 
@@ -71,7 +71,7 @@ public class CustomPunishment implements PunishmentType {
         user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
 
         Optional<ConfigurationValue<String, Map<String, List<String>>>> detectionCustomPunishments =
-                this.detection.getConfiguration().get(new StorageKey<>("custom-punishments"),
+                this.detection.getConfiguration().get().get(new StorageKey<>("custom-punishments"),
                         new TypeToken<Map<String, List<String>>>() {});
 
         List<String> customCommandList;

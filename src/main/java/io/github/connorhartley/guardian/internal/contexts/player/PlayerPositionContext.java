@@ -28,16 +28,18 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
 import io.github.connorhartley.guardian.sequence.capture.CaptureKey;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.io.File;
 import java.util.Optional;
 
 public class PlayerPositionContext {
 
-    public static class Altitude extends CaptureContext {
+    public static class Altitude<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
 
         public static CaptureKey<Altitude, Location<World>> depthThreshold =
                 new CaptureKey<>(Altitude.class, "depth_threshold", null);
@@ -48,7 +50,7 @@ public class PlayerPositionContext {
         public static CaptureKey<Altitude, Integer> update =
                 new CaptureKey<>(Altitude.class, "update", 0);
 
-        public Altitude(Guardian plugin, Detection detection) {
+        public Altitude(Guardian plugin, Detection<E, F> detection) {
             super(plugin, detection);
         }
 
