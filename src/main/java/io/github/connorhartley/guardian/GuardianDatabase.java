@@ -36,8 +36,10 @@ import org.spongepowered.api.world.World;
 import tech.ferus.util.sql.api.Database;
 import tech.ferus.util.sql.core.BasicSql;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -45,7 +47,7 @@ import java.util.UUID;
 
 public final class GuardianDatabase implements StorageProvider<Database> {
 
-    private static final String[] databaseTableNames = { "GUARDIAN_PUNISHMENT", "GUARDIAN_LOCATION", "GUARDIAN_PLAYER" };
+    private static final String[] databaseTableNames = { "GUARDIAN_PUNISHMENT", "GUARDIAN_LOCATION" };
 
     private final Guardian plugin;
     private final Database database;
@@ -53,7 +55,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
     public DatabaseValue databaseVersionTable;
     public DatabaseValue databasePunishmentTable;
     public DatabaseValue databaseLocationTable;
-    public DatabaseValue databasePlayerTable;
 
     public GuardianDatabase(Guardian plugin, Database database) {
         this.plugin = plugin;
@@ -88,30 +89,21 @@ public final class GuardianDatabase implements StorageProvider<Database> {
 
         this.databaseLocationTable = new DatabaseValue(new StorageKey<>(this.database),
                 StringUtils.join("CREATE TABLE IF NOT EXISTS " + databaseTableNames[1] + " (",
+                        "ID integer AUTO_INCREMENT, ",
                         "PUNISHMENT_ID integer NOT NULL, ",
                         "DATABASE_VERSION integer NOT NULL, ",
-                        "PUNISHMENT_ORDINAL integer NOT NULL, ",
                         "WORLD_UUID varchar(36) NOT NULL, ",
                         "X double precision NOT NULL, ",
                         "Y double precision NOT NULL, ",
                         "Z double precision NOT NULL, ",
                         "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
-                        "PRIMARY KEY(PUNISHMENT_ID, PUNISHMENT_ORDINAL) )"
-                ));
-
-        this.databasePlayerTable = new DatabaseValue(new StorageKey<>(this.database),
-                StringUtils.join("CREATE TABLE IF NOT EXISTS " + databaseTableNames[2] + " (",
-                        "PUNISHMENT_ID integer NOT NULL, ",
-                        "DATABASE_VERSION integer NOT NULL, ",
-                        "PLAYER_UUID varchar(36) NOT NULL, ",
-                        "FOREIGN KEY(DATABASE_VERSION) REFERENCES GUARDIAN(DATABASE_VERSION), ",
-                        "FOREIGN KEY(PUNISHMENT_ID) REFERENCES GUARDIAN_PUNISHMENT(ID) )"
+                        "FOREIGN KEY(PUNISHMENT_ID) REFERENCES " + databaseTableNames[0] + "(ID), ",
+                        "PRIMARY KEY(ID) )"
                 ));
 
         this.databaseVersionTable.execute();
         this.databasePunishmentTable.execute();
         this.databaseLocationTable.execute();
-        this.databasePlayerTable.execute();
 
         // Older versions are priority to list for migration.
 
@@ -150,7 +142,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         this.databaseVersionTable.execute();
         this.databasePunishmentTable.execute();
         this.databaseLocationTable.execute();
-        this.databasePlayerTable.execute();
 
         // Load new version as priority. Fallback to older versions if that is not possible.
 
@@ -176,7 +167,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         this.databaseVersionTable.execute();
         this.databasePunishmentTable.execute();
         this.databaseLocationTable.execute();
-        this.databasePlayerTable.execute();
 
         // Load new version as priority. Fallback to older versions if that is not possible.
 
@@ -223,6 +213,59 @@ public final class GuardianDatabase implements StorageProvider<Database> {
 
     //         Punishments          //
 
+    public Set<Punishment> getPunishmentsByProperties(@Nullable Integer databaseVersion,
+                                                      @Nullable Player player,
+                                                      @Nullable String type) {
+
+        final Set<Punishment> punishments = new HashSet<>();
+
+        String[] filters = {
+                databaseVersion != null ? "DATABASE_VERSION = ? " : "",
+                player != null ? "PLAYER_UUID = ? " : "",
+                type != null ? "PUNISHMENT_TYPE = ? " : ""
+        };
+
+        BasicSql.query(this.database,
+                "SELECT * FROM " + databaseTableNames[0] + " WHERE " + StringUtils.join(filters),
+                s -> {
+                    for (int i = 0; i < 3; i++) {
+                        if (databaseVersion != null) {
+                            s.setInt(i + 1, databaseVersion);
+                            continue;
+                        }
+
+                        if (player != null) {
+                            s.setString(i + 1, player.getUniqueId().toString());
+                            continue;
+                        }
+
+                        if (type != null) {
+                            s.setString(i + 1, type);
+                            break;
+                        }
+                    }
+                },
+                h -> {
+                    while (h.next()) {
+                        punishments.add(
+                                Punishment.builder()
+                                        .reason(h.getString("PUNISHMENT_TYPE"))
+                                        .report(SequenceReport.builder()
+                                                .information(h.getString("PUNISHMENT_REASON"))
+                                                .type(h.getString("PUNISHMENT_TYPE"))
+                                                .build(true))
+                                        .time(h.getTimestamp("PUNISHMENT_TIME").toLocalDateTime())
+                                        .probability(h.getDouble("PUNISHMENT_PROBABILITY"))
+                                        .build()
+                        );
+                    }
+                });
+
+        return punishments;
+    }
+
+    //         Identifiers         //
+
     public Optional<Punishment> getPunishmentById(int id) {
         return new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
                 "SELECT * FROM ",
@@ -267,30 +310,9 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         return locations;
     }
 
-    public Set<UUID> getPunishedPlayersById(int id) {
-        final Set<UUID> players = new HashSet<>();
-
-        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
-           "SELECT PLAYER_UUID FROM ",
-                databaseTableNames[2],
-                " WHERE ",
-                databaseTableNames[2],
-                ".PUNISHMENT_ID = ?"
-        )).query(
-                s -> s.setInt(1, id),
-                h -> {
-                    while (h.next()) {
-                        players.add(UUID.fromString(h.getString("PLAYER_UUID")));
-                    }
-                }
-        );
-
-        return players;
-    }
-
     //         Punishments          //
 
-    public void addPunishment(Player player, Punishment punishment) {
+    public void setPunishment(Player player, Punishment punishment) {
         int punishmentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
                 "INSERT INTO ",
                 databaseTableNames[0],
@@ -339,22 +361,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                             .get().getY());
                     s.setDouble(7, punishment.getSequenceReport().getInitialLocation()
                             .get().getZ());
-                }
-        );
-
-        new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
-                "INSERTS INTO ",
-                databaseTableNames[2],
-                " (",
-                "PUNISHMENT_ID, ",
-                "DATABASE_VERSION, ",
-                "PLAYER_UUID, ",
-                "VALUES (?, ?, ?)"
-        )).execute(
-                s -> {
-                    s.setInt(1, punishmentId);
-                    s.setInt(2, Integer.valueOf(PluginInfo.DATABASE_VERSION));
-                    s.setString(3, player.getUniqueId().toString());
                 }
         );
     }
