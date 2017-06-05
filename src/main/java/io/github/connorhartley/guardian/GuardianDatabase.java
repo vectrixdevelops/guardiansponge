@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian;
 
+import com.google.common.base.Preconditions;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.storage.StorageProvider;
@@ -36,6 +37,7 @@ import org.spongepowered.api.world.World;
 import tech.ferus.util.sql.api.Database;
 import tech.ferus.util.sql.core.BasicSql;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -207,16 +209,9 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         );
     }
 
-    //////////////////////////////////
-    //       Database Getters       //
-    //////////////////////////////////
-
-    //         Punishments          //
-
     public Set<Punishment> getPunishmentsByProperties(@Nullable Integer databaseVersion,
                                                       @Nullable Player player,
                                                       @Nullable String type) {
-
         final Set<Punishment> punishments = new HashSet<>();
 
         String[] filters = {
@@ -264,8 +259,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         return punishments;
     }
 
-    //         Identifiers         //
-
     public Optional<Punishment> getPunishmentById(int id) {
         return new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
                 "SELECT * FROM ",
@@ -310,9 +303,10 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         return locations;
     }
 
-    //         Punishments          //
+    public void setPunishment(@Nonnull Player player, @Nonnull Punishment punishment) {
+        Preconditions.checkNotNull(player);
+        Preconditions.checkNotNull(punishment);
 
-    public void setPunishment(Player player, Punishment punishment) {
         int punishmentId = new DatabaseValue(new StorageKey<>(this.database), StringUtils.join(
                 "INSERT INTO ",
                 databaseTableNames[0],

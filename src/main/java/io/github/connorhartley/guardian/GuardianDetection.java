@@ -34,22 +34,19 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class GuardianDetection {
 
+    private final String detectionPath;
     private final ModuleController moduleController;
-
-    private DetectionTypes detectionTypes;
 
     GuardianDetection(ModuleController moduleController) {
         this.moduleController = moduleController;
-        this.detectionTypes = new DetectionTypes();
+        this.detectionPath = "io.github.connorhartley.guardian.internal.detections.";
     }
 
     void register() {
-        String internalDetectionPath = "io.github.connorhartley.guardian.internal.detections.";
-
-        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "SpeedDetection"));
-        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "FlyDetection"));
-        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "JesusDetection"));
-        this.moduleController.registerModule(StringUtils.join(internalDetectionPath, "InvalidMovementDetection"));
+        this.moduleController.registerModule(StringUtils.join(detectionPath, "SpeedDetection"));
+        this.moduleController.registerModule(StringUtils.join(detectionPath, "FlyDetection"));
+        this.moduleController.registerModule(StringUtils.join(detectionPath, "JesusDetection"));
+        this.moduleController.registerModule(StringUtils.join(detectionPath, "InvalidMovementDetection"));
     }
 
 }

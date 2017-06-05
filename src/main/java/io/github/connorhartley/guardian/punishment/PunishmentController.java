@@ -61,16 +61,6 @@ public class PunishmentController {
     /**
      * Execute
      *
-     * <p>Executes a punishment to be handled by the appropriate handler
-     * bound to the {@link Detection}.</p>
-     *
-     * @param detection The detection
-     * @param user The user
-     * @param punishment Information about this punishment
-     */
-    /**
-     * Execute
-     *
      * <p>Returns true if a punishment is successfully handled by the
      * appropriate {@link PunishmentType}, returns false if it was cancelled.</p>
      *
@@ -87,7 +77,6 @@ public class PunishmentController {
 
          PunishmentExecuteEvent punishmentExecuteEvent = new PunishmentExecuteEvent(punishment, user, Cause.of(NamedCause.of("detection", detection)));
          Sponge.getEventManager().post(punishmentExecuteEvent);
-
          if (punishmentExecuteEvent.isCancelled()) {
              return false;
          }
