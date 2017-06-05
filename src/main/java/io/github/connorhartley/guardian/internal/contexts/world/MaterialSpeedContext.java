@@ -69,11 +69,11 @@ public class MaterialSpeedContext<E, F extends StorageSupplier<File>> extends Ca
 
     @Override
     public CaptureContainer update(Player player, CaptureContainer valuation) {
-        MatterProperty matterBelow = player.getLocation().sub(0, 0.75, 0).getBlock().getProperty(MatterProperty.class)
+        MatterProperty matterBelow = player.getLocation().sub(0, 0.35, 0).getBlock().getProperty(MatterProperty.class)
                 .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
         MatterProperty matterInside = player.getLocation().getBlock().getProperty(MatterProperty.class)
                 .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
-        MatterProperty matterAbove = player.getLocation().add(0, 1.35, 0).getBlock().getProperty(MatterProperty.class)
+        MatterProperty matterAbove = player.getLocation().add(0, 0.75, 0).getBlock().getProperty(MatterProperty.class)
                 .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS));
 
         if (matterBelow.getValue() == MatterProperty.Matter.GAS && matterInside.getValue() == MatterProperty.Matter.GAS &&

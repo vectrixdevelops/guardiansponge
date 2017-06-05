@@ -34,6 +34,7 @@ import io.github.connorhartley.guardian.detection.DetectionTypes;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.internal.checks.JesusCheck;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
 import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
@@ -67,13 +68,11 @@ import java.util.Optional;
         id = "jesus",
         name = "Jesus Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.5",
+        version = "0.0.7",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
 public class JesusDetection extends Detection<Guardian, JesusDetection.Configuration> {
-
-    // TODO: Prepare for seperation from speed check.
 
     @Inject
     public JesusDetection(@ModuleContainer PluginContainer moduleContainer) {
@@ -84,7 +83,7 @@ public class JesusDetection extends Detection<Guardian, JesusDetection.Configura
     public void onConstruction() {
         super.construct(
                 this,
-                () -> Collections.singletonList(new HorizontalSpeedCheck.Type<>(this)),
+                () -> Collections.singletonList(new JesusCheck.Type<>(this)),
                 () -> new Configuration(this,
                         this.getConfigFile().orElseThrow(Error::new), this.getConfigLoader().orElseThrow(Error::new)),
                 CustomPunishment.class, ResetPunishment.class,

@@ -67,7 +67,7 @@ import java.util.Optional;
         id = "invalidmovement",
         name = "Invalid Movement Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.2",
+        version = "0.0.3",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )

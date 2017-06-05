@@ -155,8 +155,6 @@ public class HorizontalSpeedCheck extends Check {
                                 double blockModifier = 1.0;
                                 double playerControlModifier = 4.0;
 
-                                int materialLiquid = 0;
-
                                 PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 
                                 if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
@@ -183,9 +181,6 @@ public class HorizontalSpeedCheck extends Check {
                                     blockModifier = contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").get();
                                 }
 
-                                if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_liquid").isPresent()) {
-                                    materialLiquid = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_liquid").get();
-                                }
 
                                 if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
                                     blockModifierTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
@@ -214,14 +209,6 @@ public class HorizontalSpeedCheck extends Check {
 
                                     currentTime = System.currentTimeMillis();
 
-                                    if (materialLiquid != 0) {
-                                        if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
-                                            if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
-                                                return new ConditionResult(false, report.build(false));
-                                            }
-                                        }
-                                    }
-
                                     if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
                                         return new ConditionResult(false, report.build(false));
                                     }
@@ -234,10 +221,6 @@ public class HorizontalSpeedCheck extends Check {
 
                                     travelDisplacement += playerControlModifier / 2;
 
-                                    double waterTime = materialLiquid * (((
-                                            ((1 / ((playerControlTicks + blockModifierTicks) / 2)) *
-                                                    ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) * 0.05;
-
                                     double maximumSpeed = playerControlSpeed * blockModifier * (((
                                             ((1 / ((playerControlTicks + blockModifierTicks) / 2)) *
                                                     ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) + 0.01;
@@ -247,19 +230,6 @@ public class HorizontalSpeedCheck extends Check {
                                                     " while they're " + playerControlState.name() + ".");
 
                                     if (travelDisplacement > maximumSpeed) {
-                                        if (this.detection instanceof JesusDetection) {
-                                            if (waterTime > this.minimumWaterTime &&
-                                                    (travelDisplacement - maximumSpeed) > this.threshold) {
-                                                report
-                                                        .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
-                                                        .type("walking on water (jesus)")
-                                                        .initialLocation(start.copy())
-                                                        .severity(travelDisplacement - maximumSpeed);
-                                            } else {
-                                                return new ConditionResult(false, sequenceReport);
-                                            }
-                                        }
-
                                         report
                                                 .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
                                                 .type("horizontally overspeeding")

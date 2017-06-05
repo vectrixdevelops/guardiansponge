@@ -67,7 +67,6 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
 import tech.ferus.util.sql.h2.H2Database;
 import tech.ferus.util.sql.mysql.MySqlDatabase;
-import tech.ferus.util.sql.sqlite.SqliteDatabase;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -222,13 +221,20 @@ public class Guardian {
                                 this.databaseCredentials.get("password")
                         ));
             }
-            case "sqlite": {
+            default: {
                 this.guardianDatabase = new GuardianDatabase(this,
-                        new SqliteDatabase(
+                        new H2Database(
                                 new File(this.guardianConfiguration.getLocation().get().toFile()
                                         .toString(), this.databaseCredentials.get("host")).toString()
                         ));
             }
+//            case "sqlite": {
+//                this.guardianDatabase = new GuardianDatabase(this,
+//                        new SqliteDatabase(
+//                                new File(this.guardianConfiguration.getLocation().get().toFile()
+//                                        .toString(), this.databaseCredentials.get("host")).toString()
+//                        ));
+//            }
         }
 
         this.guardianDatabase.create();

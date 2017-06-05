@@ -40,6 +40,7 @@ import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
@@ -225,6 +226,11 @@ public class JesusCheck extends Check {
                                 return new ConditionResult(false, report.build(false));
                             }
 
+                            if (start.sub(0, 0.35, 0).getBlock().getProperty(MatterProperty.class)
+                                    .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS)).getValue() != MatterProperty.Matter.LIQUID) {
+                                return new ConditionResult(false, report.build(false));
+                            }
+
                             double travelDisplacement = Math.abs(Math.sqrt((
                                     (present.getX() - start.getX()) *
                                             (present.getX() - start.getX())) +
@@ -253,6 +259,8 @@ public class JesusCheck extends Check {
                                             .type("walking on water (jesus)")
                                             .initialLocation(start.copy())
                                             .severity(travelDisplacement - maximumSpeed);
+
+                                    return new ConditionResult(true, report.build(true));
                                 }
                                 return new ConditionResult(false, sequenceReport);
                             }
