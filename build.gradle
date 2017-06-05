@@ -52,7 +52,6 @@ dependencies {
 
     compile 'tech.ferus.util:basicsql-h2:2.0.1'
     compile 'tech.ferus.util:basicsql-mysql:2.0.1'
-    compile 'tech.ferus.util:basicsql-sqlite:2.0.1'
 
     // Compatibility Dependencies
 
@@ -121,7 +120,6 @@ shadowJar {
         relocate ('tech.ferus.util', 'io.github.connorhartley.guardian.util.database.basicsql') {
             include(dependency('tech.ferus.util:basicsql-h2'))
             include(dependency('tech.ferus.util:basicsql-mysql'))
-            include(dependency('tech.ferus.util:basicsql-sqlite'))
         }
 
         relocate ('com.me4502.modularframework', 'io.github.connorhartley.guardian.util.module') {

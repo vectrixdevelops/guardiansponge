@@ -72,7 +72,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                         "SYNCHRONIZE_TIME timestamp NOT NULL, ",
                         "PUNISHMENT_TABLE varchar(24) NOT NULL, ",
                         "LOCATION_TABLE varchar(24) NOT NULL, ",
-                        "PLAYER_TABLE varchar(24) NOT NULL, ",
                         "PRIMARY KEY(ID) )"
                 ));
 
@@ -122,16 +121,14 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                                 "DATABASE_VERSION, ",
                                 "SYNCHRONIZE_TIME, ",
                                 "PUNISHMENT_TABLE, ",
-                                "LOCATION_TABLE, ",
-                                "PLAYER_TABLE) ",
-                                "VALUES (?, ?, ?, ?, ?)"
+                                "LOCATION_TABLE) ",
+                                "VALUES (?, ?, ?, ?)"
                                 ),
                                 s -> {
                                     s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                                     s.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                                     s.setString(3, databaseTableNames[0]);
                                     s.setString(4, databaseTableNames[1]);
-                                    s.setString(5, databaseTableNames[2]);
                                 }
                         );
                     }
