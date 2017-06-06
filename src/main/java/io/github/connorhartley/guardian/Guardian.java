@@ -166,111 +166,18 @@ public class Guardian {
         TypeSerializers.getDefaultSerializers().registerType(new TypeToken<Tuple<?, ?>>() {}, new TupleSerializer());
 
         getLogger().info("Loading system.");
-
-        this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
-        this.moduleSubsystem.setPluginContainer(pluginContainer);
-
-        this.punishmentController = new PunishmentController(this);
-        this.checkController = new CheckController(this);
-        this.sequenceController = new SequenceController(this, this.checkController);
-
-        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
-        this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
-
-        this.guardianPermission = new GuardianPermission(this);
-        this.guardianCommand = new GuardianCommand(this);
-        this.guardianConfiguration = new GuardianConfiguration(this, pluginConfig, pluginConfigManager);
-        this.guardianDetection = new GuardianDetection(this.moduleSubsystem);
+        this.initializeControllers();
 
         getLogger().info("Loading configuration.");
-
-        this.configurationOptions = ConfigurationOptions.defaults();
-        this.guardianConfiguration.create();
-
-        this.loggingLevel = this.guardianConfiguration.configLoggingLevel.getValue();
-
-        File detectionDirectory = new File(this.guardianConfiguration.getLocation().get().toFile(), "detection");
-        detectionDirectory.mkdir();
-
-        this.moduleSubsystem.setConfigurationDirectory(detectionDirectory);
-        this.moduleSubsystem.setConfigurationOptions(this.configurationOptions);
-
-        this.guardianPermission.register();
-        this.guardianCommand.register();
-        this.guardianDetection.register();
+        this.initializeConfiguration();
 
         getLogger().info("Loading database.");
+        this.initializeDatabase();
 
-        this.databaseCredentials = this.guardianConfiguration.configDatabaseCredentials.getValue();
+        getLogger().info("Registering controllers.");
+        this.registerControllers();
 
-        switch (this.databaseCredentials.get("type")) {
-            case "h2": {
-                this.guardianDatabase = new GuardianDatabase(this,
-                        new H2Database(
-                                new File(this.guardianConfiguration.getLocation().get().toFile()
-                                        .toString(), this.databaseCredentials.get("host")).toString()
-                        ));
-            }
-            case "mysql": {
-                this.guardianDatabase = new GuardianDatabase(this,
-                        new MySqlDatabase(
-                                this.databaseCredentials.get("host"),
-                                Integer.valueOf(this.databaseCredentials.get("port")),
-                                "database",
-                                this.databaseCredentials.get("username"),
-                                this.databaseCredentials.get("password")
-                        ));
-            }
-            default: {
-                this.guardianDatabase = new GuardianDatabase(this,
-                        new H2Database(
-                                new File(this.guardianConfiguration.getLocation().get().toFile()
-                                        .toString(), this.databaseCredentials.get("host")).toString()
-                        ));
-            }
-//            case "sqlite": {
-//                this.guardianDatabase = new GuardianDatabase(this,
-//                        new SqliteDatabase(
-//                                new File(this.guardianConfiguration.getLocation().get().toFile()
-//                                        .toString(), this.databaseCredentials.get("host")).toString()
-//                        ));
-//            }
-        }
-
-        this.guardianDatabase.create();
-
-        if (this.loggingLevel > 1 && this.moduleSubsystem.getModules().size() == 1) {
-            getLogger().info("Discovered " + this.moduleSubsystem.getModules().size() + " module.");
-        } else if (this.loggingLevel > 1) {
-            getLogger().info("Discovered " + this.moduleSubsystem.getModules().size() + " modules.");
-        }
-
-        // Enable Modules
-
-        this.moduleSubsystem.enableModules(moduleWrapper -> {
-            if (this.guardianConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
-                if (this.loggingLevel > 1) getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
-                return true;
-            }
-            return false;
-        });
-
-        // Register Detection Checks and Service Instance
-
-        this.moduleSubsystem.getModules().stream()
-                .filter(ModuleWrapper::isEnabled)
-                .forEach(moduleWrapper -> {
-                    if (!moduleWrapper.getModule().isPresent()) return;
-                    if (moduleWrapper.getModule().get() instanceof Detection) {
-                        Detection<?, ?> detection = (Detection) moduleWrapper.getModule().get();
-
-                        detection.getChecks().forEach(check -> this.getSequenceController().register(check));
-
-                        Sponge.getRegistry().register(DetectionType.class, detection);
-                    }
-                });
-
-        this.guardianConfiguration.update();
+        this.resolveModules();
     }
 
     @Listener
@@ -347,6 +254,106 @@ public class Guardian {
     public void onClientDisconnect(ClientConnectionEvent.Disconnect event, @First User user, @First Player player) {
         this.sequenceController.forceCleanup(player);
         user.remove(DataKeys.GUARDIAN_PUNISHMENT_TAG);
+    }
+
+    private void initializeControllers() {
+        this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
+        this.moduleSubsystem.setPluginContainer(pluginContainer);
+
+        this.punishmentController = new PunishmentController(this);
+        this.checkController = new CheckController(this);
+        this.sequenceController = new SequenceController(this, this.checkController);
+
+        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
+        this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
+
+        this.guardianPermission = new GuardianPermission(this);
+        this.guardianCommand = new GuardianCommand(this);
+        this.guardianConfiguration = new GuardianConfiguration(this, pluginConfig, pluginConfigManager);
+        this.guardianDetection = new GuardianDetection(this.moduleSubsystem);
+    }
+
+    private void initializeConfiguration() {
+        this.configurationOptions = ConfigurationOptions.defaults();
+        this.guardianConfiguration.create();
+
+        this.loggingLevel = this.guardianConfiguration.configLoggingLevel.getValue();
+
+        File detectionDirectory = new File(this.guardianConfiguration.getLocation().get().toFile(), "detection");
+        detectionDirectory.mkdir();
+
+        this.moduleSubsystem.setConfigurationDirectory(detectionDirectory);
+        this.moduleSubsystem.setConfigurationOptions(this.configurationOptions);
+    }
+
+    private void initializeDatabase() {
+        this.databaseCredentials = this.guardianConfiguration.configDatabaseCredentials.getValue();
+
+        switch (this.databaseCredentials.get("type")) {
+            case "h2": {
+                this.guardianDatabase = new GuardianDatabase(this,
+                        new H2Database(
+                                new File(this.guardianConfiguration.getLocation().get().toFile()
+                                        .toString(), this.databaseCredentials.get("host")).toString()
+                        ));
+            }
+            case "mysql": {
+                this.guardianDatabase = new GuardianDatabase(this,
+                        new MySqlDatabase(
+                                this.databaseCredentials.get("host"),
+                                Integer.valueOf(this.databaseCredentials.get("port")),
+                                "database",
+                                this.databaseCredentials.get("username"),
+                                this.databaseCredentials.get("password")
+                        ));
+            }
+            default: {
+                this.guardianDatabase = new GuardianDatabase(this,
+                        new H2Database(
+                                new File(this.guardianConfiguration.getLocation().get().toFile()
+                                        .toString(), this.databaseCredentials.get("host")).toString()
+                        ));
+            }
+        }
+
+        this.guardianDatabase.create();
+    }
+
+    private void registerControllers() {
+        this.guardianPermission.register();
+        this.guardianCommand.register();
+        this.guardianDetection.register();
+    }
+
+    private void resolveModules() {
+        if (this.loggingLevel > 1 && this.moduleSubsystem.getModules().size() == 1) {
+            getLogger().info("Discovered " + this.moduleSubsystem.getModules().size() + " module.");
+        } else if (this.loggingLevel > 1) {
+            getLogger().info("Discovered " + this.moduleSubsystem.getModules().size() + " modules.");
+        }
+
+        this.moduleSubsystem.enableModules(moduleWrapper -> {
+            if (this.guardianConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
+                if (this.loggingLevel > 1) getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
+                return true;
+            }
+            return false;
+        });
+
+        this.moduleSubsystem.getModules().stream()
+                .filter(ModuleWrapper::isEnabled)
+                .forEach(moduleWrapper -> {
+                    if (!moduleWrapper.getModule().isPresent()) return;
+                    if (moduleWrapper.getModule().get() instanceof Detection) {
+                        Detection<?, ?> detection = (Detection) moduleWrapper.getModule().get();
+
+                        detection.getChecks().forEach(check -> this.getSequenceController().register(check));
+
+                        Sponge.getRegistry().register(DetectionType.class, detection);
+                    }
+                });
+
+        this.guardianConfiguration.update();
     }
 
     /**
