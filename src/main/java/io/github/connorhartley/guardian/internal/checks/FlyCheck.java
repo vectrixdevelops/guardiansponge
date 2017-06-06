@@ -108,12 +108,12 @@ public class FlyCheck extends Check {
 
         @Override
         public SequenceBlueprint getSequence() {
-            return new SequenceBuilder()
+            return new SequenceBuilder<E, F>()
 
                     .capture(
-                            new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new PlayerPositionContext.Altitude((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                            new PlayerLocationContext<>((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                            new PlayerPositionContext.Altitude<>((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                            new MaterialSpeedContext<>((Guardian) this.getDetection().getPlugin(), this.getDetection())
                     )
 
                     // Trigger : Move Entity Event

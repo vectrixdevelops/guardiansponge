@@ -29,9 +29,11 @@ import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
 import io.github.connorhartley.guardian.sequence.capture.CaptureHandler;
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,12 +43,13 @@ import java.util.List;
  * A {@link SequenceBlueprint} builder giving the ability to chain
  * actions for a {@link Sequence}.
  */
-public class SequenceBuilder {
+public class SequenceBuilder<E, F extends StorageSupplier<File>> {
 
-    private CaptureContext[] captureContexts;
+    private CaptureContext<E, F>[] captureContexts;
     private List<Action> actions = new ArrayList<>();
 
-    public SequenceBuilder capture(CaptureContext... captureContexts) {
+    @SafeVarargs
+    public final SequenceBuilder capture(CaptureContext<E, F>... captureContexts) {
         this.captureContexts = captureContexts;
         return this;
     }
@@ -69,7 +72,7 @@ public class SequenceBuilder {
         return new SequenceBlueprint(checkType) {
             @Override
             public Sequence create(Player player) {
-                return new Sequence(player, this, checkType, actions, new CaptureHandler(player, captureContexts));
+                return new Sequence(player, this, checkType, actions, new CaptureHandler<>(player, captureContexts));
             }
         };
     }

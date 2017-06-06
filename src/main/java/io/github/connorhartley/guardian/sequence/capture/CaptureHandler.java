@@ -23,17 +23,19 @@
  */
 package io.github.connorhartley.guardian.sequence.capture;
 
+import io.github.connorhartley.guardian.storage.StorageSupplier;
 import org.spongepowered.api.entity.living.player.Player;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class CaptureHandler {
+public class CaptureHandler<E, F extends StorageSupplier<File>> {
 
     private final Player player;
-    private final List<CaptureContext> captureContexts = new ArrayList<>();
+    private final List<CaptureContext<E, F>> captureContexts = new ArrayList<>();
 
     private CaptureContainer captureContainer;
     private boolean stopped = false;
@@ -42,7 +44,8 @@ public class CaptureHandler {
         this.player = player;
     }
 
-    public CaptureHandler(Player player, CaptureContext... captureContexts) {
+    @SafeVarargs
+    public CaptureHandler(Player player, CaptureContext<E, F>... captureContexts) {
         this.player = player;
         this.captureContexts.addAll(Arrays.asList(captureContexts));
     }
@@ -60,7 +63,7 @@ public class CaptureHandler {
     }
 
     public CaptureContainer start() {
-        Iterator<CaptureContext> iterator = this.captureContexts.iterator();
+        Iterator<CaptureContext<E, F>> iterator = this.captureContexts.iterator();
 
         if (this.stopped) {
             this.captureContainer.clear();
@@ -77,7 +80,7 @@ public class CaptureHandler {
     }
 
     public CaptureContainer update() {
-        Iterator<CaptureContext> iterator = this.captureContexts.iterator();
+        Iterator<CaptureContext<E, F>> iterator = this.captureContexts.iterator();
 
         if (!this.stopped) {
             while (iterator.hasNext()) {
@@ -91,7 +94,7 @@ public class CaptureHandler {
     }
 
     public void stop() {
-        Iterator<CaptureContext> iterator = this.captureContexts.iterator();
+        Iterator<CaptureContext<E, F>> iterator = this.captureContexts.iterator();
 
         while(iterator.hasNext()) {
             CaptureContext captureContext = iterator.next();

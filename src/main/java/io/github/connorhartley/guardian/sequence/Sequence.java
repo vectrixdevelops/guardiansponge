@@ -213,7 +213,7 @@ public class Sequence {
     /**
      * Get Sequence Blueprint
      *
-     * @return
+     * @return The sequence blueprint
      */
     public SequenceBlueprint getSequenceBlueprint() {
         return this.sequenceBlueprint;
