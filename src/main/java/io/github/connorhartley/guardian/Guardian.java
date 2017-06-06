@@ -204,6 +204,7 @@ public class Guardian {
     public void onServerStopping(GameStoppingEvent event) {
         getLogger().info("Stopping Guardian AntiCheat.");
         this.guardianConfiguration.update();
+        this.guardianDatabase.update();
 
         this.sequenceControllerTask.stop();
         this.checkControllerTask.stop();
@@ -239,6 +240,7 @@ public class Guardian {
         this.sequenceController.forceCleanup();
 
         this.guardianConfiguration.load();
+        this.guardianDatabase.load();
 
         this.sequenceControllerTask.register();
 
@@ -354,6 +356,7 @@ public class Guardian {
                 });
 
         this.guardianConfiguration.update();
+        this.guardianDatabase.update();
     }
 
     /**
