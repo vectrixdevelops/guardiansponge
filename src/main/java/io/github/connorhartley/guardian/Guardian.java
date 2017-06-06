@@ -35,6 +35,7 @@ import io.github.connorhartley.guardian.data.tag.PunishmentTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckController;
+import io.github.connorhartley.guardian.heuristic.HeuristicController;
 import io.github.connorhartley.guardian.punishment.PunishmentController;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
@@ -116,6 +117,7 @@ public class Guardian {
 
     /* Controller Fields */
 
+    private HeuristicController heuristicController;
     private PunishmentController punishmentController;
     private CheckController checkController;
     private SequenceController sequenceController;
@@ -262,6 +264,7 @@ public class Guardian {
         this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleSubsystem.setPluginContainer(pluginContainer);
 
+        this.heuristicController = new HeuristicController(this);
         this.punishmentController = new PunishmentController(this);
         this.checkController = new CheckController(this);
         this.sequenceController = new SequenceController(this, this.checkController);
@@ -415,6 +418,17 @@ public class Guardian {
     }
 
     /**
+     * Get Global Database
+     *
+     * <p>Returns the database used by Guardian.</p>
+     *
+     * @return The guardian database
+     */
+    public GuardianDatabase getGlobalDatabase() {
+        return this.guardianDatabase;
+    }
+
+    /**
      * Get Global Detections
      *
      * <p>Returns the built-in {@link Detection}s by Guardian.</p>
@@ -423,6 +437,10 @@ public class Guardian {
      */
     public GuardianDetection getGlobalDetections() {
         return this.guardianDetection;
+    }
+
+    public HeuristicController getHeuristicController() {
+        return this.heuristicController;
     }
 
     /**

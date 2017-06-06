@@ -30,6 +30,7 @@ import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import tech.ferus.util.sql.api.Database;
@@ -195,13 +196,13 @@ public final class GuardianDatabase implements StorageProvider<Database> {
     }
 
     public Set<Punishment> getPunishmentsByProperties(@Nullable Integer databaseVersion,
-                                                      @Nullable Player player,
+                                                      @Nullable User user,
                                                       @Nullable String type) {
         final Set<Punishment> punishments = new HashSet<>();
 
         String[] filters = {
                 databaseVersion != null ? "DATABASE_VERSION = ? " : "",
-                player != null ? "PLAYER_UUID = ? " : "",
+                user != null ? "PLAYER_UUID = ? " : "",
                 type != null ? "PUNISHMENT_TYPE = ? " : ""
         };
 
@@ -214,8 +215,8 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                             continue;
                         }
 
-                        if (player != null) {
-                            s.setString(i + 1, player.getUniqueId().toString());
+                        if (user != null) {
+                            s.setString(i + 1, user.getUniqueId().toString());
                             continue;
                         }
 
@@ -238,6 +239,46 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                                         .probability(h.getDouble("PUNISHMENT_PROBABILITY"))
                                         .build()
                         );
+                    }
+                });
+
+        return punishments;
+    }
+
+    public Set<Integer> getPunishmentIdByProperties(@Nullable Integer databaseVersion,
+                                                      @Nullable User user,
+                                                      @Nullable String type) {
+        final Set<Integer> punishments = new HashSet<>();
+
+        String[] filters = {
+                databaseVersion != null ? "DATABASE_VERSION = ? " : "",
+                user != null ? "PLAYER_UUID = ? " : "",
+                type != null ? "PUNISHMENT_TYPE = ? " : ""
+        };
+
+        BasicSql.query(this.database,
+                "SELECT * FROM " + databaseTableNames[0] + " WHERE " + StringUtils.join(filters),
+                s -> {
+                    for (int i = 0; i < 3; i++) {
+                        if (databaseVersion != null) {
+                            s.setInt(i + 1, databaseVersion);
+                            continue;
+                        }
+
+                        if (user != null) {
+                            s.setString(i + 1, user.getUniqueId().toString());
+                            continue;
+                        }
+
+                        if (type != null) {
+                            s.setString(i + 1, type);
+                            break;
+                        }
+                    }
+                },
+                h -> {
+                    while (h.next()) {
+                        punishments.add(h.getInt("ID"));
                     }
                 });
 
@@ -290,8 +331,8 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         return locations;
     }
 
-    public void setPunishment(@Nonnull Player player, @Nonnull Punishment punishment) {
-        Preconditions.checkNotNull(player);
+    public void createPunishment(@Nonnull User user, @Nonnull Punishment punishment) {
+        Preconditions.checkNotNull(user);
         Preconditions.checkNotNull(punishment);
 
         BasicSql.query(this.database,
@@ -309,7 +350,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 ),
                 s -> {
                     s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
-                    s.setString(2, player.getUniqueId().toString());
+                    s.setString(2, user.getUniqueId().toString());
                     s.setString(3, punishment.getDetectionReason());
                     s.setString(4, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
                     s.setTimestamp(5, Timestamp.valueOf(punishment.getLocalDateTime()));
@@ -342,6 +383,46 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                                         .get().getZ());
                             }
                     );
+                }
+        );
+    }
+
+    public void updatePunishment(@Nonnull Integer id, @Nonnull User user, @Nonnull Punishment punishment) {
+        Preconditions.checkNotNull(id);
+        Preconditions.checkNotNull(user);
+        Preconditions.checkNotNull(punishment);
+
+        BasicSql.query(this.database,
+                StringUtils.join(
+                        "SELECT * FROM ",
+                        databaseTableNames[0],
+                        " WHERE ID = ?"
+                ),
+                s -> s.setInt(1, id),
+                h -> {
+                    if (h.next()) {
+                        BasicSql.execute(this.database,
+                                StringUtils.join(
+                                        "UPDATE ",
+                                        databaseTableNames[0],
+                                        " SET ",
+                                        "PLAYER_UUID = ?, ",
+                                        "PUNISHMENT_TYPE = ?, ",
+                                        "PUNISHMENT_REASON = ?, ",
+                                        "PUNISHMENT_TIME = ?, ",
+                                        "PUNISHMENT_PROBABILITY = ? ",
+                                        "WHERE ID = ?"
+                                ),
+                                s -> {
+                                    s.setString(1, user.getUniqueId().toString());
+                                    s.setString(2, punishment.getDetectionReason());
+                                    s.setString(3, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
+                                    s.setTimestamp(4, Timestamp.valueOf(punishment.getLocalDateTime()));
+                                    s.setDouble(5, punishment.getProbability());
+                                    s.setInt(6, h.getInt("ID"));
+                                }
+                        );
+                    }
                 }
         );
     }
