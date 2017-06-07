@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence.condition;
 
-import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.report.SequenceReport;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;

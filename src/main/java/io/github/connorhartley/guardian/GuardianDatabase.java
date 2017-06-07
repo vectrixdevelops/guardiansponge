@@ -25,11 +25,10 @@ package io.github.connorhartley.guardian;
 
 import com.google.common.base.Preconditions;
 import io.github.connorhartley.guardian.punishment.Punishment;
-import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.report.SequenceReport;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -169,6 +168,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                         "ID integer AUTO_INCREMENT, ",
                         "DATABASE_VERSION integer NOT NULL, ",
                         "PLAYER_UUID varchar(36) NOT NULL, ",
+                        "PUNISHMENT_COUNT integer NOT NULL, ",
                         "PUNISHMENT_TYPE varchar(64) NOT NULL, ",
                         "PUNISHMENT_REASON varchar(1024) NOT NULL, ",
                         "PUNISHMENT_TIME timestamp NOT NULL, ",
@@ -305,6 +305,18 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         );
     }
 
+    public Optional<Integer> getPunishmentCountById(int id) {
+        return BasicSql.returnQuery(this.database,
+                StringUtils.join(
+                        "SELECT PUNISHMENT_COUNT FROM ",
+                        databaseTableNames[0],
+                        " WHERE ID = ?"
+                ),
+                s -> s.setInt(1, id),
+                r -> r.getInt("PUNISHMENT_COUNT")
+        );
+    }
+
     public Set<Location<World>> getPunishmentLocationsById(int id) {
         final Set<Location<World>> locations = new HashSet<>();
 
@@ -342,19 +354,21 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                         " (",
                         "DATABASE_VERSION, ",
                         "PLAYER_UUID, ",
+                        "PUNISHMENT_COUNT, ",
                         "PUNISHMENT_TYPE, ",
                         "PUNISHMENT_REASON, ",
                         "PUNISHMENT_TIME, ",
                         "PUNISHMENT_PROBABILITY) ",
-                        "VALUES (?, ?, ?, ?, ?, ?)"
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)"
                 ),
                 s -> {
                     s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                     s.setString(2, user.getUniqueId().toString());
-                    s.setString(3, punishment.getDetectionReason());
-                    s.setString(4, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
-                    s.setTimestamp(5, Timestamp.valueOf(punishment.getLocalDateTime()));
-                    s.setDouble(6, punishment.getProbability());
+                    s.setInt(3, 0);
+                    s.setString(4, punishment.getDetectionReason());
+                    s.setString(5, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
+                    s.setTimestamp(6, Timestamp.valueOf(punishment.getLocalDateTime()));
+                    s.setDouble(7, punishment.getProbability());
                 },
                 h -> {
                     BasicSql.execute(this.database,
@@ -407,6 +421,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                                         databaseTableNames[0],
                                         " SET ",
                                         "PLAYER_UUID = ?, ",
+                                        "PUNISHMENT_COUNT = ?",
                                         "PUNISHMENT_TYPE = ?, ",
                                         "PUNISHMENT_REASON = ?, ",
                                         "PUNISHMENT_TIME = ?, ",
@@ -415,11 +430,12 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                                 ),
                                 s -> {
                                     s.setString(1, user.getUniqueId().toString());
-                                    s.setString(2, punishment.getDetectionReason());
-                                    s.setString(3, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
-                                    s.setTimestamp(4, Timestamp.valueOf(punishment.getLocalDateTime()));
-                                    s.setDouble(5, punishment.getProbability());
-                                    s.setInt(6, h.getInt("ID"));
+                                    s.setInt(2, h.getInt("PUNISHMENT_COUNT") + 1);
+                                    s.setString(3, punishment.getDetectionReason());
+                                    s.setString(4, StringUtils.join(punishment.getSequenceReport().getInformation(), ", "));
+                                    s.setTimestamp(5, Timestamp.valueOf(punishment.getLocalDateTime()));
+                                    s.setDouble(6, punishment.getProbability());
+                                    s.setInt(7, h.getInt("ID"));
                                 }
                         );
                     }

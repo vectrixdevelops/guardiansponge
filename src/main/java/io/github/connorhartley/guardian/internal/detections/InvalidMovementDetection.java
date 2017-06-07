@@ -128,11 +128,7 @@ public class InvalidMovementDetection extends Detection<Guardian, InvalidMovemen
                     NormalDistribution normalDistribution =
                             new NormalDistribution(mean, standardDeviation);
 
-                    String type = "";
-
-                    if (event.getResult().getDetectionTypes().size() > 0) {
-                        type = event.getResult().getDetectionTypes().get(0);
-                    }
+                    String type = event.getResult().getDetectionType();
 
                     double probability = normalDistribution.probability(lower, event.getResult().getSeverity());
 

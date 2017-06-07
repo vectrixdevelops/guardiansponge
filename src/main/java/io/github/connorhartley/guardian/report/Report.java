@@ -21,10 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.heuristic;
+package io.github.connorhartley.guardian.report;
 
-public class HeuristicReport {
+import io.github.connorhartley.guardian.util.Transformer;
+import org.spongepowered.api.event.cause.Cause;
 
-    // TODO: Similar to SequenceReport but slightly different. :P
+/**
+ * Report
+ *
+ * Represents an object that contains data to
+ * assist with the outcome of a detection punishment.
+ */
+public interface Report {
+
+    ReportTypes getReportType();
+
+    String getDetectionType();
+
+    Transformer<Double> getSeverityTransformer();
+
+    Cause getCause();
+
+    enum ReportTypes {
+
+        HEURISTIC,
+        SEQUENCE,
+        CUSTOM
+
+    }
 
 }

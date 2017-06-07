@@ -32,7 +32,7 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlCo
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
-import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.report.SequenceReport;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;

@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence;
+package io.github.connorhartley.guardian.report;
 
+import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -37,14 +38,14 @@ import java.util.Optional;
  */
 public class SequenceReport {
 
-    private final List<String> detectionTypes = new ArrayList<>();
+    private final String detectionType;
     private final List<String> information = new ArrayList<>();
     private final Location<World> initialLocation;
     private final double severity;
     private final boolean accepted;
 
     public SequenceReport(Builder builder) {
-        this.detectionTypes.addAll(builder.detectionTypes);
+        this.detectionType = builder.detectionType;
         this.information.addAll(builder.information);
         this.initialLocation = builder.initialLocation;
         this.severity = builder.severity;
@@ -56,14 +57,14 @@ public class SequenceReport {
     }
 
     /**
-     * Get Detection Types
+     * Get Detection Type
      *
-     * <p>Returns a list of detection types that were caught.</p>
+     * <p>Returns a string of the detection type that was caught.</p>
      *
-     * @return A list of detection types
+     * @return The detection type
      */
-    public List<String> getDetectionTypes() {
-        return this.detectionTypes;
+    public String getDetectionType() {
+        return this.detectionType;
     }
 
     /**
@@ -118,18 +119,16 @@ public class SequenceReport {
 
     public static class Builder {
 
-        private List<String> detectionTypes = new ArrayList<>();
+        private String detectionType;
         private List<String> information = new ArrayList<>();
         private Location<World> initialLocation;
         private double severity = 0.0;
         private boolean accepted = false;
 
-        public Builder() {
-
-        }
+        public Builder() {}
 
         public Builder of(SequenceReport sequenceReport) {
-            this.detectionTypes = sequenceReport.detectionTypes;
+            this.detectionType = sequenceReport.detectionType;
             this.information = sequenceReport.information;
             this.severity = sequenceReport.severity;
             this.accepted = sequenceReport.accepted;
@@ -142,7 +141,7 @@ public class SequenceReport {
         }
 
         public Builder type(String detectionType) {
-            this.detectionTypes.add(detectionType);
+            this.detectionType = detectionType;
             return this;
         }
 

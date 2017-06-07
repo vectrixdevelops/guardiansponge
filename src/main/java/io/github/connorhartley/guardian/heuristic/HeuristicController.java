@@ -26,11 +26,15 @@ package io.github.connorhartley.guardian.heuristic;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.PluginInfo;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.report.HeuristicReport;
+import io.github.connorhartley.guardian.report.SequenceReport;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.io.File;
+import java.util.Optional;
+import java.util.Set;
 
 public class HeuristicController {
 
@@ -40,19 +44,24 @@ public class HeuristicController {
         this.plugin = plugin;
     }
 
-    public <E, F extends StorageSupplier<File>> HeuristicReport analyze(Detection<E, F> detection, User user, SequenceReport sequenceReport) {
-        if (this.plugin.getGlobalDatabase().getPunishmentIdByProperties(Integer.valueOf(PluginInfo.DATABASE_VERSION),
-                user, sequenceReport.getDetectionTypes().get(0)).size() > 0) {
+    public <E, F extends StorageSupplier<File>> Optional<HeuristicReport> analyze(Detection<E, F> detection, User user, SequenceReport sequenceReport) {
+        Set<Integer> punishments = this.plugin.getGlobalDatabase().getPunishmentIdByProperties(Integer.valueOf(PluginInfo.DATABASE_VERSION),
+                user, sequenceReport.getDetectionType());
 
-            for (Integer punishmentId : this.plugin.getGlobalDatabase().getPunishmentIdByProperties(Integer.valueOf(PluginInfo.DATABASE_VERSION),
-                    user, sequenceReport.getDetectionTypes().get(0))) {
-
+        if (punishments.size() > 0) {
+            for (Integer punishmentId : punishments) {
                 if (this.plugin.getGlobalDatabase().getPunishmentById(punishmentId).isPresent()) {
-                    // TODO: Generate heuristic report based on existing.
+                    int punishmentCount = 0;
+
+                    if (this.plugin.getGlobalDatabase().getPunishmentCountById(punishmentId).isPresent()) {
+                        punishmentCount = this.plugin.getGlobalDatabase().getPunishmentCountById(punishmentId).get();
+                    }
+
+                    // TODO: More here.
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
 }

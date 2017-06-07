@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.util.check;
 
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.report.SequenceReport;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
