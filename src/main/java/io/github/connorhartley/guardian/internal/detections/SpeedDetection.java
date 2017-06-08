@@ -159,6 +159,7 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
         public ConfigurationValue<String, Map<String, String>> configPunishmentProperties;
         public ConfigurationValue<String, Map<String, List<String>>> configCustomPunishments;
         public ConfigurationValue<String, Map<String, Double>> configSeverityDistribution;
+        public ConfigurationValue<String, Map<String, Double>> configHeuristicModifier;
 
         private CommentedConfigurationNode configurationNode;
 
@@ -327,6 +328,24 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
                         materialValues, new TypeToken<Map<String, Double>>() {
                 });
 
+                Map<String, Double> heuristicModifier = new HashMap<>();
+                heuristicModifier.put("divider-base", 10d);
+                heuristicModifier.put("power", 1.5);
+
+                this.configHeuristicModifier = new ConfigurationValue<>(new StorageKey<>("heuristic-modifier"),
+                        new CommentDocument(45, " ")
+                                .addHeader("Heuristic Modifier")
+                                .addParagraph(new String[]{
+                                        "Refers to the exponential heuristic values ",
+                                        "used to modify the proposed severity to make ",
+                                        "it fair and remove false positive severity.",
+                                        "",
+                                        "Recommended to use 10 as the divider-base and 1.5 as the power."
+                                })
+                                .export(),
+                        heuristicModifier, new TypeToken<Map<String, Double>>() {
+                });
+
                 // Create Config Values
 
                 this.configAnalysisTime.<ConfigurationNode>createStorage(this.configurationNode);
@@ -337,6 +356,7 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
                 this.configSeverityDistribution.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configControlValues.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configMaterialValues.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configHeuristicModifier.<ConfigurationNode>createStorage(this.configurationNode);
 
                 this.configManager.save(this.configurationNode);
             } catch (Exception e) {
@@ -358,6 +378,7 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
                     this.configSeverityDistribution.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configControlValues.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configMaterialValues.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configHeuristicModifier.<ConfigurationNode>loadStorage(this.configurationNode);
 
                     this.configManager.save(this.configurationNode);
                 }
@@ -380,6 +401,7 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
                     this.configSeverityDistribution.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configControlValues.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configMaterialValues.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configHeuristicModifier.<ConfigurationNode>updateStorage(this.configurationNode);
 
                     this.configManager.save(this.configurationNode);
                 }
@@ -425,6 +447,9 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
                 } else if (key.get().equals("material-values") && typeToken.getRawType()
                         .equals(this.configMaterialValues.getValueTypeToken().getRawType())) {
                     return Optional.of((ConfigurationValue<K, E>) this.configMaterialValues);
+                } else if (key.get().equals("heuristic-modifier") && typeToken.getRawType()
+                        .equals(this.configHeuristicModifier.getValueTypeToken().getRawType())) {
+                    return Optional.of((ConfigurationValue<K, E>) this.configHeuristicModifier);
                 }
             }
             return Optional.empty();
@@ -457,6 +482,9 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
                 } else if (configurationValue.getKey().get().equals("material-values") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configMaterialValues.getValueTypeToken().getRawType())) {
                     this.configMaterialValues = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("heuristic-modifier") && configurationValue.getValueTypeToken()
+                        .getRawType().equals(this.configHeuristicModifier.getValueTypeToken().getRawType())) {
+                    this.configHeuristicModifier = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
                 }
             }
         }

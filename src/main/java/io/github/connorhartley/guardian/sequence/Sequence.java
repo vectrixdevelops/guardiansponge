@@ -27,7 +27,6 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
-import io.github.connorhartley.guardian.report.SequenceReport;
 import io.github.connorhartley.guardian.sequence.action.Action;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
@@ -62,7 +61,7 @@ public class Sequence {
     private final List<Event> incompleteEvents = new ArrayList<>();
 
     private SequenceBlueprint sequenceBlueprint;
-    private SequenceReport sequenceReport = SequenceReport.builder().build(false);
+    private SequenceResult sequenceResult = SequenceResult.builder().build(false);
     private Location<World> initialLocation;
     private int queue = 0;
     private long last = System.currentTimeMillis();
@@ -85,7 +84,7 @@ public class Sequence {
      * Check
      *
      * <p>Runs through the list of {@link Action}s and {@link CaptureContext}s and
-     * carries the {@link SequenceReport} through each {@link Action} allowing it to be
+     * carries the {@link SequenceResult} through each {@link Action} allowing it to be
      * updated through the chain. {@link CaptureContext}s follow a similar run and each tick
      * get passed a {@link CaptureContainer} to update values inside the chain.
      * {@link Action}s that fail will fire the {@link SequenceFailEvent}. {@link Action}s
@@ -105,7 +104,7 @@ public class Sequence {
             this.queue += 1;
             long now = System.currentTimeMillis();
 
-            action.updateReport(this.sequenceReport);
+            action.updateReport(this.sequenceResult);
 
             if (!action.getEvent().isAssignableFrom(event.getClass())) {
                 return fail(player, event, action, Cause.of(NamedCause.of("INVALID", this.checkType.getSequence())));
@@ -134,17 +133,17 @@ public class Sequence {
                 return this.fail(player, event, typeAction, Cause.of(NamedCause.of("CONDITION", action.getConditions())));
             }
 
-            this.sequenceReport = action.getSequenceReport();
+            this.sequenceResult = action.getSequenceResult();
 
-            SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, player, event, Cause.of(NamedCause.of("ACTION", this.sequenceReport)));
+            SequenceSucceedEvent attempt = new SequenceSucceedEvent(this, player, event, Cause.of(NamedCause.of("ACTION", this.sequenceResult)));
             Sponge.getEventManager().post(attempt);
 
             this.completeEvents.add(event);
             iterator.remove();
-            typeAction.updateReport(this.sequenceReport);
+            typeAction.updateReport(this.sequenceResult);
             typeAction.updateCaptureContainer(this.captureHandler.getContainer());
             typeAction.succeed(player, event, this.last);
-            this.sequenceReport = action.getSequenceReport();
+            this.sequenceResult = action.getSequenceResult();
 
             this.last = System.currentTimeMillis();
 
@@ -161,11 +160,11 @@ public class Sequence {
 
     // Called when the player does not meet the requirements.
     <T extends Event> boolean fail(User user, T event, Action<T> action, Cause cause) {
-        action.updateReport(this.sequenceReport);
+        action.updateReport(this.sequenceResult);
         action.updateCaptureContainer(this.captureHandler.getContainer());
 
         this.cancelled = action.fail(user, event, this.last);
-        this.sequenceReport = action.getSequenceReport();
+        this.sequenceResult = action.getSequenceResult();
 
         SequenceFailEvent attempt = new SequenceFailEvent(this, user, event, cause);
         Sponge.getEventManager().post(attempt);
@@ -203,12 +202,12 @@ public class Sequence {
     /**
      * Get Sequence Result
      *
-     * <p>Returns the current {@link SequenceReport} for this {@link Sequence}.</p>
+     * <p>Returns the current {@link SequenceResult} for this {@link Sequence}.</p>
      *
      * @return This sequence report
      */
-    public SequenceReport getSequenceReport() {
-        return this.sequenceReport;
+    public SequenceResult getSequenceResult() {
+        return this.sequenceResult;
     }
 
     /**

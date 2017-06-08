@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.report;
+package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.sequence.Sequence;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -32,11 +31,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Sequence Report
+ * Sequence Result
  *
  * Represents a report containing an analysis from a {@link Sequence}.
  */
-public class SequenceReport {
+public class SequenceResult {
 
     private final String detectionType;
     private final List<String> information = new ArrayList<>();
@@ -44,7 +43,7 @@ public class SequenceReport {
     private final double severity;
     private final boolean accepted;
 
-    public SequenceReport(Builder builder) {
+    public SequenceResult(Builder builder) {
         this.detectionType = builder.detectionType;
         this.information.addAll(builder.information);
         this.initialLocation = builder.initialLocation;
@@ -113,8 +112,8 @@ public class SequenceReport {
      *
      * @return A copy of this
      */
-    public SequenceReport copy() {
-        return new SequenceReport.Builder().of(this).build(this.accepted);
+    public SequenceResult copy() {
+        return new SequenceResult.Builder().of(this).build(this.accepted);
     }
 
     public static class Builder {
@@ -127,14 +126,14 @@ public class SequenceReport {
 
         public Builder() {}
 
-        public Builder of(SequenceReport sequenceReport) {
-            this.detectionType = sequenceReport.detectionType;
-            this.information = sequenceReport.information;
-            this.severity = sequenceReport.severity;
-            this.accepted = sequenceReport.accepted;
+        public Builder of(SequenceResult sequenceResult) {
+            this.detectionType = sequenceResult.detectionType;
+            this.information = sequenceResult.information;
+            this.severity = sequenceResult.severity;
+            this.accepted = sequenceResult.accepted;
 
-            if (sequenceReport.initialLocation != null) {
-                this.initialLocation = sequenceReport.initialLocation.copy();
+            if (sequenceResult.initialLocation != null) {
+                this.initialLocation = sequenceResult.initialLocation.copy();
             }
 
             return this;
@@ -160,9 +159,9 @@ public class SequenceReport {
             return this;
         }
 
-        public SequenceReport build(boolean accept) {
+        public SequenceResult build(boolean accept) {
             this.accepted = accept;
-            return new SequenceReport(this);
+            return new SequenceResult(this);
         }
 
     }

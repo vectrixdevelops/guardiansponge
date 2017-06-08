@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.util.check;
 
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
@@ -60,8 +60,8 @@ public class CommonMovementConditions {
         }
 
         @Override
-        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceReport sequenceReport, long lastAction) {
-            SequenceReport report = SequenceReport.builder().of(sequenceReport)
+        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceResult sequenceResult, long lastAction) {
+            SequenceResult report = SequenceResult.builder().of(sequenceResult)
                     .build(false);
 
             if (event instanceof DestructEntityEvent.Death) {
@@ -88,8 +88,8 @@ public class CommonMovementConditions {
         }
 
         @Override
-        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceReport sequenceReport, long lastAction) {
-            SequenceReport report = SequenceReport.builder().of(sequenceReport)
+        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceResult sequenceResult, long lastAction) {
+            SequenceResult report = SequenceResult.builder().of(sequenceResult)
                     .build(false);
 
             if (event instanceof RideEntityEvent) {
@@ -115,8 +115,8 @@ public class CommonMovementConditions {
         }
 
         @Override
-        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceReport sequenceReport, long lastAction) {
-            SequenceReport report = SequenceReport.builder().of(sequenceReport)
+        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceResult sequenceResult, long lastAction) {
+            SequenceResult report = SequenceResult.builder().of(sequenceResult)
                     .build(false);
 
             if (event instanceof MoveEntityEvent.Teleport) {
@@ -145,8 +145,8 @@ public class CommonMovementConditions {
         }
 
         @Override
-        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceReport sequenceReport, long lastAction) {
-            SequenceReport report = SequenceReport.builder().of(sequenceReport)
+        public ConditionResult test(User user, Event event, CaptureContainer captureContainer, SequenceResult sequenceResult, long lastAction) {
+            SequenceResult report = SequenceResult.builder().of(sequenceResult)
                     .build(false);
 
             if (Sponge.getPluginManager().getPlugin("nucleus").isPresent()) {

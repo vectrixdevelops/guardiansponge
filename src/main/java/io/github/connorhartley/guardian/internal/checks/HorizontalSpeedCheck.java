@@ -33,7 +33,7 @@ import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationC
 import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
-import io.github.connorhartley.guardian.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
@@ -139,7 +139,7 @@ public class HorizontalSpeedCheck extends Check {
                             .condition(new PermissionCheckCondition(this.detection))
 
                             .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
-                                SequenceReport.Builder report = SequenceReport.builder().of(sequenceReport);
+                                SequenceResult.Builder report = SequenceResult.builder().of(sequenceReport);
 
                                 Guardian plugin = (Guardian) this.getDetection().getPlugin();
 

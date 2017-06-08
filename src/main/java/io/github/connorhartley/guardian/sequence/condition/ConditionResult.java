@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence.condition;
 
-import io.github.connorhartley.guardian.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceResult;
 
 /**
  * Condition Result
@@ -34,11 +34,11 @@ import io.github.connorhartley.guardian.report.SequenceReport;
 public class ConditionResult {
 
     private final boolean pass;
-    private final SequenceReport sequenceReport;
+    private final SequenceResult sequenceResult;
     
-    public ConditionResult(Boolean pass, SequenceReport sequenceReport) {
+    public ConditionResult(Boolean pass, SequenceResult sequenceResult) {
         this.pass = pass;
-        this.sequenceReport = sequenceReport;
+        this.sequenceResult = sequenceResult;
     }
 
     /**
@@ -59,8 +59,8 @@ public class ConditionResult {
      *
      * @return The sequence report
      */
-    public SequenceReport getSequenceReport() {
-        return this.sequenceReport;
+    public SequenceResult getSequenceResult() {
+        return this.sequenceResult;
     }
 
 }

@@ -160,6 +160,7 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
         public ConfigurationValue<String, Map<String, String>> configPunishmentProperties;
         public ConfigurationValue<String, Map<String, List<String>>> configCustomPunishments;
         public ConfigurationValue<String, Map<String, Double>> configSeverityDistribution;
+        public ConfigurationValue<String, Map<String, Double>> configHeuristicModifier;
 
         private CommentedConfigurationNode configurationNode;
 
@@ -313,6 +314,25 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
                         severityDistribution, new TypeToken<Map<String, Double>>() {
                 });
 
+                Map<String, Double> heuristicModifier = new HashMap<>();
+                heuristicModifier.put("divider-base", 10d);
+                heuristicModifier.put("power", 1.5);
+                heuristicModifier.put("relevant-punishment-inhours", 5d);
+
+                this.configHeuristicModifier = new ConfigurationValue<>(new StorageKey<>("heuristic-modifier"),
+                        new CommentDocument(45, " ")
+                                        .addHeader("Heuristic Modifier")
+                                        .addParagraph(new String[]{
+                                                "Refers to the exponential heuristic values ",
+                                                "used to modify the proposed severity to make ",
+                                                "it fair and remove false positive severity.",
+                                                "",
+                                                "Recommended to use 10 as the divider-base and 1.5 as the power."
+                                        })
+                                        .export(),
+                        heuristicModifier, new TypeToken<Map<String, Double>>() {
+                });
+
                 // Create Config Values
 
                 this.configAnalysisTime.<ConfigurationNode>createStorage(this.configurationNode);
@@ -323,6 +343,7 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
                 this.configPunishmentProperties.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configCustomPunishments.<ConfigurationNode>createStorage(this.configurationNode);
                 this.configSeverityDistribution.<ConfigurationNode>createStorage(this.configurationNode);
+                this.configHeuristicModifier.<ConfigurationNode>createStorage(this.configurationNode);
 
                 this.configManager.save(this.configurationNode);
             } catch (Exception e) {
@@ -344,6 +365,7 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
                     this.configPunishmentProperties.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configCustomPunishments.<ConfigurationNode>loadStorage(this.configurationNode);
                     this.configSeverityDistribution.<ConfigurationNode>loadStorage(this.configurationNode);
+                    this.configHeuristicModifier.<ConfigurationNode>loadStorage(this.configurationNode);
 
                     this.configManager.save(this.configurationNode);
                 }
@@ -366,6 +388,7 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
                     this.configPunishmentProperties.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configCustomPunishments.<ConfigurationNode>updateStorage(this.configurationNode);
                     this.configSeverityDistribution.<ConfigurationNode>updateStorage(this.configurationNode);
+                    this.configHeuristicModifier.<ConfigurationNode>updateStorage(this.configurationNode);
 
                     this.configManager.save(this.configurationNode);
                 }
@@ -411,6 +434,9 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
                 } else if (key.get().equals("severity-distribution") && typeToken.getRawType()
                         .equals(this.configSeverityDistribution.getValueTypeToken().getRawType())) {
                     return Optional.of((ConfigurationValue<K, E>) this.configSeverityDistribution);
+                } else if (key.get().equals("heuristic-modifier") && typeToken.getRawType()
+                        .equals(this.configHeuristicModifier.getValueTypeToken().getRawType())) {
+                    return Optional.of((ConfigurationValue<K, E>) this.configHeuristicModifier);
                 }
             }
             return Optional.empty();
@@ -443,6 +469,9 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
                 } else if (configurationValue.getKey().get().equals("severity-distribution") && configurationValue.getValueTypeToken()
                         .getRawType().equals(this.configSeverityDistribution.getValueTypeToken().getRawType())) {
                     this.configSeverityDistribution = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
+                } else if (configurationValue.getKey().get().equals("heuristic-modifier") && configurationValue.getValueTypeToken()
+                        .getRawType().equals(this.configHeuristicModifier.getValueTypeToken().getRawType())) {
+                    this.configHeuristicModifier = (ConfigurationValue<String, Map<String, Double>>) configurationValue;
                 }
             }
         }

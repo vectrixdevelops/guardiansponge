@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.punishment;
 
-import io.github.connorhartley.guardian.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceResult;
 
 import java.time.LocalDateTime;
 
@@ -35,13 +35,13 @@ import java.time.LocalDateTime;
 public class Punishment {
 
     private final String detectionReason;
-    private final SequenceReport sequenceReport;
+    private final SequenceResult sequenceResult;
     private final LocalDateTime localDateTime;
     private final Double probability;
 
     public Punishment(Builder builder) {
         this.detectionReason = builder.detectionReason;
-        this.sequenceReport = builder.sequenceReport;
+        this.sequenceResult = builder.sequenceResult;
         this.localDateTime = builder.localDateTime;
         this.probability = builder.probability;
     }
@@ -70,8 +70,8 @@ public class Punishment {
      *
      * @return The sequence report
      */
-    public SequenceReport getSequenceReport() {
-        return this.sequenceReport;
+    public SequenceResult getSequenceResult() {
+        return this.sequenceResult;
     }
 
     /**
@@ -100,7 +100,7 @@ public class Punishment {
     public static class Builder {
 
         private String detectionReason;
-        private SequenceReport sequenceReport;
+        private SequenceResult sequenceResult;
         private LocalDateTime localDateTime;
         private Double probability;
 
@@ -111,8 +111,8 @@ public class Punishment {
             return this;
         }
 
-        public Builder report(SequenceReport sequenceReport) {
-            this.sequenceReport = sequenceReport;
+        public Builder report(SequenceResult sequenceResult) {
+            this.sequenceResult = sequenceResult;
             return this;
         }
 

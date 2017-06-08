@@ -23,16 +23,23 @@
  */
 package io.github.connorhartley.guardian.heuristic;
 
+import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.PluginInfo;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.punishment.Punishment;
 import io.github.connorhartley.guardian.report.HeuristicReport;
-import io.github.connorhartley.guardian.report.SequenceReport;
+import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalUnit;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -44,20 +51,37 @@ public class HeuristicController {
         this.plugin = plugin;
     }
 
-    public <E, F extends StorageSupplier<File>> Optional<HeuristicReport> analyze(Detection<E, F> detection, User user, SequenceReport sequenceReport) {
+    public <E, F extends StorageSupplier<File>> Optional<HeuristicReport> analyze(Detection<E, F> detection, User user, SequenceResult sequenceResult) {
         Set<Integer> punishments = this.plugin.getGlobalDatabase().getPunishmentIdByProperties(Integer.valueOf(PluginInfo.DATABASE_VERSION),
-                user, sequenceReport.getDetectionType());
+                user, sequenceResult.getDetectionType());
 
         if (punishments.size() > 0) {
             for (Integer punishmentId : punishments) {
                 if (this.plugin.getGlobalDatabase().getPunishmentById(punishmentId).isPresent()) {
+                    Punishment punishment = this.plugin.getGlobalDatabase().getPunishmentById(punishmentId).get();
                     int punishmentCount = 0;
 
                     if (this.plugin.getGlobalDatabase().getPunishmentCountById(punishmentId).isPresent()) {
                         punishmentCount = this.plugin.getGlobalDatabase().getPunishmentCountById(punishmentId).get();
                     }
 
-                    // TODO: More here.
+                    if (detection.getConfiguration().isPresent() && detection.getConfiguration().get()
+                            .get(new StorageKey<>("heuristic-modifier"), new TypeToken<Map<String, Double>>() {}).isPresent()) {
+                        Map<String, Double> modifiers = detection.getConfiguration().get()
+                                .get(new StorageKey<>("heuristic-modifier"), new TypeToken<Map<String, Double>>() {}).get().getValue();
+
+                        double divider = modifiers.get("divider-base") - punishmentCount;
+
+                        if (LocalDateTime.now().minusHours(modifiers.get("relevant-punishment-inhours").longValue())
+                                .isBefore(punishment.getLocalDateTime())) {
+
+                            return Optional.of(HeuristicReport.builder()
+                                    .type(sequenceResult.getDetectionType())
+                                    .severity(oldValue -> Math.pow(((oldValue * 100) / divider), modifiers.get("power")) / 100)
+                                    .cause(Cause.of(NamedCause.of("punishment_count", punishmentCount)))
+                                    .build());
+                        }
+                    }
                 }
             }
         }
