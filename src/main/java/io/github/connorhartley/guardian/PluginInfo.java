@@ -27,6 +27,15 @@ package io.github.connorhartley.guardian;
  * Plugin Info
  *
  * Contains fields regarding plugin information filled at compile time.
+ *
+ *   \      oo
+ *    \____|\mm
+ *    //_//\ \_\
+ *   /K-9/  \/_/
+ *  /___/_____\
+ * -----------
+ *
+ * " Wibbly wobbly timey wimey "
  */
 public final class PluginInfo {
 
