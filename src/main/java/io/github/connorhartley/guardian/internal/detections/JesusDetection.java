@@ -31,9 +31,8 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
-import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
-import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.checks.JesusCheck;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
 import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
@@ -83,7 +82,7 @@ public class JesusDetection extends Detection<Guardian, JesusDetection.Configura
     public void onConstruction() {
         super.construct(
                 this,
-                () -> Collections.singletonList(new JesusCheck.Type<>(this)),
+                () -> Collections.singletonList(new JesusCheck<>(this)),
                 () -> new Configuration(this,
                         this.getConfigFile().orElseThrow(Error::new), this.getConfigLoader().orElseThrow(Error::new)),
                 CustomPunishment.class, ResetPunishment.class,
@@ -120,7 +119,7 @@ public class JesusDetection extends Detection<Guardian, JesusDetection.Configura
     @Listener
     public void onSequenceFinish(SequenceFinishEvent event) {
         if (!event.isCancelled() && this.canPunish()) {
-            for (CheckType checkProvider : this.getChecks()) {
+            for (Check checkProvider : this.getChecks()) {
                 if (checkProvider.getSequence().equals(event.getSequence())) {
                     double lower = this.getConfiguration().get().configSeverityDistribution.getValue().get("lower");
                     double mean = this.getConfiguration().get().configSeverityDistribution.getValue().get("mean");

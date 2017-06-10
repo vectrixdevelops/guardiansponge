@@ -34,7 +34,6 @@ import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.data.tag.PunishmentTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckController;
 import io.github.connorhartley.guardian.heuristic.HeuristicController;
 import io.github.connorhartley.guardian.punishment.PunishmentController;
 import io.github.connorhartley.guardian.sequence.Sequence;
@@ -119,10 +118,8 @@ public class Guardian {
 
     private HeuristicController heuristicController;
     private PunishmentController punishmentController;
-    private CheckController checkController;
     private SequenceController sequenceController;
 
-    private CheckController.CheckControllerTask checkControllerTask;
     private SequenceController.SequenceControllerTask sequenceControllerTask;
 
 
@@ -184,7 +181,6 @@ public class Guardian {
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
-        this.checkControllerTask.start();
         this.sequenceControllerTask.start();
 
         int loadedModules = 0;
@@ -209,7 +205,6 @@ public class Guardian {
         this.guardianDatabase.update();
 
         this.sequenceControllerTask.stop();
-        this.checkControllerTask.stop();
 
         this.sequenceController.forceCleanup();
 
@@ -237,7 +232,6 @@ public class Guardian {
         getLogger().warn("Freezing detection checks.");
 
         this.sequenceControllerTask.stop();
-        this.checkControllerTask.stop();
 
         this.sequenceController.forceCleanup();
 
@@ -247,7 +241,6 @@ public class Guardian {
         this.sequenceControllerTask.register();
 
         this.sequenceControllerTask.start();
-        this.checkControllerTask.start();
 
         getLogger().info("Unfreezed detection checks.");
     }
@@ -266,10 +259,8 @@ public class Guardian {
 
         this.heuristicController = new HeuristicController(this);
         this.punishmentController = new PunishmentController(this);
-        this.checkController = new CheckController(this);
-        this.sequenceController = new SequenceController(this, this.checkController);
+        this.sequenceController = new SequenceController(this);
 
-        this.checkControllerTask = new CheckController.CheckControllerTask(this, this.checkController);
         this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
 
         this.guardianPermission = new GuardianPermission(this);
@@ -452,18 +443,6 @@ public class Guardian {
      */
     public PunishmentController getPunishmentController() {
         return this.punishmentController;
-    }
-
-
-    /**
-     * Get CheckController Controller
-     *
-     * <p>Returns the {@link CheckController} for controlling the running of {@link Check}s for their {@link Sequence}.</p>
-     *
-     * @return The check controller
-     */
-    public CheckController getCheckController() {
-        return this.checkController;
     }
 
     /**

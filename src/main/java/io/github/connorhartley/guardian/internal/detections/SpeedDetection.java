@@ -31,7 +31,7 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionTypes;
-import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.checks.VerticalSpeedCheck;
@@ -82,7 +82,7 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
     public void onConstruction() {
         super.construct(
                 this,
-                () -> Arrays.asList(new HorizontalSpeedCheck.Type<>(this), new VerticalSpeedCheck.Type<>(this)),
+                () -> Arrays.asList(new HorizontalSpeedCheck<>(this), new VerticalSpeedCheck<>(this)),
                 () -> new Configuration(this, this.getConfigFile().orElseThrow(Error::new), this.getConfigLoader().orElseThrow(Error::new)),
                 CustomPunishment.class, ResetPunishment.class,
                 WarningPunishment.class, KickPunishment.class,
@@ -118,7 +118,7 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
     @Listener
     public void onSequenceFinish(SequenceFinishEvent event) {
         if (!event.isCancelled() && this.canPunish()) {
-            for (CheckType checkProvider : this.getChecks()) {
+            for (Check checkProvider : this.getChecks()) {
                 if (checkProvider.getSequence().equals(event.getSequence())) {
                     double lower = this.getConfiguration().get().configSeverityDistribution.getValue().get("lower");
                     double mean = this.getConfiguration().get().configSeverityDistribution.getValue().get("mean");

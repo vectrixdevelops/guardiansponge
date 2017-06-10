@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
-import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.condition.Condition;
@@ -64,20 +64,20 @@ public class ActionBuilder<T extends Event> {
         return this;
     }
 
-    public <K extends Event> ActionBuilder<K> action(Class<K> clazz) {
+    public <K extends Event> ActionBuilder action(Class<K> clazz) {
         return action(new Action<>(clazz));
     }
 
-    public <K extends Event> ActionBuilder<K> action(ActionBlueprint<K> blueprint) {
+    public <K extends Event> ActionBuilder action(ActionBlueprint<K> blueprint) {
         return action(blueprint.create());
     }
 
-    public <K extends Event> ActionBuilder<K> action(Action<K> action) {
-        return this.builder.action(action);
+    public <K extends Event> ActionBuilder action(Action<K> action) {
+        return this.builder.<K>action(action);
     }
 
-    public SequenceBlueprint build(CheckType checkType) {
-        return this.builder.build(checkType);
+    public SequenceBlueprint build(Check check) {
+        return this.builder.build(check);
     }
 
 }

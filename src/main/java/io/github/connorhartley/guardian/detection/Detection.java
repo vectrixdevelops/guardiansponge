@@ -27,7 +27,7 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.check.CheckSupplier;
-import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.punishment.PunishmentType;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import ninja.leaping.configurate.ConfigurationOptions;
@@ -54,7 +54,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
 
     private E plugin;
     private File configFile;
-    private List<CheckType> checkTypes;
+    private List<Check> checks;
     private CheckSupplier checkSupplier;
     private F configuration;
     private PluginContainer pluginContainer;
@@ -111,7 +111,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      * <ul>
      *     <li>Plugin Instance</li>
      *     <li>Check Supplier</li>
-     *     <li>Check Types</li>
+     *     <li>Checks</li>
      * </ul>
      *
      * @param detection the detection that these properties are being constructed for
@@ -123,9 +123,9 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
     @SafeVarargs
     @SuppressWarnings("unchecked")
     public final <T extends Detection> void construct(@Nonnull T detection,
-                                                                                       @Nonnull CheckSupplier checkSupplier,
-                                                                                       @Nullable Supplier<F> configurationSupplier,
-                                                                                       @Nullable Class<? extends PunishmentType>... punishmentTypes) {
+                                                      @Nonnull CheckSupplier checkSupplier,
+                                                      @Nullable Supplier<F> configurationSupplier,
+                                                      @Nullable Class<? extends PunishmentType>... punishmentTypes) {
         if (this.pluginContainer.getInstance().isPresent()) {
             this.plugin = (E) this.pluginContainer.getInstance().get();
             this.checkSupplier = checkSupplier;
@@ -160,7 +160,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
                 }
             }
 
-            this.checkTypes = this.checkSupplier.create();
+            this.checks = this.checkSupplier.create();
 
             this.configuration.update();
         }
@@ -330,7 +330,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      * Get Check Supplier
      *
      * <p>Returns the {@link CheckSupplier} for creating this detections
-     * {@link CheckType}s.</p>
+     * {@link Check}s.</p>
      *
      * @return
      */
@@ -341,23 +341,23 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
     /**
      * Get Checks
      *
-     * <p>Returns the {@link CheckType}s that this detection uses.</p>
+     * <p>Returns the {@link Check}s that this detection uses.</p>
      *
-     * @return check types for this detection
+     * @return checks for this detection
      */
-    public List<CheckType> getChecks() {
-        return this.checkTypes;
+    public List<Check> getChecks() {
+        return this.checks;
     }
 
     /**
      * Set Checks
      *
-     * <p>Sets the {@link CheckType}s that this detection uses.</p>
+     * <p>Sets the {@link Check}s that this detection uses.</p>
      *
      * @param checks check types to set
      */
-    public void setChecks(@Nullable List<CheckType> checks) {
-        this.checkTypes = checks;
+    public void setChecks(@Nullable List<Check> checks) {
+        this.checks = checks;
     }
 
     public static class PermissionTarget {

@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.detection.check.CheckType;
+import io.github.connorhartley.guardian.detection.check.Check;
 import org.spongepowered.api.entity.living.player.Player;
 
 /**
@@ -34,10 +34,10 @@ import org.spongepowered.api.entity.living.player.Player;
  */
 public abstract class SequenceBlueprint {
 
-    private final CheckType provider;
+    private final Check check;
 
-    public SequenceBlueprint(CheckType checkType) {
-        this.provider = checkType;
+    public SequenceBlueprint(Check check) {
+        this.check = check;
     }
 
     /**
@@ -51,22 +51,22 @@ public abstract class SequenceBlueprint {
     public abstract Sequence create(Player player);
 
     /**
-     * Get Check Type
+     * Get Check
      *
-     * <p>Returns the {@link CheckType} providing this {@link SequenceBlueprint}.</p>
+     * <p>Returns the {@link Check} for this {@link SequenceBlueprint}.</p>
      *
      * @return The check type
      */
-    public CheckType getCheckProvider() {
-        return this.provider;
+    public Check getCheck() {
+        return this.check;
     }
 
     @Override
     public boolean equals(Object object) {
         if (object instanceof Sequence) {
-            return ((Sequence) object).getProvider().equals(this.provider);
+            return ((Sequence) object).getCheck().equals(this.check);
         } else if (object instanceof SequenceBlueprint) {
-            return ((SequenceBlueprint) object).getCheckProvider().equals(this.provider);
+            return ((SequenceBlueprint) object).getCheck().equals(this.check);
         }
 
         return false;

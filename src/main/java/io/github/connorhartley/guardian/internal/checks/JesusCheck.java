@@ -27,7 +27,6 @@ import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.internal.contexts.world.MaterialSpeedContext;
@@ -41,7 +40,6 @@ import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.property.block.MatterProperty;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -49,232 +47,210 @@ import org.spongepowered.api.world.World;
 import java.io.File;
 import java.util.Map;
 
-public class JesusCheck extends Check {
+public class JesusCheck<E, F extends StorageSupplier<File>> implements Check<E, F> {
 
-    JesusCheck(CheckType checkType, User user) {
-        super(checkType, user);
-        this.setChecking(true);
+    private final Detection<E, F> detection;
+
+    private double analysisTime = 40;
+    private double threshold = 8.4;
+    private double minimumWaterTime = 1.35;
+    private double minimumTickRange = 30;
+    private double maximumTickRange = 50;
+
+    public JesusCheck(Detection<E, F> detection) {
+        this.detection = detection;
+
+        if (this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
+            this.analysisTime = this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"),
+                    new TypeToken<Double>(){}).get().getValue() / 0.05;
+        }
+
+        if (this.detection.getConfiguration().get().get(new StorageKey<>("threshold"), new TypeToken<Double>() {}).isPresent()) {
+            this.threshold = this.detection.getConfiguration().get().get(new StorageKey<>("threshold"),
+                    new TypeToken<Double>() {}).get().getValue();
+        }
+
+        if (this.detection.getConfiguration().get().get(new StorageKey<>("minimum-water-time"), new TypeToken<Double>() {}).isPresent()) {
+            this.minimumWaterTime = this.detection.getConfiguration().get().get(new StorageKey<>("minimum-water-time"),
+                    new TypeToken<Double>() {}).get().getValue();
+        }
+
+        if (this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
+            this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
+                    new TypeToken<Map<String, Double>>(){}).get().getValue().get("min");
+            this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
+                    new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
+        }
     }
 
     @Override
-    public void update() {}
+    public Detection<E, F> getDetection() {
+        return this.detection;
+    }
 
     @Override
-    public void finish() {
-        this.setChecking(false);
-    }
+    public SequenceBlueprint getSequence() {
+        return new SequenceBuilder()
 
-    public static class Type<E, F extends StorageSupplier<File>> implements CheckType<E, F> {
+                .capture(
+                        new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                        new PlayerControlContext.HorizontalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                        new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                )
 
-        private final Detection<E, F> detection;
+                // Trigger : Move Entity Event
 
-        private double analysisTime = 40;
-        private double threshold = 8.4;
-        private double minimumWaterTime = 1.35;
-        private double minimumTickRange = 30;
-        private double maximumTickRange = 50;
+                .action(MoveEntityEvent.class)
 
-        public Type(Detection<E, F> detection) {
-            this.detection = detection;
+                // After Analysis Time : Move Entity Event
 
-            if (this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
-                this.analysisTime = this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"),
-                        new TypeToken<Double>(){}).get().getValue() / 0.05;
-            }
+                .action(MoveEntityEvent.class)
+                .delay(((Double) this.analysisTime).intValue())
+                .expire(((Double) this.maximumTickRange).intValue())
 
-            if (this.detection.getConfiguration().get().get(new StorageKey<>("threshold"), new TypeToken<Double>() {}).isPresent()) {
-                this.threshold = this.detection.getConfiguration().get().get(new StorageKey<>("threshold"),
-                        new TypeToken<Double>() {}).get().getValue();
-            }
+                        /*
+                         * Cancels the sequence if the player being tracked, dies, teleports,
+                         * teleports through Nucleus and mounts or dismounts a vehicle. This
+                         * is due to the location comparison at the beginning and end of a check
+                         * which these events change the behaviour of.
+                         */
+                .failure(new CommonMovementConditions.DeathCondition(this.detection))
+                .failure(new CommonMovementConditions.NucleusTeleportCondition(this.detection))
+                .failure(new CommonMovementConditions.VehicleMountCondition(this.detection))
+                .condition(new CommonMovementConditions.TeleportCondition(this.detection))
 
-            if (this.detection.getConfiguration().get().get(new StorageKey<>("minimum-water-time"), new TypeToken<Double>() {}).isPresent()) {
-                this.minimumWaterTime = this.detection.getConfiguration().get().get(new StorageKey<>("minimum-water-time"),
-                        new TypeToken<Double>() {}).get().getValue();
-            }
+                // Does the player have permission?
+                .condition(new PermissionCheckCondition(this.detection))
 
-            if (this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-                this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
-                        new TypeToken<Map<String, Double>>(){}).get().getValue().get("min");
-                this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
-                        new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
-            }
-        }
+                .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
+                    SequenceResult.Builder report = SequenceResult.builder().of(sequenceReport);
 
-        @Override
-        public Detection<E, F> getDetection() {
-            return this.detection;
-        }
+                    Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
-        @Override
-        public SequenceBlueprint getSequence() {
-            return new SequenceBuilder()
+                    Location<World> start = null;
+                    Location<World> present = null;
 
-                    .capture(
-                            new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new PlayerControlContext.HorizontalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())
-                    )
+                    long currentTime;
+                    long playerControlTicks = 0;
+                    long blockModifierTicks = 0;
 
-                    // Trigger : Move Entity Event
+                    double playerControlSpeed = 1.0;
+                    double blockModifier = 1.0;
+                    double playerControlModifier = 4.0;
 
-                    .action(MoveEntityEvent.class)
+                    int materialLiquid = 0;
 
-                    // After Analysis Time : Move Entity Event
+                    PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
 
-                    .action(MoveEntityEvent.class)
-                    .delay(((Double) this.analysisTime).intValue())
-                    .expire(((Double) this.maximumTickRange).intValue())
+                    if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
+                        start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
+                    }
 
-                            /*
-                             * Cancels the sequence if the player being tracked, dies, teleports,
-                             * teleports through Nucleus and mounts or dismounts a vehicle. This
-                             * is due to the location comparison at the beginning and end of a check
-                             * which these events change the behaviour of.
-                             */
-                    .failure(new CommonMovementConditions.DeathCondition(this.detection))
-                    .failure(new CommonMovementConditions.NucleusTeleportCondition(this.detection))
-                    .failure(new CommonMovementConditions.VehicleMountCondition(this.detection))
-                    .condition(new CommonMovementConditions.TeleportCondition(this.detection))
+                    if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
+                        present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
+                    }
 
-                    // Does the player have permission?
-                    .condition(new PermissionCheckCondition(this.detection))
+                    if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                            PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").isPresent()) {
+                        playerControlSpeed = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").get();
+                    }
 
-                    .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
-                        SequenceResult.Builder report = SequenceResult.builder().of(sequenceReport);
+                    if (contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
+                            PlayerControlContext.HorizontalSpeed.class, "update").isPresent()) {
+                        playerControlTicks = contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
+                                PlayerControlContext.HorizontalSpeed.class, "update").get();
+                    }
 
-                        Guardian plugin = (Guardian) this.getDetection().getPlugin();
+                    if (contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").isPresent()) {
+                        blockModifier = contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").get();
+                    }
 
-                        Location<World> start = null;
-                        Location<World> present = null;
+                    if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_liquid").isPresent()) {
+                        materialLiquid = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_liquid").get();
+                    }
 
-                        long currentTime;
-                        long playerControlTicks = 0;
-                        long blockModifierTicks = 0;
+                    if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
+                        blockModifierTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
+                    }
 
-                        double playerControlSpeed = 1.0;
-                        double blockModifier = 1.0;
-                        double playerControlModifier = 4.0;
+                    if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                            PlayerControlContext.HorizontalSpeed.class, "control_modifier").isPresent()) {
+                        playerControlModifier = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                PlayerControlContext.HorizontalSpeed.class, "control_modifier").get();
+                    }
 
-                        int materialLiquid = 0;
+                    if (contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
+                            PlayerControlContext.HorizontalSpeed.class, "control_speed_state").isPresent()) {
+                        playerControlState = contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
+                                PlayerControlContext.HorizontalSpeed.class, "control_speed_state").get();
+                    }
 
-                        PlayerControlContext.HorizontalSpeed.State playerControlState = PlayerControlContext.HorizontalSpeed.State.WALKING;
+                    if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
+                        plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
+                        return new ConditionResult(false, report.build(false));
+                    } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
+                        return new ConditionResult(false, report.build(false));
+                    }
 
-                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
-                            start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
+                    if (user.getPlayer().isPresent() && start != null && present != null) {
+
+                        currentTime = System.currentTimeMillis();
+
+                        if (materialLiquid != 0) {
+                            if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
+                                if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
+                                    return new ConditionResult(false, report.build(false));
+                                }
+                            }
                         }
 
-                        if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
-                            present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
-                        }
-
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").isPresent()) {
-                            playerControlSpeed = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "horizontal_control_speed").get();
-                        }
-
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
-                                PlayerControlContext.HorizontalSpeed.class, "update").isPresent()) {
-                            playerControlTicks = contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "update").get();
-                        }
-
-                        if (contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").isPresent()) {
-                            blockModifier = contextValuation.<MaterialSpeedContext, Double>get(MaterialSpeedContext.class, "speed_amplifier").get();
-                        }
-
-                        if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_liquid").isPresent()) {
-                            materialLiquid = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_liquid").get();
-                        }
-
-                        if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
-                            blockModifierTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
-                        }
-
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                PlayerControlContext.HorizontalSpeed.class, "control_modifier").isPresent()) {
-                            playerControlModifier = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "control_modifier").get();
-                        }
-
-                        if (contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
-                                PlayerControlContext.HorizontalSpeed.class, "control_speed_state").isPresent()) {
-                            playerControlState = contextValuation.<PlayerControlContext.HorizontalSpeed, PlayerControlContext.HorizontalSpeed.State>get(
-                                    PlayerControlContext.HorizontalSpeed.class, "control_speed_state").get();
-                        }
-
-                        if (playerControlTicks < this.minimumTickRange || blockModifierTicks < this.minimumTickRange) {
-                            plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                            return new ConditionResult(false, report.build(false));
-                        } else if (playerControlTicks > this.maximumTickRange || blockModifierTicks > this.maximumTickRange) {
+                        if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
                             return new ConditionResult(false, report.build(false));
                         }
 
-                        if (user.getPlayer().isPresent() && start != null && present != null) {
-
-                            currentTime = System.currentTimeMillis();
-
-                            if (materialLiquid != 0) {
-                                if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
-                                    if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
-                                        return new ConditionResult(false, report.build(false));
-                                    }
-                                }
-                            }
-
-                            if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
-                                return new ConditionResult(false, report.build(false));
-                            }
-
-                            if (start.sub(0, 0.35, 0).getBlock().getProperty(MatterProperty.class)
-                                    .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS)).getValue() != MatterProperty.Matter.LIQUID) {
-                                return new ConditionResult(false, report.build(false));
-                            }
-
-                            double travelDisplacement = Math.abs(Math.sqrt((
-                                    (present.getX() - start.getX()) *
-                                            (present.getX() - start.getX())) +
-                                    (present.getZ() - start.getZ()) *
-                                            (present.getZ() - start.getZ())));
-
-                            travelDisplacement += playerControlModifier / 2;
-
-                            double waterTime = materialLiquid * (((
-                                    ((1 / ((playerControlTicks + blockModifierTicks) / 2)) *
-                                            ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) * 0.05;
-
-                            double maximumSpeed = playerControlSpeed * blockModifier * (((
-                                    ((1 / ((playerControlTicks + blockModifierTicks) / 2)) *
-                                            ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) + 0.01;
-
-                            report
-                                    .information("Horizontal travel speed should be less than " + maximumSpeed +
-                                            " while they're " + playerControlState.name() + ".");
-
-                            if (travelDisplacement > maximumSpeed) {
-                                if (waterTime > this.minimumWaterTime &&
-                                        (travelDisplacement - maximumSpeed) > this.threshold) {
-                                    report
-                                            .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
-                                            .type("walking on water (jesus)")
-                                            .initialLocation(start.copy())
-                                            .severity(travelDisplacement - maximumSpeed);
-
-                                    return new ConditionResult(true, report.build(true));
-                                }
-                                return new ConditionResult(false, sequenceReport);
-                            }
+                        if (start.sub(0, 0.35, 0).getBlock().getProperty(MatterProperty.class)
+                                .orElseGet(() -> new MatterProperty(MatterProperty.Matter.GAS)).getValue() != MatterProperty.Matter.LIQUID) {
+                            return new ConditionResult(false, report.build(false));
                         }
-                        return new ConditionResult(false, sequenceReport);
-                    })
 
-                    .build(this);
-        }
+                        double travelDisplacement = Math.abs(Math.sqrt((
+                                (present.getX() - start.getX()) *
+                                        (present.getX() - start.getX())) +
+                                (present.getZ() - start.getZ()) *
+                                        (present.getZ() - start.getZ())));
 
-        @Override
-        public Check createInstance(User user) {
-            return new HorizontalSpeedCheck(this, user);
-        }
+                        travelDisplacement += playerControlModifier / 2;
+
+                        double waterTime = materialLiquid * (((
+                                ((1 / ((playerControlTicks + blockModifierTicks) / 2)) *
+                                        ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) * 0.05;
+
+                        double maximumSpeed = playerControlSpeed * blockModifier * (((
+                                ((1 / ((playerControlTicks + blockModifierTicks) / 2)) *
+                                        ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) + 0.01;
+
+                        report
+                                .information("Horizontal travel speed should be less than " + maximumSpeed +
+                                        " while they're " + playerControlState.name() + ".");
+
+                        if (travelDisplacement > maximumSpeed) {
+                            if (waterTime > this.minimumWaterTime &&
+                                    (travelDisplacement - maximumSpeed) > this.threshold) {
+                                report
+                                        .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
+                                        .type("walking on water (jesus)")
+                                        .initialLocation(start.copy())
+                                        .severity(travelDisplacement - maximumSpeed);
+
+                                return new ConditionResult(true, report.build(true));
+                            }
+                            return new ConditionResult(false, sequenceReport);
+                        }
+                    }
+                    return new ConditionResult(false, sequenceReport);
+                })
+
+                .build(this);
     }
-
 }

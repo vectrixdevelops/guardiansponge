@@ -27,6 +27,6 @@ import java.util.List;
 
 public interface CheckSupplier {
 
-    List<CheckType> create();
+    List<Check> create();
 
 }
