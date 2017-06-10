@@ -27,8 +27,8 @@ import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.detection.punishment.Punishment;
-import io.github.connorhartley.guardian.detection.punishment.PunishmentType;
 import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.Sponge;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class CustomPunishment implements PunishmentType {
+public class CustomPunishment implements Punishment {
 
     private final Guardian plugin;
     private final Detection<?, ?> detection;
@@ -60,15 +60,15 @@ public class CustomPunishment implements PunishmentType {
     }
 
     @Override
-    public boolean handle(String[] args, User user, Punishment punishment) {
-        List<PunishmentType> punishmentTypes = new ArrayList<>();
+    public boolean handle(String[] args, User user, PunishmentReport punishmentReport) {
+        List<Punishment> punishments = new ArrayList<>();
         if (user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).isPresent()) {
-            punishmentTypes.addAll(user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).get());
+            punishments.addAll(user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).get());
         }
 
-        punishmentTypes.add(this);
+        punishments.add(this);
 
-        user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
+        user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishments);
 
         Optional<ConfigurationValue<String, Map<String, List<String>>>> detectionCustomPunishments =
                 this.detection.getConfiguration().get().get(new StorageKey<>("custom-punishments"),
@@ -89,7 +89,7 @@ public class CustomPunishment implements PunishmentType {
 
         for (String command : customCommandList) {
             String commandModified = command.replace("%player%", user.getName())
-                    .replace("%probability%", punishment.getProbability().toString())
+                    .replace("%probability%", punishmentReport.getSeverityTransformer().toString())
                     .replace("%detection%", this.detection.getName());
 
             Sponge.getCommandManager().process(Sponge.getServer().getConsole(), commandModified);

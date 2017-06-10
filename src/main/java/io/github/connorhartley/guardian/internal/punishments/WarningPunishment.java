@@ -26,8 +26,8 @@ package io.github.connorhartley.guardian.internal.punishments;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.detection.punishment.Punishment;
-import io.github.connorhartley.guardian.detection.punishment.PunishmentType;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class WarningPunishment implements PunishmentType {
+public class WarningPunishment implements Punishment {
 
     private final Guardian plugin;
     private final Detection<?, ?> detection;
@@ -57,19 +57,19 @@ public class WarningPunishment implements PunishmentType {
     }
 
     @Override
-    public boolean handle(String[] args, User user, Punishment punishment) {
-        List<PunishmentType> punishmentTypes = new ArrayList<>();
+    public boolean handle(String[] args, User user, PunishmentReport punishmentReport) {
+        List<Punishment> punishments = new ArrayList<>();
         if (user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).isPresent()) {
-            punishmentTypes.addAll(user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).get());
+            punishments.addAll(user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).get());
         }
 
-        punishmentTypes.add(this);
+        punishments.add(this);
 
-        user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
+        user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishments);
 
         if (user.getPlayer().isPresent()) {
             Text message = Text.of(Guardian.GUARDIAN_PREFIX, TextColors.GRAY, "You have been found illegally ",
-                    TextColors.DARK_AQUA, punishment.getDetectionReason(), TextColors.GRAY, ". This has been reported to an administrator.");
+                    TextColors.DARK_AQUA, punishmentReport.getDetectionType(), TextColors.GRAY, ". This has been reported to an administrator.");
 
             user.getPlayer().get().sendMessage(message);
             return true;

@@ -32,6 +32,7 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionRegistry;
 import io.github.connorhartley.guardian.detection.check.Check;
+import io.github.connorhartley.guardian.detection.heuristic.HeuristicReport;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.JesusCheck;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
@@ -39,7 +40,7 @@ import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ResetPunishment;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
-import io.github.connorhartley.guardian.detection.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
@@ -130,16 +131,21 @@ public class JesusDetection extends Detection<Guardian, JesusDetection.Configura
 
                     String type = event.getResult().getDetectionType();
 
-                    double probability = normalDistribution.probability(lower, event.getResult().getSeverity());
+                    if (this.getPlugin().getHeuristicController().analyze(this, event.getUser(), event.getResult()).isPresent()) {
+                        HeuristicReport heuristicReport = this.getPlugin().getHeuristicController()
+                                .analyze(this, event.getUser(), event.getResult()).get();
 
-                    Punishment punishment = Punishment.builder()
-                            .reason(type)
-                            .time(LocalDateTime.now())
-                            .report(event.getResult())
-                            .probability(probability)
-                            .build();
+                        PunishmentReport punishmentReport = PunishmentReport.builder()
+                                .type(type)
+                                .time(LocalDateTime.now())
+                                .report(event.getResult())
+                                .severity(oldValue -> normalDistribution
+                                        .probability(lower, heuristicReport.getSeverityTransformer()
+                                                .transform(event.getResult().getSeverity())))
+                                .build();
 
-                    this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishment);
+                        this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishmentReport);
+                    }
                 }
             }
         }

@@ -435,7 +435,7 @@ public class Guardian {
     }
 
     /**
-     * Get Punishment Controller
+     * Get PunishmentReport Controller
      *
      * <p>Returns the built-in {@link PunishmentController} for controlling the punishments.</p>
      *

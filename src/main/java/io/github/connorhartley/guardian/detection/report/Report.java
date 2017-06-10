@@ -46,6 +46,7 @@ public interface Report {
 
         HEURISTIC,
         SEQUENCE,
+        PUNISHMENT,
         CUSTOM
 
     }

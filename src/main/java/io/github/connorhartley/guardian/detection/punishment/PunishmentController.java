@@ -45,14 +45,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Punishment Controller
+ * PunishmentReport Controller
  *
  * Controls punishment execution and registration.
  */
 public class PunishmentController {
 
     private final Guardian plugin;
-    private final HashMap<Detection, List<PunishmentType>> registry = new HashMap<>();
+    private final HashMap<Detection, List<Punishment>> registry = new HashMap<>();
 
     public PunishmentController(Guardian plugin) {
         this.plugin = plugin;
@@ -61,21 +61,21 @@ public class PunishmentController {
     /**
      * Execute
      *
-     * <p>Returns true if a punishment is successfully handled by the
-     * appropriate {@link PunishmentType}, returns false if it was cancelled.</p>
+     * <p>Returns true if a punishmentReport is successfully handled by the
+     * appropriate {@link Punishment}, returns false if it was cancelled.</p>
      *
      * @param detection The detection
      * @param user The user
-     * @param punishment Review on this punishment
+     * @param punishmentReport Review on this punishmentReport
      * @param <E> The plugin type
      * @param <F> The detection configuration type
-     * @return true if the punishment was handled, false if it was not
+     * @return true if the punishmentReport was handled, false if it was not
      */
-     public <E, F extends StorageSupplier<File>> boolean execute(Detection<E, F> detection, User user, Punishment punishment) {
+     public <E, F extends StorageSupplier<File>> boolean execute(Detection<E, F> detection, User user, PunishmentReport punishmentReport) {
          Map<String, Tuple<Double, Double>> detectionPunishLevels = new HashMap<>();
          List<String> currentPunishLevels = new ArrayList<>();
 
-         PunishmentExecuteEvent punishmentExecuteEvent = new PunishmentExecuteEvent(punishment, user, Cause.of(NamedCause.of("detection", detection)));
+         PunishmentExecuteEvent punishmentExecuteEvent = new PunishmentExecuteEvent(punishmentReport, user, Cause.of(NamedCause.of("detection", detection)));
          Sponge.getEventManager().post(punishmentExecuteEvent);
          if (punishmentExecuteEvent.isCancelled()) {
              return false;
@@ -88,20 +88,20 @@ public class PunishmentController {
          }
 
          for (Map.Entry<String, Tuple<Double, Double>> entry : detectionPunishLevels.entrySet()) {
-             if (punishment.getProbability() >= entry.getValue().getFirst() &&
-                     punishment.getProbability() <= entry.getValue().getSecond() &&
+             if (punishmentReport.getSeverityTransformer().transform(0d) >= entry.getValue().getFirst() &&
+                     punishmentReport.getSeverityTransformer().transform(0d) <= entry.getValue().getSecond() &&
                      entry.getValue().getFirst() != -1 && entry.getValue().getSecond() != -1) {
                  currentPunishLevels.add(entry.getKey());
              }
          }
 
          if (this.registry.get(detection) != null) {
-             for (PunishmentType punishmentType : this.registry.get(detection)) {
+             for (Punishment punishment : this.registry.get(detection)) {
                  currentPunishLevels.forEach(currentPunishLevel -> {
                      String[] level = StringUtils.split(currentPunishLevel, "&");
 
-                     if (punishmentType.getName().equals(level[0])) {
-                         punishmentType.handle(new String[]{ level[1] }, user, punishment);
+                     if (punishment.getName().equals(level[0])) {
+                         punishment.handle(new String[]{ level[1] }, user, punishmentReport);
                      }
                  });
              }
@@ -117,22 +117,22 @@ public class PunishmentController {
      * @param punishmentClass The punishment handler
      * @param detection The detection
      */
-    public void bind(Class<? extends PunishmentType> punishmentClass, Detection detection) {
+    public void bind(Class<? extends Punishment> punishmentClass, Detection detection) {
         if (this.registry.get(detection) == null) {
-            List<PunishmentType> punishmentTypes = new ArrayList<>();
+            List<Punishment> punishments = new ArrayList<>();
 
             try {
                 Constructor<?> ctor = punishmentClass.getConstructor(Guardian.class, Detection.class);
-                PunishmentType newPunishment = (PunishmentType) ctor.newInstance(this.plugin, detection);
+                Punishment newPunishment = (Punishment) ctor.newInstance(this.plugin, detection);
 
-                punishmentTypes.add(newPunishment);
-                this.registry.put(detection, punishmentTypes);
+                punishments.add(newPunishment);
+                this.registry.put(detection, punishments);
             } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         } else {
             boolean exists = false;
-            for (PunishmentType punishmentSearch : this.registry.get(detection)) {
+            for (Punishment punishmentSearch : this.registry.get(detection)) {
                 if (punishmentSearch.getClass().equals(punishmentClass)) {
                     exists = true;
                     break;
@@ -140,15 +140,15 @@ public class PunishmentController {
             }
 
             if (!exists) {
-                List<PunishmentType> punishmentTypes = new ArrayList<>();
-                punishmentTypes.addAll(this.registry.get(detection));
+                List<Punishment> punishments = new ArrayList<>();
+                punishments.addAll(this.registry.get(detection));
 
                 try {
                     Constructor<?> ctor = punishmentClass.getConstructor(Guardian.class, Detection.class);
-                    PunishmentType newPunishment = (PunishmentType) ctor.newInstance(this.plugin, detection);
+                    Punishment newPunishment = (Punishment) ctor.newInstance(this.plugin, detection);
 
-                    punishmentTypes.add(newPunishment);
-                    this.registry.put(detection, punishmentTypes);
+                    punishments.add(newPunishment);
+                    this.registry.put(detection, punishments);
                 } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
@@ -164,7 +164,7 @@ public class PunishmentController {
      * @param punishmentClass The punishment handler
      * @param detection The detection
      */
-    public void unbind(Class<? extends PunishmentType> punishmentClass, Detection detection) {
+    public void unbind(Class<? extends Punishment> punishmentClass, Detection detection) {
         if (this.registry.get(detection) != null) {
             this.registry.get(detection).removeIf(punishmentType -> punishmentType.getClass().equals(punishmentClass));
         }

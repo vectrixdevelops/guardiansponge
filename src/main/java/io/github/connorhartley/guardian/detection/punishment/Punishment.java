@@ -23,113 +23,47 @@
  */
 package io.github.connorhartley.guardian.detection.punishment;
 
-import io.github.connorhartley.guardian.sequence.SequenceResult;
+import io.github.connorhartley.guardian.detection.Detection;
+import org.spongepowered.api.entity.living.player.User;
 
-import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
- * Punishment
+ * PunishmentReport Type
  *
- * Contains information regarding handling a punishment.
+ * Represents a punishment handler.
  */
-public class Punishment {
-
-    private final String detectionReason;
-    private final SequenceResult sequenceResult;
-    private final LocalDateTime localDateTime;
-    private final Double probability;
-
-    public Punishment(Builder builder) {
-        this.detectionReason = builder.detectionReason;
-        this.sequenceResult = builder.sequenceResult;
-        this.localDateTime = builder.localDateTime;
-        this.probability = builder.probability;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
+public interface Punishment {
 
     /**
-     * Get Detection Reason
+     * Get Name
      *
-     * <p>Returns the detection reason this player is being
-     * punished.</p>
+     * <p>Returns the name of this punishment handler.</p>
      *
-     * @return The detection punishment reason
+     * @return The name
      */
-    public String getDetectionReason() {
-        return this.detectionReason;
-    }
+    String getName();
 
     /**
-     * Get Sequence Report
+     * Get Detection
      *
-     * <p>Returns the sequence report that accepted this punishment
-     * to be created.</p>
+     * <p>Returns the detection this punishment was created by.</p>
      *
-     * @return The sequence report
+     * @return The detection
      */
-    public SequenceResult getSequenceResult() {
-        return this.sequenceResult;
-    }
+    Optional<Detection<?, ?>> getDetection();
 
     /**
-     * Get Local Date And Time
+     * Handle
      *
-     * <p>Returns the {@link LocalDateTime} of when this punishment
-     * was created.</p>
+     * <p>Executed each time to handle a punishmentReport. Returns
+     * true if the punishmentReport was handled.</p>
      *
-     * @return The local date and time
+     * @param args Misc arguments
+     * @param user The user to be punished
+     * @param punishmentReport Information about this punishmentReport
+     * @return True if the punishmentReport was handled
      */
-    public LocalDateTime getLocalDateTime() {
-        return this.localDateTime;
-    }
-
-    /**
-     * Get Probability
-     *
-     * <p>Returns the probability of this punishments validity.</p>
-     *
-     * @return The punishment validity
-     */
-    public Double getProbability() {
-        return this.probability;
-    }
-
-    public static class Builder {
-
-        private String detectionReason;
-        private SequenceResult sequenceResult;
-        private LocalDateTime localDateTime;
-        private Double probability;
-
-        public Builder() {}
-
-        public Builder reason(String detectionReason) {
-            this.detectionReason = detectionReason;
-            return this;
-        }
-
-        public Builder report(SequenceResult sequenceResult) {
-            this.sequenceResult = sequenceResult;
-            return this;
-        }
-
-        public Builder time(LocalDateTime localDateTime) {
-            this.localDateTime = localDateTime;
-            return this;
-        }
-
-        public Builder probability(Double probability) {
-            this.probability = probability;
-            return this;
-        }
-
-        public Punishment build() {
-            return new Punishment(this);
-        }
-
-    }
+    boolean handle(String[] args, User user, PunishmentReport punishmentReport);
 
 }

@@ -28,7 +28,7 @@ import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckSupplier;
-import io.github.connorhartley.guardian.detection.punishment.PunishmentType;
+import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -104,7 +104,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *     <li>Config File</li>
      *     <li>Config Loader</li>
      *     <li>Detection Configuration Supplier</li>
-     *     <li>Punishment Bindings</li>
+     *     <li>PunishmentReport Bindings</li>
      * </ul>
      *
      * <p>Sets these always:</p>
@@ -125,7 +125,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
     public final <T extends Detection> void construct(@Nonnull T detection,
                                                       @Nonnull CheckSupplier checkSupplier,
                                                       @Nullable Supplier<F> configurationSupplier,
-                                                      @Nullable Class<? extends PunishmentType>... punishmentTypes) {
+                                                      @Nullable Class<? extends Punishment>... punishmentTypes) {
         if (this.pluginContainer.getInstance().isPresent()) {
             this.plugin = (E) this.pluginContainer.getInstance().get();
             this.checkSupplier = checkSupplier;
@@ -148,7 +148,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
                 }
 
                 if (punishmentTypes != null) {
-                    for (Class<? extends PunishmentType> punishmentType : punishmentTypes) {
+                    for (Class<? extends Punishment> punishmentType : punishmentTypes) {
                         ((Guardian) this.plugin).getPunishmentController().bind(punishmentType, detection);
                     }
                 }

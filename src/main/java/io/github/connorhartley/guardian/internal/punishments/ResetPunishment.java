@@ -26,8 +26,8 @@ package io.github.connorhartley.guardian.internal.punishments;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.detection.punishment.Punishment;
-import io.github.connorhartley.guardian.detection.punishment.PunishmentType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ResetPunishment implements PunishmentType {
+public class ResetPunishment implements Punishment {
 
     private final Guardian plugin;
     private final Detection<?, ?> detection;
@@ -57,22 +57,22 @@ public class ResetPunishment implements PunishmentType {
     }
 
     @Override
-    public boolean handle(String[] args, User user, Punishment punishment) {
-        List<PunishmentType> punishmentTypes = new ArrayList<>();
+    public boolean handle(String[] args, User user, PunishmentReport punishmentReport) {
+        List<Punishment> punishments = new ArrayList<>();
         if (user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).isPresent()) {
-            punishmentTypes.addAll(user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).get());
+            punishments.addAll(user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).get());
         }
 
-        punishmentTypes.add(this);
+        punishments.add(this);
 
-        user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishmentTypes);
+        user.offer(DataKeys.GUARDIAN_PUNISHMENT_TAG, punishments);
 
         if (user.getPlayer().isPresent()) {
             Player player = user.getPlayer().get();
 
-            if (punishment.getSequenceResult().getInitialLocation().isPresent()) {
+            if (punishmentReport.getSequenceResult().getInitialLocation().isPresent()) {
                 Sponge.getTeleportHelper()
-                        .getSafeLocation(punishment.getSequenceResult().getInitialLocation().get(), 64, 5)
+                        .getSafeLocation(punishmentReport.getSequenceResult().getInitialLocation().get(), 64, 5)
                         .ifPresent(player::setLocationSafely);
                 return true;
             }

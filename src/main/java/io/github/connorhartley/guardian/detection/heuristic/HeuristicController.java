@@ -27,7 +27,7 @@ import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.PluginInfo;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
@@ -56,7 +56,7 @@ public class HeuristicController {
         if (punishments.size() > 0) {
             for (Integer punishmentId : punishments) {
                 if (this.plugin.getGlobalDatabase().getPunishmentById(punishmentId).isPresent()) {
-                    Punishment punishment = this.plugin.getGlobalDatabase().getPunishmentById(punishmentId).get();
+                    PunishmentReport punishmentReport = this.plugin.getGlobalDatabase().getPunishmentById(punishmentId).get();
                     int punishmentCount = 0;
 
                     if (this.plugin.getGlobalDatabase().getPunishmentCountById(punishmentId).isPresent()) {
@@ -71,7 +71,7 @@ public class HeuristicController {
                         double divider = modifiers.get("divider-base") - punishmentCount;
 
                         if (LocalDateTime.now().minusHours(modifiers.get("relevant-punishment-inhours").longValue())
-                                .isBefore(punishment.getLocalDateTime())) {
+                                .isBefore(punishmentReport.getLocalDateTime())) {
 
                             return Optional.of(HeuristicReport.builder()
                                     .type(sequenceResult.getDetectionType())
