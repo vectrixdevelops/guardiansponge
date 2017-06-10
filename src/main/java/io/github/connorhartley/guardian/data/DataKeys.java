@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.data;
 
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.punishment.PunishmentType;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentType;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.key.KeyFactory;
 import org.spongepowered.api.data.value.mutable.ListValue;

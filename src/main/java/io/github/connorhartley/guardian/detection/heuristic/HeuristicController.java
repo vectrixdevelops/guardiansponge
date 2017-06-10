@@ -21,14 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.heuristic;
+package io.github.connorhartley.guardian.detection.heuristic;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.PluginInfo;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.punishment.Punishment;
-import io.github.connorhartley.guardian.report.HeuristicReport;
+import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
@@ -38,7 +37,6 @@ import org.spongepowered.api.event.cause.NamedCause;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;

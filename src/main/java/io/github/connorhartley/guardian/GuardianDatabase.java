@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian;
 
 import com.google.common.base.Preconditions;
-import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.apache.commons.lang3.StringUtils;

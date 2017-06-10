@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.report;
+package io.github.connorhartley.guardian.detection.report;
 
 import io.github.connorhartley.guardian.util.Transformer;
 import org.spongepowered.api.event.cause.Cause;

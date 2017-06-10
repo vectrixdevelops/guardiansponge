@@ -27,7 +27,6 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
-import org.spongepowered.api.entity.living.player.User;
 
 import java.io.File;
 

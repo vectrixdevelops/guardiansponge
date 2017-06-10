@@ -32,7 +32,6 @@ import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.util.Direction;
 
 import java.io.File;
 import java.util.Map;

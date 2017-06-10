@@ -21,24 +21,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian.detection.punishment;
+
+import io.github.connorhartley.guardian.detection.Detection;
+import org.spongepowered.api.entity.living.player.User;
 
 import java.util.Optional;
 
 /**
- * Detection Types
+ * Punishment Type
  *
- * Contains registry variables of Guardians built in {@link Detection} modules,
- * from an {@link Optional}.
+ * Represents a punishment handler.
  */
-public final class DetectionTypes {
+public interface PunishmentType {
 
-    public static Optional<Detection> INVALID_MOVEMENT_DETECTION = Optional.empty();
+    /**
+     * Get Name
+     *
+     * <p>Returns the name of this punishment handler.</p>
+     *
+     * @return The name
+     */
+    String getName();
 
-    public static Optional<Detection> JESUS_DETECTION = Optional.empty();
+    /**
+     * Get Detection
+     *
+     * <p>Returns the detection this punishment was created by.</p>
+     *
+     * @return The detection
+     */
+    Optional<Detection<?, ?>> getDetection();
 
-    public static Optional<Detection> SPEED_DETECTION = Optional.empty();
-
-    public static Optional<Detection> FLY_DETECTION = Optional.empty();
+    /**
+     * Handle
+     *
+     * <p>Executed each time to handle a punishment. Returns
+     * true if the punishment was handled.</p>
+     *
+     * @param args Misc arguments
+     * @param user The user to be punished
+     * @param punishment Information about this punishment
+     * @return True if the punishment was handled
+     */
+    boolean handle(String[] args, User user, Punishment punishment);
 
 }

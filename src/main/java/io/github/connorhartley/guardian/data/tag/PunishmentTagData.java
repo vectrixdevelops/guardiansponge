@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.data.tag;
 
 import io.github.connorhartley.guardian.data.DataKeys;
-import io.github.connorhartley.guardian.punishment.PunishmentType;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;

@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.event.punishment;
 
-import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;

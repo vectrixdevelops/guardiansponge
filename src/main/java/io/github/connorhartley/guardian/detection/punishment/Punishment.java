@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.punishment;
+package io.github.connorhartley.guardian.detection.punishment;
 
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 

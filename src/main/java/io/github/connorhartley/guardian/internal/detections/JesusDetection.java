@@ -30,7 +30,7 @@ import com.me4502.modularframework.module.guice.ModuleContainer;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.DetectionTypes;
+import io.github.connorhartley.guardian.detection.DetectionRegistry;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.JesusCheck;
@@ -39,7 +39,7 @@ import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ResetPunishment;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
-import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
@@ -90,7 +90,7 @@ public class JesusDetection extends Detection<Guardian, JesusDetection.Configura
                 ReportPunishment.class
         );
 
-        DetectionTypes.JESUS_DETECTION = Optional.of(this);
+        DetectionRegistry.register(this, CommonDetectionTypes.Category.MOVEMENT);
         this.setReady(true);
     }
 
