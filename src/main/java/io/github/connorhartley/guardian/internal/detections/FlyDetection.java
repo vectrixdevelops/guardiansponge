@@ -31,9 +31,6 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionRegistry;
-import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.heuristic.HeuristicReport;
-import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.FlyCheck;
 import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
@@ -57,7 +54,6 @@ import org.spongepowered.api.util.Tuple;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -119,35 +115,16 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
 
     @Listener
     public void onSequenceFinish(SequenceFinishEvent event) {
-        if (!event.isCancelled() && this.canPunish()) {
-            for (Check checkProvider : this.getChecks()) {
-                if (checkProvider.getSequence().equals(event.getSequence())) {
-                    double lower = this.getConfiguration().get().configSeverityDistribution.getValue().get("lower");
-                    double mean = this.getConfiguration().get().configSeverityDistribution.getValue().get("mean");
-                    double standardDeviation = this.getConfiguration().get().configSeverityDistribution.getValue().get("standard-deviation");
+        try {
+            this.handleFinish(this, event, () -> {
+                double lower = this.getConfiguration().get().configSeverityDistribution.getValue().get("lower");
+                double mean = this.getConfiguration().get().configSeverityDistribution.getValue().get("mean");
+                double standardDeviation = this.getConfiguration().get().configSeverityDistribution.getValue().get("standard-deviation");
 
-                    NormalDistribution normalDistribution =
-                            new NormalDistribution(mean, standardDeviation);
-
-                    String type = event.getResult().getDetectionType();
-
-                    if (this.getPlugin().getHeuristicController().analyze(this, event.getUser(), event.getResult()).isPresent()) {
-                        HeuristicReport heuristicReport = this.getPlugin().getHeuristicController()
-                                .analyze(this, event.getUser(), event.getResult()).get();
-
-                        PunishmentReport punishmentReport = PunishmentReport.builder()
-                                .type(type)
-                                .time(LocalDateTime.now())
-                                .report(event.getResult())
-                                .severity(oldValue -> normalDistribution
-                                        .probability(lower, heuristicReport.getSeverityTransformer()
-                                                .transform(event.getResult().getSeverity())))
-                                .build();
-
-                        this.getPlugin().getPunishmentController().execute(this, event.getUser(), punishmentReport);
-                    }
-                }
-            }
+                return Tuple.of(new NormalDistribution(mean, standardDeviation), lower);
+            });
+        } catch (Throwable throwable) {
+            this.getPlugin().getLogger().error("Error occurred handling sequence heuristic.", throwable);
         }
     }
 

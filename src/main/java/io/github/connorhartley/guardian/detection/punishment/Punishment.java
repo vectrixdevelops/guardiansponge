@@ -56,7 +56,7 @@ public interface Punishment {
     /**
      * Handle
      *
-     * <p>Executed each time to handle a punishmentReport. Returns
+     * <p>Executed each time to handleFinish a punishmentReport. Returns
      * true if the punishmentReport was handled.</p>
      *
      * @param args Misc arguments

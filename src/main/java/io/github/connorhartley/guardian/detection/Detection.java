@@ -28,18 +28,24 @@ import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckSupplier;
+import io.github.connorhartley.guardian.detection.heuristic.HeuristicReport;
 import io.github.connorhartley.guardian.detection.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
+import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.storage.StorageSupplier;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.util.Tuple;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -163,6 +169,49 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
             this.checks = this.checkSupplier.create();
 
             this.configuration.update();
+        }
+    }
+
+    /**
+     * Handle Finish
+     *
+     * <p>Handles the actions and reports once a sequence has finished.</p>
+     *
+     * @param detection the detection to handle
+     * @param event the event to handle
+     * @param distributionSupplier the normal distribution properties supplier
+     * @param <T> the detection type
+     * @throws Throwable the case of an error occurring during heuristic analysis
+     */
+    public final <T extends Detection> void handleFinish(@Nonnull T detection,
+                                                         @Nonnull SequenceFinishEvent event,
+                                                         @Nonnull Supplier<Tuple<NormalDistribution, Double>> distributionSupplier) throws Throwable {
+        if (!event.isCancelled() && this.canPunish()) {
+            for (Check check : this.getChecks()) {
+                if (!check.getSequence().equals(event.getSequence())) {
+                    return;
+                }
+            }
+
+            NormalDistribution normalDistribution = distributionSupplier.get().getFirst();
+            double lowerBound = distributionSupplier.get().getSecond();
+
+            if (this.getPlugin() instanceof Guardian) {
+                HeuristicReport heuristicReport = (HeuristicReport) ((Guardian) this.getPlugin()).getHeuristicController()
+                        .analyze(detection, event.getUser(), event.getResult()).orElseThrow(Error::new);
+
+
+                // Final report.
+                PunishmentReport punishmentReport = PunishmentReport.builder()
+                        .type(event.getResult().getDetectionType())
+                        .time(LocalDateTime.now())
+                        .report(event.getResult())
+                        .severity(oldValue -> normalDistribution
+                                .probability(lowerBound, heuristicReport.getSeverityTransformer().transform(event.getResult().getSeverity())))
+                        .build();
+
+                ((Guardian) this.getPlugin()).getPunishmentController().execute(detection, event.getUser(), punishmentReport);
+            }
         }
     }
 

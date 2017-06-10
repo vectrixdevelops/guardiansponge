@@ -430,6 +430,14 @@ public class Guardian {
         return this.guardianDetection;
     }
 
+    /**
+     * Get Heuristic Controller
+     *
+     * <p>Returns the {@link HeuristicController} for controlling the report analysis system for
+     * {@link Sequence} results.</p>
+     *
+     * @return The heuristic controller
+     */
     public HeuristicController getHeuristicController() {
         return this.heuristicController;
     }
