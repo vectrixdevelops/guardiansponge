@@ -61,27 +61,21 @@ public class FlyCheck<E, F extends StorageSupplier<File>> implements Check<E, F>
     public FlyCheck(Detection<E, F> detection) {
         this.detection = detection;
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
-            this.analysisTime = this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"),
-                    new TypeToken<Double>(){}).get().getValue() / 0.05;
-        }
+        this.detection.getConfiguration().ifPresent(value -> this.analysisTime = value.
+                get(new StorageKey<>("analysis-time"), new TypeToken<Double>() {}).get().getValue() / 0.05);
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("minimum-air-time"), new TypeToken<Double>() {}).isPresent()) {
-            this.minimumAirTime = this.detection.getConfiguration().get().get(new StorageKey<>("minimum-air-time"),
-                    new TypeToken<Double>() {}).get().getValue();
-        }
+        this.detection.getConfiguration().ifPresent(value -> this.minimumAirTime = value.
+                get(new StorageKey<>("minimum-air-time"), new TypeToken<Double>() {}).get().getValue());
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-            this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
-                    new TypeToken<Map<String, Double>>(){}).get().getValue().get("min");
-            this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
+        this.detection.getConfiguration().ifPresent(value -> {
+            this.minimumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
+                    new TypeToken<Map<String, Double>>() {}).get().getValue().get("min");
+            this.maximumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
                     new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
-        }
+        });
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("altitude-maximum"), new TypeToken<Double>(){}).isPresent()) {
-            this.altitudeMaximum = this.detection.getConfiguration().get().get(new StorageKey<>("altitude-maximum"),
-                    new TypeToken<Double>(){}).get().getValue();
-        }
+        this.detection.getConfiguration().ifPresent(value -> this.altitudeMaximum = value.
+                get(new StorageKey<>("altitude-maximum"), new TypeToken<Double>() {}).get().getValue());
     }
 
     @Override

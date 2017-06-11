@@ -60,27 +60,21 @@ public class JesusCheck<E, F extends StorageSupplier<File>> implements Check<E, 
     public JesusCheck(Detection<E, F> detection) {
         this.detection = detection;
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
-            this.analysisTime = this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"),
-                    new TypeToken<Double>(){}).get().getValue() / 0.05;
-        }
+        this.detection.getConfiguration().ifPresent(value -> this.analysisTime = value.
+                get(new StorageKey<>("analysis-time"), new TypeToken<Double>() {}).get().getValue() / 0.05);
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("threshold"), new TypeToken<Double>() {}).isPresent()) {
-            this.threshold = this.detection.getConfiguration().get().get(new StorageKey<>("threshold"),
-                    new TypeToken<Double>() {}).get().getValue();
-        }
+        this.detection.getConfiguration().ifPresent(value -> this.threshold = value.
+                get(new StorageKey<>("threshold"), new TypeToken<Double>() {}).get().getValue());
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("minimum-water-time"), new TypeToken<Double>() {}).isPresent()) {
-            this.minimumWaterTime = this.detection.getConfiguration().get().get(new StorageKey<>("minimum-water-time"),
-                    new TypeToken<Double>() {}).get().getValue();
-        }
+        this.detection.getConfiguration().ifPresent(value -> this.minimumWaterTime = value.
+                get(new StorageKey<>("minimum-water-time"), new TypeToken<Double>() {}).get().getValue());
 
-        if (this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-            this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
-                    new TypeToken<Map<String, Double>>(){}).get().getValue().get("min");
-            this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
+        this.detection.getConfiguration().ifPresent(value -> {
+            this.minimumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
+                    new TypeToken<Map<String, Double>>() {}).get().getValue().get("min");
+            this.maximumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
                     new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
-        }
+        });
     }
 
     @Override
@@ -90,12 +84,12 @@ public class JesusCheck<E, F extends StorageSupplier<File>> implements Check<E, 
 
     @Override
     public SequenceBlueprint getSequence() {
-        return new SequenceBuilder()
+        return new SequenceBuilder<E, F>()
 
                 .capture(
-                        new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                        new PlayerControlContext.HorizontalSpeed((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                        new MaterialSpeedContext((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                        new PlayerLocationContext<>((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                        new PlayerControlContext.HorizontalSpeed<>((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                        new MaterialSpeedContext<>((Guardian) this.getDetection().getPlugin(), this.getDetection())
                 )
 
                 // Trigger : Move Entity Event
