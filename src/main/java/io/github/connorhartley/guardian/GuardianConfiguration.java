@@ -32,6 +32,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.apache.commons.lang3.StringUtils;
+import tech.ferus.util.config.ConfigKey;
 
 import java.io.IOException;
 import java.nio.file.Path;
