@@ -23,220 +23,63 @@
  */
 package io.github.connorhartley.guardian;
 
-import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.storage.StorageProvider;
-import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
-import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
-import io.github.connorhartley.guardian.storage.container.StorageKey;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.apache.commons.lang3.StringUtils;
+import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import tech.ferus.util.config.ConfigKey;
+import tech.ferus.util.config.HoconConfigFile;
 
+import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
-/**
- * Guardian Configuration
- *
- * Represents the configuration implementation for Guardian.
- */
-public final class GuardianConfiguration implements StorageProvider<Path> {
+public final class GuardianConfiguration implements StorageProvider<HoconConfigFile, Path> {
 
-    private CommentedConfigurationNode configurationNode;
+    private static final String ROOT = "guardian.conf";
 
     private final Guardian plugin;
-    private final Path configFile;
-    private final ConfigurationLoader<CommentedConfigurationNode> configManager;
+    private final Path configDir;
 
-    private CommentDocument globalHeader;
+    private HoconConfigFile configFile;
 
-    public ConfigurationValue<String, Integer> configHeader;
-    public ConfigurationValue<String, Map<String, String>> configDatabaseCredentials;
-    public ConfigurationValue<String, Boolean> configDatabaseMigration;
-    public ConfigurationValue<String, List<String>> configEnabledDetections;
-    public ConfigurationValue<String, Integer> configLoggingLevel;
+    public static final ConfigKey<List<String>> ENABLED = ConfigKey.of("general", "enabled");
+    public static final ConfigKey<Integer> LOGGING_LEVEL = ConfigKey.of("general", "logging-level");
+    public static final ConfigKey<String> DATABASE_TYPE = ConfigKey.of("general", "database-type");
+    public static final ConfigKey<String> DATABASE_VERSION = ConfigKey.of("general", "database-version");
+    public static final ConfigKey<Double> GLOBAL_TICK_MIN = ConfigKey.of("global", "tick-minimum");
+    public static final ConfigKey<Double> GLOBAL_TICK_MAX = ConfigKey.of("global", "tick-maximum");
 
-    GuardianConfiguration(Guardian plugin, Path configFile, ConfigurationLoader<CommentedConfigurationNode> configManager) {
+    GuardianConfiguration(@Nonnull Guardian plugin,
+                          @Nonnull Path configDir) {
         this.plugin = plugin;
-        this.configFile = configFile;
-        this.configManager = configManager;
-    }
-
-    @Override
-    public void create() {
-        try {
-            if (!this.exists()) {
-                this.configFile.toFile().mkdirs();
-                this.configFile.toFile().createNewFile();
-            }
-
-            this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
-
-            this.globalHeader = new CommentDocument(50, " ");
-            this.globalHeader.addLogo(CommentDocument.LOGO)
-                    .addHeader("AntiCheat")
-                    .addParagraph(new String[]{
-                            StringUtils.join("Date: ", LocalDate.now().toString()),
-                            StringUtils.join("Version: ", this.plugin.getPluginContainer().getVersion().orElse("unknown")),
-                            StringUtils.join("Authors: ", StringUtils.join(this.plugin.getPluginContainer().getAuthors(), ", ")),
-                            ""
-                    })
-                    .addParagraph(new String[]{
-                            "Guardian is an extensible AntiCheat for Sponge ",
-                            "that gives you the flexibility required to customize ",
-                            "the cheat detections to for your servers game play.",
-                            ""
-                    })
-                    .addParagraph(new String[]{
-                            "GitHub: https://github.com/ichorpowered/guardian",
-                            "Discord: https://discord.gg/pvSFtMm",
-                            ""
-                    })
-                    .addHeader("Global Configuration")
-                    .addParagraph(new String[]{
-                            "This is the global configuration for Guardian.",
-                            "You will be able to set global options as well ",
-                            "as core plugin properties. It is advised that ",
-                            "you take caution when modifying this file."
-                    });
-
-            this.configHeader = new ConfigurationValue<>(new StorageKey<>("a"),
-                    this.globalHeader.export(),
-                    1, new TypeToken<Integer>() {
-            });
-
-            Map<String, String> databaseCredentials = new HashMap<>();
-            databaseCredentials.put("type", "h2");
-            databaseCredentials.put("version", "1");
-            databaseCredentials.put("host", "database.db");
-            databaseCredentials.put("port", "3306");
-            databaseCredentials.put("username", "sql-admin");
-            databaseCredentials.put("password", "secret-password");
-
-            this.configDatabaseCredentials = new ConfigurationValue<>(new StorageKey<>("database-credentials"),
-                    new CommentDocument(50, " ")
-                            .addHeader("Database Credentials")
-                            .addParagraph(new String[]{
-                                    "Allows you to set the database type, address, username and password of ",
-                                    "the database you want Guardian to use."
-                            })
-                            .export(),
-                    databaseCredentials, new TypeToken<Map<String, String>>() {
-            });
-
-            this.configDatabaseMigration = new ConfigurationValue<>(new StorageKey<>("auto-migration"),
-                    new CommentDocument(50, " ")
-                                    .addHeader("Auto Migration")
-                                    .addParagraph(new String[]{
-                                            "Set whether the database should automatically migrate after a minor ",
-                                            "change in database format.",
-                                            "",
-                                            "This MAY not cover major changes in databases, which may require to be ",
-                                            "migrated manually."
-                                    })
-                                    .export(),
-                    true, new TypeToken<Boolean>() {
-            });
-
-            this.configEnabledDetections = new ConfigurationValue<>(new StorageKey<>("enabled"),
-                    new CommentDocument(50, " ")
-                                    .addHeader("Enabled Modules")
-                                    .addParagraph(new String[]{
-                                            "Module ID's placed in here will be enabled ",
-                                            "on startup! These are only for internal Guardian ",
-                                            "detections.",
-                                            "",
-                                            "More information will be provided soon."
-                                    })
-                                    .export(),
-                    Arrays.asList("speed", "fly", "jesus", "invalidmovement"), new TypeToken<List<String>>() {
-            });
-
-            this.configLoggingLevel = new ConfigurationValue<>(new StorageKey<>("logging-level"),
-                    new CommentDocument(50, " ")
-                                    .addHeader("Logging Level")
-                                    .addParagraph(new String[]{
-                                            "Sets the logging level of core and detections ",
-                                            "for Guardian and its internal modules.",
-                                            "",
-                                            "1 for basic logging, 2 for more logging, 3 for detailed logging.",
-                                            "",
-                                            "More information will be provided soon."
-                                    })
-                                    .export(),
-                    2, new TypeToken<Integer>() {
-            });
-
-            this.configHeader.<ConfigurationNode>createStorage(this.configurationNode);
-            this.configDatabaseCredentials.<ConfigurationNode>createStorage(this.configurationNode);
-            this.configDatabaseMigration.<ConfigurationNode>createStorage(this.configurationNode);
-            this.configEnabledDetections.<ConfigurationNode>createStorage(this.configurationNode);
-            this.configLoggingLevel.<ConfigurationNode>createStorage(this.configurationNode);
-
-            this.configManager.save(this.configurationNode);
-        } catch (Exception e) {
-            this.plugin.getLogger().error("A problem occurred attempting to create Guardians global configuration!", e);
-        }
+        this.configDir = configDir;
     }
 
     @Override
     public void load() {
+        final Path path = this.configDir.resolve(ROOT);
+
         try {
-            if (this.exists()) {
-                this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
-
-                this.configHeader.<ConfigurationNode>loadStorage(this.configurationNode);
-                this.configDatabaseCredentials.<ConfigurationNode>loadStorage(this.configurationNode);
-                this.configDatabaseMigration.<ConfigurationNode>loadStorage(this.configurationNode);
-                this.configEnabledDetections.<ConfigurationNode>loadStorage(this.configurationNode);
-                this.configLoggingLevel.<ConfigurationNode>loadStorage(this.configurationNode);
-
-                this.configManager.save(this.configurationNode);
-            }
-        } catch (IOException e) {
+            this.configFile = HoconLoaderPatch.load(path, File.separator + ROOT, !this.exists());
+        } catch (final IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
         }
     }
 
     @Override
-    public void update() {
-        try {
-            if (this.exists()) {
-                this.configurationNode = this.configManager.load(this.plugin.getConfigurationOptions());
-
-                this.configHeader.<ConfigurationNode>updateStorage(this.configurationNode);
-                this.configDatabaseCredentials.<ConfigurationNode>updateStorage(this.configurationNode);
-                this.configDatabaseMigration.<ConfigurationNode>updateStorage(this.configurationNode);
-                this.configEnabledDetections.<ConfigurationNode>updateStorage(this.configurationNode);
-                this.configLoggingLevel.<ConfigurationNode>updateStorage(this.configurationNode);
-
-                this.configManager.save(this.configurationNode);
-            }
-        } catch (IOException e) {
-            this.plugin.getLogger().error("A problem occurred attempting to update Guardians global configuration!", e);
-        }
+    public HoconConfigFile getStorage() {
+        return this.configFile;
     }
 
-    public ConfigurationNode getConfigurationNode()  {
-        return this.configurationNode;
+    @Override
+    public Path getLocation() {
+        return this.configDir;
     }
 
     @Override
     public boolean exists() {
-        return this.configFile.toFile().exists();
-    }
-
-    @Override
-    public Optional<Path> getLocation() {
-        return Optional.ofNullable(this.configFile);
+        return this.configDir.resolve(ROOT).toFile().exists();
     }
 
 }

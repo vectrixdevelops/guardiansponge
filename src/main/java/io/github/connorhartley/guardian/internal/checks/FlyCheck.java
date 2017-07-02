@@ -23,8 +23,8 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
-import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.GuardianConfiguration;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
@@ -34,8 +34,7 @@ import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
-import io.github.connorhartley.guardian.storage.container.StorageKey;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.block.BlockTypes;
@@ -43,16 +42,15 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
-import java.util.Map;
+import java.nio.file.Path;
 
-public class FlyCheck<E, F extends StorageSupplier<File>> implements Check<E, F> {
+public class FlyCheck<E, F extends StorageProvider<HoconConfigFile, Path>> implements Check<E, F> {
 
     private final Detection<E, F> detection;
 
     private double analysisTime = 40;
-    private double altitudeMaximum = 3.1;
     private double minimumAirTime = 1.35;
     private double minimumTickRange = 30;
     private double maximumTickRange = 50;
@@ -61,21 +59,13 @@ public class FlyCheck<E, F extends StorageSupplier<File>> implements Check<E, F>
     public FlyCheck(Detection<E, F> detection) {
         this.detection = detection;
 
-        this.detection.getConfiguration().ifPresent(value -> this.analysisTime = value.
-                get(new StorageKey<>("analysis-time"), new TypeToken<Double>() {}).get().getValue() / 0.05);
+        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "sequence-time").getDouble(2d) / 0.05;
 
-        this.detection.getConfiguration().ifPresent(value -> this.minimumAirTime = value.
-                get(new StorageKey<>("minimum-air-time"), new TypeToken<Double>() {}).get().getValue());
+        this.minimumAirTime = this.detection.getConfiguration().getStorage().getNode("analysis", "minimum-air-time").getDouble();
 
-        this.detection.getConfiguration().ifPresent(value -> {
-            this.minimumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
-                    new TypeToken<Map<String, Double>>() {}).get().getValue().get("min");
-            this.maximumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
-                    new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
-        });
+        this.minimumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MIN.get(this.detection.getConfiguration().getStorage(), 0.75);
 
-        this.detection.getConfiguration().ifPresent(value -> this.altitudeMaximum = value.
-                get(new StorageKey<>("altitude-maximum"), new TypeToken<Double>() {}).get().getValue());
+        this.maximumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MAX.get(this.detection.getConfiguration().getStorage(), 1.25);
     }
 
     @Override
@@ -181,7 +171,7 @@ public class FlyCheck<E, F extends StorageSupplier<File>> implements Check<E, F>
                                     return new ConditionResult(false, report.build(false));
                                 }
 
-                                double altitudeDisplacement = ((present.getY() - start.getY()) == 0) ? this.altitudeMaximum : present.getY() - start.getY();
+                                double altitudeDisplacement = ((present.getY() - start.getY()) == 0) ? 3.1 : present.getY() - start.getY();
 
                                 double airTime = materialGas * (((
                                         ((1 / ((playerAltitudeGainTicks + materialUpdateTicks) / 2)) *
@@ -197,7 +187,7 @@ public class FlyCheck<E, F extends StorageSupplier<File>> implements Check<E, F>
                                     return new ConditionResult(false, report.build(false));
                                 }
 
-                                if (((altitudeDisplacement / meanAltitude) + meanAltitude) > (this.altitudeMaximum *
+                                if (((altitudeDisplacement / meanAltitude) + meanAltitude) > (3.1 *
                                         (this.analysisTime * 0.05))) {
                                     report
                                             .information("Result of altitude gain was " + ((altitudeDisplacement / meanAltitude) + meanAltitude) + ".")

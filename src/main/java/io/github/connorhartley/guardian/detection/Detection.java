@@ -30,21 +30,20 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckSupplier;
 import io.github.connorhartley.guardian.detection.heuristic.HeuristicReport;
 import io.github.connorhartley.guardian.detection.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentProvider;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
-import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.Tuple;
+import tech.ferus.util.config.HoconConfigFile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -56,15 +55,14 @@ import java.util.function.Supplier;
  * Represents a cheat / hack / exploit internal that is loaded
  * by the global detection manager.
  */
-public abstract class Detection<E, F extends StorageSupplier<File>> extends DetectionType {
+public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Path>> extends DetectionType implements PunishmentProvider {
 
     private E plugin;
-    private File configFile;
+    private Path configDir;
     private List<Check> checks;
     private CheckSupplier checkSupplier;
     private F configuration;
     private PluginContainer pluginContainer;
-    private ConfigurationLoader<CommentedConfigurationNode> configLoader;
     private boolean punish = true;
     private boolean ready = false;
 
@@ -103,12 +101,11 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *
      * <p>Creates most of the startup properties if they
      * do not exist already. This is mostly targeted at
-     * Guardians internal detections.
+     * Guardians internal detection.
      *
      * Sets these optionally:</p>
      * <ul>
      *     <li>Config File</li>
-     *     <li>Config Loader</li>
      *     <li>Detection Configuration Supplier</li>
      *     <li>PunishmentReport Bindings</li>
      * </ul>
@@ -137,20 +134,14 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
             this.checkSupplier = checkSupplier;
 
             if (this.plugin instanceof Guardian) {
-
-                if (this.configFile == null) {
-                    this.configFile = new File(((Guardian) this.plugin).getGlobalConfiguration().getLocation().get().toFile(),
-                            StringUtils.join("detection", File.separator, this.getId(), ".conf"));
-                }
-
-                if (this.configLoader == null) {
-                    this.configLoader = HoconConfigurationLoader.builder().setFile(this.configFile)
-                            .setDefaultOptions(((Guardian) this.plugin).getConfigurationOptions()).build();
+                if (this.configDir == null) {
+                    this.configDir = new File(((Guardian) this.plugin).getGlobalConfiguration().getLocation().toFile(),
+                            "detection").toPath();
                 }
 
                 if (configurationSupplier != null) {
                     this.configuration = configurationSupplier.get();
-                    this.configuration.create();
+                    this.configuration.load();
                 }
 
                 if (punishmentTypes != null) {
@@ -159,16 +150,13 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
                     }
                 }
             } else {
-
                 if (configurationSupplier != null) {
                     this.configuration = configurationSupplier.get();
-                    this.configuration.create();
+                    this.configuration.load();
                 }
             }
 
             this.checks = this.checkSupplier.create();
-
-            this.configuration.update();
         }
     }
 
@@ -235,7 +223,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      * @return permission string
      */
     public String getPermission(@Nonnull String permissionTarget) {
-        return StringUtils.join("guardian.detections.", permissionTarget, ".", this.getId());
+        return StringUtils.join("guardian.detection.", permissionTarget, ".", this.getId());
     }
 
     /**
@@ -250,77 +238,46 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *
      * @return an optional configuration file path
      */
-    public Optional<File> getConfigFile() {
-        return Optional.ofNullable(this.configFile);
+    public Optional<Path> getConfigLocation() {
+        return Optional.ofNullable(this.configDir);
     }
 
     /**
      * Set Config File
      *
-     * <p>Sets a custom path for a configuration file
-     * to be used with a {@link StorageSupplier}.
+     * <p>Sets a custom path for a configuration file path
+     * to be used with a {@link StorageProvider<HoconConfigFile, Path>}.
      *
      * This should be used if you do not provide
-     * a {@link Supplier<? extends StorageSupplier<File>>} on
+     * a {@link Supplier<? extends StorageProvider<HoconConfigFile, Path>>} on
      * the construct method.</p>
      *
-     * @param configFile the custom configuration file path
+     * @param configDir the custom configuration file path
      */
-    public void setConfigFile(@Nullable File configFile) {
-        this.configFile = configFile;
-    }
-
-    /**
-     * Get Config Loader
-     *
-     * <p>Returns an optional {@link ConfigurationLoader<CommentedConfigurationNode>}
-     * for this detection.
-     *
-     * If this is for an internal detection, this
-     * will have the internal {@link ConfigurationOptions} applied.</p>
-     *
-     * @return an optional configuration loader
-     */
-    public Optional<ConfigurationLoader<CommentedConfigurationNode>> getConfigLoader() {
-        return Optional.ofNullable(this.configLoader);
-    }
-
-    /**
-     * Set Config Loader
-     *
-     * <p>Sets a custom {@link ConfigurationLoader<CommentedConfigurationNode>}
-     * to be used with a {@link StorageSupplier}.
-     *
-     * This should be used if you do not provide
-     * a {@link Supplier<? extends StorageSupplier<File>>} on
-     * the construct method.</p>
-     *
-     * @param configLoader the custom config loader
-     */
-    public void setConfigLoader(@Nullable ConfigurationLoader<CommentedConfigurationNode> configLoader) {
-        this.configLoader = configLoader;
+    public void setConfigLocation(@Nullable Path configDir) {
+        this.configDir = configDir;
     }
 
     /**
      * Get Configuration
      *
-     * <p>Returns an optional {@link StorageSupplier<File>}
+     * <p>Returns the {@link StorageProvider<HoconConfigFile, Path>}
      * for this detection.</p>
      *
      * @return an optional configuration
      */
-    public Optional<F> getConfiguration() {
-        return Optional.ofNullable(this.configuration);
+    public F getConfiguration() {
+        return this.configuration;
     }
 
     /**
      * Set Configuration
      *
-     * <p>Sets a custom {@link StorageSupplier<File>} to be used with this
+     * <p>Sets a custom {@link StorageProvider<HoconConfigFile, Path>} to be used with this
      * detection.
      *
      * This should be used if you do not provide
-     * a {@link Supplier<? extends StorageSupplier<File>>} on
+     * a {@link Supplier<? extends StorageProvider<HoconConfigFile, Path>>} on
      * the construct method.</p>
      *
      * @param configuration the custom configuration
@@ -349,7 +306,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *
      * @param ready true when ready, false when not
      */
-    public void setReady(@Nonnull boolean ready) {
+    public void setReady(boolean ready) {
         this.ready = ready;
     }
 
@@ -371,14 +328,14 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *
      * @param punish set whether this will execute punishments
      */
-    public void setPunish(@Nonnull boolean punish) {
+    public void setPunish(boolean punish) {
         this.punish = punish;
     }
 
     /**
      * Get Check Supplier
      *
-     * <p>Returns the {@link CheckSupplier} for creating this detections
+     * <p>Returns the {@link CheckSupplier} for creating this detection
      * {@link Check}s.</p>
      *
      * @return
@@ -407,6 +364,11 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      */
     public void setChecks(@Nullable List<Check> checks) {
         this.checks = checks;
+    }
+
+    @Override
+    public boolean globalScope() {
+        return false;
     }
 
     public static class PermissionTarget {

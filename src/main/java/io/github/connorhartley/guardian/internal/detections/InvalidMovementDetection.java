@@ -39,7 +39,6 @@ import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
 import io.github.connorhartley.guardian.internal.punishments.ResetPunishment;
 import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
 import io.github.connorhartley.guardian.storage.StorageProvider;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
 import io.github.connorhartley.guardian.storage.configuration.CommentDocument;
 import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
@@ -81,7 +80,7 @@ public class InvalidMovementDetection extends Detection<Guardian, InvalidMovemen
                 this,
                 () -> Collections.singletonList(new InvalidMoveCheck<>(this)),
                 () -> new Configuration(this,
-                        this.getConfigFile().orElseThrow(Error::new), this.getConfigLoader().orElseThrow(Error::new)),
+                        this.getConfigLocation().orElseThrow(Error::new), this.getConfigLoader().orElseThrow(Error::new)),
                 CustomPunishment.class, ResetPunishment.class,
                 WarningPunishment.class, KickPunishment.class,
                 ReportPunishment.class

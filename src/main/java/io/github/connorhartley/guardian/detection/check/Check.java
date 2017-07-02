@@ -26,9 +26,10 @@ package io.github.connorhartley.guardian.detection.check;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Check
@@ -36,7 +37,7 @@ import java.io.File;
  * Represents a service that checks a player
  * for a specific cheat in a certain way.
  */
-public interface Check<E, F extends StorageSupplier<File>> {
+public interface Check<E, F extends StorageProvider<HoconConfigFile, Path>> {
 
     /**
      * Get Detection

@@ -70,7 +70,7 @@ public class SequenceResult {
      * Get Information
      *
      * <p>Returns a list of information that was added regarding
-     * detections that were caught.</p>
+     * detection that were caught.</p>
      *
      * @return A list of report information
      */

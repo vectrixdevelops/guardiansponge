@@ -24,8 +24,11 @@
 package io.github.connorhartley.guardian.detection.punishment;
 
 import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.User;
+import tech.ferus.util.config.HoconConfigFile;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -45,25 +48,17 @@ public interface Punishment {
     String getName();
 
     /**
-     * Get Detection
-     *
-     * <p>Returns the detection this punishment was created by.</p>
-     *
-     * @return The detection
-     */
-    Optional<Detection<?, ?>> getDetection();
-
-    /**
      * Handle
      *
      * <p>Executed each time to handleFinish a punishmentReport. Returns
      * true if the punishmentReport was handled.</p>
      *
+     * @param detection The detection to handle for
      * @param args Misc arguments
      * @param user The user to be punished
      * @param punishmentReport Information about this punishmentReport
      * @return True if the punishmentReport was handled
      */
-    boolean handle(String[] args, User user, PunishmentReport punishmentReport);
+    <E, F extends StorageProvider<HoconConfigFile, Path>> boolean handle(Detection<E, F> detection, String[] args, User user, PunishmentReport punishmentReport);
 
 }

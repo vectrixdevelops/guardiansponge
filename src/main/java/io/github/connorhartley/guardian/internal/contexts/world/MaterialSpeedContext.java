@@ -28,15 +28,16 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.Player;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
-public class MaterialSpeedContext<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
+public class MaterialSpeedContext<E, F extends StorageProvider<HoconConfigFile, Path>> extends CaptureContext<E, F> {
 
     private double gasSpeedModifier = 1.035;
     private double solidSpeedModifier = 1.02;

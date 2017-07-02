@@ -21,18 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.storage;
+package io.github.connorhartley.guardian.detection.punishment;
 
-import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
-import io.github.connorhartley.guardian.storage.container.StorageKey;
+import java.util.HashMap;
+import java.util.List;
 
-import java.util.Optional;
+public interface PunishmentProvider {
 
-public interface StorageSupplier<T> extends StorageProvider<T> {
+    boolean globalScope();
 
-    <K, E> Optional<ConfigurationValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken);
+    List<Level> getLevels();
 
-    <K, E> void set(ConfigurationValue<K, E> configurationValue);
+    HashMap<String, String[]> getPunishments();
 
 }

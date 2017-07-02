@@ -29,11 +29,12 @@ import io.github.connorhartley.guardian.sequence.action.ActionBlueprint;
 import io.github.connorhartley.guardian.sequence.action.ActionBuilder;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
 import io.github.connorhartley.guardian.sequence.capture.CaptureHandler;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +44,7 @@ import java.util.List;
  * A {@link SequenceBlueprint} builder giving the ability to chain
  * actions for a {@link Sequence}.
  */
-public class SequenceBuilder<E, F extends StorageSupplier<File>> {
+public class SequenceBuilder<E, F extends StorageProvider<HoconConfigFile, Path>> {
 
     private CaptureContext<E, F>[] captureContexts;
     private List<Action> actions = new ArrayList<>();

@@ -23,16 +23,17 @@
  */
 package io.github.connorhartley.guardian.sequence.capture;
 
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.Player;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class CaptureHandler<E, F extends StorageSupplier<File>> {
+public class CaptureHandler<E, F extends StorageProvider<HoconConfigFile, Path>> {
 
     private final Player player;
     private final List<CaptureContext<E, F>> captureContexts = new ArrayList<>();

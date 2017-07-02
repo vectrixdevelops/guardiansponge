@@ -23,11 +23,13 @@
  */
 package io.github.connorhartley.guardian.detection.punishment;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.event.punishment.PunishmentExecuteEvent;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
@@ -35,10 +37,12 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.util.Tuple;
+import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +56,10 @@ import java.util.Map;
 public class PunishmentController {
 
     private final Guardian plugin;
+    private final HashMap<String, Punishment> definitionRegistry = new HashMap<>();
+    private final HashMap<String, List<Level>> detectionLevelRegistry = new HashMap<>();
+    private final HashMap<String, HashMap<String, String[]>> detectionDefinitionRegistry = new HashMap<>();
+
     private final HashMap<Detection, List<Punishment>> registry = new HashMap<>();
 
     public PunishmentController(Guardian plugin) {
@@ -71,42 +79,64 @@ public class PunishmentController {
      * @param <F> The detection configuration type
      * @return true if the punishmentReport was handled, false if it was not
      */
-     public <E, F extends StorageSupplier<File>> boolean execute(Detection<E, F> detection, User user, PunishmentReport punishmentReport) {
-         Map<String, Tuple<Double, Double>> detectionPunishLevels = new HashMap<>();
-         List<String> currentPunishLevels = new ArrayList<>();
+    public <E, F extends StorageProvider<HoconConfigFile, Path>> boolean execute(Detection<E, F> detection, User user, PunishmentReport punishmentReport) {
+        PunishmentExecuteEvent punishmentExecuteEvent = new PunishmentExecuteEvent(punishmentReport, user, Cause.of(NamedCause.of("detection", detection)));
+        Sponge.getEventManager().post(punishmentExecuteEvent);
+        if (punishmentExecuteEvent.isCancelled()) {
+            return false;
+        }
 
-         PunishmentExecuteEvent punishmentExecuteEvent = new PunishmentExecuteEvent(punishmentReport, user, Cause.of(NamedCause.of("detection", detection)));
-         Sponge.getEventManager().post(punishmentExecuteEvent);
-         if (punishmentExecuteEvent.isCancelled()) {
-             return false;
-         }
+        for (Level level : this.detectionLevelRegistry.get(detection.getId())) {
+            if (punishmentReport.getSeverityTransformer().transform(0d) >= level.getRange().getFirst() &&
+                    punishmentReport.getSeverityTransformer().transform(0d) <= level.getRange().getSecond() &&
+                    level.getRange().getFirst() != -1 && level.getRange().getSecond() != -1) {
+                for (String action : level.getActions()) {
+                    if (this.detectionDefinitionRegistry.containsKey(action) || this.detectionDefinitionRegistry.get("_global").containsKey(action)) {
+                        if (this.definitionRegistry.containsKey(action)) {
+                            this.definitionRegistry.get(action).handle(detection, new String[]{}, user, punishmentReport);
+                        }
+                    }
+                }
+            }
+        }
 
-         if (detection.getConfiguration().get().get(new StorageKey<>("punishment-levels"),
-                 new TypeToken<Map<String, Tuple<Double, Double>>>(){}).isPresent()) {
-             detectionPunishLevels = detection.getConfiguration().get().get(new StorageKey<>("punishment-levels"),
-                     new TypeToken<Map<String, Tuple<Double, Double>>>(){}).get().getValue();
-         }
+        return true;
+    }
 
-         for (Map.Entry<String, Tuple<Double, Double>> entry : detectionPunishLevels.entrySet()) {
-             if (punishmentReport.getSeverityTransformer().transform(0d) >= entry.getValue().getFirst() &&
-                     punishmentReport.getSeverityTransformer().transform(0d) <= entry.getValue().getSecond() &&
-                     entry.getValue().getFirst() != -1 && entry.getValue().getSecond() != -1) {
-                 currentPunishLevels.add(entry.getKey());
-             }
-         }
+    public void bind(String id, PunishmentProvider punishmentProvider) {
+         this.detectionDefinitionRegistry.computeIfAbsent(id, k -> Maps.newHashMap());
+         this.detectionLevelRegistry.computeIfAbsent(id, k -> punishmentProvider.getLevels());
 
-         if (this.registry.get(detection) != null) {
-             for (Punishment punishment : this.registry.get(detection)) {
-                 currentPunishLevels.forEach(currentPunishLevel -> {
-                     String[] level = StringUtils.split(currentPunishLevel, "&");
-
-                     if (punishment.getName().equals(level[0])) {
-                         punishment.handle(new String[]{ level[1] }, user, punishmentReport);
+         for (Map.Entry<String, String[]> entry : punishmentProvider.getPunishments().entrySet()) {
+             if (entry.getKey().equals("_global")) {
+                 this.detectionDefinitionRegistry.compute(id, (detect, def) -> {
+                     for (String value : entry.getValue()) {
+                         def.computeIfAbsent(value, v -> this.detectionDefinitionRegistry.get("_global").get(v));
                      }
+
+                     return def;
+                 });
+             } else {
+                 this.detectionDefinitionRegistry.compute(id, (detect, def) -> {
+                     def.computeIfAbsent(entry.getKey(), k -> entry.getValue());
+
+                     return def;
                  });
              }
          }
-         return true;
+    }
+
+    public void register(String punishmentName, Class<? extends Punishment> punishmentClass) {
+         if (this.definitionRegistry.get(punishmentName) == null) {
+             try {
+                 Constructor<?> ctor = punishmentClass.getConstructor(Guardian.class);
+                 Punishment punishment = (Punishment) ctor.newInstance(this.plugin);
+
+                 this.definitionRegistry.put(punishmentName, punishment);
+             } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                 e.printStackTrace();
+             }
+         }
     }
 
     /**
@@ -153,20 +183,6 @@ public class PunishmentController {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    /**
-     * Unbind
-     *
-     * <p>Unregisters a punishment handler to a {@link Detection}.</p>
-     *
-     * @param punishmentClass The punishment handler
-     * @param detection The detection
-     */
-    public void unbind(Class<? extends Punishment> punishmentClass, Detection detection) {
-        if (this.registry.get(detection) != null) {
-            this.registry.get(detection).removeIf(punishmentType -> punishmentType.getClass().equals(punishmentClass));
         }
     }
 

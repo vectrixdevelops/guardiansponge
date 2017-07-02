@@ -27,12 +27,13 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.Player;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 
-public class PlayerLocationContext<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
+public class PlayerLocationContext<E, F extends StorageProvider<HoconConfigFile, Path>> extends CaptureContext<E, F> {
 
     public PlayerLocationContext(Guardian plugin, Detection<E, F> detection) {
         super(plugin, detection);

@@ -41,14 +41,11 @@ import io.github.connorhartley.guardian.sequence.SequenceController;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import io.github.connorhartley.guardian.storage.configuration.TupleSerializer;
 import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.MetricsLite;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -70,7 +67,6 @@ import tech.ferus.util.sql.mysql.MySqlDatabase;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Map;
 
 @Plugin(
         id = PluginInfo.ID,
@@ -104,11 +100,10 @@ public class Guardian {
 
     /* Injection Fields */
 
-    private final ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager;
-    private final Path pluginConfig;
-    private final Logger logger;
     private final PluginContainer pluginContainer;
     private final MetricsLite metrics;
+    private final Path configDir;
+    private final Logger logger;
 
     /* Subsystem Fields */
 
@@ -134,16 +129,13 @@ public class Guardian {
     /* Additional Fields */
 
     private int loggingLevel = 2;
-    private Map<String, String> databaseCredentials;
     private ConfigurationOptions configurationOptions;
 
     @Inject
-    public Guardian(@DefaultConfig(sharedRoot = false) ConfigurationLoader<CommentedConfigurationNode> pluginConfigManager,
-                    @ConfigDir(sharedRoot = false) Path pluginConfig, PluginContainer pluginContainer, MetricsLite metrics,
+    public Guardian(@ConfigDir(sharedRoot = false) Path configDir, PluginContainer pluginContainer, MetricsLite metrics,
                     Logger logger) {
-        this.pluginConfigManager = pluginConfigManager;
         this.pluginContainer = pluginContainer;
-        this.pluginConfig = pluginConfig;
+        this.configDir = configDir;
         this.metrics = metrics;
         this.logger = logger;
     }
@@ -194,14 +186,13 @@ public class Guardian {
         if (loadedModules == 1) {
             getLogger().info(loadedModules + " detection is protecting your server!");
         } else {
-            getLogger().info(loadedModules + " detections are protecting your server!");
+            getLogger().info(loadedModules + " detection are protecting your server!");
         }
     }
 
     @Listener
     public void onServerStopping(GameStoppingEvent event) {
         getLogger().info("Stopping Guardian AntiCheat.");
-        this.guardianConfiguration.update();
         this.guardianDatabase.update();
 
         this.sequenceControllerTask.stop();
@@ -265,17 +256,17 @@ public class Guardian {
 
         this.guardianPermission = new GuardianPermission(this);
         this.guardianCommand = new GuardianCommand(this);
-        this.guardianConfiguration = new GuardianConfiguration(this, pluginConfig, pluginConfigManager);
+        this.guardianConfiguration = new GuardianConfiguration(this, configDir);
         this.guardianDetection = new GuardianDetection(this.moduleSubsystem);
     }
 
     private void initializeConfiguration() {
         this.configurationOptions = ConfigurationOptions.defaults();
-        this.guardianConfiguration.create();
+        this.guardianConfiguration.load();
 
-        this.loggingLevel = this.guardianConfiguration.configLoggingLevel.getValue();
+        this.loggingLevel = GuardianConfiguration.LOGGING_LEVEL.get(this.guardianConfiguration.getStorage(), 2);
 
-        File detectionDirectory = new File(this.guardianConfiguration.getLocation().get().toFile(), "detection");
+        File detectionDirectory = new File(this.guardianConfiguration.getLocation().toFile(), "detection");
         detectionDirectory.mkdir();
 
         this.moduleSubsystem.setConfigurationDirectory(detectionDirectory);
@@ -283,31 +274,31 @@ public class Guardian {
     }
 
     private void initializeDatabase() {
-        this.databaseCredentials = this.guardianConfiguration.configDatabaseCredentials.getValue();
-
-        switch (this.databaseCredentials.get("type")) {
+        switch (GuardianConfiguration.DATABASE_TYPE.get(this.guardianConfiguration.getStorage(), "h2")) {
             case "h2": {
                 this.guardianDatabase = new GuardianDatabase(this,
                         new H2Database(
-                                new File(this.guardianConfiguration.getLocation().get().toFile()
-                                        .toString(), this.databaseCredentials.get("host")).toString()
+                                new File(this.guardianConfiguration.getLocation().toFile()
+                                        .toString(), this.guardianConfiguration.getStorage().getNode("general", "h2", "location").getString())
+                                        .toString()
                         ));
             }
             case "mysql": {
                 this.guardianDatabase = new GuardianDatabase(this,
                         new MySqlDatabase(
-                                this.databaseCredentials.get("host"),
-                                Integer.valueOf(this.databaseCredentials.get("port")),
-                                "database",
-                                this.databaseCredentials.get("username"),
-                                this.databaseCredentials.get("password")
+                                this.guardianConfiguration.getStorage().getNode("general", "mysql", "host").getString(),
+                                Integer.valueOf(this.guardianConfiguration.getStorage().getNode("general", "mysql", "port").getString()),
+                                this.guardianConfiguration.getStorage().getNode("general", "mysql", "database").getString(),
+                                this.guardianConfiguration.getStorage().getNode("general", "mysql", "username").getString(),
+                                this.guardianConfiguration.getStorage().getNode("general", "mysql", "password").getString()
                         ));
             }
             default: {
                 this.guardianDatabase = new GuardianDatabase(this,
                         new H2Database(
-                                new File(this.guardianConfiguration.getLocation().get().toFile()
-                                        .toString(), this.databaseCredentials.get("host")).toString()
+                                new File(this.guardianConfiguration.getLocation().toFile()
+                                        .toString(), this.guardianConfiguration.getStorage().getNode("general", "h2", "location").getString())
+                                        .toString()
                         ));
             }
         }
@@ -329,7 +320,7 @@ public class Guardian {
         }
 
         this.moduleSubsystem.enableModules(moduleWrapper -> {
-            if (this.guardianConfiguration.configEnabledDetections.getValue().contains(moduleWrapper.getId())) {
+            if (GuardianConfiguration.ENABLED.get().contains(moduleWrapper.getId())) {
                 if (this.loggingLevel > 1) getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
                 return true;
             }
@@ -349,7 +340,6 @@ public class Guardian {
                     }
                 });
 
-        this.guardianConfiguration.update();
         this.guardianDatabase.update();
     }
 
@@ -424,7 +414,7 @@ public class Guardian {
      *
      * <p>Returns the built-in {@link Detection}s by Guardian.</p>
      *
-     * @return The guardian built-in detections
+     * @return The guardian built-in detection
      */
     public GuardianDetection getGlobalDetections() {
         return this.guardianDetection;

@@ -28,18 +28,19 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
 import io.github.connorhartley.guardian.sequence.capture.CaptureKey;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Optional;
 
 public class PlayerPositionContext {
 
-    public static class Altitude<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
+    public static class Altitude<E, F extends StorageProvider<HoconConfigFile, Path>> extends CaptureContext<E, F> {
 
         public static CaptureKey<Altitude, Location<World>> depthThreshold =
                 new CaptureKey<>(Altitude.class, "depth_threshold", null);
