@@ -23,7 +23,6 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
-import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.GuardianConfiguration;
 import io.github.connorhartley.guardian.detection.Detection;
@@ -36,7 +35,6 @@ import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
 import io.github.connorhartley.guardian.storage.StorageProvider;
-import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.data.key.Keys;
@@ -46,16 +44,13 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.util.Map;
 
 public class JesusCheck<E, F extends StorageProvider<HoconConfigFile, Path>> implements Check<E, F> {
 
     private final Detection<E, F> detection;
 
     private double analysisTime = 40;
-    private double threshold = 8.4;
     private double minimumWaterTime = 1.35;
     private double minimumTickRange = 30;
     private double maximumTickRange = 50;
@@ -66,8 +61,6 @@ public class JesusCheck<E, F extends StorageProvider<HoconConfigFile, Path>> imp
         this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "sequence-time").getDouble(2d) / 0.05;
 
         this.minimumWaterTime = this.detection.getConfiguration().getStorage().getNode("analysis", "minimum-water-time").getDouble(1.35);
-
-        this.threshold = this.detection.getConfiguration().getStorage().getNode("analysis", "threshold").getDouble(8.4);
 
         this.minimumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MIN.get(this.detection.getConfiguration().getStorage(), 0.75);
 
@@ -227,7 +220,7 @@ public class JesusCheck<E, F extends StorageProvider<HoconConfigFile, Path>> imp
 
                         if (travelDisplacement > maximumSpeed) {
                             if (waterTime > this.minimumWaterTime &&
-                                    (travelDisplacement - maximumSpeed) > this.threshold) {
+                                    (travelDisplacement - maximumSpeed) > 8.4) {
                                 report
                                         .information("Overshot maximum speed by " + (travelDisplacement - maximumSpeed) + ".")
                                         .type("walking on water (jesus)")
