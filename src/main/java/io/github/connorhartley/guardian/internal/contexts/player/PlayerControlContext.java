@@ -30,18 +30,21 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
 import io.github.connorhartley.guardian.sequence.capture.CaptureKey;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Tuple;
+import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 
 public class PlayerControlContext {
 
-    public static class InvalidControl<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
+    public static class InvalidControl<E, F extends StorageProvider<HoconConfigFile, Path>> extends CaptureContext<E, F> {
 
         public static CaptureKey<InvalidControl, Set<Tuple<String, String>>> invalidMoves =
                 new CaptureKey<>(InvalidControl.class, "invalid_movements", Sets.newHashSet());
@@ -98,7 +101,7 @@ public class PlayerControlContext {
         }
     }
 
-    public static class VerticalSpeed<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
+    public static class VerticalSpeed<E, F extends StorageProvider<HoconConfigFile, Path>> extends CaptureContext<E, F> {
 
         private double flySpeedControl = 1.065;
 
@@ -142,7 +145,7 @@ public class PlayerControlContext {
         }
     }
 
-    public static class HorizontalSpeed<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
+    public static class HorizontalSpeed<E, F extends StorageProvider<HoconConfigFile, Path>> extends CaptureContext<E, F> {
 
         private double sneakSpeedControl = 1.015;
         private double walkSpeedControl = 1.035;

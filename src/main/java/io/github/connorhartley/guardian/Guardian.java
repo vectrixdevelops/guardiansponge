@@ -249,7 +249,7 @@ public class Guardian {
         this.moduleSubsystem.setPluginContainer(pluginContainer);
 
         this.heuristicController = new HeuristicController(this);
-        this.punishmentController = new PunishmentController(this);
+        this.punishmentController = new PunishmentController();
         this.sequenceController = new SequenceController(this);
 
         this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);

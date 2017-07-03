@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.internal.checks;
 
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.GuardianConfiguration;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
@@ -33,6 +34,7 @@ import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
@@ -40,11 +42,13 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
-public class VerticalSpeedCheck<E, F extends StorageSupplier<File>> implements Check<E, F> {
+public class VerticalSpeedCheck<E, F extends StorageProvider<HoconConfigFile, Path>> implements Check<E, F> {
 
     private final Detection<E, F> detection;
 
@@ -55,15 +59,11 @@ public class VerticalSpeedCheck<E, F extends StorageSupplier<File>> implements C
     public VerticalSpeedCheck(Detection<E, F> detection) {
         this.detection = detection;
 
-        this.detection.getConfiguration().ifPresent(value -> this.analysisTime = value.
-                get(new StorageKey<>("analysis-time"), new TypeToken<Double>() {}).get().getValue() / 0.05);
+        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "sequence-time").getDouble(2d) / 0.05;
 
-        this.detection.getConfiguration().ifPresent(value -> {
-            this.minimumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
-                    new TypeToken<Map<String, Double>>() {}).get().getValue().get("min");
-            this.maximumTickRange = this.analysisTime * value.get(new StorageKey<>("tick-bounds"),
-                    new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
-        });
+        this.minimumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MIN.get(this.detection.getConfiguration().getStorage(), 0.75);
+
+        this.maximumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MAX.get(this.detection.getConfiguration().getStorage(), 1.25);
     }
 
     @Override

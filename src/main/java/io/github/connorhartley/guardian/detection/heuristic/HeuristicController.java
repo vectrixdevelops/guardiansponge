@@ -29,12 +29,15 @@ import io.github.connorhartley.guardian.PluginInfo;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
+import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -48,7 +51,7 @@ public class HeuristicController {
         this.plugin = plugin;
     }
 
-    public <E, F extends StorageSupplier<File>> Optional<HeuristicReport> analyze(Detection<E, F> detection, User user, SequenceResult sequenceResult) {
+    public <E, F extends StorageProvider<HoconConfigFile, Path>> Optional<HeuristicReport> analyze(Detection<E, F> detection, User user, SequenceResult sequenceResult) {
         Set<Integer> punishments = this.plugin.getGlobalDatabase().getPunishmentIdByProperties(Integer.valueOf(PluginInfo.DATABASE_VERSION),
                 user, sequenceResult.getDetectionType());
 

@@ -23,27 +23,17 @@
  */
 package io.github.connorhartley.guardian.detection.punishment;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.event.punishment.PunishmentExecuteEvent;
 import io.github.connorhartley.guardian.storage.StorageProvider;
-import io.github.connorhartley.guardian.storage.container.StorageKey;
-import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
-import org.spongepowered.api.util.Tuple;
 import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,18 +43,12 @@ import java.util.Map;
  *
  * Controls punishment execution and registration.
  */
-public class PunishmentController {
+public final class PunishmentController {
 
-    private final Guardian plugin;
-    private final HashMap<String, Punishment> definitionRegistry = new HashMap<>();
     private final HashMap<String, List<Level>> detectionLevelRegistry = new HashMap<>();
     private final HashMap<String, HashMap<String, String[]>> detectionDefinitionRegistry = new HashMap<>();
 
-    private final HashMap<Detection, List<Punishment>> registry = new HashMap<>();
-
-    public PunishmentController(Guardian plugin) {
-        this.plugin = plugin;
-    }
+    public PunishmentController() {}
 
     /**
      * Execute
@@ -91,9 +75,15 @@ public class PunishmentController {
                     punishmentReport.getSeverityTransformer().transform(0d) <= level.getRange().getSecond() &&
                     level.getRange().getFirst() != -1 && level.getRange().getSecond() != -1) {
                 for (String action : level.getActions()) {
-                    if (this.detectionDefinitionRegistry.containsKey(action) || this.detectionDefinitionRegistry.get("_global").containsKey(action)) {
-                        if (this.definitionRegistry.containsKey(action)) {
-                            this.definitionRegistry.get(action).handle(detection, new String[]{}, user, punishmentReport);
+                    if (this.detectionDefinitionRegistry.get(detection.getId()).containsKey(action)) {
+                        for (String command : this.detectionDefinitionRegistry.get(detection.getId()).get(action)) {
+                            String commandModified = command.replace("%player%", user.getName())
+                                    .replace("%datetime%", punishmentReport.getLocalDateTime().toString())
+                                    .replace("%probability%", punishmentReport.getSeverityTransformer().toString())
+                                    .replace("%detection-name%", detection.getName())
+                                    .replace("%detection-id%", detection.getId());
+
+                            Sponge.getCommandManager().process(Sponge.getServer().getConsole(), commandModified);
                         }
                     }
                 }
@@ -103,87 +93,38 @@ public class PunishmentController {
         return true;
     }
 
-    public void bind(String id, PunishmentProvider punishmentProvider) {
-         this.detectionDefinitionRegistry.computeIfAbsent(id, k -> Maps.newHashMap());
-         this.detectionLevelRegistry.computeIfAbsent(id, k -> punishmentProvider.getLevels());
+    /**
+     * Register
+     *
+     * <p>Registers a punishment provider under a specific id.</p>
+     *
+     * @param providerId The provider id
+     * @param punishmentProvider The provider
+     */
+    public void register(String providerId, PunishmentProvider punishmentProvider) {
+         this.detectionDefinitionRegistry.computeIfAbsent(providerId, k -> Maps.newHashMap());
+         this.detectionLevelRegistry.computeIfAbsent(providerId, k -> punishmentProvider.getLevels());
 
          for (Map.Entry<String, String[]> entry : punishmentProvider.getPunishments().entrySet()) {
              if (entry.getKey().equals("_global")) {
-                 this.detectionDefinitionRegistry.compute(id, (detect, def) -> {
-                     for (String value : entry.getValue()) {
-                         def.computeIfAbsent(value, v -> this.detectionDefinitionRegistry.get("_global").get(v));
-                     }
-
+                 this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
+                     def.computeIfAbsent(entry.getKey(), k -> this.detectionDefinitionRegistry.get("_global").get(k));
                      return def;
                  });
              } else {
-                 this.detectionDefinitionRegistry.compute(id, (detect, def) -> {
-                     def.computeIfAbsent(entry.getKey(), k -> entry.getValue());
-
+                 this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
+                     def.compute(entry.getKey(), (k, lev) -> entry.getValue());
                      return def;
                  });
              }
          }
-    }
 
-    public void register(String punishmentName, Class<? extends Punishment> punishmentClass) {
-         if (this.definitionRegistry.get(punishmentName) == null) {
-             try {
-                 Constructor<?> ctor = punishmentClass.getConstructor(Guardian.class);
-                 Punishment punishment = (Punishment) ctor.newInstance(this.plugin);
-
-                 this.definitionRegistry.put(punishmentName, punishment);
-             } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                 e.printStackTrace();
-             }
+         for (Level level : punishmentProvider.getLevels()) {
+             this.detectionLevelRegistry.compute(providerId, (detect, lev) -> {
+                if (!lev.contains(level)) lev.add(level);
+                return lev;
+             });
          }
-    }
-
-    /**
-     * Bind
-     *
-     * <p>Registers a punishment handler to a {@link Detection}.</p>
-     *
-     * @param punishmentClass The punishment handler
-     * @param detection The detection
-     */
-    public void bind(Class<? extends Punishment> punishmentClass, Detection detection) {
-        if (this.registry.get(detection) == null) {
-            List<Punishment> punishments = new ArrayList<>();
-
-            try {
-                Constructor<?> ctor = punishmentClass.getConstructor(Guardian.class, Detection.class);
-                Punishment newPunishment = (Punishment) ctor.newInstance(this.plugin, detection);
-
-                punishments.add(newPunishment);
-                this.registry.put(detection, punishments);
-            } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        } else {
-            boolean exists = false;
-            for (Punishment punishmentSearch : this.registry.get(detection)) {
-                if (punishmentSearch.getClass().equals(punishmentClass)) {
-                    exists = true;
-                    break;
-                }
-            }
-
-            if (!exists) {
-                List<Punishment> punishments = new ArrayList<>();
-                punishments.addAll(this.registry.get(detection));
-
-                try {
-                    Constructor<?> ctor = punishmentClass.getConstructor(Guardian.class, Detection.class);
-                    Punishment newPunishment = (Punishment) ctor.newInstance(this.plugin, detection);
-
-                    punishments.add(newPunishment);
-                    this.registry.put(detection, punishments);
-                } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
 }

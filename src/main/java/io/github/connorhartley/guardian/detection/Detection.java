@@ -110,7 +110,6 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
      * <ul>
      *     <li>Config File</li>
      *     <li>Detection Configuration Supplier</li>
-     *     <li>PunishmentReport Bindings</li>
      * </ul>
      *
      * <p>Sets these always:</p>
@@ -120,18 +119,12 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
      *     <li>Checks</li>
      * </ul>
      *
-     * @param detection the detection that these properties are being constructed for
      * @param checkSupplier the supplier of check type creation
      * @param configurationSupplier the supplier of configuration creation
-     * @param punishmentTypes the punishment classes that will be bound
-     * @param <T> the detection type
      */
-    @SafeVarargs
     @SuppressWarnings("unchecked")
-    public final <T extends Detection> void construct(@Nonnull T detection,
-                                                      @Nonnull CheckSupplier checkSupplier,
-                                                      @Nullable Supplier<F> configurationSupplier,
-                                                      @Nullable Class<? extends Punishment>... punishmentTypes) {
+    public void construct(@Nonnull CheckSupplier checkSupplier,
+                          @Nullable Supplier<F> configurationSupplier) {
         if (this.pluginContainer.getInstance().isPresent()) {
             this.plugin = (E) this.pluginContainer.getInstance().get();
             this.checkSupplier = checkSupplier;
@@ -145,12 +138,6 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
                 if (configurationSupplier != null) {
                     this.configuration = configurationSupplier.get();
                     this.configuration.load();
-                }
-
-                if (punishmentTypes != null) {
-                    for (Class<? extends Punishment> punishmentType : punishmentTypes) {
-                        ((Guardian) this.plugin).getPunishmentController().bind(punishmentType, detection);
-                    }
                 }
             } else {
                 if (configurationSupplier != null) {
@@ -174,7 +161,7 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
      * @param <T> the detection type
      * @throws Throwable the case of an error occurring during heuristic analysis
      */
-    public final <T extends Detection> void handleFinish(@Nonnull T detection,
+    public <T extends Detection<E, F>> void handleFinish(@Nonnull T detection,
                                                          @Nonnull SequenceFinishEvent event,
                                                          @Nonnull Supplier<Tuple<NormalDistribution, Double>> distributionSupplier) throws Throwable {
         if (!event.isCancelled() && this.canPunish()) {
@@ -188,7 +175,7 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
             double lowerBound = distributionSupplier.get().getSecond();
 
             if (this.getPlugin() instanceof Guardian) {
-                HeuristicReport heuristicReport = (HeuristicReport) ((Guardian) this.getPlugin()).getHeuristicController()
+                HeuristicReport heuristicReport = ((Guardian) this.getPlugin()).getHeuristicController()
                         .analyze(detection, event.getUser(), event.getResult()).orElseThrow(Error::new);
 
 

@@ -32,11 +32,6 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionRegistry;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.FlyCheck;
-import io.github.connorhartley.guardian.internal.punishments.CustomPunishment;
-import io.github.connorhartley.guardian.internal.punishments.KickPunishment;
-import io.github.connorhartley.guardian.internal.punishments.ReportPunishment;
-import io.github.connorhartley.guardian.internal.punishments.ResetPunishment;
-import io.github.connorhartley.guardian.internal.punishments.WarningPunishment;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -70,12 +65,8 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
     @Override
     public void onConstruction() {
         super.construct(
-                this,
                 () -> Collections.singletonList(new FlyCheck<>(this)),
-                () -> new Configuration(this, this.getConfigLocation().orElseThrow(Error::new)),
-                CustomPunishment.class, ResetPunishment.class,
-                WarningPunishment.class, KickPunishment.class,
-                ReportPunishment.class
+                () -> new Configuration(this, this.getConfigLocation().orElseThrow(Error::new))
         );
 
         DetectionRegistry.register(this, CommonDetectionTypes.Category.MOVEMENT);
@@ -149,7 +140,7 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
             try {
                 this.configFile = HoconLoaderPatch.load(path, "/detection/" + ROOT, !this.exists());
             } catch (final IOException e) {
-                this.detection.getPlugin().getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
+                this.detection.getPlugin().getLogger().error("A problem occurred attempting to load Guardians fly detection configuration!", e);
             }
         }
 
