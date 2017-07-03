@@ -186,7 +186,7 @@ public class Guardian {
         if (loadedModules == 1) {
             getLogger().info(loadedModules + " detection is protecting your server!");
         } else {
-            getLogger().info(loadedModules + " detection are protecting your server!");
+            getLogger().info(loadedModules + " detections are protecting your server!");
         }
     }
 

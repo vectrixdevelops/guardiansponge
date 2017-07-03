@@ -25,6 +25,7 @@ package io.github.connorhartley.guardian.detection.punishment;
 
 import org.spongepowered.api.util.Tuple;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -75,8 +76,14 @@ public class Level {
         }
 
         public Builder action(String[] actions) {
+            if (this.actions == null) this.actions = new ArrayList<>();
+
             this.actions.addAll(Arrays.asList(actions));
             return this;
+        }
+
+        public Level build() {
+            return new Level(this);
         }
 
     }

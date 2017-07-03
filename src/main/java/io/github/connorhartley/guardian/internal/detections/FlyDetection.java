@@ -56,7 +56,7 @@ import java.util.Collections;
         id = "fly",
         name = "Fly Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.0.20",
+        version = "0.0.21",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
@@ -167,5 +167,6 @@ public class FlyDetection extends Detection<Guardian, FlyDetection.Configuration
         public boolean exists() {
             return this.configDir.resolve(ROOT).toFile().exists();
         }
+
     }
 }

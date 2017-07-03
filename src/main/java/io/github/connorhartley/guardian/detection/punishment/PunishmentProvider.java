@@ -23,8 +23,8 @@
  */
 package io.github.connorhartley.guardian.detection.punishment;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface PunishmentProvider {
 
@@ -32,6 +32,6 @@ public interface PunishmentProvider {
 
     List<Level> getLevels();
 
-    HashMap<String, String[]> getPunishments();
+    Map<String, String[]> getPunishments();
 
 }

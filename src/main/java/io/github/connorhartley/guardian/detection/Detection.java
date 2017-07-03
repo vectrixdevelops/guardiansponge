@@ -23,17 +23,21 @@
  */
 package io.github.connorhartley.guardian.detection;
 
+import com.google.common.reflect.TypeToken;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckSupplier;
 import io.github.connorhartley.guardian.detection.heuristic.HeuristicReport;
+import io.github.connorhartley.guardian.detection.punishment.Level;
 import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentProvider;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.storage.StorageProvider;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -45,8 +49,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -369,6 +372,46 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
     @Override
     public boolean globalScope() {
         return false;
+    }
+
+    @Override
+    public List<Level> getLevels() {
+        List<Level> levels = new ArrayList<>();
+        Map<Object, CommentedConfigurationNode> levelMap = (Map<Object, CommentedConfigurationNode>)
+                this.getConfiguration().getStorage().getNode("punishment", "levels").getChildrenMap();
+
+        for (Map.Entry<Object, CommentedConfigurationNode> configurationNode : levelMap.entrySet()) {
+            try {
+                levels.add(Level.builder()
+                        .name((String) configurationNode.getKey())
+                        .range(configurationNode.getValue().getNode("range").getValue(new TypeToken<Tuple<Double, Double>>() {}))
+                        .action((String[]) configurationNode.getValue().getNode("action").getList(TypeToken.of(String.class)).toArray())
+                        .build());
+            } catch (ObjectMappingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return levels;
+    }
+
+    @Override
+    public Map<String, String[]> getPunishments() {
+        Map<Object, CommentedConfigurationNode> actionMap = (Map<Object, CommentedConfigurationNode>)
+                this.getConfiguration().getStorage().getNode("punishment", "actions").getChildrenMap();
+
+        Map<String, String[]> actions = new HashMap<>();
+
+        actionMap.forEach((o, commentedConfigurationNode) -> {
+            try {
+                actions.put((String) commentedConfigurationNode.getKey(),
+                        commentedConfigurationNode.getValue(new TypeToken<String[]>() {}));
+            } catch (ObjectMappingException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return actions;
     }
 
     public static class PermissionTarget {
