@@ -118,9 +118,13 @@ shadowJar {
             include(dependency('com.mchange:mchange-commons-java'))
         }
 
-        relocate ('tech.ferus.util', 'io.github.connorhartley.guardian.util.database.basicsql') {
+        relocate ('tech.ferus.util.sql', 'io.github.connorhartley.guardian.util.database.basicsql') {
             include(dependency('tech.ferus.util:basicsql-h2'))
             include(dependency('tech.ferus.util:basicsql-mysql'))
+        }
+
+        relocate ('tech.ferus.util.config', 'io.github.connorhartley.guardian.util.config') {
+            include(dependency('tech.ferus.util:ConfigKeys'))
         }
 
         relocate ('com.me4502.modularframework', 'io.github.connorhartley.guardian.util.module') {

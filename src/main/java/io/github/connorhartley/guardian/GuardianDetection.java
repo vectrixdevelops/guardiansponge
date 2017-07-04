@@ -38,7 +38,7 @@ public final class GuardianDetection {
 
     GuardianDetection(ModuleController moduleController) {
         this.moduleController = moduleController;
-        this.detectionPath = "io.github.connorhartley.guardian.internal.detection.";
+        this.detectionPath = "io.github.connorhartley.guardian.internal.detections.";
     }
 
     void register() {

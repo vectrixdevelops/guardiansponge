@@ -61,7 +61,7 @@ public final class GuardianConfiguration implements StorageProvider<HoconConfigF
         final Path path = this.configDir.resolve(ROOT);
 
         try {
-            this.configFile = HoconLoaderPatch.load(path, File.separator + ROOT, !this.exists());
+            this.configFile = HoconLoaderPatch.load(path, "/" + ROOT, !this.exists());
         } catch (final IOException e) {
             this.plugin.getLogger().error("A problem occurred attempting to load Guardians global configuration!", e);
         }

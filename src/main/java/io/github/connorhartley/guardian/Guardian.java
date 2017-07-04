@@ -320,11 +320,11 @@ public class Guardian {
         }
 
         this.moduleSubsystem.enableModules(moduleWrapper -> {
-            if (GuardianConfiguration.ENABLED.get().contains(moduleWrapper.getId())) {
+            if (GuardianConfiguration.ENABLED.get(this.guardianConfiguration.getStorage()).contains(moduleWrapper.getId())) {
                 if (this.loggingLevel > 1) getLogger().info("Enabled: " + moduleWrapper.getName() + " v" + moduleWrapper.getVersion());
                 return true;
             }
-            return false;
+            return true;
         });
 
         this.moduleSubsystem.getModules().stream()
