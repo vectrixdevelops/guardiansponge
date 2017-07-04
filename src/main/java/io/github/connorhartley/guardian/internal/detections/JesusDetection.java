@@ -121,8 +121,8 @@ public class JesusDetection extends Detection<Guardian, JesusDetection.Configura
         public static final ConfigKey<Double> ANALYSIS_TIME = ConfigKey.of("analysis", "sequence-time");
         public static final ConfigKey<Double> MINIMUM_WATER_TIME = ConfigKey.of("analysis", "minimum-water-time");
         public static final ConfigKey<Double> THRESHOLD = ConfigKey.of("analysis", "threshold");
-        public static final ConfigKey<Map<String, String>> CONTROL_VALUES = ConfigKey.of("analysis", "control-values");
-        public static final ConfigKey<Map<String, String>> MATERIAL_VALUES = ConfigKey.of("analysis", "material-values");
+        public static final ConfigKey<Map<String, Double>> CONTROL_VALUES = ConfigKey.of("analysis", "control-values");
+        public static final ConfigKey<Map<String, Double>> MATERIAL_VALUES = ConfigKey.of("analysis", "material-values");
         public static final ConfigKey<Double> SEVERITY_LOWER = ConfigKey.of("punishment", "severity", "lower");
         public static final ConfigKey<Double> SEVERITY_MEAN = ConfigKey.of("punishment", "severity", "mean");
         public static final ConfigKey<Double> SEVERITY_STANDARD_DEVIATION = ConfigKey.of("punishment", "severity", "standard-deviation");

@@ -31,6 +31,7 @@ import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
@@ -65,22 +66,23 @@ public class HeuristicController {
                         punishmentCount = this.plugin.getGlobalDatabase().getPunishmentCountById(punishmentId).get();
                     }
 
-                    if (detection.getConfiguration().isPresent() && detection.getConfiguration().get()
-                            .get(new StorageKey<>("heuristic-modifier"), new TypeToken<Map<String, Double>>() {}).isPresent()) {
-                        Map<String, Double> modifiers = detection.getConfiguration().get()
-                                .get(new StorageKey<>("heuristic-modifier"), new TypeToken<Map<String, Double>>() {}).get().getValue();
+                    try {
+                        Map<String, Double> modifiers = detection.getConfiguration().getStorage()
+                                .getNode("heuristic").getValue(new TypeToken<Map<String, Double>>() {});
 
-                        double divider = modifiers.get("divider-base") - punishmentCount;
+                        double divider = modifiers.get("divider-base");
+                        double power = modifiers.get("power");
+                        double relevancy = modifiers.get("relevancy-period");
 
-                        if (LocalDateTime.now().minusHours(modifiers.get("relevant-punishment-inhours").longValue())
-                                .isBefore(punishmentReport.getLocalDateTime())) {
-
+                        if (LocalDateTime.now().minusHours(((Double) relevancy).longValue()).isBefore(punishmentReport.getLocalDateTime())) {
                             return Optional.of(HeuristicReport.builder()
                                     .type(sequenceResult.getDetectionType())
-                                    .severity(oldValue -> Math.pow(((oldValue * 100) / divider), modifiers.get("power")) / 100)
+                                    .severity(oldValue -> Math.pow(((oldValue * 100) / divider), power) / 100)
                                     .cause(Cause.of(NamedCause.of("punishment_count", punishmentCount)))
                                     .build());
                         }
+                    } catch (ObjectMappingException e) {
+                        this.plugin.getLogger().error("Failed to load heuristic configuration for heuristic analysis.", e);
                     }
                 }
             }

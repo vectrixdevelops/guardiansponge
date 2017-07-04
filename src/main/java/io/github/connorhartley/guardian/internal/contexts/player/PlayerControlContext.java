@@ -32,6 +32,7 @@ import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
 import io.github.connorhartley.guardian.sequence.capture.CaptureKey;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Tuple;
@@ -108,12 +109,11 @@ public class PlayerControlContext {
         public VerticalSpeed(Guardian plugin, Detection<E, F> detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"),
-                        new TypeToken<Map<String, Double>>(){}).get().getValue();
-
-
-                this.flySpeedControl = storageValueMap.get("fly");
+            try {
+                this.flySpeedControl = detection.getConfiguration().getStorage().getNode("analysis", "control-values")
+                        .getValue(new TypeToken<Map<String, Double>>() {}).get("fly");
+            } catch (ObjectMappingException e) {
+                e.printStackTrace();
             }
         }
 
@@ -158,14 +158,20 @@ public class PlayerControlContext {
         public HorizontalSpeed(Guardian plugin, Detection<E, F> detection) {
             super(plugin, detection);
 
-            if (this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-                Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get().get(new StorageKey<>("control-values"),
-                        new TypeToken<Map<String, Double>>(){}).get().getValue();
+            try {
+                this.sneakSpeedControl = detection.getConfiguration().getStorage().getNode("analysis", "control-values")
+                        .getValue(new TypeToken<Map<String, Double>>() {}).get("sneak");
 
-                this.sneakSpeedControl = storageValueMap.get("sneak");
-                this.walkSpeedControl = storageValueMap.get("walk");
-                this.sprintSpeedControl = storageValueMap.get("sprint");
-                this.flySpeedControl = storageValueMap.get("fly");
+                this.walkSpeedControl = detection.getConfiguration().getStorage().getNode("analysis", "control-values")
+                        .getValue(new TypeToken<Map<String, Double>>() {}).get("walk");
+
+                this.sprintSpeedControl = detection.getConfiguration().getStorage().getNode("analysis", "control-values")
+                        .getValue(new TypeToken<Map<String, Double>>() {}).get("sprint");
+
+                this.flySpeedControl = detection.getConfiguration().getStorage().getNode("analysis", "control-values")
+                        .getValue(new TypeToken<Map<String, Double>>() {}).get("fly");
+            } catch (ObjectMappingException e) {
+                plugin.getLogger().error("Failed to read configuration for context analysis.");
             }
         }
 

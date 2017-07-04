@@ -37,6 +37,8 @@ import tech.ferus.util.sql.core.BasicSql;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -45,7 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public final class GuardianDatabase implements StorageProvider<Database> {
+public final class GuardianDatabase implements StorageProvider<Database, Connection> {
 
     private static final String[] databaseTableNames = { "GUARDIAN_PUNISHMENT", "GUARDIAN_LOCATION" };
 
@@ -57,7 +59,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         this.database = database;
     }
 
-    @Override
     public void create() {
         this.createTables();
 
@@ -66,7 +67,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         BasicSql.query(
                 this.database,
                 "SELECT ID FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?",
-                s -> s.setInt(1, Integer.valueOf(this.plugin.getGlobalConfiguration().configDatabaseCredentials.getValue().get("version"))),
+                s -> s.setInt(1, Integer.valueOf(this.plugin.getGlobalConfiguration().getStorage().getNode("general", "database-version").getString())),
                 h -> {
                     if (!h.next()) {
                         BasicSql.execute(
@@ -113,6 +114,10 @@ public final class GuardianDatabase implements StorageProvider<Database> {
     }
 
     @Override
+    public Database getStorage() {
+        return this.database;
+    }
+
     public void update() {
         this.createTables();
 
@@ -459,7 +464,21 @@ public final class GuardianDatabase implements StorageProvider<Database> {
     }
 
     @Override
-    public Optional<Database> getLocation() {
-        return Optional.ofNullable(this.database);
+    public boolean exists() {
+        return BasicSql.returnQuery(this.database,
+                "SELECT ID FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?",
+                s -> s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION)),
+                r -> r.getInt("ID")
+        ).isPresent();
+    }
+
+    @Override
+    public Connection getLocation() {
+        try {
+            return this.database.getConnection();
+        } catch (SQLException e) {
+            this.plugin.getLogger().error("Failed to get the connection of the database.", e);
+        }
+        return null;
     }
 }
