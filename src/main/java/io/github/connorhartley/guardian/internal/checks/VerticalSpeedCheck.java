@@ -39,6 +39,7 @@ import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -109,45 +110,46 @@ public class VerticalSpeedCheck<E, F extends StorageProvider<HoconConfigFile, Pa
 
                             Guardian plugin = (Guardian) this.detection.getPlugin();
 
-                            Location<World> start = null;
-                            Location<World> present = null;
+                            Location<World> start;
+                            Location<World> present;
 
                             long currentTime;
-                            long playerControlTicks = 0;
-                            double playerControlSpeed = 0;
+                            long playerControlTicks;
+                            double playerControlSpeed;
 
-                            if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
-                                start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
-                            }
+                            if (user.getPlayer().isPresent()) {
+                                Player player = user.getPlayer().get();
 
-                            if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
-                                present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
-                            }
+                                /*
+                                 * Context Collection
+                                 */
 
-                            if (contextValuation.<PlayerControlContext.VerticalSpeed, Double>get(
-                                    PlayerControlContext.VerticalSpeed.class, "vertical_control_speed").isPresent()) {
-                                playerControlSpeed = contextValuation.<PlayerControlContext.VerticalSpeed, Double>get(
-                                        PlayerControlContext.VerticalSpeed.class, "vertical_control_speed").get();
-                            }
+                                start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location")
+                                        .orElse(player.getLocation());
 
-                            if (contextValuation.<PlayerControlContext.VerticalSpeed, Integer>get(
-                                    PlayerControlContext.VerticalSpeed.class, "update").isPresent()) {
-                                playerControlTicks = contextValuation.<PlayerControlContext.VerticalSpeed, Integer>get(
-                                        PlayerControlContext.VerticalSpeed.class, "update").get();
-                            }
+                                present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location")
+                                        .orElse(player.getLocation());
 
-                            if (playerControlTicks < this.minimumTickRange) {
-                                plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                                return new ConditionResult(false, report.build(false));
-                            } else if (playerControlTicks > this.maximumTickRange) {
-                                return new ConditionResult(false, report.build(false));
-                            }
+                                playerControlTicks = contextValuation.<PlayerControlContext.HorizontalSpeed, Integer>get(
+                                        PlayerControlContext.HorizontalSpeed.class, "update").orElse(0);
 
-                            if (user.getPlayer().isPresent() && start != null && present != null) {
+                                playerControlSpeed = contextValuation.<PlayerControlContext.HorizontalSpeed, Double>get(
+                                        PlayerControlContext.HorizontalSpeed.class, "vertical_control_speed").orElse(0d);
+
+                                /*
+                                 * Context Analysis
+                                 */
+
+                                if (playerControlTicks < this.minimumTickRange) {
+                                    plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
+                                    return new ConditionResult(false, report.build(false));
+                                } else if (playerControlTicks > this.maximumTickRange) {
+                                    return new ConditionResult(false, report.build(false));
+                                }
 
                                 currentTime = System.currentTimeMillis();
 
-                                if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
+                                if (player.get(Keys.VEHICLE).isPresent()) {
                                     return new ConditionResult(false, report.build(false));
                                 }
 

@@ -39,6 +39,7 @@ import io.github.connorhartley.guardian.util.check.CommonMovementConditions;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -112,73 +113,75 @@ public class FlyCheck<E, F extends StorageProvider<HoconConfigFile, Path>> imple
 
                             Guardian plugin = (Guardian) this.detection.getPlugin();
 
-                            Location<World> start = null;
-                            Location<World> present = null;
+                            Location<World> start;
+                            Location<World> present;
 
                             long currentTime;
-                            long playerAltitudeGainTicks = 0;
-                            int materialUpdateTicks = 0;
+                            long blockModifierTicks;
+                            long playerAltitudeTicks;
 
-                            int materialGas = 0;
-                            double playerAltitudeGain = 0;
+                            double blockModifier;
+                            double playerAltitudeGain;
 
-                            if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
-                                start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
-                            }
+                            if (user.getPlayer().isPresent()) {
+                                Player player = user.getPlayer().get();
 
-                            if (contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
-                                present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
-                            }
+                                /*
+                                 * Context Collection
+                                 */
 
-                            if (contextValuation.<PlayerPositionContext.Altitude, Integer>get(PlayerPositionContext.Altitude.class, "update").isPresent()) {
-                                playerAltitudeGainTicks = contextValuation.<PlayerPositionContext.Altitude, Integer>get(PlayerPositionContext.Altitude.class, "update").get();
-                            }
+                                start = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location")
+                                        .orElse(player.getLocation());
 
-                            if (contextValuation.<PlayerPositionContext.Altitude, Double>get(PlayerPositionContext.Altitude.class, "position_altitude").isPresent()) {
-                                playerAltitudeGain = contextValuation.<PlayerPositionContext.Altitude, Double>get(PlayerPositionContext.Altitude.class, "position_altitude").get();
-                            }
+                                present = contextValuation.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location")
+                                        .orElse(player.getLocation());
 
-                            if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_gas").isPresent()) {
-                                materialGas = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_gas").get();
-                            }
+                                playerAltitudeTicks = contextValuation.<PlayerPositionContext.Altitude, Integer>get(PlayerPositionContext.Altitude.class, "update")
+                                        .orElse(0);
 
-                            if (contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").isPresent()) {
-                                materialUpdateTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").get();
-                            }
+                                playerAltitudeGain = contextValuation.<PlayerPositionContext.Altitude, Double>get(PlayerPositionContext.Altitude.class, "position_altitude")
+                                        .orElse(0d);
 
-                            if (playerAltitudeGainTicks < this.minimumTickRange) {
-                                plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                                return new ConditionResult(false, report.build(false));
-                            } else if (playerAltitudeGainTicks > this.maximumTickRange) {
-                                return new ConditionResult(false, report.build(false));
-                            }
+                                blockModifierTicks = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "update").orElse(0);
 
-                            if (user.getPlayer().isPresent() && start != null && present != null) {
+                                blockModifier = contextValuation.<MaterialSpeedContext, Integer>get(MaterialSpeedContext.class, "amplifier_material_gas")
+                                        .orElse(0);
 
-                                currentTime = System.currentTimeMillis();
+                                /*
+                                 * Context Analysis
+                                 */
 
-                                if (user.getPlayer().get().get(Keys.VEHICLE).isPresent()) {
+                                if (playerAltitudeTicks < this.minimumTickRange) {
+                                    plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
+                                    return new ConditionResult(false, report.build(false));
+                                } else if (playerAltitudeTicks > this.maximumTickRange) {
                                     return new ConditionResult(false, report.build(false));
                                 }
 
-                                if (user.getPlayer().get().get(Keys.CAN_FLY).isPresent()) {
-                                    if (user.getPlayer().get().get(Keys.CAN_FLY).get()) {
+                                currentTime = System.currentTimeMillis();
+
+                                if (player.get(Keys.VEHICLE).isPresent()) {
+                                    return new ConditionResult(false, report.build(false));
+                                }
+
+                                if (player.get(Keys.CAN_FLY).isPresent()) {
+                                    if (player.get(Keys.CAN_FLY).get()) {
                                         return new ConditionResult(false, report.build(false));
                                     }
                                 }
 
-                                if (user.getPlayer().get().getLocation().getY() < -1.25 || !user.getPlayer().get().isLoaded()) {
+                                if (player.getLocation().getY() < -1.25 || !player.isLoaded()) {
                                     return new ConditionResult(false, report.build(false));
                                 }
 
                                 double altitudeDisplacement = ((present.getY() - start.getY()) == 0) ? 3.1 : present.getY() - start.getY();
 
-                                double airTime = materialGas * (((
-                                        ((1 / ((playerAltitudeGainTicks + materialUpdateTicks) / 2)) *
+                                double airTime = blockModifier * (((
+                                        ((1 / ((playerAltitudeTicks + blockModifierTicks) / 2)) *
                                                 ((long) this.analysisTime * 1000)) + (currentTime - lastAction)) / 2) / 1000) * 0.05;
 
                                 double meanAltitude = playerAltitudeGain / ((
-                                        ((playerAltitudeGainTicks + this.analysisTime) / 2) +
+                                        ((playerAltitudeTicks + this.analysisTime) / 2) +
                                                 ((currentTime - lastAction) / 1000)) / 2);
 
                                 if (altitudeDisplacement <= 1 || meanAltitude <= 1 || airTime < this.minimumAirTime

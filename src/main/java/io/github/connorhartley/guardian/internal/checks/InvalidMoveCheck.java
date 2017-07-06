@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.GuardianConfiguration;
@@ -38,6 +39,7 @@ import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.apache.commons.lang3.StringUtils;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
@@ -79,8 +81,8 @@ public class InvalidMoveCheck<E, F extends StorageProvider<HoconConfigFile, Path
         return new SequenceBuilder<E, F>()
 
                 .capture(
-                        new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                        new PlayerControlContext.InvalidControl((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                        new PlayerLocationContext<>((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                        new PlayerControlContext.InvalidControl<>((Guardian) this.getDetection().getPlugin(), this.getDetection())
                 )
 
                 // Trigger : Move Entity Event
@@ -101,35 +103,38 @@ public class InvalidMoveCheck<E, F extends StorageProvider<HoconConfigFile, Path
 
                             Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
-                            int locationUpdate = 0;
-                            Location<World> start = null;
-                            Location<World> present = null;
-                            Set<Tuple<String, String>> invalidMoves = null;
+                            Location<World> start;
+                            Set<Tuple<String, String>> invalidMoves;
 
-                            if (captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
-                                start = captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
-                            }
+                            long locationTicks;
 
-                            if (captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
-                                present = captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
-                            }
+                            if (user.getPlayer().isPresent()) {
+                                Player player = user.getPlayer().get();
 
-                            if (captureContainer.<PlayerLocationContext, Integer>get(PlayerLocationContext.class, "update").isPresent()) {
-                                locationUpdate = captureContainer.<PlayerLocationContext, Integer>get(PlayerLocationContext.class, "update").get();
-                            }
+                                /*
+                                 * Context Collection
+                                 */
 
-                            if (captureContainer.get(PlayerControlContext.InvalidControl.invalidMoves).isPresent()) {
-                                invalidMoves = captureContainer.get(PlayerControlContext.InvalidControl.invalidMoves).get();
-                            }
+                                start = captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location")
+                                        .orElse(player.getLocation());
 
-                            if (locationUpdate < this.minimumTickRange) {
-                                plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
-                                return new ConditionResult(false, report.build(false));
-                            } else if (locationUpdate > this.maximumTickRange) {
-                                return new ConditionResult(false, report.build(false));
-                            }
+                                locationTicks = captureContainer.<PlayerLocationContext, Integer>get(PlayerLocationContext.class, "update")
+                                        .orElse(0);
 
-                            if (user.getPlayer().isPresent() && invalidMoves != null && start != null && present != null) {
+                                invalidMoves = captureContainer.get(PlayerControlContext.InvalidControl.invalidMoves)
+                                        .orElse(Sets.newHashSet());
+
+                                /*
+                                 * Context Analysis
+                                 */
+
+                                if (locationTicks < this.minimumTickRange) {
+                                    plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
+                                    return new ConditionResult(false, report.build(false));
+                                } else if (locationTicks > this.maximumTickRange) {
+                                    return new ConditionResult(false, report.build(false));
+                                }
+
                                 if (invalidMoves.isEmpty()) {
                                     return new ConditionResult(false, report.build(false));
                                 }
