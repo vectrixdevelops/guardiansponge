@@ -30,6 +30,7 @@ import com.me4502.precogs.detection.CommonDetectionTypes;
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.DetectionRegistry;
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.internal.checks.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.checks.VerticalSpeedCheck;
@@ -80,13 +81,8 @@ public class SpeedDetection extends Detection<Guardian, SpeedDetection.Configura
 
     @Listener
     public void onReload(GameReloadEvent event) {
-        getChecks().forEach(check -> this.getPlugin().getSequenceController().unregister(check));
-        this.setChecks(null);
-
         this.getConfiguration().load();
-
-        this.setChecks(this.getCheckSupplier().create());
-        getChecks().forEach(check -> this.getPlugin().getSequenceController().register(check));
+        this.getChecks().forEach(Check::load);
     }
 
     @Listener

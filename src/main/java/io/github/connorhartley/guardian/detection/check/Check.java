@@ -40,6 +40,13 @@ import java.nio.file.Path;
 public interface Check<E, F extends StorageProvider<HoconConfigFile, Path>> {
 
     /**
+     * Load
+     *
+     * <p>Loads the check under a specific detection and configuration.</p>
+     */
+    void load();
+
+    /**
      * Get Detection
      *
      * <p>Returns the {@link Detection} this check is for.</p>

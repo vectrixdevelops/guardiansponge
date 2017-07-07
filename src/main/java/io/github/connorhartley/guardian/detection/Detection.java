@@ -147,6 +147,10 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
             }
 
             this.checks = this.checkSupplier.create();
+
+            for (Check<E, F> check : this.checks) {
+                check.load();
+            }
         }
     }
 

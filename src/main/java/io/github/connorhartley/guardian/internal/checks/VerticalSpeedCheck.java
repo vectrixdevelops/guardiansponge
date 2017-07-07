@@ -59,12 +59,13 @@ public class VerticalSpeedCheck<E, F extends StorageProvider<HoconConfigFile, Pa
 
     public VerticalSpeedCheck(Detection<E, F> detection) {
         this.detection = detection;
+    }
 
+    @Override
+    public void load() {
         this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "sequence-time").getDouble(2d) / 0.05;
-
-        this.minimumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MIN.get(this.detection.getConfiguration().getStorage(), 0.75);
-
-        this.maximumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MAX.get(this.detection.getConfiguration().getStorage(), 1.25);
+        this.minimumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MIN.get(((Guardian) this.detection.getPlugin()).getGlobalConfiguration().getStorage(), 0.75);
+        this.maximumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MAX.get(((Guardian) this.detection.getPlugin()).getGlobalConfiguration().getStorage(), 1.25);
     }
 
     @Override

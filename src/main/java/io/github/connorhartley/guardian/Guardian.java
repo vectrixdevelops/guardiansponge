@@ -246,7 +246,7 @@ public class Guardian {
 
     private void initializeControllers() {
         this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
-        this.moduleSubsystem.setPluginContainer(pluginContainer);
+        this.moduleSubsystem.setPluginContainer(this.pluginContainer);
 
         this.heuristicController = new HeuristicController(this);
         this.punishmentController = new PunishmentController();
@@ -256,7 +256,7 @@ public class Guardian {
 
         this.guardianPermission = new GuardianPermission(this);
         this.guardianCommand = new GuardianCommand(this);
-        this.guardianConfiguration = new GuardianConfiguration(this, configDir);
+        this.guardianConfiguration = new GuardianConfiguration(this, this.configDir);
         this.guardianDetection = new GuardianDetection(this.moduleSubsystem);
     }
 
