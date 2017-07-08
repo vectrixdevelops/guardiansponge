@@ -36,6 +36,7 @@ import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.heuristic.HeuristicController;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentController;
+import io.github.connorhartley.guardian.internal.punishment.ResetPunishment;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
@@ -310,6 +311,8 @@ public class Guardian {
         this.guardianPermission.register();
         this.guardianCommand.register();
         this.guardianDetection.register();
+
+        this.punishmentController.register(new ResetPunishment());
     }
 
     private void resolveModules() {

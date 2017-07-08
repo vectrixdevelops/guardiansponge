@@ -139,6 +139,8 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
                     this.configuration = configurationSupplier.get();
                     this.configuration.load();
                 }
+
+                ((Guardian) this.plugin).getPunishmentController().register(getId(), this);
             } else {
                 if (configurationSupplier != null) {
                     this.configuration = configurationSupplier.get();

@@ -34,6 +34,7 @@ import org.spongepowered.api.event.cause.NamedCause;
 import tech.ferus.util.config.HoconConfigFile;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public final class PunishmentController {
 
     private final HashMap<String, List<Level>> detectionLevelRegistry = new HashMap<>();
     private final HashMap<String, HashMap<String, String[]>> detectionDefinitionRegistry = new HashMap<>();
+    private final List<Punishment> detectionPunishmentMixins = new ArrayList<>();
 
     public PunishmentController() {}
 
@@ -75,7 +77,8 @@ public final class PunishmentController {
                     punishmentReport.getSeverityTransformer().transform(0d) <= level.getRange().getSecond() &&
                     level.getRange().getFirst() != -1 && level.getRange().getSecond() != -1) {
                 for (String action : level.getActions()) {
-                    if (this.detectionDefinitionRegistry.get(detection.getId()).containsKey(action)) {
+                    if (this.detectionDefinitionRegistry.get(detection.getId()).containsKey(action) &&
+                            this.detectionDefinitionRegistry.get(detection.getId()).get(action).length > 0) {
                         for (String command : this.detectionDefinitionRegistry.get(detection.getId()).get(action)) {
                             String commandModified = command.replace("%player%", user.getName())
                                     .replace("%datetime%", punishmentReport.getLocalDateTime().toString())
@@ -84,6 +87,17 @@ public final class PunishmentController {
                                     .replace("%detection-id%", detection.getId());
 
                             Sponge.getCommandManager().process(Sponge.getServer().getConsole(), commandModified);
+                        }
+                    } else {
+                        for (Punishment punishment : this.detectionPunishmentMixins) {
+                            if (punishment.getName().equals(action)) {
+                                punishment.handle(detection, new String[] {
+                                        punishmentReport.getLocalDateTime().toString(),
+                                        punishmentReport.getSeverityTransformer().toString(),
+                                        detection.getName(),
+                                        detection.getId()
+                                }, user, punishmentReport);
+                            }
                         }
                     }
                 }
@@ -103,12 +117,17 @@ public final class PunishmentController {
      */
     public void register(String providerId, PunishmentProvider punishmentProvider) {
          this.detectionDefinitionRegistry.computeIfAbsent(providerId, k -> Maps.newHashMap());
+         this.detectionDefinitionRegistry.computeIfAbsent("_global", k -> Maps.newHashMap());
          this.detectionLevelRegistry.computeIfAbsent(providerId, k -> punishmentProvider.getLevels());
 
          for (Map.Entry<String, String[]> entry : punishmentProvider.getPunishments().entrySet()) {
              if (entry.getKey().equals("_global")) {
                  this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
-                     def.computeIfAbsent(entry.getKey(), k -> this.detectionDefinitionRegistry.get("_global").get(k));
+                     def.computeIfAbsent(entry.getKey(), k -> {
+                         if (this.detectionDefinitionRegistry.get("_global").get(k) == null) return new String[] {};
+
+                         return this.detectionDefinitionRegistry.get("_global").get(k);
+                     });
                      return def;
                  });
              } else {
@@ -125,6 +144,25 @@ public final class PunishmentController {
                 return lev;
              });
          }
+    }
+
+    /**
+     * Register
+     *
+     * <p>Registers a punishment under a global context.</p>
+     *
+     * @param punishment The punishment
+     */
+    public void register(Punishment punishment) {
+        this.detectionDefinitionRegistry.computeIfAbsent("_global", k -> Maps.newHashMap());
+
+        if (!this.detectionPunishmentMixins.contains(punishment)) {
+            this.detectionPunishmentMixins.add(punishment);
+
+            if (!this.detectionDefinitionRegistry.get("_global").containsKey(punishment.getName())) {
+                this.detectionDefinitionRegistry.get("_global").put("@" + punishment.getName(), null);
+            }
+        }
     }
 
 }

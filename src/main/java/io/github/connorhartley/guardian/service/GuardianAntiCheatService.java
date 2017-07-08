@@ -38,7 +38,7 @@ public class GuardianAntiCheatService implements AntiCheatService {
     public Optional<BypassTicket> requestBypassTicket(Player player, List<DetectionType> list, Object plugin) {
         // TODO: More stuff here soon.
 
-        return Optional.of(new GuardianBypassTicket(plugin, player, list));
+        return Optional.of(new GuardianBypassTicket(player, list, plugin));
     }
 
     @Override

@@ -38,7 +38,7 @@ public class GuardianBypassTicket implements BypassTicket {
 
     private boolean isClosed = false;
 
-    public GuardianBypassTicket(Object plugin, Player player, List<DetectionType> detectionTypes) {
+    public GuardianBypassTicket(Player player, List<DetectionType> detectionTypes, Object plugin) {
         this.plugin = plugin;
         this.player = player;
         this.detectionTypes = detectionTypes;
