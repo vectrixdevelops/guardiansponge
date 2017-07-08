@@ -23,25 +23,33 @@
  */
 package io.github.connorhartley.guardian.detection;
 
+import com.google.common.reflect.TypeToken;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckSupplier;
-import io.github.connorhartley.guardian.detection.check.CheckType;
-import io.github.connorhartley.guardian.punishment.PunishmentType;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
-import ninja.leaping.configurate.ConfigurationOptions;
+import io.github.connorhartley.guardian.detection.heuristic.HeuristicReport;
+import io.github.connorhartley.guardian.detection.punishment.Level;
+import io.github.connorhartley.guardian.detection.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentProvider;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
+import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.util.Tuple;
+import tech.ferus.util.config.HoconConfigFile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.List;
-import java.util.Optional;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -50,15 +58,14 @@ import java.util.function.Supplier;
  * Represents a cheat / hack / exploit internal that is loaded
  * by the global detection manager.
  */
-public abstract class Detection<E, F extends StorageSupplier<File>> extends DetectionType {
+public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Path>> extends DetectionType implements PunishmentProvider {
 
     private E plugin;
-    private File configFile;
-    private List<CheckType> checkTypes;
+    private Path configDir;
+    private List<Check> checks;
     private CheckSupplier checkSupplier;
     private F configuration;
     private PluginContainer pluginContainer;
-    private ConfigurationLoader<CommentedConfigurationNode> configLoader;
     private boolean punish = true;
     private boolean ready = false;
 
@@ -102,67 +109,91 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      * Sets these optionally:</p>
      * <ul>
      *     <li>Config File</li>
-     *     <li>Config Loader</li>
      *     <li>Detection Configuration Supplier</li>
-     *     <li>Punishment Bindings</li>
      * </ul>
      *
      * <p>Sets these always:</p>
      * <ul>
      *     <li>Plugin Instance</li>
      *     <li>Check Supplier</li>
-     *     <li>Check Types</li>
+     *     <li>Checks</li>
      * </ul>
      *
-     * @param detection the detection that these properties are being constructed for
      * @param checkSupplier the supplier of check type creation
      * @param configurationSupplier the supplier of configuration creation
-     * @param punishmentTypes the punishment classes that will be bound
-     * @param <T> the detection type
      */
-    @SafeVarargs
     @SuppressWarnings("unchecked")
-    public final <T extends Detection> void construct(@Nonnull T detection,
-                                                                                       @Nonnull CheckSupplier checkSupplier,
-                                                                                       @Nullable Supplier<F> configurationSupplier,
-                                                                                       @Nullable Class<? extends PunishmentType>... punishmentTypes) {
+    public void construct(@Nonnull CheckSupplier checkSupplier,
+                          @Nullable Supplier<F> configurationSupplier) {
         if (this.pluginContainer.getInstance().isPresent()) {
             this.plugin = (E) this.pluginContainer.getInstance().get();
             this.checkSupplier = checkSupplier;
 
             if (this.plugin instanceof Guardian) {
-
-                if (this.configFile == null) {
-                    this.configFile = new File(((Guardian) this.plugin).getGlobalConfiguration().getLocation().get().toFile(),
-                            StringUtils.join("detection", File.separator, this.getId(), ".conf"));
-                }
-
-                if (this.configLoader == null) {
-                    this.configLoader = HoconConfigurationLoader.builder().setFile(this.configFile)
-                            .setDefaultOptions(((Guardian) this.plugin).getConfigurationOptions()).build();
+                if (this.configDir == null) {
+                    this.configDir = new File(((Guardian) this.plugin).getGlobalConfiguration().getLocation().toFile(),
+                            "detection").toPath();
                 }
 
                 if (configurationSupplier != null) {
                     this.configuration = configurationSupplier.get();
-                    this.configuration.create();
-                }
-
-                if (punishmentTypes != null) {
-                    for (Class<? extends PunishmentType> punishmentType : punishmentTypes) {
-                        ((Guardian) this.plugin).getPunishmentController().bind(punishmentType, detection);
-                    }
+                    this.configuration.load();
                 }
             } else {
-
                 if (configurationSupplier != null) {
                     this.configuration = configurationSupplier.get();
-                    this.configuration.create();
+                    this.configuration.load();
                 }
             }
 
-            this.checkTypes = this.checkSupplier.create();
+            this.checks = this.checkSupplier.create();
 
-            this.configuration.update();
+            for (Check<E, F> check : this.checks) {
+                check.load();
+            }
+        }
+    }
+
+    /**
+     * Handle Finish
+     *
+     * <p>Handles the actions and reports once a sequence has finished.</p>
+     *
+     * @param detection the detection to handle
+     * @param event the event to handle
+     * @param distributionSupplier the normal distribution properties supplier
+     * @param <T> the detection type
+     * @throws Throwable the case of an error occurring during heuristic analysis
+     */
+    public <T extends Detection<E, F>> void handleFinish(@Nonnull T detection,
+                                                         @Nonnull SequenceFinishEvent event,
+                                                         @Nonnull Supplier<Tuple<NormalDistribution, Double>> distributionSupplier) throws Throwable {
+        if (!event.isCancelled() && this.canPunish()) {
+            for (Check check : this.getChecks()) {
+                if (!check.getSequence().equals(event.getSequence())) {
+                    return;
+                }
+            }
+
+            NormalDistribution normalDistribution = distributionSupplier.get().getFirst();
+            double lowerBound = distributionSupplier.get().getSecond();
+
+            if (this.getPlugin() instanceof Guardian) {
+                HeuristicReport heuristicReport = ((Guardian) this.getPlugin()).getHeuristicController()
+                        .analyze(detection, event.getUser(), event.getResult()).orElseThrow(Error::new);
+
+
+                // Final report.
+                PunishmentReport punishmentReport = PunishmentReport.builder()
+                        .type(event.getResult().getDetectionType())
+                        .time(LocalDateTime.now())
+                        .report(event.getResult())
+                        .severity(oldValue -> normalDistribution
+                                .probability(lowerBound, heuristicReport.getSeverityTransformer().transform(event.getResult().getSeverity())))
+                        .build();
+
+                ((Guardian) this.getPlugin()).getPunishmentController().execute(detection, event.getUser(), punishmentReport);
+            }
         }
     }
 
@@ -201,77 +232,46 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *
      * @return an optional configuration file path
      */
-    public Optional<File> getConfigFile() {
-        return Optional.ofNullable(this.configFile);
+    public Optional<Path> getConfigLocation() {
+        return Optional.ofNullable(this.configDir);
     }
 
     /**
      * Set Config File
      *
-     * <p>Sets a custom path for a configuration file
-     * to be used with a {@link StorageSupplier}.
+     * <p>Sets a custom path for a configuration file path
+     * to be used with a {@link StorageProvider<HoconConfigFile, Path>}.
      *
      * This should be used if you do not provide
-     * a {@link Supplier<? extends StorageSupplier<File>>} on
+     * a {@link Supplier<? extends StorageProvider<HoconConfigFile, Path>>} on
      * the construct method.</p>
      *
-     * @param configFile the custom configuration file path
+     * @param configDir the custom configuration file path
      */
-    public void setConfigFile(@Nullable File configFile) {
-        this.configFile = configFile;
-    }
-
-    /**
-     * Get Config Loader
-     *
-     * <p>Returns an optional {@link ConfigurationLoader<CommentedConfigurationNode>}
-     * for this detection.
-     *
-     * If this is for an internal detection, this
-     * will have the internal {@link ConfigurationOptions} applied.</p>
-     *
-     * @return an optional configuration loader
-     */
-    public Optional<ConfigurationLoader<CommentedConfigurationNode>> getConfigLoader() {
-        return Optional.ofNullable(this.configLoader);
-    }
-
-    /**
-     * Set Config Loader
-     *
-     * <p>Sets a custom {@link ConfigurationLoader<CommentedConfigurationNode>}
-     * to be used with a {@link StorageSupplier}.
-     *
-     * This should be used if you do not provide
-     * a {@link Supplier<? extends StorageSupplier<File>>} on
-     * the construct method.</p>
-     *
-     * @param configLoader the custom config loader
-     */
-    public void setConfigLoader(@Nullable ConfigurationLoader<CommentedConfigurationNode> configLoader) {
-        this.configLoader = configLoader;
+    public void setConfigLocation(@Nullable Path configDir) {
+        this.configDir = configDir;
     }
 
     /**
      * Get Configuration
      *
-     * <p>Returns an optional {@link StorageSupplier<File>}
+     * <p>Returns the {@link StorageProvider<HoconConfigFile, Path>}
      * for this detection.</p>
      *
      * @return an optional configuration
      */
-    public Optional<F> getConfiguration() {
-        return Optional.ofNullable(this.configuration);
+    public F getConfiguration() {
+        return this.configuration;
     }
 
     /**
      * Set Configuration
      *
-     * <p>Sets a custom {@link StorageSupplier<File>} to be used with this
+     * <p>Sets a custom {@link StorageProvider<HoconConfigFile, Path>} to be used with this
      * detection.
      *
      * This should be used if you do not provide
-     * a {@link Supplier<? extends StorageSupplier<File>>} on
+     * a {@link Supplier<? extends StorageProvider<HoconConfigFile, Path>>} on
      * the construct method.</p>
      *
      * @param configuration the custom configuration
@@ -300,7 +300,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *
      * @param ready true when ready, false when not
      */
-    public void setReady(@Nonnull boolean ready) {
+    public void setReady(boolean ready) {
         this.ready = ready;
     }
 
@@ -322,7 +322,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      *
      * @param punish set whether this will execute punishments
      */
-    public void setPunish(@Nonnull boolean punish) {
+    public void setPunish(boolean punish) {
         this.punish = punish;
     }
 
@@ -330,7 +330,7 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
      * Get Check Supplier
      *
      * <p>Returns the {@link CheckSupplier} for creating this detections
-     * {@link CheckType}s.</p>
+     * {@link Check}s.</p>
      *
      * @return
      */
@@ -341,23 +341,68 @@ public abstract class Detection<E, F extends StorageSupplier<File>> extends Dete
     /**
      * Get Checks
      *
-     * <p>Returns the {@link CheckType}s that this detection uses.</p>
+     * <p>Returns the {@link Check}s that this detection uses.</p>
      *
-     * @return check types for this detection
+     * @return checks for this detection
      */
-    public List<CheckType> getChecks() {
-        return this.checkTypes;
+    public List<Check> getChecks() {
+        return this.checks;
     }
 
     /**
      * Set Checks
      *
-     * <p>Sets the {@link CheckType}s that this detection uses.</p>
+     * <p>Sets the {@link Check}s that this detection uses.</p>
      *
      * @param checks check types to set
      */
-    public void setChecks(@Nullable List<CheckType> checks) {
-        this.checkTypes = checks;
+    public void setChecks(@Nullable List<Check> checks) {
+        this.checks = checks;
+    }
+
+    @Override
+    public boolean globalScope() {
+        return false;
+    }
+
+    @Override
+    public List<Level> getLevels() {
+        List<Level> levels = new ArrayList<>();
+        Map<Object, CommentedConfigurationNode> levelMap = (Map<Object, CommentedConfigurationNode>)
+                this.getConfiguration().getStorage().getNode("punishment", "levels").getChildrenMap();
+
+        for (Map.Entry<Object, CommentedConfigurationNode> configurationNode : levelMap.entrySet()) {
+            try {
+                levels.add(Level.builder()
+                        .name((String) configurationNode.getKey())
+                        .range(configurationNode.getValue().getNode("range").getValue(new TypeToken<Tuple<Double, Double>>() {}))
+                        .action((String[]) configurationNode.getValue().getNode("action").getList(TypeToken.of(String.class)).toArray())
+                        .build());
+            } catch (ObjectMappingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return levels;
+    }
+
+    @Override
+    public Map<String, String[]> getPunishments() {
+        Map<Object, CommentedConfigurationNode> actionMap = (Map<Object, CommentedConfigurationNode>)
+                this.getConfiguration().getStorage().getNode("punishment", "actions").getChildrenMap();
+
+        Map<String, String[]> actions = new HashMap<>();
+
+        actionMap.forEach((o, commentedConfigurationNode) -> {
+            try {
+                actions.put((String) commentedConfigurationNode.getKey(),
+                        commentedConfigurationNode.getValue(new TypeToken<String[]>() {}));
+            } catch (ObjectMappingException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return actions;
     }
 
     public static class PermissionTarget {

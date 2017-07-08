@@ -21,52 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection.check;
+package io.github.connorhartley.guardian.detection.punishment;
 
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.sequence.Sequence;
-import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.User;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.util.Optional;
 
 /**
- * Check Type
+ * PunishmentReport Type
  *
- * Represents a service that checks a player
- * for a specific cheat in a certain way.
+ * Represents a punishment handler.
  */
-public interface CheckType<E, F extends StorageSupplier<File>> {
+public interface Punishment {
 
     /**
-     * Get Detection
+     * Get Name
      *
-     * <p>Returns the {@link Detection} this check type is for.</p>
+     * <p>Returns the name of this punishment handler.</p>
      *
-     * @return The detection
+     * @return The name
      */
-    Detection<E, F> getDetection();
+    String getName();
 
     /**
-     * Get Sequence
+     * Handle
      *
-     * <p>Returns the {@link SequenceBlueprint} that contains a
-     * {@link Sequence} to check the player for a cheat in a
-     * certain way.</p>
+     * <p>Executed each time to handleFinish a punishmentReport. Returns
+     * true if the punishmentReport was handled.</p>
      *
-     * @return The sequence blueprint
+     * @param detection The detection to handle for
+     * @param args Misc arguments
+     * @param user The user to be punished
+     * @param punishmentReport Information about this punishmentReport
+     * @return True if the punishmentReport was handled
      */
-    SequenceBlueprint getSequence();
-
-    /**
-     * Create Instance
-     *
-     * <p>Creates a check instance if the sequence is successful.</p>
-     *
-     * @param user The user
-     * @return The check
-     */
-    Check createInstance(User user);
+    <E, F extends StorageProvider<HoconConfigFile, Path>> boolean handle(Detection<E, F> detection, String[] args, User user, PunishmentReport punishmentReport);
 
 }

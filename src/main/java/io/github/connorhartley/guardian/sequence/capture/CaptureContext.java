@@ -24,10 +24,11 @@
 package io.github.connorhartley.guardian.sequence.capture;
 
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.entity.living.player.Player;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Capture Context
@@ -35,7 +36,7 @@ import java.io.File;
  * Represents capture through collecting data in
  * the period of a sequence.
  */
-public abstract class CaptureContext<E, F extends StorageSupplier<File>> {
+public abstract class CaptureContext<E, F extends StorageProvider<HoconConfigFile, Path>> {
 
     private final Object plugin;
     private final Detection<E, F> detection;

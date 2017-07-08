@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.event.punishment;
 
-import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;
@@ -31,20 +31,20 @@ import org.spongepowered.api.event.impl.AbstractEvent;
 
 public class PunishmentExecuteEvent extends AbstractEvent implements Cancellable {
 
-    private final Punishment punishment;
+    private final PunishmentReport punishmentReport;
     private final User user;
     private final Cause cause;
 
     private boolean cancelled = false;
 
-    public PunishmentExecuteEvent(Punishment punishment, User user, Cause cause) {
-        this.punishment = punishment;
+    public PunishmentExecuteEvent(PunishmentReport punishmentReport, User user, Cause cause) {
+        this.punishmentReport = punishmentReport;
         this.user = user;
         this.cause = cause;
     }
 
-    public Punishment getPunishment() {
-        return punishment;
+    public PunishmentReport getPunishmentReport() {
+        return punishmentReport;
     }
 
     public User getUser() {

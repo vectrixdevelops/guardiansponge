@@ -24,7 +24,6 @@
 package io.github.connorhartley.guardian;
 
 import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.detection.DetectionTypes;
 import org.apache.commons.lang3.StringUtils;
 
 /**

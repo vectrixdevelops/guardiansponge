@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian;
 
 import com.google.common.base.Preconditions;
-import io.github.connorhartley.guardian.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +37,9 @@ import tech.ferus.util.sql.core.BasicSql;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -44,7 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public final class GuardianDatabase implements StorageProvider<Database> {
+public final class GuardianDatabase implements StorageProvider<Database, Connection> {
 
     private static final String[] databaseTableNames = { "GUARDIAN_PUNISHMENT", "GUARDIAN_LOCATION" };
 
@@ -56,7 +59,6 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         this.database = database;
     }
 
-    @Override
     public void create() {
         this.createTables();
 
@@ -65,7 +67,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         BasicSql.query(
                 this.database,
                 "SELECT ID FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?",
-                s -> s.setInt(1, Integer.valueOf(this.plugin.getGlobalConfiguration().configDatabaseCredentials.getValue().get("version"))),
+                s -> s.setInt(1, Integer.valueOf(this.plugin.getGlobalConfiguration().getStorage().getNode("general", "database-version").getString())),
                 h -> {
                     if (!h.next()) {
                         BasicSql.execute(
@@ -112,6 +114,10 @@ public final class GuardianDatabase implements StorageProvider<Database> {
     }
 
     @Override
+    public Database getStorage() {
+        return this.database;
+    }
+
     public void update() {
         this.createTables();
 
@@ -195,10 +201,10 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         );
     }
 
-    public Set<Punishment> getPunishmentsByProperties(@Nullable Integer databaseVersion,
-                                                      @Nullable User user,
-                                                      @Nullable String type) {
-        final Set<Punishment> punishments = new HashSet<>();
+    public Set<PunishmentReport> getPunishmentsByProperties(@Nullable Integer databaseVersion,
+                                                            @Nullable User user,
+                                                            @Nullable String type) {
+        final Set<PunishmentReport> punishmentReports = new HashSet<>();
 
         String[] filters = {
                 databaseVersion != null ? "DATABASE_VERSION = ? " : "",
@@ -228,21 +234,28 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                 },
                 h -> {
                     while (h.next()) {
-                        punishments.add(
-                                Punishment.builder()
-                                        .reason(h.getString("PUNISHMENT_TYPE"))
+                        punishmentReports.add(
+                                PunishmentReport.builder()
+                                        .type(h.getString("PUNISHMENT_TYPE"))
                                         .report(SequenceResult.builder()
                                                 .information(h.getString("PUNISHMENT_REASON"))
                                                 .type(h.getString("PUNISHMENT_TYPE"))
                                                 .build(true))
                                         .time(h.getTimestamp("PUNISHMENT_TIME").toLocalDateTime())
-                                        .probability(h.getDouble("PUNISHMENT_PROBABILITY"))
+                                        .severity(oldValue -> {
+                                            try {
+                                                return h.getDouble("PUNISHMENT_PROBABILITY");
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                                return null;
+                                            }
+                                        })
                                         .build()
                         );
                     }
                 });
 
-        return punishments;
+        return punishmentReports;
     }
 
     public Set<Integer> getPunishmentIdByProperties(@Nullable Integer databaseVersion,
@@ -285,7 +298,7 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         return punishments;
     }
 
-    public Optional<Punishment> getPunishmentById(int id) {
+    public Optional<PunishmentReport> getPunishmentById(int id) {
         return BasicSql.returnQuery(this.database,
                 StringUtils.join(
                         "SELECT * FROM ",
@@ -293,14 +306,21 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                         " WHERE ID = ?"
                 ),
                 s -> s.setInt(1, id),
-                r -> Punishment.builder()
-                        .reason(r.getString("PUNISHMENT_TYPE"))
+                r -> PunishmentReport.builder()
+                        .type(r.getString("PUNISHMENT_TYPE"))
                         .report(SequenceResult.builder()
                                 .information(r.getString("PUNISHMENT_REASON"))
                                 .type(r.getString("PUNISHMENT_TYPE"))
                                 .build(true))
                         .time(r.getTimestamp("PUNISHMENT_TIME").toLocalDateTime())
-                        .probability(r.getDouble("PUNISHMENT_PROBABILITY"))
+                        .severity(oldValue -> {
+                            try {
+                                return r.getDouble("PUNISHMENT_PROBABILITY");
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                                return null;
+                            }
+                        })
                         .build()
         );
     }
@@ -343,9 +363,9 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         return locations;
     }
 
-    public void createPunishment(@Nonnull User user, @Nonnull Punishment punishment) {
+    public void createPunishment(@Nonnull User user, @Nonnull PunishmentReport punishmentReport) {
         Preconditions.checkNotNull(user);
-        Preconditions.checkNotNull(punishment);
+        Preconditions.checkNotNull(punishmentReport);
 
         BasicSql.query(this.database,
                 StringUtils.join(
@@ -365,10 +385,10 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                     s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION));
                     s.setString(2, user.getUniqueId().toString());
                     s.setInt(3, 0);
-                    s.setString(4, punishment.getDetectionReason());
-                    s.setString(5, StringUtils.join(punishment.getSequenceResult().getInformation(), ", "));
-                    s.setTimestamp(6, Timestamp.valueOf(punishment.getLocalDateTime()));
-                    s.setDouble(7, punishment.getProbability());
+                    s.setString(4, punishmentReport.getDetectionType());
+                    s.setString(5, StringUtils.join(punishmentReport.getSequenceResult().getInformation(), ", "));
+                    s.setTimestamp(6, Timestamp.valueOf(punishmentReport.getLocalDateTime()));
+                    s.setDouble(7, punishmentReport.getSeverityTransformer().transform(0d));
                 },
                 h -> {
                     BasicSql.execute(this.database,
@@ -387,13 +407,13 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                             s -> {
                                 s.setInt(1, h.getInt("ID"));
                                 s.setInt(2, Integer.valueOf(PluginInfo.DATABASE_VERSION));
-                                s.setString(3, punishment.getSequenceResult().getInitialLocation()
+                                s.setString(3, punishmentReport.getSequenceResult().getInitialLocation()
                                         .get().getExtent().getUniqueId().toString());
-                                s.setDouble(4, punishment.getSequenceResult().getInitialLocation()
+                                s.setDouble(4, punishmentReport.getSequenceResult().getInitialLocation()
                                         .get().getX());
-                                s.setDouble(5, punishment.getSequenceResult().getInitialLocation()
+                                s.setDouble(5, punishmentReport.getSequenceResult().getInitialLocation()
                                         .get().getY());
-                                s.setDouble(6, punishment.getSequenceResult().getInitialLocation()
+                                s.setDouble(6, punishmentReport.getSequenceResult().getInitialLocation()
                                         .get().getZ());
                             }
                     );
@@ -401,10 +421,10 @@ public final class GuardianDatabase implements StorageProvider<Database> {
         );
     }
 
-    public void updatePunishment(@Nonnull Integer id, @Nonnull User user, @Nonnull Punishment punishment) {
+    public void updatePunishment(@Nonnull Integer id, @Nonnull User user, @Nonnull PunishmentReport punishmentReport) {
         Preconditions.checkNotNull(id);
         Preconditions.checkNotNull(user);
-        Preconditions.checkNotNull(punishment);
+        Preconditions.checkNotNull(punishmentReport);
 
         BasicSql.query(this.database,
                 StringUtils.join(
@@ -431,10 +451,10 @@ public final class GuardianDatabase implements StorageProvider<Database> {
                                 s -> {
                                     s.setString(1, user.getUniqueId().toString());
                                     s.setInt(2, h.getInt("PUNISHMENT_COUNT") + 1);
-                                    s.setString(3, punishment.getDetectionReason());
-                                    s.setString(4, StringUtils.join(punishment.getSequenceResult().getInformation(), ", "));
-                                    s.setTimestamp(5, Timestamp.valueOf(punishment.getLocalDateTime()));
-                                    s.setDouble(6, punishment.getProbability());
+                                    s.setString(3, punishmentReport.getDetectionType());
+                                    s.setString(4, StringUtils.join(punishmentReport.getSequenceResult().getInformation(), ", "));
+                                    s.setTimestamp(5, Timestamp.valueOf(punishmentReport.getLocalDateTime()));
+                                    s.setDouble(6, punishmentReport.getSeverityTransformer().transform(0d));
                                     s.setInt(7, h.getInt("ID"));
                                 }
                         );
@@ -444,7 +464,21 @@ public final class GuardianDatabase implements StorageProvider<Database> {
     }
 
     @Override
-    public Optional<Database> getLocation() {
-        return Optional.ofNullable(this.database);
+    public boolean exists() {
+        return BasicSql.returnQuery(this.database,
+                "SELECT ID FROM GUARDIAN WHERE GUARDIAN.DATABASE_VERSION = ?",
+                s -> s.setInt(1, Integer.valueOf(PluginInfo.DATABASE_VERSION)),
+                r -> r.getInt("ID")
+        ).isPresent();
+    }
+
+    @Override
+    public Connection getLocation() {
+        try {
+            return this.database.getConnection();
+        } catch (SQLException e) {
+            this.plugin.getLogger().error("Failed to get the connection of the database.", e);
+        }
+        return null;
     }
 }

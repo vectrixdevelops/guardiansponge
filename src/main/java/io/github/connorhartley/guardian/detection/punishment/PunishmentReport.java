@@ -21,93 +21,91 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.punishment;
+package io.github.connorhartley.guardian.detection.punishment;
 
+import io.github.connorhartley.guardian.detection.report.Report;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
+import io.github.connorhartley.guardian.util.Transformer;
+import org.spongepowered.api.event.cause.Cause;
 
 import java.time.LocalDateTime;
 
 /**
- * Punishment
+ * PunishmentReport
  *
  * Contains information regarding handling a punishment.
  */
-public class Punishment {
+public class PunishmentReport implements Report {
 
-    private final String detectionReason;
+    private final String detectionType;
     private final SequenceResult sequenceResult;
     private final LocalDateTime localDateTime;
-    private final Double probability;
+    private final Transformer<Double> severityTransformer;
+    private final Cause cause;
 
-    public Punishment(Builder builder) {
-        this.detectionReason = builder.detectionReason;
+    public PunishmentReport(Builder builder) {
+        this.detectionType = builder.detectionType;
         this.sequenceResult = builder.sequenceResult;
         this.localDateTime = builder.localDateTime;
-        this.probability = builder.probability;
+        this.severityTransformer = builder.severityTransformer;
+        this.cause = builder.cause;
+    }
+
+    public static PunishmentReport of(PunishmentReport punishmentReport) {
+        Builder builder = new Builder();
+        builder.detectionType = punishmentReport.detectionType;
+        builder.sequenceResult = punishmentReport.sequenceResult;
+        builder.localDateTime = punishmentReport.localDateTime;
+        builder.severityTransformer = punishmentReport.severityTransformer;
+        builder.cause = punishmentReport.cause;
+
+        return new PunishmentReport(builder);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Get Detection Reason
-     *
-     * <p>Returns the detection reason this player is being
-     * punished.</p>
-     *
-     * @return The detection punishment reason
-     */
-    public String getDetectionReason() {
-        return this.detectionReason;
+    @Override
+    public ReportTypes getReportType() {
+        return ReportTypes.PUNISHMENT;
     }
 
-    /**
-     * Get Sequence Report
-     *
-     * <p>Returns the sequence report that accepted this punishment
-     * to be created.</p>
-     *
-     * @return The sequence report
-     */
+    @Override
+    public String getDetectionType() {
+        return this.detectionType;
+    }
+
     public SequenceResult getSequenceResult() {
         return this.sequenceResult;
     }
 
-    /**
-     * Get Local Date And Time
-     *
-     * <p>Returns the {@link LocalDateTime} of when this punishment
-     * was created.</p>
-     *
-     * @return The local date and time
-     */
     public LocalDateTime getLocalDateTime() {
         return this.localDateTime;
     }
 
-    /**
-     * Get Probability
-     *
-     * <p>Returns the probability of this punishments validity.</p>
-     *
-     * @return The punishment validity
-     */
-    public Double getProbability() {
-        return this.probability;
+    @Override
+    public Transformer<Double> getSeverityTransformer() {
+        return this.severityTransformer;
+    }
+
+    @Override
+    public Cause getCause() {
+        return this.cause;
     }
 
     public static class Builder {
 
-        private String detectionReason;
+        private String detectionType;
         private SequenceResult sequenceResult;
         private LocalDateTime localDateTime;
-        private Double probability;
+        private Transformer<Double> severityTransformer;
+        private Cause cause;
 
         public Builder() {}
 
-        public Builder reason(String detectionReason) {
-            this.detectionReason = detectionReason;
+        public Builder type(String detectionReason) {
+            this.detectionType = detectionReason;
             return this;
         }
 
@@ -121,13 +119,18 @@ public class Punishment {
             return this;
         }
 
-        public Builder probability(Double probability) {
-            this.probability = probability;
+        public Builder severity(Transformer<Double> severityTransformer) {
+            this.severityTransformer = severityTransformer;
             return this;
         }
 
-        public Punishment build() {
-            return new Punishment(this);
+        public Builder cause(Cause cause) {
+            this.cause = cause;
+            return this;
+        }
+
+        public PunishmentReport build() {
+            return new PunishmentReport(this);
         }
 
     }

@@ -21,18 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.storage;
+package io.github.connorhartley.guardian.detection.report;
 
-import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.storage.container.ConfigurationValue;
-import io.github.connorhartley.guardian.storage.container.StorageKey;
+import io.github.connorhartley.guardian.util.Transformer;
+import org.spongepowered.api.event.cause.Cause;
 
-import java.util.Optional;
+/**
+ * Report
+ *
+ * Represents an object that contains data to
+ * assist with the outcome of a detection punishment.
+ */
+public interface Report {
 
-public interface StorageSupplier<T> extends StorageProvider<T> {
+    ReportTypes getReportType();
 
-    <K, E> Optional<ConfigurationValue<K, E>> get(StorageKey<K> key, TypeToken<E> typeToken);
+    String getDetectionType();
 
-    <K, E> void set(ConfigurationValue<K, E> configurationValue);
+    Transformer<Double> getSeverityTransformer();
+
+    Cause getCause();
+
+    enum ReportTypes {
+
+        HEURISTIC,
+        SEQUENCE,
+        PUNISHMENT,
+        CUSTOM
+
+    }
 
 }

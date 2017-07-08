@@ -23,8 +23,6 @@
  */
 package io.github.connorhartley.guardian.storage;
 
-import java.util.Optional;
-
 /**
  * Storage Provider
  *
@@ -33,16 +31,7 @@ import java.util.Optional;
  *
  * @param <T> The type of storage container location
  */
-public interface StorageProvider<T> {
-
-    /**
-     * Create
-     *
-     * <p>Requests the creation of this storage container. Used
-     * with the exists check can prove to be a good way to not override
-     * existing data.</p>
-     */
-    void create();
+public interface StorageProvider<E, T> {
 
     /**
      * Load
@@ -52,15 +41,13 @@ public interface StorageProvider<T> {
     void load();
 
     /**
-     * Update
+     * Get Storage
      *
-     * <p>Requests the update of data to the storage container.</p>
+     * <p>Returns the platform representation of this storage container.</p>
+     *
+     * @return Platform representation of this storage container
      */
-    void update();
-
-    default boolean exists() {
-        return false;
-    }
+    E getStorage();
 
     /**
      * Get Location
@@ -69,6 +56,10 @@ public interface StorageProvider<T> {
      *
      * @return The location of a storage container
      */
-    Optional<T> getLocation();
+    T getLocation();
+
+    default boolean exists() {
+        return false;
+    }
 
 }

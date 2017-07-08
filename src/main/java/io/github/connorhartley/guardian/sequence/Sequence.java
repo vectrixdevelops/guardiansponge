@@ -24,7 +24,6 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceFailEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceSucceedEvent;
 import io.github.connorhartley.guardian.sequence.action.Action;
@@ -54,7 +53,7 @@ import java.util.List;
 public class Sequence {
 
     private final Player player;
-    private final CheckType checkType;
+    private final Check check;
     private final CaptureHandler captureHandler;
     private final List<Action> actions = new ArrayList<>();
     private final List<Event> completeEvents = new ArrayList<>();
@@ -69,10 +68,10 @@ public class Sequence {
     private boolean cancelled = false;
     private boolean finished = false;
 
-    public Sequence(Player player, SequenceBlueprint sequenceBlueprint, CheckType checkType, List<Action> actions,
+    public Sequence(Player player, SequenceBlueprint sequenceBlueprint, Check check, List<Action> actions,
                     CaptureHandler captureHandler) {
         this.player = player;
-        this.checkType = checkType;
+        this.check = check;
         this.captureHandler = captureHandler;
         this.sequenceBlueprint = sequenceBlueprint;
 
@@ -95,6 +94,7 @@ public class Sequence {
      * @param <T> The event type
      * @return True if the sequence should continue, false if the sequence should skip
      */
+    @SuppressWarnings("unchecked")
     <T extends Event> boolean check(Player player, T event) {
         Iterator<Action> iterator = this.actions.iterator();
 
@@ -107,7 +107,7 @@ public class Sequence {
             action.updateReport(this.sequenceResult);
 
             if (!action.getEvent().isAssignableFrom(event.getClass())) {
-                return fail(player, event, action, Cause.of(NamedCause.of("INVALID", this.checkType.getSequence())));
+                return fail(player, event, action, Cause.of(NamedCause.of("INVALID", this.check.getSequence())));
             }
 
             if (!this.started) {
@@ -292,15 +292,15 @@ public class Sequence {
     }
 
     /**
-     * Get Type
+     * Get Check
      *
-     * <p>Returns the {@link CheckType} providing the {@link Check} containing
-     * this {@link Sequence}.</p>
+     * <p>Returns the {@link Check} containing this
+     * {@link Sequence}.</p>
      *
      * @return This sequences check type
      */
-    public CheckType getProvider() {
-        return this.checkType;
+    public Check getCheck() {
+        return this.check;
     }
 
     /**

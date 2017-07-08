@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.data;
 
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.punishment.PunishmentType;
+import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.key.KeyFactory;
 import org.spongepowered.api.data.value.mutable.ListValue;
@@ -37,10 +37,10 @@ public class DataKeys {
 
     /* Tags : Attached to the player to represent some "type" data. */
 
-    public static Key<ListValue<PunishmentType>> GUARDIAN_PUNISHMENT_TAG = KeyFactory.makeListKey(
-            new TypeToken<List<PunishmentType>>() {
+    public static Key<ListValue<Punishment>> GUARDIAN_PUNISHMENT_TAG = KeyFactory.makeListKey(
+            new TypeToken<List<Punishment>>() {
             },
-            new TypeToken<ListValue<PunishmentType>>() {
+            new TypeToken<ListValue<Punishment>>() {
             },
             of("GuardianPunishmentTag"), "guardian:punishmenttag", "GuardianPunishmentTag"
     );

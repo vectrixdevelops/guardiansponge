@@ -21,33 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.report;
+package io.github.connorhartley.guardian.detection.punishment;
 
-import io.github.connorhartley.guardian.util.Transformer;
-import org.spongepowered.api.event.cause.Cause;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Report
- *
- * Represents an object that contains data to
- * assist with the outcome of a detection punishment.
- */
-public interface Report {
+public interface PunishmentProvider {
 
-    ReportTypes getReportType();
+    boolean globalScope();
 
-    String getDetectionType();
+    List<Level> getLevels();
 
-    Transformer<Double> getSeverityTransformer();
-
-    Cause getCause();
-
-    enum ReportTypes {
-
-        HEURISTIC,
-        SEQUENCE,
-        CUSTOM
-
-    }
+    Map<String, String[]> getPunishments();
 
 }

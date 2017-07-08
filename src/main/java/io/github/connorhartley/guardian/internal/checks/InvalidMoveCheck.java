@@ -23,164 +23,143 @@
  */
 package io.github.connorhartley.guardian.internal.checks;
 
+import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import io.github.connorhartley.guardian.Guardian;
+import io.github.connorhartley.guardian.GuardianConfiguration;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerControlContext;
 import io.github.connorhartley.guardian.internal.contexts.player.PlayerLocationContext;
 import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.sequence.SequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceResult;
 import io.github.connorhartley.guardian.sequence.condition.ConditionResult;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
 import io.github.connorhartley.guardian.util.check.PermissionCheckCondition;
 import org.apache.commons.lang3.StringUtils;
-import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class InvalidMoveCheck extends Check {
+public class InvalidMoveCheck<E, F extends StorageProvider<HoconConfigFile, Path>> implements Check<E, F> {
 
-    public InvalidMoveCheck(CheckType checkType, User user) {
-        super(checkType, user);
-        this.setChecking(true);
+    private final Detection<E, F> detection;
+
+    private double analysisTime = 40;
+    private double minimumTickRange = 30;
+    private double maximumTickRange = 50;
+
+    public InvalidMoveCheck(Detection<E, F> detection) {
+        this.detection = detection;
     }
 
     @Override
-    public void update() {}
-
-    @Override
-    public void finish() {
-        this.setChecking(false);
+    public void load() {
+        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "sequence-time").getDouble(2d) / 0.05;
+        this.minimumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MIN.get(((Guardian) this.detection.getPlugin()).getGlobalConfiguration().getStorage(), 0.75);
+        this.maximumTickRange = this.analysisTime * GuardianConfiguration.GLOBAL_TICK_MAX.get(((Guardian) this.detection.getPlugin()).getGlobalConfiguration().getStorage(), 1.25);
     }
 
-    public static class Type<E, F extends StorageSupplier<File>> implements CheckType<E, F> {
+    @Override
+    public Detection<E, F> getDetection() {
+        return this.detection;
+    }
 
-        private final Detection<E, F> detection;
+    @Override
+    public SequenceBlueprint getSequence() {
+        return new SequenceBuilder<E, F>()
 
-        private double analysisTime = 40;
-        private double minimumTickRange = 30;
-        private double maximumTickRange = 50;
+                .capture(
+                        new PlayerLocationContext<>((Guardian) this.getDetection().getPlugin(), this.getDetection()),
+                        new PlayerControlContext.InvalidControl<>((Guardian) this.getDetection().getPlugin(), this.getDetection())
+                )
 
-        public Type(Detection<E, F> detection) {
-            this.detection = detection;
+                // Trigger : Move Entity Event
 
-            if (this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"), new TypeToken<Double>(){}).isPresent()) {
-                this.analysisTime = this.detection.getConfiguration().get().get(new StorageKey<>("analysis-time"),
-                        new TypeToken<Double>(){}).get().getValue() / 0.05;
-            }
+                .action(MoveEntityEvent.class)
 
-            if (this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-                this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
-                        new TypeToken<Map<String, Double>>(){}).get().getValue().get("min");
-                this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().get().get(new StorageKey<>("tick-bounds"),
-                        new TypeToken<Map<String, Double>>(){}).get().getValue().get("max");
-            }
-        }
+                // After Analysis Time : Move Entity Event
 
-        @Override
-        public Detection<E, F> getDetection() {
-            return this.detection;
-        }
+                .action(MoveEntityEvent.class)
+                        .delay(((Double) this.analysisTime).intValue())
+                        .expire(((Double) this.maximumTickRange).intValue())
 
-        @Override
-        public SequenceBlueprint getSequence() {
-            return new SequenceBuilder()
+                        // Does the player have permission?
+                        .condition(new PermissionCheckCondition(this.getDetection()))
 
-                    .capture(
-                            new PlayerLocationContext((Guardian) this.getDetection().getPlugin(), this.getDetection()),
-                            new PlayerControlContext.InvalidControl((Guardian) this.getDetection().getPlugin(), this.getDetection())
-                    )
+                        .condition((user, event, captureContainer, sequenceReport, lastAction) -> {
+                            SequenceResult.Builder report = SequenceResult.builder().of(sequenceReport);
 
-                    // Trigger : Move Entity Event
+                            Guardian plugin = (Guardian) this.getDetection().getPlugin();
 
-                    .action(MoveEntityEvent.class)
+                            Location<World> start;
+                            Set<Tuple<String, String>> invalidMoves;
 
-                    // After Analysis Time : Move Entity Event
+                            long locationTicks;
 
-                    .action(MoveEntityEvent.class)
-                            .delay(((Double) this.analysisTime).intValue())
-                            .expire(((Double) this.maximumTickRange).intValue())
+                            if (user.getPlayer().isPresent()) {
+                                Player player = user.getPlayer().get();
 
-                            // Does the player have permission?
-                            .condition(new PermissionCheckCondition(this.detection))
+                                /*
+                                 * Context Collection
+                                 */
 
-                            .condition((user, event, captureContainer, sequenceReport, lastAction) -> {
-                                SequenceResult.Builder report = SequenceResult.builder().of(sequenceReport);
+                                start = captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location")
+                                        .orElse(player.getLocation());
 
-                                Guardian plugin = (Guardian) this.getDetection().getPlugin();
+                                locationTicks = captureContainer.<PlayerLocationContext, Integer>get(PlayerLocationContext.class, "update")
+                                        .orElse(0);
 
-                                int locationUpdate = 0;
-                                Location<World> start = null;
-                                Location<World> present = null;
-                                Set<Tuple<String, String>> invalidMoves = null;
+                                invalidMoves = captureContainer.get(PlayerControlContext.InvalidControl.invalidMoves)
+                                        .orElse(Sets.newHashSet());
 
-                                if (captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").isPresent()) {
-                                    start = captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "start_location").get();
-                                }
+                                /*
+                                 * Context Analysis
+                                 */
 
-                                if (captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").isPresent()) {
-                                    present = captureContainer.<PlayerLocationContext, Location<World>>get(PlayerLocationContext.class, "present_location").get();
-                                }
-
-                                if (captureContainer.<PlayerLocationContext, Integer>get(PlayerLocationContext.class, "update").isPresent()) {
-                                    locationUpdate = captureContainer.<PlayerLocationContext, Integer>get(PlayerLocationContext.class, "update").get();
-                                }
-
-                                if (captureContainer.get(PlayerControlContext.InvalidControl.invalidMoves).isPresent()) {
-                                    invalidMoves = captureContainer.get(PlayerControlContext.InvalidControl.invalidMoves).get();
-                                }
-
-                                if (locationUpdate < this.minimumTickRange) {
+                                if (locationTicks < this.minimumTickRange) {
                                     plugin.getLogger().warn("The server may be overloaded. A detection check has been skipped as it is less than a second and a half behind.");
                                     return new ConditionResult(false, report.build(false));
-                                } else if (locationUpdate > this.maximumTickRange) {
+                                } else if (locationTicks > this.maximumTickRange) {
                                     return new ConditionResult(false, report.build(false));
                                 }
 
-                                if (user.getPlayer().isPresent() && invalidMoves != null && start != null && present != null) {
-                                    if (invalidMoves.isEmpty()) {
-                                        return new ConditionResult(false, report.build(false));
-                                    }
-
-                                    List<String> invalidControls = new ArrayList<>();
-
-                                    for (Tuple<String, String> invalidMove : invalidMoves) {
-                                        invalidControls.add(invalidMove.getFirst());
-                                        invalidControls.add(invalidMove.getSecond());
-                                    }
-
-                                    if (!invalidControls.isEmpty()) {
-                                        report
-                                                .information("Recieved invalid controls of " + StringUtils.join(invalidControls, ", ") + ".")
-                                                .type("using invalid controls of " + StringUtils.join(invalidControls, ", "))
-                                                .initialLocation(start.copy())
-                                                .severity(100);
-
-                                        return new ConditionResult(true, report.build(true));
-                                    }
+                                if (invalidMoves.isEmpty()) {
+                                    return new ConditionResult(false, report.build(false));
                                 }
-                                return new ConditionResult(false, sequenceReport);
-                            })
 
-                    .build(this);
-        }
+                                List<String> invalidControls = new ArrayList<>();
 
-        @Override
-        public Check createInstance(User user) {
-            return new InvalidMoveCheck(this, user);
-        }
+                                for (Tuple<String, String> invalidMove : invalidMoves) {
+                                    invalidControls.add(invalidMove.getFirst());
+                                    invalidControls.add(invalidMove.getSecond());
+                                }
+
+                                if (!invalidControls.isEmpty()) {
+                                    report
+                                            .information("Recieved invalid controls of " + StringUtils.join(invalidControls, ", ") + ".")
+                                            .type("using invalid controls of " + StringUtils.join(invalidControls, ", "))
+                                            .initialLocation(start.copy())
+                                            .severity(100);
+
+                                    return new ConditionResult(true, report.build(true));
+                                }
+                            }
+                            return new ConditionResult(false, sequenceReport);
+                        })
+
+                .build(this);
     }
-
 }

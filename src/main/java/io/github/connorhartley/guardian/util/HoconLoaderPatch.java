@@ -21,24 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian.util;
 
-import java.util.Optional;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import tech.ferus.util.config.HoconConfigFile;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
- * Detection Types
- *
- * Contains registry variables of Guardians built in {@link Detection} modules,
- * from an {@link Optional}.
+ * Patch issued by FerusGrim
+ * On 20/06/2017
  */
-public final class DetectionTypes {
+public final class HoconLoaderPatch {
 
-    public static Optional<Detection> INVALID_MOVEMENT_DETECTION = Optional.empty();
+    public static HoconConfigFile load(@Nonnull final Path path,
+                                       @Nonnull final String resource,
+                                       final boolean overwrite) throws IOException {
+        if (overwrite) {
+            Files.deleteIfExists(path);
+        }
 
-    public static Optional<Detection> JESUS_DETECTION = Optional.empty();
+        if (!Files.exists(path)) {
+            Files.createDirectories(path.getParent());
 
-    public static Optional<Detection> SPEED_DETECTION = Optional.empty();
+            if (!resource.isEmpty()) {
+                Files.copy(HoconConfigFile.class.getResourceAsStream(resource), path);
+            }
+        }
 
-    public static Optional<Detection> FLY_DETECTION = Optional.empty();
+        final HoconConfigurationLoader fileLoader = HoconConfigurationLoader.builder().setPath(path).build();
+
+        return new HoconConfigFile(path, fileLoader, fileLoader.load());
+    }
 
 }

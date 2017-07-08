@@ -23,49 +23,47 @@
  */
 package io.github.connorhartley.guardian.detection.check;
 
-import org.spongepowered.api.entity.living.player.User;
+import io.github.connorhartley.guardian.detection.Detection;
+import io.github.connorhartley.guardian.sequence.Sequence;
+import io.github.connorhartley.guardian.sequence.SequenceBlueprint;
+import io.github.connorhartley.guardian.storage.StorageProvider;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.util.Optional;
+import java.nio.file.Path;
 
 /**
  * Check
  *
- * Represents a handler of the successful result of
- * a check type.
+ * Represents a service that checks a player
+ * for a specific cheat in a certain way.
  */
-public abstract class Check {
+public interface Check<E, F extends StorageProvider<HoconConfigFile, Path>> {
 
-    private final CheckType checkType;
-    private final User user;
+    /**
+     * Load
+     *
+     * <p>Loads the check under a specific detection and configuration.</p>
+     */
+    void load();
 
-    private boolean checking;
+    /**
+     * Get Detection
+     *
+     * <p>Returns the {@link Detection} this check is for.</p>
+     *
+     * @return The detection
+     */
+    Detection<E, F> getDetection();
 
-    public Check(CheckType checkType, User user) {
-        this.checkType = checkType;
-        this.user = user;
-    }
-
-    public abstract void update();
-
-    public abstract void finish();
-
-    public void setChecking(boolean checking) {
-        this.checking = checking;
-    }
-
-    public boolean isChecking() {
-        return this.checking;
-    }
-
-    public CheckType getProvider() {
-        return this.checkType;
-    }
-
-    public Optional<User> getUser() {
-        if (this.user != null) {
-            return Optional.of(this.user);
-        }
-        return Optional.empty();
-    }
+    /**
+     * Get Sequence
+     *
+     * <p>Returns the {@link SequenceBlueprint} that contains a
+     * {@link Sequence} to check the player for a cheat in a
+     * certain way.</p>
+     *
+     * @return The sequence blueprint
+     */
+    SequenceBlueprint getSequence();
 
 }

@@ -28,16 +28,17 @@ import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.sequence.capture.CaptureContext;
-import io.github.connorhartley.guardian.storage.StorageSupplier;
+import io.github.connorhartley.guardian.storage.StorageProvider;
 import io.github.connorhartley.guardian.storage.container.StorageKey;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.data.property.block.MatterProperty;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.util.Direction;
+import tech.ferus.util.config.HoconConfigFile;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
-public class MaterialSpeedContext<E, F extends StorageSupplier<File>> extends CaptureContext<E, F> {
+public class MaterialSpeedContext<E, F extends StorageProvider<HoconConfigFile, Path>> extends CaptureContext<E, F> {
 
     private double gasSpeedModifier = 1.035;
     private double solidSpeedModifier = 1.02;
@@ -46,13 +47,17 @@ public class MaterialSpeedContext<E, F extends StorageSupplier<File>> extends Ca
     public MaterialSpeedContext(Guardian plugin, Detection<E, F> detection) {
         super(plugin, detection);
 
-        if (this.getDetection().getConfiguration().get().get(new StorageKey<>("material-values"), new TypeToken<Map<String, Double>>(){}).isPresent()) {
-            Map<String, Double> storageValueMap = this.getDetection().getConfiguration().get().get(new StorageKey<>("material-values"),
-                    new TypeToken<Map<String, Double>>(){}).get().getValue();
+        try {
+            this.gasSpeedModifier = detection.getConfiguration().getStorage().getNode("analysis", "material-values")
+                    .getValue(new TypeToken<Map<String, Double>>() {}).get("gas");
 
-            this.gasSpeedModifier = storageValueMap.get("gas");
-            this.solidSpeedModifier = storageValueMap.get("solid");
-            this.liquidSpeedModifier = storageValueMap.get("liquid");
+            this.solidSpeedModifier = detection.getConfiguration().getStorage().getNode("analysis", "material-values")
+                    .getValue(new TypeToken<Map<String, Double>>() {}).get("solid");
+
+            this.liquidSpeedModifier = detection.getConfiguration().getStorage().getNode("analysis", "material-values")
+                    .getValue(new TypeToken<Map<String, Double>>() {}).get("liquid");
+        } catch (ObjectMappingException e) {
+            plugin.getLogger().error("Failed to read configuration for context analysis.");
         }
     }
 

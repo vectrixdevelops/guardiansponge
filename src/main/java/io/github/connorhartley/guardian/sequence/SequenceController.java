@@ -25,8 +25,6 @@ package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.check.Check;
-import io.github.connorhartley.guardian.detection.check.CheckController;
-import io.github.connorhartley.guardian.detection.check.CheckType;
 import io.github.connorhartley.guardian.event.sequence.SequenceBeginEvent;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;
 import io.github.connorhartley.guardian.util.compat.NucleusSequenceListener;
@@ -51,14 +49,12 @@ import java.util.List;
 public class SequenceController implements SequenceInvoker {
 
     private final Guardian plugin;
-    private final CheckController checkController;
     private final List<SequenceBlueprint> blueprints = new ArrayList<>();
 
     private final HashMap<Player, List<Sequence>> runningSequences = new HashMap<>();
 
-    public SequenceController(Guardian plugin, CheckController checkController) {
+    public SequenceController(Guardian plugin) {
         this.plugin = plugin;
-        this.checkController = checkController;
     }
 
     @Override
@@ -97,15 +93,12 @@ public class SequenceController implements SequenceInvoker {
                 }
 
                 SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceResult().copy(),
-                    Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getCaptureContainer())));
+                    Cause.of(NamedCause.source(this.plugin), NamedCause.of("capture", sequence.getCaptureContainer())));
 
                 Sponge.getEventManager().post(attempt);
                 if (attempt.isCancelled()) {
                     continue;
                 }
-
-                CheckType checkType = sequence.getProvider();
-                this.checkController.post(checkType, player);
 
                 sequenceIterator.remove();
             }
@@ -118,20 +111,14 @@ public class SequenceController implements SequenceInvoker {
                     Sequence sequence = blueprint.create(player);
 
                     SequenceBeginEvent attempt = new SequenceBeginEvent(sequence, player, sequence.getSequenceResult(),
-                            Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getCaptureContainer())));
+                            Cause.of(NamedCause.source(this.plugin), NamedCause.of("capture", sequence.getCaptureContainer())));
                     Sponge.getEventManager().post(attempt);
                     if (attempt.isCancelled()) {
                         return;
                     }
 
                     if (sequence.check(player, event)) {
-                        if (sequence.isCancelled()) {
-                            return;
-                        }
-
-                        if (sequence.isFinished()) {
-                            CheckType checkType = sequence.getProvider();
-                            this.checkController.post(checkType, player);
+                        if (sequence.isCancelled() || sequence.isFinished()) {
                             return;
                         }
 
@@ -188,23 +175,23 @@ public class SequenceController implements SequenceInvoker {
     /**
      * Register
      *
-     * <p>Registers a {@link Sequence} from a {@link CheckType}.</p>
+     * <p>Registers a {@link Sequence} from a {@link Check}.</p>
      *
-     * @param checkType Type of a {@link Sequence}
+     * @param check FlyCheck of a {@link Sequence}
      */
-    public void register(CheckType checkType) {
-        this.blueprints.add(checkType.getSequence());
+    public void register(Check check) {
+        this.blueprints.add(check.getSequence());
     }
 
     /**
      * Unregister
      *
-     * <p>Unregisters a {@link Sequence} from a {@link CheckType}.</p>
+     * <p>Unregisters a {@link Sequence} from a {@link Check}.</p>
      *
-     * @param checkType Type of a {@link Sequence}
+     * @param check FlyCheck of a {@link Sequence}
      */
-    public void unregister(CheckType checkType) {
-        this.blueprints.removeIf(blueprint -> blueprint.getCheckProvider().equals(checkType));
+    public void unregister(Check check) {
+        this.blueprints.removeIf(blueprint -> blueprint.getCheck().equals(check));
     }
 
     public static class SequenceControllerTask {
