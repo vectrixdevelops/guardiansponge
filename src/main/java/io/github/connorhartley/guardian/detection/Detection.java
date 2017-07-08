@@ -104,7 +104,7 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
      *
      * <p>Creates most of the startup properties if they
      * do not exist already. This is mostly targeted at
-     * Guardians internal detection.
+     * Guardians internal detections.
      *
      * Sets these optionally:</p>
      * <ul>
@@ -217,7 +217,7 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
      * @return permission string
      */
     public String getPermission(@Nonnull String permissionTarget) {
-        return StringUtils.join("guardian.detection.", permissionTarget, ".", this.getId());
+        return StringUtils.join("guardian.detections.", permissionTarget, ".", this.getId());
     }
 
     /**
@@ -329,7 +329,7 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
     /**
      * Get Check Supplier
      *
-     * <p>Returns the {@link CheckSupplier} for creating this detection
+     * <p>Returns the {@link CheckSupplier} for creating this detections
      * {@link Check}s.</p>
      *
      * @return

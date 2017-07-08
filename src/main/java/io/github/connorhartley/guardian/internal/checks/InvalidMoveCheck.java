@@ -97,7 +97,7 @@ public class InvalidMoveCheck<E, F extends StorageProvider<HoconConfigFile, Path
                         .expire(((Double) this.maximumTickRange).intValue())
 
                         // Does the player have permission?
-                        .condition(new PermissionCheckCondition(this.detection))
+                        .condition(new PermissionCheckCondition(this.getDetection()))
 
                         .condition((user, event, captureContainer, sequenceReport, lastAction) -> {
                             SequenceResult.Builder report = SequenceResult.builder().of(sequenceReport);

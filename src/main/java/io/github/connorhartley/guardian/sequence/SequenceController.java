@@ -93,7 +93,7 @@ public class SequenceController implements SequenceInvoker {
                 }
 
                 SequenceFinishEvent attempt = new SequenceFinishEvent(sequence, player, sequence.getSequenceResult().copy(),
-                    Cause.of(NamedCause.source(this.plugin), NamedCause.of("CONTEXT", sequence.getCaptureContainer())));
+                    Cause.of(NamedCause.source(this.plugin), NamedCause.of("capture", sequence.getCaptureContainer())));
 
                 Sponge.getEventManager().post(attempt);
                 if (attempt.isCancelled()) {
@@ -118,7 +118,7 @@ public class SequenceController implements SequenceInvoker {
                     }
 
                     if (sequence.check(player, event)) {
-                        if (sequence.isCancelled()) {
+                        if (sequence.isCancelled() || sequence.isFinished()) {
                             return;
                         }
 

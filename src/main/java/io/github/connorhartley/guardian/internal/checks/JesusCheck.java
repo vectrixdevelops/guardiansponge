@@ -99,13 +99,13 @@ public class JesusCheck<E, F extends StorageProvider<HoconConfigFile, Path>> imp
                          * is due to the location comparison at the beginning and end of a check
                          * which these events change the behaviour of.
                          */
-                .failure(new CommonMovementConditions.DeathCondition(this.detection))
-                .failure(new CommonMovementConditions.NucleusTeleportCondition(this.detection))
-                .failure(new CommonMovementConditions.VehicleMountCondition(this.detection))
-                .condition(new CommonMovementConditions.TeleportCondition(this.detection))
+                .failure(new CommonMovementConditions.DeathCondition(this.getDetection()))
+                .failure(new CommonMovementConditions.NucleusTeleportCondition(this.getDetection()))
+                .failure(new CommonMovementConditions.VehicleMountCondition(this.getDetection()))
+                .condition(new CommonMovementConditions.TeleportCondition(this.getDetection()))
 
                 // Does the player have permission?
-                .condition(new PermissionCheckCondition(this.detection))
+                .condition(new PermissionCheckCondition(this.getDetection()))
 
                 .condition((user, event, contextValuation, sequenceReport, lastAction) -> {
                     SequenceResult.Builder report = SequenceResult.builder().of(sequenceReport);

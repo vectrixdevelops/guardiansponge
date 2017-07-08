@@ -55,15 +55,15 @@ public class SequenceBuilder<E, F extends StorageProvider<HoconConfigFile, Path>
         return this;
     }
 
-    public <T extends Event> ActionBuilder<T> action(Class<T> clazz) {
+    public <T extends Event> ActionBuilder<E, F, T> action(Class<T> clazz) {
         return action(new Action<>(clazz));
     }
 
-    public <T extends Event> ActionBuilder<T> action(ActionBlueprint<T> builder) {
+    public <T extends Event> ActionBuilder<E, F, T> action(ActionBlueprint<T> builder) {
         return action(builder.create());
     }
 
-    public <T extends Event> ActionBuilder<T> action(Action<T> action) {
+    public <T extends Event> ActionBuilder<E, F, T> action(Action<T> action) {
         this.actions.add(action);
 
         return new ActionBuilder<>(this, action);

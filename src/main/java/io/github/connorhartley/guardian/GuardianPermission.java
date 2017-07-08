@@ -56,12 +56,12 @@ public final class GuardianPermission {
                         .assign(PermissionDescription.ROLE_USER, true)
                         .register();
 
-                builder.id("guardian.detection.bypass.<Detection>")
+                builder.id("guardian.detections.bypass.<Detection>")
                         .description(Text.of("Exempts the user from being checked for a <Detection> cheat."))
                         .assign(PermissionDescription.ROLE_ADMIN, true)
                         .register();
 
-                builder.id("guardian.detection.toggle.<Detection>")
+                builder.id("guardian.detections.toggle.<Detection>")
                         .description(Text.of("Allows the user to toggle the ability to be checked for a <Detection> cheat."))
                         .assign(PermissionDescription.ROLE_STAFF, true)
                         .register();

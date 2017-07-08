@@ -35,7 +35,7 @@ import org.spongepowered.api.event.Event;
  * Permission Check
  *
  * A simple utility for checking if the player needs to be checked based on
- * if they have the detection bypass permission or not.
+ * if they have the detections bypass permission or not.
  *
  * Note: This is to be used inside a sequence condition.
  */
