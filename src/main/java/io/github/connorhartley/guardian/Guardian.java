@@ -35,13 +35,17 @@ import io.github.connorhartley.guardian.data.tag.PunishmentTagData;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.heuristic.HeuristicController;
+import io.github.connorhartley.guardian.detection.punishment.Level;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentController;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentProvider;
 import io.github.connorhartley.guardian.internal.punishment.ResetPunishment;
 import io.github.connorhartley.guardian.sequence.Sequence;
 import io.github.connorhartley.guardian.sequence.SequenceController;
 import io.github.connorhartley.guardian.service.GuardianAntiCheatService;
 import io.github.connorhartley.guardian.storage.configuration.TupleSerializer;
 import ninja.leaping.configurate.ConfigurationOptions;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.MetricsLite;
 import org.slf4j.Logger;
@@ -68,6 +72,10 @@ import tech.ferus.util.sql.mysql.MySqlDatabase;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Plugin(
         id = PluginInfo.ID,
@@ -94,7 +102,7 @@ import java.nio.file.Path;
                 )
         }
 )
-public class Guardian {
+public class Guardian implements PunishmentProvider {
 
     public static Text GUARDIAN_PREFIX = Text.of(TextColors.DARK_AQUA, "[", TextColors.AQUA, "Guardian",
             TextColors.DARK_AQUA, "] ", TextColors.RESET);
@@ -250,7 +258,7 @@ public class Guardian {
         this.moduleSubsystem.setPluginContainer(this.pluginContainer);
 
         this.heuristicController = new HeuristicController(this);
-        this.punishmentController = new PunishmentController();
+        this.punishmentController = new PunishmentController(this);
         this.sequenceController = new SequenceController(this);
 
         this.sequenceControllerTask = new SequenceController.SequenceControllerTask(this, this.sequenceController);
@@ -313,6 +321,8 @@ public class Guardian {
         this.guardianDetection.register();
 
         this.punishmentController.register(new ResetPunishment());
+
+        this.punishmentController.register("_global", this);
     }
 
     private void resolveModules() {
@@ -481,4 +491,29 @@ public class Guardian {
         }
     }
 
+    @Override
+    public boolean globalScope() {
+        return true;
+    }
+
+    @Override
+    public List<Level> getLevels() {
+        return null;
+    }
+
+    @Override
+    public Map<String, String[]> getPunishments() {
+        List<String> actionList;
+        Map<String, String[]> actions = new HashMap<>();
+
+        try {
+            actionList = this.getGlobalConfiguration().getStorage().getNode("global", "punishment", "mixins").getList(TypeToken.of(String.class));
+
+            actionList.forEach(s -> actions.put(s, new String[] {}));
+        } catch (ObjectMappingException e) {
+            e.printStackTrace();
+        }
+
+        return actions;
+    }
 }

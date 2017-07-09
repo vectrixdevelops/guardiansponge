@@ -31,7 +31,6 @@ import io.github.connorhartley.guardian.detection.check.Check;
 import io.github.connorhartley.guardian.detection.check.CheckSupplier;
 import io.github.connorhartley.guardian.detection.heuristic.HeuristicReport;
 import io.github.connorhartley.guardian.detection.punishment.Level;
-import io.github.connorhartley.guardian.detection.punishment.Punishment;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentProvider;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.event.sequence.SequenceFinishEvent;

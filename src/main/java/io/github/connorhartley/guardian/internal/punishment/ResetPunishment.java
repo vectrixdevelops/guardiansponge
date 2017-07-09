@@ -23,10 +23,9 @@
  */
 package io.github.connorhartley.guardian.internal.punishment;
 
-import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.data.DataKeys;
 import io.github.connorhartley.guardian.detection.Detection;
-import io.github.connorhartley.guardian.detection.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentMixin;
 import io.github.connorhartley.guardian.detection.punishment.PunishmentReport;
 import io.github.connorhartley.guardian.storage.StorageProvider;
 import org.spongepowered.api.Sponge;
@@ -38,18 +37,18 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResetPunishment implements Punishment {
+public class ResetPunishment implements PunishmentMixin {
 
     public ResetPunishment() {}
 
     @Override
     public String getName() {
-        return "reset";
+        return "@reset";
     }
 
     @Override
     public <E, F extends StorageProvider<HoconConfigFile, Path>> boolean handle(Detection<E, F> detection, String[] args, User user, PunishmentReport punishmentReport) {
-        List<Punishment> punishmentTypes = new ArrayList<>();
+        List<PunishmentMixin> punishmentTypes = new ArrayList<>();
         if (user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).isPresent()) {
             punishmentTypes.addAll(user.get(DataKeys.GUARDIAN_PUNISHMENT_TAG).get());
         }

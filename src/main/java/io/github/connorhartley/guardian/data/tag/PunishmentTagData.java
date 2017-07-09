@@ -24,7 +24,7 @@
 package io.github.connorhartley.guardian.data.tag;
 
 import io.github.connorhartley.guardian.data.DataKeys;
-import io.github.connorhartley.guardian.detection.punishment.Punishment;
+import io.github.connorhartley.guardian.detection.punishment.PunishmentMixin;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
@@ -42,14 +42,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class PunishmentTagData extends AbstractListData<Punishment, PunishmentTagData, PunishmentTagData.Immutable> {
+public class PunishmentTagData extends AbstractListData<PunishmentMixin, PunishmentTagData, PunishmentTagData.Immutable> {
 
-    protected PunishmentTagData(List<Punishment> value) {
+    protected PunishmentTagData(List<PunishmentMixin> value) {
         super(value, DataKeys.GUARDIAN_PUNISHMENT_TAG);
     }
 
     @Override
-    protected ListValue<Punishment> getValueGetter() {
+    protected ListValue<PunishmentMixin> getValueGetter() {
         return Sponge.getRegistry().getValueFactory().createListValue(DataKeys.GUARDIAN_PUNISHMENT_TAG, getValue());
     }
 
@@ -68,7 +68,7 @@ public class PunishmentTagData extends AbstractListData<Punishment, PunishmentTa
     public Optional<PunishmentTagData> from(DataContainer container) {
         if (container.contains(DataKeys.GUARDIAN_PUNISHMENT_TAG.getQuery())) {
             return Optional.of(set(DataKeys.GUARDIAN_PUNISHMENT_TAG,
-                    (List<Punishment>) container.get(DataKeys.GUARDIAN_PUNISHMENT_TAG.getQuery()).orElse(this.getValue())));
+                    (List<PunishmentMixin>) container.get(DataKeys.GUARDIAN_PUNISHMENT_TAG.getQuery()).orElse(this.getValue())));
         }
         return Optional.empty();
     }
@@ -93,9 +93,9 @@ public class PunishmentTagData extends AbstractListData<Punishment, PunishmentTa
         return 1;
     }
 
-    public static class Immutable extends AbstractImmutableListData<Punishment, Immutable, PunishmentTagData> {
+    public static class Immutable extends AbstractImmutableListData<PunishmentMixin, Immutable, PunishmentTagData> {
 
-        protected Immutable(List<Punishment> value) {
+        protected Immutable(List<PunishmentMixin> value) {
             super(value, DataKeys.GUARDIAN_PUNISHMENT_TAG);
         }
 
@@ -118,7 +118,7 @@ public class PunishmentTagData extends AbstractListData<Punishment, PunishmentTa
 
         @Override
         public PunishmentTagData create() {
-            List<Punishment> punishmentList = new ArrayList<>();
+            List<PunishmentMixin> punishmentList = new ArrayList<>();
 
             return new PunishmentTagData(punishmentList);
         }
@@ -134,9 +134,9 @@ public class PunishmentTagData extends AbstractListData<Punishment, PunishmentTa
                 return Optional.empty();
             }
 
-            List<Punishment> punishment = container.getObjectList(DataKeys.GUARDIAN_PUNISHMENT_TAG.getQuery(), Punishment.class).get();
+            List<PunishmentMixin> punishmentMixin = container.getObjectList(DataKeys.GUARDIAN_PUNISHMENT_TAG.getQuery(), PunishmentMixin.class).get();
 
-            return Optional.of(new PunishmentTagData(punishment));
+            return Optional.of(new PunishmentTagData(punishmentMixin));
         }
     }
 }

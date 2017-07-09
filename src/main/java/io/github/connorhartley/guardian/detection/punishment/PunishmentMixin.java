@@ -36,7 +36,7 @@ import java.util.Optional;
  *
  * Represents a punishment handler.
  */
-public interface Punishment {
+public interface PunishmentMixin {
 
     /**
      * Get Name

@@ -24,6 +24,7 @@
 package io.github.connorhartley.guardian.detection.punishment;
 
 import com.google.common.collect.Maps;
+import io.github.connorhartley.guardian.Guardian;
 import io.github.connorhartley.guardian.detection.Detection;
 import io.github.connorhartley.guardian.event.punishment.PunishmentExecuteEvent;
 import io.github.connorhartley.guardian.storage.StorageProvider;
@@ -46,17 +47,20 @@ import java.util.Map;
  */
 public final class PunishmentController {
 
+    private final Guardian plugin;
+    private final List<PunishmentMixin> detectionPunishmentMixins = new ArrayList<>();
     private final HashMap<String, List<Level>> detectionLevelRegistry = new HashMap<>();
     private final HashMap<String, HashMap<String, String[]>> detectionDefinitionRegistry = new HashMap<>();
-    private final List<Punishment> detectionPunishmentMixins = new ArrayList<>();
 
-    public PunishmentController() {}
+    public PunishmentController(Guardian plugin) {
+        this.plugin = plugin;
+    }
 
     /**
      * Execute
      *
      * <p>Returns true if a punishmentReport is successfully handled by the
-     * appropriate {@link Punishment}, returns false if it was cancelled.</p>
+     * appropriate {@link PunishmentMixin}, returns false if it was cancelled.</p>
      *
      * @param detection The detection
      * @param user The user
@@ -77,27 +81,35 @@ public final class PunishmentController {
                     punishmentReport.getSeverityTransformer().transform(0d) <= level.getRange().getSecond() &&
                     level.getRange().getFirst() != -1 && level.getRange().getSecond() != -1) {
                 for (String action : level.getActions()) {
-                    if (this.detectionDefinitionRegistry.get(detection.getId()).containsKey(action) &&
-                            this.detectionDefinitionRegistry.get(detection.getId()).get(action).length > 0) {
-                        for (String command : this.detectionDefinitionRegistry.get(detection.getId()).get(action)) {
-                            String commandModified = command.replace("%player%", user.getName())
-                                    .replace("%datetime%", punishmentReport.getLocalDateTime().toString())
-                                    .replace("%probability%", punishmentReport.getSeverityTransformer().toString())
-                                    .replace("%detection-name%", detection.getName())
-                                    .replace("%detection-id%", detection.getId());
+                    if (!action.startsWith("@")) {
+                        if (this.detectionDefinitionRegistry.get(detection.getId()).containsKey(action) &&
+                                this.detectionDefinitionRegistry.get(detection.getId()).get(action).length > 0) {
+                            for (String command : this.detectionDefinitionRegistry.get(detection.getId()).get(action)) {
+                                String commandModified = command.replace("%player%", user.getName())
+                                        .replace("%datetime%", punishmentReport.getLocalDateTime().toString())
+                                        .replace("%probability%", punishmentReport.getSeverityTransformer().toString())
+                                        .replace("%detection-name%", detection.getName())
+                                        .replace("%detection-id%", detection.getId());
 
-                            Sponge.getCommandManager().process(Sponge.getServer().getConsole(), commandModified);
+                                Sponge.getCommandManager().process(Sponge.getServer().getConsole(), commandModified);
+                            }
+                        } else {
+                            this.plugin.getLogger().error("Could not execute punishment action in " + level.getName() +
+                                    " called " + action + " for " + detection.getName() +
+                                    ". Was not globally imported or did not contain an action list.");
                         }
                     } else {
-                        for (Punishment punishment : this.detectionPunishmentMixins) {
-                            if (punishment.getName().equals(action)) {
-                                punishment.handle(detection, new String[] {
-                                        punishmentReport.getLocalDateTime().toString(),
-                                        punishmentReport.getSeverityTransformer().toString(),
-                                        detection.getName(),
-                                        detection.getId()
-                                }, user, punishmentReport);
+                        if (this.detectionDefinitionRegistry.get(detection.getId()).containsKey(action) &&
+                                this.detectionDefinitionRegistry.get(detection.getId()).get(action).length < 1) {
+                            for (PunishmentMixin punishmentMixin : this.detectionPunishmentMixins) {
+                                if (punishmentMixin.getName().equals(action)) {
+                                    punishmentMixin.handle(detection, new String[] {}, user, punishmentReport);
+                                }
                             }
+                        } else {
+                            this.plugin.getLogger().error("Could not execute punishment mixin in " + level.getName() +
+                                    " called " + action + " for " + detection.getName() +
+                                    ". Was not globally imported or contained an action list.");
                         }
                     }
                 }
@@ -120,48 +132,52 @@ public final class PunishmentController {
          this.detectionDefinitionRegistry.computeIfAbsent("_global", k -> Maps.newHashMap());
          this.detectionLevelRegistry.computeIfAbsent(providerId, k -> punishmentProvider.getLevels());
 
-         for (Map.Entry<String, String[]> entry : punishmentProvider.getPunishments().entrySet()) {
-             if (entry.getKey().equals("_global")) {
-                 this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
-                     def.computeIfAbsent(entry.getKey(), k -> {
-                         if (this.detectionDefinitionRegistry.get("_global").get(k) == null) return new String[] {};
+         if (punishmentProvider.getPunishments() != null) {
+             for (Map.Entry<String, String[]> entry : punishmentProvider.getPunishments().entrySet()) {
+                 if (entry.getKey().equals("_global")) {
+                     this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
+                         for (String globalDef : entry.getValue()) {
+                             def.computeIfAbsent(globalDef, k -> {
+                                 if (this.detectionDefinitionRegistry.get("_global").get(k) == null) return new String[] {};
 
-                         return this.detectionDefinitionRegistry.get("_global").get(k);
+                                 return this.detectionDefinitionRegistry.get("_global").get(k);
+                             });
+                         }
+                         return def;
                      });
-                     return def;
-                 });
-             } else {
-                 this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
-                     def.compute(entry.getKey(), (k, lev) -> entry.getValue());
-                     return def;
-                 });
+                 } else {
+                     this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
+                         def.compute(entry.getKey(), (k, lev) -> entry.getValue());
+                         return def;
+                     });
+                 }
              }
          }
 
-         for (Level level : punishmentProvider.getLevels()) {
-             this.detectionLevelRegistry.compute(providerId, (detect, lev) -> {
-                if (!lev.contains(level)) lev.add(level);
-                return lev;
-             });
+         if (punishmentProvider.getLevels() != null) {
+             for (Level level : punishmentProvider.getLevels()) {
+                 this.detectionLevelRegistry.compute(providerId, (detect, lev) -> {
+                     if (!lev.contains(level)) lev.add(level);
+                     return lev;
+                 });
+             }
          }
     }
 
     /**
      * Register
      *
-     * <p>Registers a punishment under a global context.</p>
+     * <p>Registers a punishment mixin under a global context.</p>
      *
-     * @param punishment The punishment
+     * @param punishmentMixin The punishmentMixin
      */
-    public void register(Punishment punishment) {
+    public void register(PunishmentMixin punishmentMixin) {
         this.detectionDefinitionRegistry.computeIfAbsent("_global", k -> Maps.newHashMap());
 
-        if (!this.detectionPunishmentMixins.contains(punishment)) {
-            this.detectionPunishmentMixins.add(punishment);
-
-            if (!this.detectionDefinitionRegistry.get("_global").containsKey(punishment.getName())) {
-                this.detectionDefinitionRegistry.get("_global").put("@" + punishment.getName(), null);
-            }
+        if (!this.detectionPunishmentMixins.contains(punishmentMixin) &&
+                !this.detectionDefinitionRegistry.get("_global").containsKey(punishmentMixin.getName())) {
+            this.detectionPunishmentMixins.add(punishmentMixin);
+            this.detectionDefinitionRegistry.get("_global").put("@" + punishmentMixin.getName(), null);
         }
     }
 
