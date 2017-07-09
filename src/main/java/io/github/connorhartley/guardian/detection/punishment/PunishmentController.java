@@ -134,7 +134,7 @@ public final class PunishmentController {
 
          if (punishmentProvider.getPunishments() != null) {
              for (Map.Entry<String, String[]> entry : punishmentProvider.getPunishments().entrySet()) {
-                 if (entry.getKey().equals("_global")) {
+                 if (entry.getKey().equals("_global") && entry.getValue() != null) {
                      this.detectionDefinitionRegistry.compute(providerId, (detect, def) -> {
                          for (String globalDef : entry.getValue()) {
                              def.computeIfAbsent(globalDef, k -> {

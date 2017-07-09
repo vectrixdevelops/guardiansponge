@@ -377,7 +377,8 @@ public abstract class Detection<E, F extends StorageProvider<HoconConfigFile, Pa
                 levels.add(Level.builder()
                         .name((String) configurationNode.getKey())
                         .range(configurationNode.getValue().getNode("range").getValue(new TypeToken<Tuple<Double, Double>>() {}))
-                        .action((String[]) configurationNode.getValue().getNode("action").getList(TypeToken.of(String.class)).toArray())
+                        .action(configurationNode.getValue().getNode("action").getList(TypeToken.of(String.class))
+                                .toArray(new String[configurationNode.getValue().getNode("action").getList(TypeToken.of(String.class)).size()]))
                         .build());
             } catch (ObjectMappingException e) {
                 e.printStackTrace();
