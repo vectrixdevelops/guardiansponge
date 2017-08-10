@@ -33,11 +33,14 @@ repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
     maven { url 'https://repo.bstats.org/content/groups/public/' }
-    maven { url 'http://repo.drnaylor.co.uk/artifactory/list/minecraft' }
+    maven { url 'https://oss.sonatype.org/content/groups/public/' }
+    maven { url 'http://repo.drnaylor.co.uk/artifactory/list/minecraft/' }
+    maven { url 'http://repo.foxdenstudio.net/repository/maven-vectrix/' }
 }
 
 dependencies {
     compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+    compile 'com.ichorpowered.guardian.api:guardianapi:1.0.0-SNAPSHOT'
 
     // External Dependencies
 
