@@ -27,14 +27,17 @@ import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.GuardianState;
 import com.ichorpowered.guardian.api.detection.DetectionRegistry;
+import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
+import com.ichorpowered.guardian.api.detection.heuristic.HeuristicRegistry;
+import com.ichorpowered.guardian.api.detection.module.ModuleRegistry;
+import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
 import com.ichorpowered.guardian.api.event.GuardianEvent;
 import com.ichorpowered.guardian.api.event.GuardianListener;
-import com.ichorpowered.guardian.api.heuristic.HeuristicRegistry;
-import com.ichorpowered.guardian.api.module.ModuleRegistry;
-import com.ichorpowered.guardian.api.penalty.PenaltyRegistry;
 import com.ichorpowered.guardian.api.sequence.SequenceManager;
+import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.util.ImplementationException;
 import com.me4502.modularframework.ModuleController;
+import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import net.kyori.event.SimpleEventBus;
 import org.bstats.MetricsLite;
 import org.slf4j.Logger;
@@ -93,6 +96,9 @@ public class GuardianPlugin implements Guardian<AbstractEvent> {
     private GuardianState systemState;
     private ModuleController<GuardianPlugin> moduleSubsystem;
 
+    /* Registries / Managers */
+    private GuardianSequenceManager sequenceManager;
+
     @Inject
     public GuardianPlugin(PluginContainer pluginContainer, Logger logger, MetricsLite metrics,
                           @DefaultConfig(sharedRoot = false) Path configDir) {
@@ -124,7 +130,17 @@ public class GuardianPlugin implements Guardian<AbstractEvent> {
     }
 
     @Override
+    public ModuleRegistry getModuleRegistry() {
+        return null;
+    }
+
+    @Override
     public DetectionRegistry getDetectionRegistry() {
+        return null;
+    }
+
+    @Override
+    public CheckRegistry getCheckRegistry() {
         return null;
     }
 
@@ -134,18 +150,18 @@ public class GuardianPlugin implements Guardian<AbstractEvent> {
     }
 
     @Override
-    public ModuleRegistry getModuleRegistry() {
-        return null;
-    }
-
-    @Override
     public PenaltyRegistry getPenaltyRegistry() {
         return null;
     }
 
     @Override
-    public SequenceManager<AbstractEvent> getSequenceManager() {
+    public SequenceRegistry getSequenceRegistry() {
         return null;
+    }
+
+    @Override
+    public SequenceManager<AbstractEvent> getSequenceManager() {
+        return this.sequenceManager;
     }
 
 }
