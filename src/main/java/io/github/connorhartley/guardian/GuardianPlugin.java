@@ -113,6 +113,10 @@ public class GuardianPlugin implements Guardian<AbstractEvent> {
         // Game Initialization
     }
 
+    public Logger getLogger() {
+        return this.logger;
+    }
+
     @Override
     public <T extends Guardian> T getInstance(@Nullable Class<T> aClass) throws ImplementationException {
         if (aClass == null || !aClass.isInstance(this)) throw new ImplementationException("Could not assign instance from class " + aClass);

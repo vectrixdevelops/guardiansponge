@@ -52,6 +52,7 @@ dependencies {
     compile 'org.apache.commons:commons-math3:3.6.1'
     compile 'com.github.me4502:ModularFramework:35dc605747'
     compile 'org.bstats:bstats-sponge-lite:1.1'
+    compile "org.fusesource.jansi:jansi:1.16"
 
     compile 'tech.ferus.util:ConfigKeys:1.0.3'
     compile 'tech.ferus.util:basicsql-h2:2.0.1'
