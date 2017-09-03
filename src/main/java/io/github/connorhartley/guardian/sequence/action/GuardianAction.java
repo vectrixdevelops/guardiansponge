@@ -23,12 +23,14 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.report.Summary;
+import com.ichorpowered.guardian.api.sequence.Sequence;
 import com.ichorpowered.guardian.api.sequence.action.Action;
 import com.ichorpowered.guardian.api.sequence.condition.Condition;
-import io.github.connorhartley.guardian.sequence.GuardianCondition;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
+import io.github.connorhartley.guardian.sequence.condition.GuardianCondition;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -70,11 +72,11 @@ public class GuardianAction<T> implements Action<T> {
     }
 
     @Override
-    public boolean apply(@Nonnull EntityEntry entry, @Nonnull T event, long lastActionTime) {
+    public <E, F extends DetectionConfiguration> boolean apply(@Nonnull Sequence<E, F> sequence, @Nonnull EntityEntry entry, @Nonnull T event, long lastActionTime) {
         return this.conditions.stream()
                 .filter(condition -> condition.getType().equals(GuardianCondition.Type.NORMAL))
                 .noneMatch(condition -> {
-                    Summary<?, ?> summary = condition.get().apply(entry, event, null, lastActionTime);
+                    Summary<?, ?> summary = condition.get().apply(entry, event, null, null, lastActionTime);
 
                     if (summary.view(SequenceReport.class) == null) return true;
                     return !summary.view(SequenceReport.class).passed();
@@ -82,21 +84,21 @@ public class GuardianAction<T> implements Action<T> {
     }
 
     @Override
-    public boolean succeed(@Nonnull EntityEntry entry, @Nonnull T event, long lastActionTime) {
+    public <E, F extends DetectionConfiguration> boolean succeed(@Nonnull Sequence<E, F> sequence, @Nonnull EntityEntry entry, @Nonnull T event, long lastActionTime) {
         this.conditions.stream()
                 .filter(condition -> condition.getType().equals(GuardianCondition.Type.SUCCESS))
                 .forEach(condition -> {
-                    Summary<?, ?> summary = condition.get().apply(entry, event, null, lastActionTime);
+                    Summary<?, ?> summary = condition.get().apply(entry, event, null, null, lastActionTime);
                 });
         return true;
     }
 
     @Override
-    public boolean fail(@Nonnull EntityEntry entry, @Nonnull T event, long lastActionTime) {
+    public <E, F extends DetectionConfiguration> boolean fail(@Nonnull Sequence<E, F> sequence, @Nonnull EntityEntry entry, @Nonnull T event, long lastActionTime) {
         return this.conditions.stream()
                 .filter(condition -> condition.getType().equals(GuardianCondition.Type.FAIL))
                 .anyMatch(condition -> {
-                    Summary<?, ?> summary = condition.get().apply(entry, event, null, lastActionTime);
+                    Summary<?, ?> summary = condition.get().apply(entry, event, null, null, lastActionTime);
 
                     if (summary.view(SequenceReport.class) == null) return false;
                     return summary.view(SequenceReport.class).passed();

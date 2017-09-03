@@ -21,27 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence;
+package io.github.connorhartley.guardian.sequence.condition;
 
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.check.Check;
-import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
+import com.ichorpowered.guardian.api.sequence.condition.Condition;
+import com.ichorpowered.guardian.api.sequence.condition.ConditionSupplier;
 
-import javax.annotation.Nonnull;
+public class GuardianCondition<E, F extends DetectionConfiguration, T> implements Condition<T> {
 
-public abstract class AbstractSequenceBlueprint<E, F extends DetectionConfiguration> implements SequenceBlueprint<E, F> {
+    private final ConditionSupplier<E, F, T> condition;
+    private final Type type;
 
-    private final Check<E, F> check;
-
-    public AbstractSequenceBlueprint(Check<E, F> check) {
-        this.check = check;
+    public static <E, F extends DetectionConfiguration, K> GuardianCondition<E, F, K> of(ConditionSupplier<E, F, K> condition, Type type) {
+        return new GuardianCondition<>(condition, type);
     }
 
-    @Nonnull
+    public GuardianCondition(ConditionSupplier<E, F, T> condition, Type type) {
+        this.condition = condition;
+        this.type = type;
+    }
+
     @Override
-    public Check<E, F> getCheck() {
-        return this.check;
+    public ConditionSupplier<E, F, T> get() {
+        return this.condition;
+    }
+
+    @Override
+    public Type getType() {
+        return this.type;
     }
 
 }
-

@@ -21,12 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian;
+package io.github.connorhartley.guardian.sequence;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.util.ConsoleFormatter;
 import org.fusesource.jansi.Ansi;
 
@@ -64,7 +66,7 @@ public class GuardianSequenceRegistry implements SequenceRegistry {
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <E, F> SequenceBlueprint<E, F> expect(@Nonnull Class<? extends SequenceBlueprint> key) throws NoSuchElementException {
+    public <E, F extends DetectionConfiguration> SequenceBlueprint<E, F> expect(@Nonnull Class<? extends SequenceBlueprint> key) throws NoSuchElementException {
         if (!this.blueprintRegistry.containsKey(key)) throw new NoSuchElementException();
         return (SequenceBlueprint<E, F>) this.blueprintRegistry.get(key);
     }
@@ -93,4 +95,3 @@ public class GuardianSequenceRegistry implements SequenceRegistry {
     }
 
 }
-

@@ -31,49 +31,52 @@ import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import org.spongepowered.api.event.impl.AbstractEvent;
+import org.spongepowered.api.event.Event;
+import org.spongepowered.api.scheduler.Task;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class GuardianSequenceManager implements SequenceManager<AbstractEvent> {
+import javax.annotation.Nonnull;
+
+public class GuardianSequenceManager implements SequenceManager<Event> {
 
     private final GuardianPlugin plugin;
+
     private final Multimap<EntityEntry, Sequence<?, ?>> sequences = HashMultimap.create();
     private final List<SequenceBlueprint<?, ?>> blueprints = Collections.emptyList();
 
-    public GuardianSequenceManager(GuardianPlugin plugin) {
+    public GuardianSequenceManager(GuardianPlugin plugin, GuardianSequenceRegistry sequenceRegistry) {
         this.plugin = plugin;
     }
 
     @Override
-    public void invoke(@Nonnull EntityEntry entry, @Nonnull AbstractEvent abstractEvent) {
+    public void invoke(@Nonnull EntityEntry entry, @Nonnull Event event) {
         // Sequence Executor
-        this.sequences.get(entry).removeIf(sequence -> this.invokeSequence(sequence, entry, abstractEvent));
+        this.sequences.get(entry).removeIf(sequence -> this.invokeSequence(sequence, entry, event));
 
         // Sequence Blueprint Executor
-        this.invokeBluepront(entry, abstractEvent);
+        this.invokeBlueprint(entry, event);
     }
 
     @Override
-    public void invokeFor(@Nonnull EntityEntry entry, @Nonnull AbstractEvent abstractEvent, Predicate<Sequence> predicate) {
+    public void invokeFor(@Nonnull EntityEntry entry, @Nonnull Event event, Predicate<Sequence> predicate) {
         // Sequence Executor
         this.sequences.get(entry).removeIf(sequence -> {
-           if (predicate.test(sequence)) {
-               if (this.invokeSequence(sequence, entry, abstractEvent)) {
-                   return true;
-               }
-           }
-           return false;
+            if (predicate.test(sequence)) {
+                if (this.invokeSequence(sequence, entry, event)) {
+                    return true;
+                }
+            }
+            return false;
         });
 
         // Sequence Blueprint Executor
-        this.invokeBluepront(entry, abstractEvent);
+        this.invokeBlueprint(entry, event);
     }
 
-    private boolean invokeSequence(@Nonnull Sequence<?, ?> sequence, @Nonnull EntityEntry entry, @Nonnull AbstractEvent event) {
+    private boolean invokeSequence(@Nonnull Sequence<?, ?> sequence, @Nonnull EntityEntry entry, @Nonnull Event event) {
         boolean remove = false;
 
         // 1. Check the event is valid.
@@ -109,12 +112,11 @@ public class GuardianSequenceManager implements SequenceManager<AbstractEvent> {
         }
 
         return remove;
-
     }
 
-    private void invokeBluepront(@Nonnull EntityEntry entry, @Nonnull AbstractEvent event) {
+    private void invokeBlueprint(@Nonnull EntityEntry entry, @Nonnull Event event) {
         this.blueprints.stream()
-                .filter(blueprint -> this.sequences.get(entry).stream()
+                .filter(blueprint -> GuardianSequenceManager.this.sequences.get(entry).stream()
                         .noneMatch(playerSequence -> playerSequence.getSequenceBlueprint()
                                 .getCheck().compare(blueprint.getCheck())))
                 .forEach(blueprint -> {
@@ -139,29 +141,27 @@ public class GuardianSequenceManager implements SequenceManager<AbstractEvent> {
                             return;
                         }
 
-                        this.sequences.put(entry, sequence);
+                        GuardianSequenceManager.this.sequences.put(entry, sequence);
                     }
                 });
-
     }
 
     @Override
     public void clean(boolean force) {
-        this.sequences.keys().forEach(player -> this.clean(player, force));
+        GuardianSequenceManager.this.sequences.keys().forEach(player -> GuardianSequenceManager.this.clean(player, force));
     }
 
     @Override
     public void clean(@Nonnull EntityEntry entry, boolean force) {
-        if (force) this.sequences.removeAll(entry);
-        else this.sequences.entries().forEach((el) -> {
+        if (force) GuardianSequenceManager.this.sequences.removeAll(entry);
+        else GuardianSequenceManager.this.sequences.entries().forEach((el) -> {
             if (el.getKey().equals(entry) && el.getValue().isExpired())
-                this.sequences.remove(el.getKey(), el.getValue());
+                GuardianSequenceManager.this.sequences.remove(el.getKey(), el.getValue());
         });
-
     }
 
     public void update() {
-        this.sequences.forEach((entry, playerSequence) -> {
+        GuardianSequenceManager.this.sequences.forEach((entry, playerSequence) -> {
             if (playerSequence.isRunning()) {
                 for (Capture capture : playerSequence.getCaptureRegistry()) {
                     capture.update(entry, playerSequence.getCaptureRegistry().getContainer());
@@ -170,5 +170,29 @@ public class GuardianSequenceManager implements SequenceManager<AbstractEvent> {
         });
     }
 
+    public static class SequenceTask {
+
+        private final GuardianPlugin plugin;
+        private final GuardianSequenceManager sequenceManager;
+
+        private Task task;
+
+        public SequenceTask(GuardianPlugin plugin, GuardianSequenceManager sequenceManager) {
+            this.plugin = plugin;
+            this.sequenceManager = sequenceManager;
+        }
+
+        public void start() {
+            this.task = Task.builder().execute(() -> {
+                this.sequenceManager.clean(false);
+                this.sequenceManager.update();
+            }).name("SequenceTask").intervalTicks(1).submit(this.plugin);
+        }
+
+        public void stop() {
+            if (this.task != null) this.task.cancel();
+        }
+
+    }
 
 }

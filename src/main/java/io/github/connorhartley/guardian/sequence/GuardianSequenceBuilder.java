@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.sequence.Sequence;
@@ -31,18 +32,29 @@ import com.ichorpowered.guardian.api.sequence.SequenceBuilder;
 import com.ichorpowered.guardian.api.sequence.action.Action;
 import com.ichorpowered.guardian.api.sequence.action.ActionBlueprint;
 import com.ichorpowered.guardian.api.sequence.action.ActionBuilder;
+import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.github.connorhartley.guardian.sequence.action.GuardianAction;
 import io.github.connorhartley.guardian.sequence.action.GuardianActionBuilder;
+import io.github.connorhartley.guardian.sequence.capture.GuardianCaptureRegistry;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GuardianSequenceBuilder<E, F> implements SequenceBuilder<E, F> {
+public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implements SequenceBuilder<E, F> {
 
-    private Collection<GuardianAction> actions = Collections.emptyList();
+    private final Collection<GuardianAction> actions = Collections.emptyList();
+    private final Collection<Capture<E, F>> captures = Collections.emptyList();
+
+    @SafeVarargs
+    @Override
+    public final SequenceBuilder<E, F> capture(Capture<E, F>... captures) {
+        this.captures.addAll(Arrays.asList(captures));
+        return this;
+    }
 
     @Nonnull
     @Override
@@ -66,12 +78,15 @@ public class GuardianSequenceBuilder<E, F> implements SequenceBuilder<E, F> {
 
     @Nonnull
     @Override
-    public SequenceBlueprint<E, F> build(Check<E, F> check) {
+    public <C> SequenceBlueprint<E, F> build(C pluginContainer, Check<E, F> check) {
         return new AbstractSequenceBlueprint<E, F>(check) {
             @Nonnull
             @Override
             public Sequence<E, F> create(EntityEntry entry) {
-                return new GuardianSequence<>(entry, this, check, GuardianSequenceBuilder.this.actions, null);
+                GuardianCaptureRegistry captureRegistry = new GuardianCaptureRegistry(entry);
+                GuardianSequenceBuilder.this.captures.forEach(aCapture -> captureRegistry.put(pluginContainer, aCapture.getClass(), aCapture));
+
+                return new GuardianSequence<>(entry, this, check, GuardianSequenceBuilder.this.actions, captureRegistry);
             }
         };
     }

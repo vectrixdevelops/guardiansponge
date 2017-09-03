@@ -21,27 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence;
+package io.github.connorhartley.guardian.sequence.capture;
 
+import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.check.Check;
-import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
+import com.ichorpowered.guardian.api.sequence.capture.Capture;
 
-import javax.annotation.Nonnull;
+public abstract class AbstractCapture<E, F extends DetectionConfiguration> implements Capture<E, F> {
 
-public abstract class AbstractSequenceBlueprint<E, F extends DetectionConfiguration> implements SequenceBlueprint<E, F> {
+    private final E owner;
+    private final Detection<E, F> detection;
 
-    private final Check<E, F> check;
-
-    public AbstractSequenceBlueprint(Check<E, F> check) {
-        this.check = check;
+    public AbstractCapture(E owner, Detection<E, F> detection) {
+        this.owner = owner;
+        this.detection = detection;
     }
 
-    @Nonnull
     @Override
-    public Check<E, F> getCheck() {
-        return this.check;
+    public E getOwner() {
+        return this.owner;
+    }
+
+    @Override
+    public Detection<E, F> getDetection() {
+        return this.detection;
     }
 
 }
-

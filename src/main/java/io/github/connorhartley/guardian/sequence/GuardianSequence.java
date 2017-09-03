@@ -23,31 +23,37 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import com.google.common.reflect.TypeToken;
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.event.origin.Origin;
+import com.ichorpowered.guardian.api.report.Summary;
 import com.ichorpowered.guardian.api.sequence.Sequence;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureRegistry;
+import com.ichorpowered.guardian.api.util.IdentifierKey;
+import io.github.connorhartley.guardian.report.GuardianSummary;
 import io.github.connorhartley.guardian.sequence.action.GuardianAction;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class GuardianSequence<E, F> implements Sequence<E, F> {
+public class GuardianSequence<E, F extends DetectionConfiguration> implements Sequence<E, F> {
+
+    public static IdentifierKey<String> INITIAL_LOCATION =
+            IdentifierKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION");
 
     private final EntityEntry entry;
     private final Check<E, F> check;
+    private final GuardianSummary<E, F> summary;
     private final CaptureRegistry captureRegistry;
     private final SequenceBlueprint<E, F> sequenceBlueprint;
     private final Collection<GuardianAction> actions = Collections.emptyList();
     private final Origin.Builder originSource = Origin.source(this);
-
-    private Location<World> initialLocation;
 
     private int queue = 0;
     private boolean capturing = false;
@@ -56,13 +62,14 @@ public class GuardianSequence<E, F> implements Sequence<E, F> {
     private long last = System.currentTimeMillis();
 
     public GuardianSequence(EntityEntry entry, SequenceBlueprint<E, F> sequenceBlueprint, Check<E, F> check,
-                           Collection<GuardianAction> action, CaptureRegistry captureRegistry) {
+                            Collection<GuardianAction> action, CaptureRegistry captureRegistry) {
         this.entry = entry;
         this.check = check;
         this.captureRegistry = captureRegistry;
         this.sequenceBlueprint = sequenceBlueprint;
 
         this.actions.addAll(action);
+        this.summary = new GuardianSummary<>(check.getDetection().getOwner(), check.getDetection(), entry);
     }
 
     @Override
@@ -90,6 +97,12 @@ public class GuardianSequence<E, F> implements Sequence<E, F> {
                 }
 
                 this.capturing = true;
+
+                if (!entry.getEntity(TypeToken.of(Player.class)).isPresent())
+                    this.captureRegistry.getContainer().put(GuardianSequence.INITIAL_LOCATION, null);
+
+                this.captureRegistry.getContainer().put(GuardianSequence.INITIAL_LOCATION,
+                        entry.getEntity(TypeToken.of(Player.class)).get().getLocation());
             }
 
             GuardianAction<T> typeAction = (GuardianAction<T>) action;
@@ -110,7 +123,7 @@ public class GuardianSequence<E, F> implements Sequence<E, F> {
 
             // 5. Run the action conditions and fail if they do not pass.
 
-            if (!typeAction.apply(entry, event, this.last)) {
+            if (!typeAction.apply(this, entry, event, this.last)) {
                 return this.fail(entry, event, action, this.originSource.build());
             }
 
@@ -118,7 +131,7 @@ public class GuardianSequence<E, F> implements Sequence<E, F> {
 
             iterator.remove();
 
-            typeAction.succeed(entry, event, this.last);
+            typeAction.succeed(this, entry, event, this.last);
 
             this.last = System.currentTimeMillis();
 
@@ -137,11 +150,16 @@ public class GuardianSequence<E, F> implements Sequence<E, F> {
     }
 
     public <T> boolean fail(EntityEntry entry, T event, GuardianAction<T> action, Origin origin) {
-        this.cancelled = action.fail(entry, event, this.last);
+        this.cancelled = action.fail(this, entry, event, this.last);
 
         // TODO: Sequence fail event.
 
         return false;
+    }
+
+    @Override
+    public Summary<E, F> getSummary() {
+        return this.summary;
     }
 
     @Override

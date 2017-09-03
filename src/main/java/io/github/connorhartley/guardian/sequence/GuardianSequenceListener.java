@@ -23,32 +23,24 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import com.ichorpowered.guardian.api.sequence.condition.Condition;
-import com.ichorpowered.guardian.api.sequence.condition.ConditionSupplier;
+import io.github.connorhartley.guardian.GuardianPlugin;
+import io.github.connorhartley.guardian.entry.GuardianEntityEntry;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.event.filter.Getter;
 
-public class GuardianCondition<E, F, T> implements Condition<T> {
+public final class GuardianSequenceListener {
 
-    private final ConditionSupplier<E, F, T> condition;
-    private final Type type;
+    private final GuardianPlugin plugin;
 
-    public static <E, F, K> GuardianCondition<E, F, K> of(ConditionSupplier<E, F, K> condition, Type type) {
-        return new GuardianCondition<>(condition, type);
+    public GuardianSequenceListener(GuardianPlugin plugin) {
+        this.plugin = plugin;
     }
 
-    public GuardianCondition(ConditionSupplier<E, F, T> condition, Type type) {
-        this.condition = condition;
-        this.type = type;
+    @Listener
+    public void moveEntityEvent(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
+        this.plugin.getSequenceManager().invoke(GuardianEntityEntry.of(player, player.getUniqueId()), event);
     }
-
-    @Override
-    public ConditionSupplier<E, F, T> get() {
-        return this.condition;
-    }
-
-    @Override
-    public Type getType() {
-        return this.type;
-    }
-
 
 }

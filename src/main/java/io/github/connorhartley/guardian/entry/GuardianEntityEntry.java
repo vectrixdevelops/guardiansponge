@@ -21,27 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence;
+package io.github.connorhartley.guardian.entry;
 
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.check.Check;
-import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
+import com.google.common.reflect.TypeToken;
+import com.ichorpowered.guardian.api.entry.EntityEntry;
+
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public abstract class AbstractSequenceBlueprint<E, F extends DetectionConfiguration> implements SequenceBlueprint<E, F> {
+public class GuardianEntityEntry<T> implements EntityEntry {
 
-    private final Check<E, F> check;
+    private final T entity;
+    private final UUID uuid;
 
-    public AbstractSequenceBlueprint(Check<E, F> check) {
-        this.check = check;
+    public static <E> GuardianEntityEntry<E> of(E entity, UUID uuid) {
+        return new GuardianEntityEntry<>(entity, uuid);
+    }
+
+    private GuardianEntityEntry(@Nullable T entity, @Nonnull UUID uuid) {
+        this.entity = entity;
+        this.uuid = uuid;
     }
 
     @Nonnull
     @Override
-    public Check<E, F> getCheck() {
-        return this.check;
+    public UUID getUniqueId() {
+        return this.uuid;
+    }
+
+    @Nonnull
+    @Override
+    public <E> Optional<E> getEntity(TypeToken<E> typeToken) {
+        if (!typeToken.getType().equals(this.entity)) return Optional.empty();
+        return Optional.ofNullable((E) this.entity);
     }
 
 }
-

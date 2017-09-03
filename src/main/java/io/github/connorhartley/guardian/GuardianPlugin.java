@@ -42,17 +42,18 @@ import net.kyori.event.SimpleEventBus;
 import org.bstats.MetricsLite;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
+
+import javax.annotation.Nullable;
 
 @Plugin(
         id = PluginInfo.ID,
@@ -79,7 +80,7 @@ import java.nio.file.Path;
                 )
         }
 )
-public class GuardianPlugin implements Guardian<AbstractEvent> {
+public class GuardianPlugin implements Guardian<Event> {
 
     public static Text GUARDIAN_PREFIX = Text.of(TextColors.DARK_AQUA, "[", TextColors.AQUA, "GuardianPlugin",
             TextColors.DARK_AQUA, "] ", TextColors.RESET);
@@ -164,7 +165,7 @@ public class GuardianPlugin implements Guardian<AbstractEvent> {
     }
 
     @Override
-    public SequenceManager<AbstractEvent> getSequenceManager() {
+    public SequenceManager<Event> getSequenceManager() {
         return this.sequenceManager;
     }
 

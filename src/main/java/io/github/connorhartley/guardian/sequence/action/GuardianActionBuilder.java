@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence.action;
 
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.SequenceBuilder;
@@ -31,9 +32,9 @@ import com.ichorpowered.guardian.api.sequence.action.ActionBlueprint;
 import com.ichorpowered.guardian.api.sequence.action.ActionBuilder;
 import com.ichorpowered.guardian.api.sequence.condition.Condition;
 import com.ichorpowered.guardian.api.sequence.condition.ConditionSupplier;
-import io.github.connorhartley.guardian.sequence.GuardianCondition;
+import io.github.connorhartley.guardian.sequence.condition.GuardianCondition;
 
-public class GuardianActionBuilder<E, F, T> implements ActionBuilder<E, F, T> {
+public class GuardianActionBuilder<E, F extends DetectionConfiguration, T> implements ActionBuilder<E, F, T> {
 
     private final Action<T> action;
     private final SequenceBuilder<E, F> sequenceBuilder;
@@ -89,8 +90,8 @@ public class GuardianActionBuilder<E, F, T> implements ActionBuilder<E, F, T> {
     }
 
     @Override
-    public SequenceBlueprint<E, F> build(Check<E, F> check) {
-        return this.sequenceBuilder.build(check);
+    public <C> SequenceBlueprint<E, F> build(C pluginContainer, Check<E, F> check) {
+        return this.sequenceBuilder.build(pluginContainer, check);
     }
 
 }
