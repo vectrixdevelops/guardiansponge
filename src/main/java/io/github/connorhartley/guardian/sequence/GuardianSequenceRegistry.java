@@ -40,7 +40,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GuardianSequenceRegistry implements SequenceRegistry {
+public final class GuardianSequenceRegistry implements SequenceRegistry {
 
     private final GuardianPlugin plugin;
     private final BiMap<Class<? extends Check>, SequenceBlueprint> blueprintRegistry = HashBiMap.create();

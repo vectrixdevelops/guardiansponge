@@ -39,7 +39,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GuardianDetectionRegistry implements DetectionRegistry {
+public final class GuardianDetectionRegistry implements DetectionRegistry {
 
     private final GuardianPlugin plugin;
     private final BiMap<Class<? extends Detection>, Detection> detectionRegistry = HashBiMap.create();

@@ -37,7 +37,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GuardianPenaltyRegistry implements PenaltyRegistry {
+public final class GuardianPenaltyRegistry implements PenaltyRegistry {
 
     private GuardianPlugin plugin;
     private BiMap<Class<? extends Penalty>, Penalty> penaltyRegistry = HashBiMap.create();

@@ -41,7 +41,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
-public class GuardianSequenceManager implements SequenceManager<Event> {
+public final class GuardianSequenceManager implements SequenceManager<Event> {
 
     private final GuardianPlugin plugin;
     private final SequenceRegistry sequenceRegistry;

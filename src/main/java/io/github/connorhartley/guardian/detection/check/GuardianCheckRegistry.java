@@ -39,7 +39,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GuardianCheckRegistry implements CheckRegistry {
+public final class GuardianCheckRegistry implements CheckRegistry {
 
     private final GuardianPlugin plugin;
     private final BiMap<Class<? extends CheckBlueprint>, CheckBlueprint> checkRegistry = HashBiMap.create();
