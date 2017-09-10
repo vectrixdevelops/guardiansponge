@@ -21,36 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.ichorpowered.guardian.api.detection.DetectionChain;
+public final class GuardianLoader {
 
-import java.util.ArrayList;
-import java.util.List;
+    private final GuardianPlugin plugin;
 
-import javax.annotation.Nonnull;
-
-public class GuardianDetectionChain implements DetectionChain {
-
-    private final Multimap<ProcessType, Class> chainRegistry = HashMultimap.create();
-
-    public GuardianDetectionChain() {}
-
-    @Override
-    public <C> void add(@Nonnull C pluginContainer, @Nonnull ProcessType processType, @Nonnull Class<?> clazz) {
-        if (this.chainRegistry.containsEntry(processType, clazz)) return;
-        this.chainRegistry.put(processType, clazz);
+    public GuardianLoader(GuardianPlugin plugin) {
+        this.plugin = plugin;
     }
 
-    @Override
-    public <T> List<Class<? extends T>> get(@Nonnull ProcessType processType) {
-        if (!this.chainRegistry.containsKey(processType)) return null;
-
-        List<Class<? extends T>> list = new ArrayList<>();
-        this.chainRegistry.get(processType).forEach(aClass -> list.add((Class<? extends T>) aClass));
-
-        return list;
-    }
 }

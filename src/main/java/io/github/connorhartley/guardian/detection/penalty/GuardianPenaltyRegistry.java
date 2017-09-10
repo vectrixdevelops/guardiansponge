@@ -21,78 +21,68 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.sequence;
+package io.github.connorhartley.guardian.detection.penalty;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.check.Check;
-import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
-import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
+import com.ichorpowered.guardian.api.detection.penalty.Penalty;
+import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.util.ConsoleFormatter;
 import org.fusesource.jansi.Ansi;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GuardianSequenceRegistry implements SequenceRegistry {
+public class GuardianPenaltyRegistry implements PenaltyRegistry {
 
-    private final GuardianPlugin plugin;
-    private final BiMap<Class<? extends Check>, SequenceBlueprint> blueprintRegistry = HashBiMap.create();
+    private GuardianPlugin plugin;
+    private BiMap<Class<? extends Penalty>, Penalty> penaltyRegistry = HashBiMap.create();
 
-    public GuardianSequenceRegistry(GuardianPlugin plugin) {
+    public GuardianPenaltyRegistry(GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public <C> void put(@Nonnull C pluginContainer, @Nonnull Class<? extends Check> key, @Nonnull SequenceBlueprint sequenceBlueprint) {
-        if (this.blueprintRegistry.containsKey(key)) {
+    public <C> void put(@Nonnull C pluginContainer, @Nonnull Class<? extends Penalty> key, @Nonnull Penalty penalty) {
+        if (this.penaltyRegistry.containsKey(key)) {
             this.plugin.getLogger().warn(ConsoleFormatter.builder()
                     .fg(Ansi.Color.YELLOW,
-                            "Attempted to put a blueprint into the registry that already exists!")
+                            "Attempted to put a penalty into the registry that already exists!")
                     .build().get()
             );
 
             return;
         }
 
-        this.blueprintRegistry.put(key, sequenceBlueprint);
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E, F extends DetectionConfiguration> SequenceBlueprint<E, F> expect(@Nonnull Class<? extends Check> key) throws NoSuchElementException {
-        if (!this.blueprintRegistry.containsKey(key)) throw new NoSuchElementException();
-        return (SequenceBlueprint<E, F>) this.blueprintRegistry.get(key);
+        this.penaltyRegistry.put(key, penalty);
     }
 
     @Nullable
     @Override
-    public SequenceBlueprint get(@Nonnull Class<? extends Check> key) {
-        return this.blueprintRegistry.get(key);
+    public Penalty get(@Nonnull Class<? extends Penalty> key) {
+        return this.penaltyRegistry.get(key);
     }
 
     @Nullable
     @Override
-    public Class<? extends Check> key(@Nonnull SequenceBlueprint sequenceBlueprint) {
-        return this.blueprintRegistry.inverse().get(sequenceBlueprint);
+    public Class<? extends Penalty> key(@Nonnull Penalty penalty) {
+        return this.penaltyRegistry.inverse().get(penalty);
     }
 
     @Nonnull
     @Override
-    public Set<Class<? extends Check>> keySet() {
-        return this.blueprintRegistry.keySet();
+    public Set<Class<? extends Penalty>> keySet() {
+        return this.penaltyRegistry.keySet();
     }
 
+    @Nonnull
     @Override
-    public Iterator<SequenceBlueprint> iterator() {
-        return this.blueprintRegistry.values().iterator();
+    public Iterator<Penalty> iterator() {
+        return this.penaltyRegistry.values().iterator();
     }
 
 }

@@ -29,6 +29,7 @@ import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.sequence.Sequence;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.SequenceManager;
+import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import org.spongepowered.api.event.Event;
@@ -43,12 +44,13 @@ import javax.annotation.Nonnull;
 public class GuardianSequenceManager implements SequenceManager<Event> {
 
     private final GuardianPlugin plugin;
+    private final SequenceRegistry sequenceRegistry;
 
     private final Multimap<EntityEntry, Sequence<?, ?>> sequences = HashMultimap.create();
-    private final List<SequenceBlueprint<?, ?>> blueprints = Collections.emptyList();
 
     public GuardianSequenceManager(GuardianPlugin plugin, GuardianSequenceRegistry sequenceRegistry) {
         this.plugin = plugin;
+        this.sequenceRegistry = sequenceRegistry;
     }
 
     @Override
@@ -64,11 +66,15 @@ public class GuardianSequenceManager implements SequenceManager<Event> {
     public void invokeFor(@Nonnull EntityEntry entry, @Nonnull Event event, Predicate<Sequence> predicate) {
         // Sequence Executor
         this.sequences.get(entry).removeIf(sequence -> {
+
+            // Note: Do not simplify this. Only invoke the sequence if you have confirmed the predicate test FIRST.
+            //       otherwise it defeats the purpose of the test (sequence check is particularly expensive when not
+            //       required). As well as this, please ONLY use 'invokeFor' if you need to stop the potentially expensive
+            //       check from causing issues in the thread, otherwise just use invoke.
             if (predicate.test(sequence)) {
-                if (this.invokeSequence(sequence, entry, event)) {
-                    return true;
-                }
+                return this.invokeSequence(sequence, entry, event);
             }
+
             return false;
         });
 
@@ -115,35 +121,40 @@ public class GuardianSequenceManager implements SequenceManager<Event> {
     }
 
     private void invokeBlueprint(@Nonnull EntityEntry entry, @Nonnull Event event) {
-        this.blueprints.stream()
-                .filter(blueprint -> GuardianSequenceManager.this.sequences.get(entry).stream()
-                        .noneMatch(playerSequence -> playerSequence.getSequenceBlueprint()
-                                .getCheck().compare(blueprint.getCheck())))
-                .forEach(blueprint -> {
-                    Sequence<?, ?> sequence = blueprint.create(entry);
+        for (SequenceBlueprint sequenceBlueprint : this.sequenceRegistry) {
 
-                    // Fire SequenceStartEvent
+            // 1. Check for matching sequence.
 
-                    if (sequence.apply(entry, event)) {
-                        if (sequence.isCancelled()) {
-                            return;
+            if (this.sequences.get(entry).stream()
+                    .anyMatch(playerSequence -> playerSequence.getSequenceBlueprint()
+                            .equals(sequenceBlueprint))) continue;
+
+            // 2. Apply the sequence for the first time to check the event or leave it to be garbage collected.
+
+            Sequence<?, ?> sequence = sequenceBlueprint.create(entry);
+
+            // Fire SequenceStartEvent
+
+            if (sequence.apply(entry, event)) {
+                if (sequence.isCancelled()) {
+                    continue;
+                }
+
+                if (sequence.isFinished()) {
+                    if (sequence.isRunning()) {
+                        for (Capture<?, ?> capture : sequence.getCaptureRegistry()) {
+                            capture.stop(entry, sequence.getCaptureRegistry().getContainer());
                         }
-
-                        if (sequence.isFinished()) {
-                            if (sequence.isRunning()) {
-                                for (Capture<?, ?> capture : sequence.getCaptureRegistry()) {
-                                    capture.stop(entry, sequence.getCaptureRegistry().getContainer());
-                                }
-                            }
-
-                            // Fire SequenceFinishEvent.
-
-                            return;
-                        }
-
-                        GuardianSequenceManager.this.sequences.put(entry, sequence);
                     }
-                });
+
+                    // Fire SequenceFinishEvent.
+
+                    continue;
+                }
+
+                this.sequences.put(entry, sequence);
+            }
+        }
     }
 
     @Override

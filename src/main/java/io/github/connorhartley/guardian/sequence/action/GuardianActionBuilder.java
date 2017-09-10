@@ -39,7 +39,7 @@ public class GuardianActionBuilder<E, F extends DetectionConfiguration, T> imple
     private final Action<T> action;
     private final SequenceBuilder<E, F> sequenceBuilder;
 
-    public GuardianActionBuilder(SequenceBuilder sequenceBuilder, Action<T> action) {
+    public GuardianActionBuilder(SequenceBuilder<E, F> sequenceBuilder, Action<T> action) {
         this.sequenceBuilder = sequenceBuilder;
         this.action = action;
     }

@@ -38,6 +38,7 @@ import io.github.connorhartley.guardian.report.GuardianSummary;
 import io.github.connorhartley.guardian.sequence.action.GuardianAction;
 import org.spongepowered.api.entity.living.player.Player;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -52,7 +53,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
     private final GuardianSummary<E, F> summary;
     private final CaptureRegistry captureRegistry;
     private final SequenceBlueprint<E, F> sequenceBlueprint;
-    private final Collection<GuardianAction> actions = Collections.emptyList();
+    private final Collection<GuardianAction> actions = new ArrayList<>();
     private final Origin.Builder originSource = Origin.source(this);
 
     private int queue = 0;
@@ -98,11 +99,8 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
 
                 this.capturing = true;
 
-                if (!entry.getEntity(TypeToken.of(Player.class)).isPresent())
-                    this.captureRegistry.getContainer().put(GuardianSequence.INITIAL_LOCATION, null);
-
-                this.captureRegistry.getContainer().put(GuardianSequence.INITIAL_LOCATION,
-                        entry.getEntity(TypeToken.of(Player.class)).get().getLocation());
+                if (entry.getEntity(TypeToken.of(Player.class)).isPresent()) this.captureRegistry.getContainer()
+                        .put(GuardianSequence.INITIAL_LOCATION, entry.getEntity(TypeToken.of(Player.class)).get().getLocation());
             }
 
             GuardianAction<T> typeAction = (GuardianAction<T>) action;

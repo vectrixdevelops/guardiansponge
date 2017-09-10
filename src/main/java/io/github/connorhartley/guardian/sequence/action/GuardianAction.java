@@ -32,6 +32,7 @@ import com.ichorpowered.guardian.api.sequence.condition.Condition;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import io.github.connorhartley.guardian.sequence.condition.GuardianCondition;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -41,7 +42,7 @@ public class GuardianAction<T> implements Action<T> {
 
     private final Class<T> eventClass;
 
-    private final Collection<Condition<T>> conditions = Collections.emptyList();
+    private final Collection<Condition<T>> conditions = new ArrayList<>();
 
     private int delay;
     private int expire;
@@ -76,7 +77,7 @@ public class GuardianAction<T> implements Action<T> {
         return this.conditions.stream()
                 .filter(condition -> condition.getType().equals(GuardianCondition.Type.NORMAL))
                 .noneMatch(condition -> {
-                    Summary<?, ?> summary = condition.get().apply(entry, event, null, null, lastActionTime);
+                    Summary<E, F> summary = condition.<E, F>get().apply(entry, event, sequence.getCaptureRegistry().getContainer(), sequence.getSummary(), lastActionTime);
 
                     if (summary.view(SequenceReport.class) == null) return true;
                     return !summary.view(SequenceReport.class).passed();
@@ -88,7 +89,7 @@ public class GuardianAction<T> implements Action<T> {
         this.conditions.stream()
                 .filter(condition -> condition.getType().equals(GuardianCondition.Type.SUCCESS))
                 .forEach(condition -> {
-                    Summary<?, ?> summary = condition.get().apply(entry, event, null, null, lastActionTime);
+                    Summary<E, F> summary = condition.<E, F>get().apply(entry, event, sequence.getCaptureRegistry().getContainer(), sequence.getSummary(), lastActionTime);
                 });
         return true;
     }
@@ -98,7 +99,7 @@ public class GuardianAction<T> implements Action<T> {
         return this.conditions.stream()
                 .filter(condition -> condition.getType().equals(GuardianCondition.Type.FAIL))
                 .anyMatch(condition -> {
-                    Summary<?, ?> summary = condition.get().apply(entry, event, null, null, lastActionTime);
+                    Summary<E, F> summary = condition.<E, F>get().apply(entry, event, sequence.getCaptureRegistry().getContainer(), sequence.getSummary(), lastActionTime);
 
                     if (summary.view(SequenceReport.class) == null) return false;
                     return summary.view(SequenceReport.class).passed();

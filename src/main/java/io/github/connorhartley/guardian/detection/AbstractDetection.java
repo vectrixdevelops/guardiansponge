@@ -23,34 +23,45 @@
  */
 package io.github.connorhartley.guardian.detection;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionChain;
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
+import com.ichorpowered.guardian.api.detection.check.Check;
+import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
+import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
+import io.github.connorhartley.guardian.GuardianPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
-public class GuardianDetectionChain implements DetectionChain {
+public abstract class AbstractDetection implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension {
 
-    private final Multimap<ProcessType, Class> chainRegistry = HashMultimap.create();
+    private final GuardianPlugin plugin;
+    private final List<Check<GuardianPlugin, DetectionConfiguration>> checks = new ArrayList<>();
 
-    public GuardianDetectionChain() {}
-
-    @Override
-    public <C> void add(@Nonnull C pluginContainer, @Nonnull ProcessType processType, @Nonnull Class<?> clazz) {
-        if (this.chainRegistry.containsEntry(processType, clazz)) return;
-        this.chainRegistry.put(processType, clazz);
+    public AbstractDetection(GuardianPlugin plugin) {
+        this.plugin = plugin;
     }
 
-    @Override
-    public <T> List<Class<? extends T>> get(@Nonnull ProcessType processType) {
-        if (!this.chainRegistry.containsKey(processType)) return null;
-
-        List<Class<? extends T>> list = new ArrayList<>();
-        this.chainRegistry.get(processType).forEach(aClass -> list.add((Class<? extends T>) aClass));
-
-        return list;
+    public void initializeDetection() {
+        this.getChain().<CheckBlueprint<GuardianPlugin, DetectionConfiguration>>get(DetectionChain.ProcessType.CHECK)
+                .forEach(checkClass -> {
+                    CheckBlueprint<GuardianPlugin, DetectionConfiguration> blueprint =
+                            this.plugin.getCheckRegistry().expect(checkClass);
+                    this.checks.add(blueprint.create(this));
+                });
     }
+
+    @Nonnull
+    @Override
+    public GuardianPlugin getOwner() {
+        return this.plugin;
+    }
+
+    public List<Check<GuardianPlugin, DetectionConfiguration>> getChecks() {
+        return this.checks;
+    }
+
 }

@@ -37,14 +37,23 @@ import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.util.ImplementationException;
 import com.me4502.modularframework.ModuleController;
+import io.github.connorhartley.guardian.detection.GuardianDetectionRegistry;
+import io.github.connorhartley.guardian.detection.check.GuardianCheckRegistry;
+import io.github.connorhartley.guardian.sequence.GuardianSequenceListener;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
+import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
+import io.github.connorhartley.guardian.util.CauseHelper;
+import io.github.connorhartley.guardian.util.ConsoleFormatter;
 import net.kyori.event.SimpleEventBus;
 import org.bstats.MetricsLite;
+import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -94,11 +103,27 @@ public class GuardianPlugin implements Guardian<Event> {
 
     /* System Fields */
 
-    private GuardianState systemState;
+    private GuardianState lifeState;
     private ModuleController<GuardianPlugin> moduleSubsystem;
 
     /* Registries / Managers */
+    private GuardianDetectionRegistry detectionRegistry;
+    private GuardianCheckRegistry checkRegistry;
+    private GuardianSequenceRegistry sequenceRegistry;
     private GuardianSequenceManager sequenceManager;
+    private GuardianLoader guardianLoader;
+
+    /* Tasks */
+
+    private GuardianSequenceManager.SequenceTask sequenceManagerTask;
+
+    /* Event Handlers */
+
+    private GuardianSequenceListener sequenceListener;
+
+    /* Utilities */
+
+    private final CauseHelper causeHelper;
 
     @Inject
     public GuardianPlugin(PluginContainer pluginContainer, Logger logger, MetricsLite metrics,
@@ -107,11 +132,84 @@ public class GuardianPlugin implements Guardian<Event> {
         this.logger = logger;
         this.metrics = metrics;
         this.configDir = configDir;
+        this.causeHelper = new CauseHelper(this);
     }
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
-        // Game Initialization
+        this.getLogger().info(ConsoleFormatter.builder()
+                .bg(Ansi.Color.YELLOW, "                  START PHASE                  ")
+                .build().get()
+        );
+
+        this.getLogger().info(ConsoleFormatter.builder()
+                .of("Prerequisite Check                    ")
+                .bg(Ansi.Color.YELLOW, "   20%   ")
+                .build().get()
+        );
+
+        this.detectionRegistry = new GuardianDetectionRegistry(this);
+        this.checkRegistry = new GuardianCheckRegistry(this);
+        this.sequenceRegistry = new GuardianSequenceRegistry(this);
+
+        this.lifeState = GuardianState.PRE_INITIALIZATION;
+
+        // Post : PRE_INITIALIZATION Event
+
+        this.getLogger().info(ConsoleFormatter.builder()
+                .of("System Initialization                 ")
+                .bg(Ansi.Color.YELLOW, "   40%   ")
+                .build().get()
+        );
+
+        this.sequenceManager = new GuardianSequenceManager(this, this.sequenceRegistry);
+        this.sequenceManagerTask = new GuardianSequenceManager.SequenceTask(this, this.sequenceManager);
+        this.sequenceListener = new GuardianSequenceListener(this);
+        this.guardianLoader = new GuardianLoader(this);
+
+        this.lifeState = GuardianState.INITIALIZATION;
+
+        // Post : INITIALIZATION Event
+    }
+
+    @Listener
+    public void onServerStarting(GameStartingServerEvent event) {
+        this.getLogger().info(ConsoleFormatter.builder()
+                .of("Module Registration                   ")
+                .bg(Ansi.Color.YELLOW, "   60%   ")
+                .build().get()
+        );
+
+        // TODO: Register modules.
+
+        this.lifeState = GuardianState.POST_INITIALIZATION;
+
+        // Post : POST_INITIALIZATION Event
+
+        this.getLogger().info(ConsoleFormatter.builder()
+                .of("Test                                  ")
+                .bg(Ansi.Color.YELLOW, "   80%   ")
+                .build().get()
+        );
+
+        this.sequenceManagerTask.start();
+
+        this.lifeState = GuardianState.STARTING;
+
+        // Post : STARTING Event
+    }
+
+    @Listener
+    public void onServerStarted(GameStartedServerEvent event) {
+        this.getLogger().info(ConsoleFormatter.builder()
+                .of("Start                                 ")
+                .bg(Ansi.Color.YELLOW, "  100%   ")
+                .build().get()
+        );
+
+        this.lifeState = GuardianState.STARTED;
+
+        // Post : STARTED Event
     }
 
     public Logger getLogger() {
@@ -126,7 +224,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public GuardianState getState() {
-        return this.systemState;
+        return this.lifeState;
     }
 
     @Override

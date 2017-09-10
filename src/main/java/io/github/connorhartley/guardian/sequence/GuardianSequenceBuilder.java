@@ -37,6 +37,7 @@ import io.github.connorhartley.guardian.sequence.action.GuardianAction;
 import io.github.connorhartley.guardian.sequence.action.GuardianActionBuilder;
 import io.github.connorhartley.guardian.sequence.capture.GuardianCaptureRegistry;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,8 +47,8 @@ import javax.annotation.Nullable;
 
 public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implements SequenceBuilder<E, F> {
 
-    private final Collection<GuardianAction> actions = Collections.emptyList();
-    private final Collection<Capture<E, F>> captures = Collections.emptyList();
+    private final Collection<GuardianAction> actions = new ArrayList<>();
+    private final Collection<Capture<E, F>> captures = new ArrayList<>();
 
     @SafeVarargs
     @Override
