@@ -26,7 +26,10 @@ package io.github.connorhartley.guardian;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.GuardianState;
+import com.ichorpowered.guardian.api.detection.Detection;
+import com.ichorpowered.guardian.api.detection.DetectionChain;
 import com.ichorpowered.guardian.api.detection.DetectionRegistry;
+import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
 import com.ichorpowered.guardian.api.detection.heuristic.HeuristicRegistry;
 import com.ichorpowered.guardian.api.detection.module.ModuleRegistry;
@@ -37,8 +40,13 @@ import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.util.ImplementationException;
 import com.me4502.modularframework.ModuleController;
+import com.me4502.modularframework.ShadedModularFramework;
+import com.me4502.modularframework.module.ModuleWrapper;
+import com.me4502.precogs.detection.DetectionType;
+import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionRegistry;
 import io.github.connorhartley.guardian.detection.check.GuardianCheckRegistry;
+import io.github.connorhartley.guardian.detection.penalty.GuardianPenaltyRegistry;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceListener;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
@@ -48,6 +56,7 @@ import net.kyori.event.SimpleEventBus;
 import org.bstats.MetricsLite;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
@@ -110,6 +119,7 @@ public class GuardianPlugin implements Guardian<Event> {
     private GuardianDetectionRegistry detectionRegistry;
     private GuardianCheckRegistry checkRegistry;
     private GuardianSequenceRegistry sequenceRegistry;
+    private GuardianPenaltyRegistry penaltyRegistry;
     private GuardianSequenceManager sequenceManager;
     private GuardianLoader guardianLoader;
 
@@ -148,9 +158,13 @@ public class GuardianPlugin implements Guardian<Event> {
                 .build().get()
         );
 
+        this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
+        this.moduleSubsystem.setPluginContainer(this.pluginContainer);
+
         this.detectionRegistry = new GuardianDetectionRegistry(this);
         this.checkRegistry = new GuardianCheckRegistry(this);
         this.sequenceRegistry = new GuardianSequenceRegistry(this);
+        this.penaltyRegistry = new GuardianPenaltyRegistry(this);
 
         this.lifeState = GuardianState.PRE_INITIALIZATION;
 
@@ -180,7 +194,27 @@ public class GuardianPlugin implements Guardian<Event> {
                 .build().get()
         );
 
-        // TODO: Register modules.
+        this.guardianLoader.loadModules(this.moduleSubsystem);
+
+        this.getLogger().info(ConsoleFormatter.builder()
+                .fg(Ansi.Color.YELLOW, "Discovered " + this.moduleSubsystem.getModules().size() + " module(s).")
+                .build().get()
+        );
+
+        this.moduleSubsystem.enableModules();
+
+        this.moduleSubsystem.getModules().stream()
+                .filter(ModuleWrapper::isEnabled)
+                .forEach(moduleWrapper -> {
+                    if (!moduleWrapper.getModule().isPresent()) return;
+                    if (moduleWrapper.getModule().get() instanceof Detection) {
+                        AbstractDetection detection = (AbstractDetection) moduleWrapper.getModule().get();
+
+                        detection.getChecks().forEach(check -> this.getSequenceRegistry().put(this, check.getClass(), check.getSequence()));
+
+                        Sponge.getRegistry().register(DetectionType.class, detection);
+                    }
+                });
 
         this.lifeState = GuardianState.POST_INITIALIZATION;
 
@@ -216,6 +250,10 @@ public class GuardianPlugin implements Guardian<Event> {
         return this.logger;
     }
 
+    public Path getConfigDirectory() {
+        return this.configDir;
+    }
+
     @Override
     public <T extends Guardian> T getInstance(@Nullable Class<T> aClass) throws ImplementationException {
         if (aClass == null || !aClass.isInstance(this)) throw new ImplementationException("Could not assign instance from class " + aClass);
@@ -239,12 +277,12 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public DetectionRegistry getDetectionRegistry() {
-        return null;
+        return this.detectionRegistry;
     }
 
     @Override
     public CheckRegistry getCheckRegistry() {
-        return null;
+        return this.checkRegistry;
     }
 
     @Override
@@ -254,12 +292,12 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public PenaltyRegistry getPenaltyRegistry() {
-        return null;
+        return this.penaltyRegistry;
     }
 
     @Override
     public SequenceRegistry getSequenceRegistry() {
-        return null;
+        return this.sequenceRegistry;
     }
 
     @Override

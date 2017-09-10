@@ -29,6 +29,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
+import org.spongepowered.api.plugin.PluginContainer;
 
 public final class GuardianSequenceListener {
 
@@ -40,7 +41,8 @@ public final class GuardianSequenceListener {
 
     @Listener
     public void moveEntityEvent(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
-        this.plugin.getSequenceManager().invoke(GuardianEntityEntry.of(player, player.getUniqueId()), event);
+        this.plugin.getSequenceManager().invokeFor(GuardianEntityEntry.of(player, player.getUniqueId()), event,
+                sequence -> !event.getCause().containsType(PluginContainer.class));
     }
 
 }

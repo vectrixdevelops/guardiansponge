@@ -29,6 +29,7 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
+import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.GuardianPlugin;
 
 import java.util.ArrayList;
@@ -36,12 +37,13 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractDetection implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension {
+public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension {
 
     private final GuardianPlugin plugin;
     private final List<Check<GuardianPlugin, DetectionConfiguration>> checks = new ArrayList<>();
 
-    public AbstractDetection(GuardianPlugin plugin) {
+    public AbstractDetection(GuardianPlugin plugin, String id, String name) {
+        super(id, name);
         this.plugin = plugin;
     }
 
