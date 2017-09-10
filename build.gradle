@@ -54,13 +54,8 @@ dependencies {
     compile 'org.bstats:bstats-sponge-lite:1.1'
     compile "org.fusesource.jansi:jansi:1.16"
 
-    compile 'tech.ferus.util:ConfigKeys:1.0.3'
     compile 'tech.ferus.util:basicsql-h2:2.0.1'
     compile 'tech.ferus.util:basicsql-mysql:2.0.1'
-
-    // Compatibility Dependencies
-
-    compile 'io.github.nucleuspowered:nucleus-api:0.29.3-SNAPSHOT-S6.0'
 }
 
 blossom {
@@ -116,6 +111,7 @@ shadowJar {
     classifier = 'unminified'
     dependencies {
         include(dependency('org.apache.commons:commons-math3:3.6.1'))
+        include(dependency('com.ichorpowered.guardian.api:guardianapi:1.0.0-SNAPSHOT'))
 
         relocate ('com.mchange', 'io.github.connorhartley.guardian.util.database.mchange') {
             include(dependency('com.mchange:c3p0'))
@@ -138,6 +134,15 @@ shadowJar {
 
         relocate ('org.bstats', 'io.github.connorhartley.guardian.util.metrics') {
             include(dependency('org.bstats:bstats-sponge-lite'))
+        }
+
+        relocate ('net.kyori', 'io.github.connorhartley.guardian.util.events') {
+            include(dependency('net.kyori:event'))
+            include(dependency('net.kyori:lunar'))
+        }
+
+        relocate ('org.fusesource.jansi', 'io.github.connorhartley.guardian.util.jansi') {
+            include(dependency('org.fusesource.jansi:jansi'))
         }
     }
     exclude 'GradleStart**'

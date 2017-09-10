@@ -40,7 +40,6 @@ import io.github.connorhartley.guardian.sequence.capture.GuardianCaptureRegistry
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

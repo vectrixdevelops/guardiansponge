@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.internal.detection;
 
+import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.detection.DetectionChain;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.me4502.modularframework.module.Module;
@@ -42,8 +43,8 @@ import java.nio.file.Path;
 
 import javax.annotation.Nonnull;
 
-@Module(id = "speed",
-        name = "Speed Detection",
+@Module(id = "movementspeed",
+        name = "Movement Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
         version = "0.1.0",
         onEnable = "onConstruction",
@@ -55,6 +56,7 @@ public class MovementSpeedDetection extends AbstractDetection {
     private DetectionChain detectionChain;
     private VerticalSpeedConfiguration detectionConfiguration;
 
+    @Inject
     public MovementSpeedDetection(@ModuleContainer PluginContainer moduleContainer) {
         super((GuardianPlugin) moduleContainer.getInstance().get(), "movementspeed", "Movement Speed Detection");
     }
@@ -100,7 +102,7 @@ public class MovementSpeedDetection extends AbstractDetection {
 
     public static class VerticalSpeedConfiguration implements DetectionConfiguration {
 
-        private static final String FILE_PATH = "/detection/movementspeed.conf";
+        private static final String FILE_NAME = "movementspeed.conf";
 
         private final MovementSpeedDetection detection;
         private final Path configDir;
@@ -116,10 +118,11 @@ public class MovementSpeedDetection extends AbstractDetection {
         @Override
         public void load() {
             try {
-                this.configFile = HoconLoaderPatch.load(this.configDir.resolve(FILE_PATH), FILE_PATH, !this.exists());
+                this.configFile = HoconLoaderPatch.load(this.configDir.resolve("detection").resolve(FILE_NAME),
+                        "/detection/" + FILE_NAME, !this.exists());
             } catch (IOException e) {
                 this.detection.getOwner().getLogger().error("A problem occurred attempting to load the " +
-                        "guardian vertical speed detection configuration!");
+                        "guardian movement speed detection configuration!", e);
             }
         }
 
@@ -136,7 +139,7 @@ public class MovementSpeedDetection extends AbstractDetection {
         }
 
         public boolean exists() {
-            return this.configDir.resolve(FILE_PATH).toFile().exists();
+            return this.configDir.resolve("detection").resolve(FILE_NAME).toFile().exists();
         }
 
     }

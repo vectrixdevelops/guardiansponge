@@ -103,7 +103,7 @@ public class InvalidMovementDetection extends AbstractDetection {
 
     public static class InvalidMovementConfiguration implements DetectionConfiguration {
 
-        private static final String FILE_PATH = "/detection/invalidmovement.conf";
+        private static final String FILE_NAME = "invalidmovement.conf";
 
         private final InvalidMovementDetection detection;
         private final Path configDir;
@@ -119,10 +119,11 @@ public class InvalidMovementDetection extends AbstractDetection {
         @Override
         public void load() {
             try {
-                this.configFile = HoconLoaderPatch.load(this.configDir.resolve(FILE_PATH), FILE_PATH, !this.exists());
+                this.configFile = HoconLoaderPatch.load(this.configDir.resolve("detection").resolve(FILE_NAME),
+                        "/detection/" + FILE_NAME, !this.exists());
             } catch (IOException e) {
                 this.detection.getOwner().getLogger().error("A problem occurred attempting to load the " +
-                        "guardian invalid movement detection configuration!");
+                        "guardian invalid movement detection configuration!", e);
             }
         }
 
@@ -139,7 +140,7 @@ public class InvalidMovementDetection extends AbstractDetection {
         }
 
         public boolean exists() {
-            return this.configDir.resolve(FILE_PATH).toFile().exists();
+            return this.configDir.resolve("detection").resolve(FILE_NAME).toFile().exists();
         }
 
     }

@@ -42,8 +42,10 @@ public final class GuardianLoader {
 
     public void loadChecks() {
         // Standard
-        this.plugin.getCheckRegistry().put(this.plugin, MovementSpeedCheck.Blueprint.class, new MovementSpeedCheck.Blueprint());
-        this.plugin.getCheckRegistry().put(this.plugin, InvalidMovementCheck.Blueprint.class, new InvalidMovementCheck.Blueprint());
+        this.plugin.getCheckRegistry().put(this.plugin, MovementSpeedCheck.Blueprint.class,
+                new MovementSpeedCheck.Blueprint());
+        this.plugin.getCheckRegistry().put(this.plugin, InvalidMovementCheck.Blueprint.class,
+                new InvalidMovementCheck.Blueprint());
 
     }
 

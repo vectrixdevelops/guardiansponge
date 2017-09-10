@@ -29,28 +29,29 @@ import com.ichorpowered.guardian.api.detection.DetectionChain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.annotation.Nonnull;
 
 public class GuardianDetectionChain implements DetectionChain {
 
-    private final Multimap<ProcessType, Class> chainRegistry = HashMultimap.create();
+    private final Multimap<ProcessType, Class<?>> chainRegistry = HashMultimap.create();
 
     public GuardianDetectionChain() {}
 
     @Override
     public <C> void add(@Nonnull C pluginContainer, @Nonnull ProcessType processType, @Nonnull Class<?> clazz) {
-        if (this.chainRegistry.containsEntry(processType, clazz)) return;
+        if (this.chainRegistry.containsKey(processType) && this.chainRegistry.get(processType).contains(clazz)) return;
         this.chainRegistry.put(processType, clazz);
     }
 
     @Override
     public <T> List<Class<? extends T>> get(@Nonnull ProcessType processType) {
-        if (!this.chainRegistry.containsKey(processType)) return null;
+        if (!this.chainRegistry.containsKey(processType)) throw new NoSuchElementException();
 
-        List<Class<? extends T>> list = new ArrayList<>();
-        this.chainRegistry.get(processType).forEach(aClass -> list.add((Class<? extends T>) aClass));
+        List<Class<? extends T>> converted = new ArrayList<>();
+        this.chainRegistry.get(processType).forEach(clazz -> converted.add((Class<? extends T>) clazz));
 
-        return list;
+        return converted;
     }
 }

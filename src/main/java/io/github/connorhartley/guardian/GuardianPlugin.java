@@ -27,9 +27,7 @@ import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.GuardianState;
 import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionChain;
 import com.ichorpowered.guardian.api.detection.DetectionRegistry;
-import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
 import com.ichorpowered.guardian.api.detection.heuristic.HeuristicRegistry;
 import com.ichorpowered.guardian.api.detection.module.ModuleRegistry;
@@ -53,6 +51,7 @@ import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
 import io.github.connorhartley.guardian.util.CauseHelper;
 import io.github.connorhartley.guardian.util.ConsoleFormatter;
 import net.kyori.event.SimpleEventBus;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.bstats.MetricsLite;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
@@ -70,6 +69,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -100,7 +100,7 @@ import javax.annotation.Nullable;
 )
 public class GuardianPlugin implements Guardian<Event> {
 
-    public static Text GUARDIAN_PREFIX = Text.of(TextColors.DARK_AQUA, "[", TextColors.AQUA, "GuardianPlugin",
+    public static Text GUARDIAN_PREFIX = Text.of(TextColors.DARK_AQUA, "[", TextColors.AQUA, "Guardian",
             TextColors.DARK_AQUA, "] ", TextColors.RESET);
 
     /* Injection Fields */
@@ -116,6 +116,7 @@ public class GuardianPlugin implements Guardian<Event> {
     private ModuleController<GuardianPlugin> moduleSubsystem;
 
     /* Registries / Managers */
+    private GuardianConfiguration configuration;
     private GuardianDetectionRegistry detectionRegistry;
     private GuardianCheckRegistry checkRegistry;
     private GuardianSequenceRegistry sequenceRegistry;
@@ -147,16 +148,13 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
-        this.getLogger().info(ConsoleFormatter.builder()
-                .bg(Ansi.Color.YELLOW, "                  START PHASE                  ")
+        this.getLogger().warn(ConsoleFormatter.builder()
+                .fg(Ansi.Color.RED, "You are using an extremely EXPERIMENTAL build of Guardian. \n" +
+                        "It is advised you stick to stable build UNLESS you are testing this in a controlled environment!")
                 .build().get()
         );
 
-        this.getLogger().info(ConsoleFormatter.builder()
-                .of("Prerequisite Check                    ")
-                .bg(Ansi.Color.YELLOW, "   20%   ")
-                .build().get()
-        );
+        this.getLogger().info("Pre Test");
 
         this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleSubsystem.setPluginContainer(this.pluginContainer);
@@ -170,11 +168,10 @@ public class GuardianPlugin implements Guardian<Event> {
 
         // Post : PRE_INITIALIZATION Event
 
-        this.getLogger().info(ConsoleFormatter.builder()
-                .of("System Initialization                 ")
-                .bg(Ansi.Color.YELLOW, "   40%   ")
-                .build().get()
-        );
+        this.getLogger().info("System Initialization");
+
+        this.configuration = new GuardianConfiguration(this, this.getConfigDirectory());
+        this.configuration.load();
 
         this.sequenceManager = new GuardianSequenceManager(this, this.sequenceRegistry);
         this.sequenceManagerTask = new GuardianSequenceManager.SequenceTask(this, this.sequenceManager);
@@ -188,12 +185,9 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Listener
     public void onServerStarting(GameStartingServerEvent event) {
-        this.getLogger().info(ConsoleFormatter.builder()
-                .of("Module Registration                   ")
-                .bg(Ansi.Color.YELLOW, "   60%   ")
-                .build().get()
-        );
+        this.getLogger().info("Module Registration");
 
+        this.guardianLoader.loadChecks();
         this.guardianLoader.loadModules(this.moduleSubsystem);
 
         this.getLogger().info(ConsoleFormatter.builder()
@@ -201,7 +195,17 @@ public class GuardianPlugin implements Guardian<Event> {
                 .build().get()
         );
 
-        this.moduleSubsystem.enableModules();
+        this.moduleSubsystem.enableModules(moduleWrapper -> {
+            try {
+                if (this.configuration.getEnabledModules().contains(moduleWrapper.getId())) return true;
+            } catch (ObjectMappingException e) {
+                this.getLogger().error("Failed to acquire enable modules list from the configuration.", e);
+            }
+            return false;
+        });
+
+        AtomicInteger detections = new AtomicInteger(0);
+        AtomicInteger checks = new AtomicInteger(0);
 
         this.moduleSubsystem.getModules().stream()
                 .filter(ModuleWrapper::isEnabled)
@@ -210,21 +214,27 @@ public class GuardianPlugin implements Guardian<Event> {
                     if (moduleWrapper.getModule().get() instanceof Detection) {
                         AbstractDetection detection = (AbstractDetection) moduleWrapper.getModule().get();
 
-                        detection.getChecks().forEach(check -> this.getSequenceRegistry().put(this, check.getClass(), check.getSequence()));
+                        detections.incrementAndGet();
+
+                        detection.getChecks().forEach(check -> {
+                            this.getSequenceRegistry().put(this, check.getClass(), check.getSequence());
+                            checks.incrementAndGet();
+                        });
 
                         Sponge.getRegistry().register(DetectionType.class, detection);
                     }
                 });
 
+        this.getLogger().info(ConsoleFormatter.builder()
+                .fg(Ansi.Color.YELLOW, "Loaded " + checks.get() + " check(s), for " + detections.get() + " detection(s).")
+                .build().get()
+        );
+
         this.lifeState = GuardianState.POST_INITIALIZATION;
 
         // Post : POST_INITIALIZATION Event
 
-        this.getLogger().info(ConsoleFormatter.builder()
-                .of("Test                                  ")
-                .bg(Ansi.Color.YELLOW, "   80%   ")
-                .build().get()
-        );
+        this.getLogger().info("Post Test");
 
         this.sequenceManagerTask.start();
 
@@ -235,11 +245,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
-        this.getLogger().info(ConsoleFormatter.builder()
-                .of("Start                                 ")
-                .bg(Ansi.Color.YELLOW, "  100%   ")
-                .build().get()
-        );
+        this.getLogger().info("Started");
 
         this.lifeState = GuardianState.STARTED;
 
@@ -251,7 +257,7 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     public Path getConfigDirectory() {
-        return this.configDir;
+        return this.configDir.getParent();
     }
 
     @Override

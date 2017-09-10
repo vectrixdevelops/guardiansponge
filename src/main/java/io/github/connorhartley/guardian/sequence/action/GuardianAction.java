@@ -34,7 +34,6 @@ import io.github.connorhartley.guardian.sequence.condition.GuardianCondition;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.annotation.Nonnull;
 

@@ -35,8 +35,6 @@ import io.github.connorhartley.guardian.GuardianPlugin;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.scheduler.Task;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;

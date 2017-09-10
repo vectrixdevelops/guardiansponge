@@ -63,8 +63,6 @@ public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConf
         this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "time").getDouble(2d) / 0.05;
         this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "minimum").getDouble(0.75);
         this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "maximum").getDouble(1.25);
-
-        this.getOwner().getSequenceRegistry().put(this.getOwner(), this.getClass(), this.getSequence());
     }
 
     @Nonnull

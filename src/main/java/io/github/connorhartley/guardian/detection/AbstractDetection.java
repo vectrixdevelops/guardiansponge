@@ -51,8 +51,9 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
         this.getChain().<CheckBlueprint<GuardianPlugin, DetectionConfiguration>>get(DetectionChain.ProcessType.CHECK)
                 .forEach(checkClass -> {
                     CheckBlueprint<GuardianPlugin, DetectionConfiguration> blueprint =
-                            this.plugin.getCheckRegistry().expect(checkClass);
-                    this.checks.add(blueprint.create(this));
+                            (CheckBlueprint<GuardianPlugin, DetectionConfiguration>) this.plugin.getCheckRegistry().get(checkClass);
+
+                    if (blueprint != null) this.checks.add(blueprint.create(this));
                 });
     }
 
