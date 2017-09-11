@@ -29,6 +29,9 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
+import com.ichorpowered.guardian.api.detection.penalty.Penalty;
+import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
+import com.ichorpowered.guardian.api.event.GuardianListener;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.GuardianPlugin;
 
@@ -37,7 +40,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension {
+public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension, GuardianListener {
 
     private final GuardianPlugin plugin;
     private final List<Check<GuardianPlugin, DetectionConfiguration>> checks = new ArrayList<>();
@@ -47,6 +50,7 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
         this.plugin = plugin;
     }
 
+    @SuppressWarnings("unchecked")
     public void initializeDetection() {
         this.getChain().<CheckBlueprint<GuardianPlugin, DetectionConfiguration>>get(DetectionChain.ProcessType.CHECK)
                 .forEach(checkClass -> {
@@ -54,6 +58,12 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
                             (CheckBlueprint<GuardianPlugin, DetectionConfiguration>) this.plugin.getCheckRegistry().get(checkClass);
 
                     if (blueprint != null) this.checks.add(blueprint.create(this));
+                });
+
+        this.getChain().<Penalty>get(DetectionChain.ProcessType.PENALTY)
+                .forEach(penaltyClass -> {
+                    Penalty penalty = this.plugin.getPenaltyRegistry().get(penaltyClass);
+
                 });
     }
 
