@@ -31,7 +31,8 @@ import com.me4502.modularframework.module.guice.ModuleContainer;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionChain;
-import io.github.connorhartley.guardian.internal.check.MovementSpeedCheck;
+import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
 import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -54,7 +55,7 @@ public class MovementSpeedDetection extends AbstractDetection {
 
     private State state = State.UNDEFINED;
     private DetectionChain detectionChain;
-    private VerticalSpeedConfiguration detectionConfiguration;
+    private MovementSpeedConfiguration detectionConfiguration;
 
     @Inject
     public MovementSpeedDetection(@ModuleContainer PluginContainer moduleContainer) {
@@ -63,11 +64,12 @@ public class MovementSpeedDetection extends AbstractDetection {
 
     @Override
     public void onConstruction() {
-        this.detectionConfiguration = new VerticalSpeedConfiguration(this, this.getOwner().getConfigDirectory());
+        this.detectionConfiguration = new MovementSpeedConfiguration(this, this.getOwner().getConfigDirectory());
         this.detectionConfiguration.load();
 
         this.detectionChain = new GuardianDetectionChain();
-        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, MovementSpeedCheck.Blueprint.class);
+        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, HorizontalSpeedCheck.Blueprint.class);
+        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, VerticalSpeedCheck.Blueprint.class);
 
         this.initializeDetection();
     }
@@ -100,7 +102,7 @@ public class MovementSpeedDetection extends AbstractDetection {
         return this.detectionChain;
     }
 
-    public static class VerticalSpeedConfiguration implements DetectionConfiguration {
+    public static class MovementSpeedConfiguration implements DetectionConfiguration {
 
         private static final String FILE_NAME = "movementspeed.conf";
 
@@ -109,7 +111,7 @@ public class MovementSpeedDetection extends AbstractDetection {
 
         private HoconConfigFile configFile;
 
-        public VerticalSpeedConfiguration(@Nonnull MovementSpeedDetection detection,
+        public MovementSpeedConfiguration(@Nonnull MovementSpeedDetection detection,
                                           @Nonnull Path configDir) {
             this.detection = detection;
             this.configDir = configDir;

@@ -31,7 +31,7 @@ import com.me4502.modularframework.module.guice.ModuleContainer;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionChain;
-import io.github.connorhartley.guardian.internal.check.InvalidMovementCheck;
+import io.github.connorhartley.guardian.internal.check.movement.InvalidCheck;
 import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -68,7 +68,7 @@ public class InvalidMovementDetection extends AbstractDetection {
         this.detectionConfiguration.load();
 
         this.detectionChain = new GuardianDetectionChain();
-        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, InvalidMovementCheck.Blueprint.class);
+        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, InvalidCheck.Blueprint.class);
 
         this.initializeDetection();
     }

@@ -24,8 +24,9 @@
 package io.github.connorhartley.guardian;
 
 import com.me4502.modularframework.ModuleController;
-import io.github.connorhartley.guardian.internal.check.InvalidMovementCheck;
-import io.github.connorhartley.guardian.internal.check.MovementSpeedCheck;
+import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
+import io.github.connorhartley.guardian.internal.check.movement.InvalidCheck;
+import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
 
 public final class GuardianLoader {
 
@@ -42,10 +43,12 @@ public final class GuardianLoader {
 
     public void loadChecks() {
         // Standard
-        this.plugin.getCheckRegistry().put(this.plugin, MovementSpeedCheck.Blueprint.class,
-                new MovementSpeedCheck.Blueprint());
-        this.plugin.getCheckRegistry().put(this.plugin, InvalidMovementCheck.Blueprint.class,
-                new InvalidMovementCheck.Blueprint());
+        this.plugin.getCheckRegistry().put(this.plugin, HorizontalSpeedCheck.Blueprint.class,
+                new HorizontalSpeedCheck.Blueprint());
+        this.plugin.getCheckRegistry().put(this.plugin, VerticalSpeedCheck.Blueprint.class,
+                new VerticalSpeedCheck.Blueprint());
+        this.plugin.getCheckRegistry().put(this.plugin, InvalidCheck.Blueprint.class,
+                new InvalidCheck.Blueprint());
 
     }
 

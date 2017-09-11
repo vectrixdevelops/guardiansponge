@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.internal.check;
+package io.github.connorhartley.guardian.internal.check.movement;
 
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.Detection;
@@ -34,19 +34,19 @@ import io.github.connorhartley.guardian.internal.capture.PlayerControlCapture;
 import io.github.connorhartley.guardian.internal.capture.PlayerLocationCapture;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
-import org.spongepowered.api.data.key.Keys;
+import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class MovementSpeedCheck implements Check<GuardianPlugin, DetectionConfiguration> {
+public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguration> {
 
     private final CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint;
     private final Detection<GuardianPlugin, DetectionConfiguration> detection;
@@ -55,8 +55,8 @@ public class MovementSpeedCheck implements Check<GuardianPlugin, DetectionConfig
     private double minimumTickRange = 30;
     private double maximumTickRange = 50;
 
-    public MovementSpeedCheck(CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint,
-                              Detection<GuardianPlugin, DetectionConfiguration> detection) {
+    public InvalidCheck(CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint,
+                        Detection<GuardianPlugin, DetectionConfiguration> detection) {
         this.checkBlueprint = checkBlueprint;
         this.detection = detection;
 
@@ -89,7 +89,7 @@ public class MovementSpeedCheck implements Check<GuardianPlugin, DetectionConfig
         return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
                 .capture(
                         new PlayerLocationCapture<>(this.detection.getOwner(), this.detection),
-                        new PlayerControlCapture.Common<>(this.detection.getOwner(), this.detection)
+                        new PlayerControlCapture.Invalid<>(this.detection.getOwner(), this.detection)
                 )
 
                 // Trigger : Move Entity Event
@@ -108,7 +108,6 @@ public class MovementSpeedCheck implements Check<GuardianPlugin, DetectionConfig
                     summary.set(SequenceReport.class, new SequenceReport(false));
 
                     if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return summary;
-                    Player player = entityEntry.getEntity(TypeToken.of(Player.class)).get();
 
                         /*
                          * Capture Collection
@@ -117,18 +116,13 @@ public class MovementSpeedCheck implements Check<GuardianPlugin, DetectionConfig
                     Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
                     Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
                     Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
-
-                    Integer controlTicks = captureContainer.get(PlayerControlCapture.Common.CONTROL_STATE_TICKS);
-                    Integer verticalTicks = captureContainer.get(PlayerControlCapture.Common.UPDATE);
-                    Double verticalOffset = captureContainer.get(PlayerControlCapture.Common.VERTICAL_OFFSET);
-                    Double horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_OFFSET);
+                    Set<String> controls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_MOVEMENT);
 
                         /*
                          * Analysis
                          */
 
-                    if (locationTicks == null || initial == null || present == null || controlTicks == null ||
-                            verticalTicks == null || verticalOffset == null || horizontalOffset == null) return summary;
+                    if (initial == null || present == null || controls == null || locationTicks == null) return summary;
 
                     if (locationTicks < this.minimumTickRange) {
                         this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
@@ -137,52 +131,20 @@ public class MovementSpeedCheck implements Check<GuardianPlugin, DetectionConfig
                         return summary;
                     }
 
-                    if (player.get(Keys.VEHICLE).isPresent()) return summary;
+                    if (controls.isEmpty()) return summary;
 
-                    long current = System.currentTimeMillis();
+                    SequenceReport report = new SequenceReport(true);
+                    report.put("type", "Invalid Movement");
 
-                    double verticalDisplacement = Math.abs(present.getY() - initial.getY());
-                    double horizontalDisplacement = Math.abs((present.getX() - initial.getX()) + (present.getZ() - initial.getZ()));
+                    report.put("information", Collections.singletonList(
+                            "Received invalid controls of " + StringUtils.join(controls, ", ") + ".")
+                    );
 
-                    double maximumVerticalDisplacement = (verticalOffset *
-                            (verticalOffset / 0.2)) * (((
-                            ((1 / verticalTicks) * ((long) this.analysisTime * 1000)) + (current - last)
-                    ) / 2) / 1000) + 0.01;
+                    report.put("initial_location", initial);
+                    report.put("final_location", present);
+                    report.put("severity", 1d);
 
-                    double maximumHorizontalDisplacement = (horizontalOffset *
-                            (horizontalOffset / 0.2)) * (((
-                            ((1 / verticalTicks) * ((long) this.analysisTime * 1000)) + (current - last)
-                    ) / 2) / 1000) + 0.01; // TODO: This should take into account material data and many other factors too.
-
-                    if (verticalDisplacement > maximumVerticalDisplacement && present.getY() - initial.getY() > 0) {
-                        SequenceReport report = new SequenceReport(true);
-                        report.put("type", "Vertical Speed");
-
-                        report.put("information", Collections.singletonList(
-                                "Overshot maximum speed by " + (verticalDisplacement - maximumVerticalDisplacement) + ".")
-                        );
-
-                        report.put("initial_location", initial);
-                        report.put("final_location", present);
-                        report.put("severity", (verticalDisplacement - maximumVerticalDisplacement) / verticalDisplacement);
-
-                        if (present.getY() - initial.getY() < 0) {
-                            report.put("information", report.<Collection<String>>get("information").add(
-                                    "Falling vertical speed may be caused by fast falling cheat."
-                            ));
-                        }
-
-                        summary.set(SequenceReport.class, report);
-                    }
-
-                    if (horizontalDisplacement > maximumHorizontalDisplacement) {
-                        SequenceReport report = new SequenceReport(true);
-                        report.put("type", "Horizontal Speed");
-                        report.put("information", "Overshot maximum speed by " + (horizontalDisplacement - maximumHorizontalDisplacement) + ".");
-                        report.put("initial_location", initial);
-                        report.put("final_location", present);
-                        report.put("severity", (horizontalDisplacement - maximumHorizontalDisplacement) / horizontalDisplacement);
-                    }
+                    summary.set(SequenceReport.class, report);
 
                     return summary;
                 })
@@ -199,8 +161,9 @@ public class MovementSpeedCheck implements Check<GuardianPlugin, DetectionConfig
 
         @Override
         public Check<GuardianPlugin, DetectionConfiguration> create(Detection<GuardianPlugin, DetectionConfiguration> detection) {
-            return new MovementSpeedCheck(this, detection);
+            return new InvalidCheck(this, detection);
         }
 
     }
+
 }

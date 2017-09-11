@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.internal.check;
+package io.github.connorhartley.guardian.internal.check.movement;
 
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.Detection;
@@ -34,19 +34,18 @@ import io.github.connorhartley.guardian.internal.capture.PlayerControlCapture;
 import io.github.connorhartley.guardian.internal.capture.PlayerLocationCapture;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceBuilder;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
-import org.apache.commons.lang3.StringUtils;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.Collections;
-import java.util.Set;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
 
-public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConfiguration> {
+public class VerticalSpeedCheck implements Check<GuardianPlugin, DetectionConfiguration> {
 
     private final CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint;
     private final Detection<GuardianPlugin, DetectionConfiguration> detection;
@@ -55,8 +54,8 @@ public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConf
     private double minimumTickRange = 30;
     private double maximumTickRange = 50;
 
-    public InvalidMovementCheck(CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint,
-                                Detection<GuardianPlugin, DetectionConfiguration> detection) {
+    public VerticalSpeedCheck(CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint,
+                              Detection<GuardianPlugin, DetectionConfiguration> detection) {
         this.checkBlueprint = checkBlueprint;
         this.detection = detection;
 
@@ -89,7 +88,7 @@ public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConf
         return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
                 .capture(
                         new PlayerLocationCapture<>(this.detection.getOwner(), this.detection),
-                        new PlayerControlCapture.Invalid<>(this.detection.getOwner(), this.detection)
+                        new PlayerControlCapture.Common<>(this.detection.getOwner(), this.detection)
                 )
 
                 // Trigger : Move Entity Event
@@ -108,6 +107,7 @@ public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConf
                     summary.set(SequenceReport.class, new SequenceReport(false));
 
                     if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return summary;
+                    Player player = entityEntry.getEntity(TypeToken.of(Player.class)).get();
 
                         /*
                          * Capture Collection
@@ -116,13 +116,16 @@ public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConf
                     Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
                     Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
                     Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
-                    Set<String> controls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_MOVEMENT);
+
+                    Integer verticalTicks = captureContainer.get(PlayerControlCapture.Common.UPDATE);
+                    Double verticalOffset = captureContainer.get(PlayerControlCapture.Common.VERTICAL_OFFSET);
 
                         /*
                          * Analysis
                          */
 
-                    if (initial == null || present == null || controls == null || locationTicks == null) return summary;
+                    if (locationTicks == null || initial == null || present == null || verticalTicks == null
+                            || verticalOffset == null) return summary;
 
                     if (locationTicks < this.minimumTickRange) {
                         this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
@@ -131,20 +134,37 @@ public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConf
                         return summary;
                     }
 
-                    if (controls.isEmpty()) return summary;
+                    if (player.get(Keys.VEHICLE).isPresent()) return summary;
 
-                    SequenceReport report = new SequenceReport(true);
-                    report.put("type", "Invalid Movement");
+                    long current = System.currentTimeMillis();
 
-                    report.put("information", Collections.singletonList(
-                            "Received invalid controls of " + StringUtils.join(controls, ", ") + ".")
-                    );
+                    double verticalDisplacement = Math.abs(present.getY() - initial.getY());
 
-                    report.put("initial_location", initial);
-                    report.put("final_location", present);
-                    report.put("severity", 1d);
+                    double maximumVerticalDisplacement = (verticalOffset *
+                            (verticalOffset / 0.2)) * (((
+                            ((1 / verticalTicks) * ((long) this.analysisTime * 1000)) + (current - last)
+                    ) / 2) / 1000) + 0.01;
 
-                    summary.set(SequenceReport.class, report);
+                    if (verticalDisplacement > maximumVerticalDisplacement && present.getY() - initial.getY() > 0) {
+                        SequenceReport report = new SequenceReport(true);
+                        report.put("type", "Vertical Speed");
+
+                        report.put("information", Collections.singletonList(
+                                "Overshot maximum movement by " + (verticalDisplacement - maximumVerticalDisplacement) + ".")
+                        );
+
+                        report.put("initial_location", initial);
+                        report.put("final_location", present);
+                        report.put("severity", (verticalDisplacement - maximumVerticalDisplacement) / verticalDisplacement);
+
+                        if (present.getY() - initial.getY() < 0) {
+                            report.put("information", report.<Collection<String>>get("information").add(
+                                    "Falling entity instead of climbing."
+                            ));
+                        }
+
+                        summary.set(SequenceReport.class, report);
+                    }
 
                     return summary;
                 })
@@ -161,7 +181,7 @@ public class InvalidMovementCheck implements Check<GuardianPlugin, DetectionConf
 
         @Override
         public Check<GuardianPlugin, DetectionConfiguration> create(Detection<GuardianPlugin, DetectionConfiguration> detection) {
-            return new InvalidMovementCheck(this, detection);
+            return new VerticalSpeedCheck(this, detection);
         }
 
     }
