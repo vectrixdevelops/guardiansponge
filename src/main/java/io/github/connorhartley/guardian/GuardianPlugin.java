@@ -50,6 +50,7 @@ import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
 import io.github.connorhartley.guardian.util.CauseHelper;
 import io.github.connorhartley.guardian.util.ConsoleFormatter;
+import net.kyori.event.ASMEventExecutorFactory;
 import net.kyori.event.SimpleEventBus;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.bstats.MetricsLite;
@@ -115,6 +116,10 @@ public class GuardianPlugin implements Guardian<Event> {
     private GuardianState lifeState;
     private ModuleController<GuardianPlugin> moduleSubsystem;
 
+    /* Event System */
+    private SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
+
+
     /* Registries / Managers */
     private GuardianConfiguration configuration;
     private GuardianDetectionRegistry detectionRegistry;
@@ -158,6 +163,9 @@ public class GuardianPlugin implements Guardian<Event> {
 
         this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleSubsystem.setPluginContainer(this.pluginContainer);
+
+        ASMEventExecutorFactory<GuardianEvent, GuardianListener> eventExecutor = new ASMEventExecutorFactory<>();
+        this.eventBus = new SimpleEventBus<>(eventExecutor);
 
         this.detectionRegistry = new GuardianDetectionRegistry(this);
         this.checkRegistry = new GuardianCheckRegistry(this);
