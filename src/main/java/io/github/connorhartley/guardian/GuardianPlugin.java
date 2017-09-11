@@ -225,6 +225,8 @@ public class GuardianPlugin implements Guardian<Event> {
 
         AtomicInteger detections = new AtomicInteger(0);
         AtomicInteger checks = new AtomicInteger(0);
+        AtomicInteger heurstics = new AtomicInteger(0);
+        AtomicInteger penalties = new AtomicInteger(0);
 
         this.moduleSubsystem.getModules().stream()
                 .filter(ModuleWrapper::isEnabled)
@@ -243,11 +245,14 @@ public class GuardianPlugin implements Guardian<Event> {
                         this.eventBus.register(detection);
 
                         Sponge.getRegistry().register(DetectionType.class, detection);
+
+                        penalties.addAndGet(detection.getPenalties().size());
                     }
                 });
 
         this.getLogger().info(ConsoleFormatter.builder()
-                .fg(Ansi.Color.YELLOW, "Loaded " + checks.get() + " check(s), for " + detections.get() + " detection(s).")
+                .fg(Ansi.Color.YELLOW, "Loaded " + penalties.get() + " punishment(s), " + heurstics.get() +
+                        " heuristic(s) and " + checks.get() + " check(s) for " + detections.get() + " detection(s).")
                 .build().get()
         );
 

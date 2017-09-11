@@ -34,6 +34,7 @@ import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
 import com.ichorpowered.guardian.api.event.GuardianListener;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.GuardianPlugin;
+import io.github.connorhartley.guardian.detection.penalty.PenaltyReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,9 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
 
     private final GuardianPlugin plugin;
     private final List<Check<GuardianPlugin, DetectionConfiguration>> checks = new ArrayList<>();
+    private final List<Penalty> penalties = new ArrayList<>();
+    private final List<PenaltyReader.Action> actions = new ArrayList<>();
+    private final List<PenaltyReader.ActionLevel> actionLevels = new ArrayList<>();
 
     public AbstractDetection(GuardianPlugin plugin, String id, String name) {
         super(id, name);
@@ -60,10 +64,20 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
                     if (blueprint != null) this.checks.add(blueprint.create(this));
                 });
 
+        this.actions.addAll(PenaltyReader.Holder.INSTANCE.parseActions(this));
+        this.actionLevels.addAll(PenaltyReader.Holder.INSTANCE.parseActionLevels(this));
+
         this.getChain().<Penalty>get(DetectionChain.ProcessType.PENALTY)
                 .forEach(penaltyClass -> {
                     Penalty penalty = this.plugin.getPenaltyRegistry().get(penaltyClass);
 
+                    this.actions.forEach(action -> {
+                        if (penalty == null) return;
+
+                        if (action.getId().equals(penalty.getId())) {
+                            this.penalties.add(penalty);
+                        }
+                    });
                 });
     }
 
@@ -73,8 +87,24 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
         return this.plugin;
     }
 
+    @Nonnull
     public List<Check<GuardianPlugin, DetectionConfiguration>> getChecks() {
         return this.checks;
+    }
+
+    @Nonnull
+    public List<Penalty> getPenalties() {
+        return this.penalties;
+    }
+
+    @Nonnull
+    public List<PenaltyReader.Action> getActions() {
+        return this.actions;
+    }
+
+    @Nonnull
+    public List<PenaltyReader.ActionLevel> getActionLevels() {
+        return this.actionLevels;
     }
 
 }

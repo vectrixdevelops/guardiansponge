@@ -31,6 +31,11 @@ import javax.annotation.Nonnull;
 
 public class ResetPenalty implements Penalty {
 
+    @Override
+    public String getId() {
+        return "reset";
+    }
+
     @Nonnull
     @Override
     public <E, F extends DetectionConfiguration> PenaltyPredicate<E, F> getPredicate() {

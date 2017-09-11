@@ -33,6 +33,7 @@ import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionChain;
 import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
+import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
 import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -70,6 +71,8 @@ public class MovementSpeedDetection extends AbstractDetection {
         this.detectionChain = new GuardianDetectionChain();
         this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, HorizontalSpeedCheck.Blueprint.class);
         this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, VerticalSpeedCheck.Blueprint.class);
+
+        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.PENALTY, ResetPenalty.class);
 
         this.initializeDetection();
     }

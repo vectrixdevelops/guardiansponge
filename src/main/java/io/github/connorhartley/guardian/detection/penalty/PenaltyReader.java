@@ -86,6 +86,15 @@ public class PenaltyReader {
             return this.elements;
         }
 
+        @Override
+        public boolean equals(Object object) {
+            if (object instanceof String) {
+                return object.equals(this.id);
+            }
+
+            return object.equals(this);
+        }
+
     }
 
     public static class ActionLevel {
@@ -116,7 +125,7 @@ public class PenaltyReader {
 
     public static class Holder {
 
-        final static PenaltyReader INSTANCE = new PenaltyReader();
+        public final static PenaltyReader INSTANCE = new PenaltyReader();
 
     }
 
