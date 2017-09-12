@@ -58,6 +58,9 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
 
     @SuppressWarnings("unchecked")
     public void initializeDetection() {
+        this.actions.addAll(PenaltyReader.Holder.INSTANCE.parseActions(this));
+        this.actionLevels.addAll(PenaltyReader.Holder.INSTANCE.parseActionLevels(this));
+
         this.getChain().<CheckBlueprint<GuardianPlugin, DetectionConfiguration>>get(DetectionChain.ProcessType.CHECK)
                 .forEach(checkClass -> {
                     CheckBlueprint<GuardianPlugin, DetectionConfiguration> blueprint =
@@ -65,9 +68,6 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
 
                     if (blueprint != null) this.checks.add(blueprint.create(this));
                 });
-
-        this.actions.addAll(PenaltyReader.Holder.INSTANCE.parseActions(this));
-        this.actionLevels.addAll(PenaltyReader.Holder.INSTANCE.parseActionLevels(this));
 
         this.getChain().<Penalty>get(DetectionChain.ProcessType.PENALTY)
                 .forEach(penaltyClass -> {

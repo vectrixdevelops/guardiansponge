@@ -91,6 +91,10 @@ public final class ConsoleFormatter {
             return new ConsoleFormatter(this);
         }
 
+        public String buildAndGet() {
+            return new ConsoleFormatter(this).get();
+        }
+
     }
 
 }

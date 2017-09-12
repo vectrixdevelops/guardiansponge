@@ -34,6 +34,7 @@ import com.ichorpowered.guardian.api.detection.module.ModuleRegistry;
 import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
 import com.ichorpowered.guardian.api.event.GuardianEvent;
 import com.ichorpowered.guardian.api.event.GuardianListener;
+import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.util.ImplementationException;
@@ -45,6 +46,7 @@ import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionRegistry;
 import io.github.connorhartley.guardian.detection.check.GuardianCheckRegistry;
 import io.github.connorhartley.guardian.detection.penalty.GuardianPenaltyRegistry;
+import io.github.connorhartley.guardian.event.state.*;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceListener;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
@@ -157,16 +159,15 @@ public class GuardianPlugin implements Guardian<Event> {
         this.getLogger().warn(ConsoleFormatter.builder()
                 .fg(Ansi.Color.RED, "You are using an extremely EXPERIMENTAL build of Guardian. \n" +
                         "It is advised you stick to stable build UNLESS you are testing this in a controlled environment!")
-                .build().get()
+                .buildAndGet()
         );
 
-        String versionDetails = "Guardian v" + this.pluginContainer.getVersion().orElse("UNKNOWN") + " for Minecraft " +
+        this.getLogger().info("Guardian v" + this.pluginContainer.getVersion().orElse("UNKNOWN") + " for Minecraft " +
                 Sponge.getPlatform().getContainer(Platform.Component.GAME).getVersion().orElse("UNKNOWN") + " in SpongeAPI " +
-                Sponge.getPlatform().getContainer(Platform.Component.API).getVersion().orElse("UNKNOWN").substring(0, 5);
-        String systemDetails = "Subsystems [ me4502/modularframework v1.8.5, kyoripowered/event v1.0.0 ]";
+                Sponge.getPlatform().getContainer(Platform.Component.API).getVersion().orElse("UNKNOWN").substring(0, 5)
+        );
 
-        this.getLogger().info(versionDetails);
-        this.getLogger().info(systemDetails);
+        this.getLogger().info("Subsystems [ me4502/modularframework v1.8.5, kyoripowered/event v1.0.0 ]");
 
         this.getLogger().info(this.initializationPrefix + " Running pre system analysis.");
 
@@ -176,6 +177,8 @@ public class GuardianPlugin implements Guardian<Event> {
         ASMEventExecutorFactory<GuardianEvent, GuardianListener> eventExecutor = new ASMEventExecutorFactory<>();
         this.eventBus = new SimpleEventBus<>(eventExecutor);
 
+        this.getLogger().info(this.initializationPrefix + " Running registry initialization.");
+
         this.detectionRegistry = new GuardianDetectionRegistry(this);
         this.checkRegistry = new GuardianCheckRegistry(this);
         this.sequenceRegistry = new GuardianSequenceRegistry(this);
@@ -184,6 +187,7 @@ public class GuardianPlugin implements Guardian<Event> {
         this.lifeState = GuardianState.PRE_INITIALIZATION;
 
         // Post : PRE_INITIALIZATION Event
+        this.eventBus.post(new GuardianPreInitializationEvent(this, Origin.source(this.pluginContainer).build()));
 
         this.getLogger().info(this.initializationPrefix + " Running storage initialization.");
 
@@ -200,6 +204,7 @@ public class GuardianPlugin implements Guardian<Event> {
         this.lifeState = GuardianState.INITIALIZATION;
 
         // Post : INITIALIZATION Event
+        this.eventBus.post(new GuardianInitializationEvent(this, Origin.source(this.pluginContainer).build()));
     }
 
     @Listener
@@ -212,7 +217,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
         this.getLogger().info(ConsoleFormatter.builder()
                 .fg(Ansi.Color.YELLOW, "Discovered " + this.moduleSubsystem.getModules().size() + " module(s).")
-                .build().get()
+                .buildAndGet()
         );
 
         this.moduleSubsystem.enableModules(moduleWrapper -> {
@@ -254,12 +259,13 @@ public class GuardianPlugin implements Guardian<Event> {
         this.getLogger().info(ConsoleFormatter.builder()
                 .fg(Ansi.Color.YELLOW, "Loaded " + penalties.get() + " punishment(s), " + heurstics.get() +
                         " heuristic(s) and " + checks.get() + " check(s) for " + detections.get() + " detection(s).")
-                .build().get()
+                .buildAndGet()
         );
 
         this.lifeState = GuardianState.POST_INITIALIZATION;
 
         // Post : POST_INITIALIZATION Event
+        this.eventBus.post(new GuardianPostInitialization(this, Origin.source(this.pluginContainer).build()));
 
         this.getLogger().info(this.initializationPrefix + " Running post system analysis.");
 
@@ -268,15 +274,17 @@ public class GuardianPlugin implements Guardian<Event> {
         this.lifeState = GuardianState.STARTING;
 
         // Post : STARTING Event
+        this.eventBus.post(new GuardianStartingEvent(this, Origin.source(this.pluginContainer).build()));
     }
 
     @Listener
     public void onServerStarted(GameStartedServerEvent event) {
-        this.getLogger().info(this.initializationPrefix + " Initiated successfully.");
+        this.getLogger().info(this.initializationPrefix + " Completed initialization.");
 
         this.lifeState = GuardianState.STARTED;
 
         // Post : STARTED Event
+        this.eventBus.post(new GuardianStartedEvent(this, Origin.source(this.pluginContainer).build()));
     }
 
     public Logger getLogger() {
