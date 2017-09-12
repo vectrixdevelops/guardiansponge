@@ -23,11 +23,13 @@
  */
 package io.github.connorhartley.guardian.detection;
 
+import com.google.common.collect.Lists;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionChain;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
+import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
 import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
@@ -88,11 +90,19 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
     }
 
     @Nonnull
+    @Override
     public List<Check<GuardianPlugin, DetectionConfiguration>> getChecks() {
         return this.checks;
     }
 
     @Nonnull
+    @Override
+    public List<Heuristic> getHeuristics() {
+        return Lists.newArrayList();
+    }
+
+    @Nonnull
+    @Override
     public List<Penalty> getPenalties() {
         return this.penalties;
     }

@@ -27,6 +27,7 @@ import com.me4502.modularframework.ModuleController;
 import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.check.movement.InvalidCheck;
 import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
+import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
 
 public final class GuardianLoader {
 
@@ -42,7 +43,6 @@ public final class GuardianLoader {
     }
 
     public void loadChecks() {
-        // Standard
         this.plugin.getCheckRegistry().put(this.plugin, HorizontalSpeedCheck.Blueprint.class,
                 new HorizontalSpeedCheck.Blueprint());
         this.plugin.getCheckRegistry().put(this.plugin, VerticalSpeedCheck.Blueprint.class,
@@ -50,6 +50,10 @@ public final class GuardianLoader {
         this.plugin.getCheckRegistry().put(this.plugin, InvalidCheck.Blueprint.class,
                 new InvalidCheck.Blueprint());
 
+    }
+
+    public void loadPenalties() {
+        this.plugin.getPenaltyRegistry().put(this.plugin, ResetPenalty.class, new ResetPenalty());
     }
 
 }

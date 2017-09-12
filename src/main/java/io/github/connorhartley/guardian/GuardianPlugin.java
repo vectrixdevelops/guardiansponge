@@ -206,6 +206,7 @@ public class GuardianPlugin implements Guardian<Event> {
     public void onServerStarting(GameStartingServerEvent event) {
         this.getLogger().info(this.initializationPrefix + " Running module registration.");
 
+        this.guardianLoader.loadPenalties();
         this.guardianLoader.loadChecks();
         this.guardianLoader.loadModules(this.moduleSubsystem);
 
