@@ -91,11 +91,18 @@ public class GuardianDetectionPhase<E, F extends DetectionConfiguration> impleme
     }
 
     @Override
+    public PhaseFilter getFilter() {
+        return this.phaseFilter;
+    }
+
+    @Override
     public int size() {
         AtomicInteger size = new AtomicInteger(0);
 
         this.plugin.getPhaseRegistry().keySet().forEach(namedTypeKey -> {
-            size.addAndGet(this.plugin.getPhaseRegistry().get(namedTypeKey).size());
+            if (this.phaseFilter.accept(this.plugin.getPhaseRegistry().expect(namedTypeKey).getPhaseClass())) {
+                size.addAndGet(this.plugin.getPhaseRegistry().get(namedTypeKey).size(this.phaseFilter));
+            }
         });
 
         return size.get();
@@ -103,12 +110,7 @@ public class GuardianDetectionPhase<E, F extends DetectionConfiguration> impleme
 
     @Override
     public <T> int size(NamedTypeKey<T> phaseKey) {
-        return this.plugin.getPhaseRegistry().expect(phaseKey).size();
-    }
-
-    @Override
-    public PhaseFilter getFilter() {
-        return this.phaseFilter;
+        return this.plugin.getPhaseRegistry().expect(phaseKey).size(this.phaseFilter);
     }
 
 }

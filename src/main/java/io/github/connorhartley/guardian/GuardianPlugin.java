@@ -153,7 +153,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     /* Console Prefixes */
 
-    private final String initializationPrefix = ConsoleFormatter.builder().fg(Ansi.Color.BLUE, " INIT ").build().get();
+    private final String initializationPrefix = ConsoleFormatter.builder().fg(Ansi.Color.BLUE, " INIT ").buildAndGet();
 
     @Inject
     public GuardianPlugin(PluginContainer pluginContainer, Logger logger, MetricsLite metrics,
@@ -223,10 +223,10 @@ public class GuardianPlugin implements Guardian<Event> {
     public void onServerStarting(GameStartingServerEvent event) {
         this.getLogger().info(this.initializationPrefix + " Running module registration.");
 
-        this.guardianLoader.loadPhases();
         this.guardianLoader.loadPenalties();
         this.guardianLoader.loadChecks();
         this.guardianLoader.loadModules(this.moduleSubsystem);
+        this.guardianLoader.loadPhases();
 
         this.getLogger().info(ConsoleFormatter.builder()
                 .fg(Ansi.Color.YELLOW, "Discovered " + this.moduleSubsystem.getModules().size() + " module(s).")
@@ -266,8 +266,9 @@ public class GuardianPlugin implements Guardian<Event> {
                         }
 
                         checks.addAndGet(detectionManipulator.size(PhaseTypes.CHECK));
-                        heuristics.addAndGet(detectionManipulator.size(PhaseTypes.HEURISTIC));
-                        penalties.addAndGet(detectionManipulator.size(PhaseTypes.PENALTY));
+                        // TODO: Implement Heuristic and Penalty Phase Viewer.
+//                        heuristics.addAndGet(detectionManipulator.size(PhaseTypes.HEURISTIC));
+//                        penalties.addAndGet(detectionManipulator.size(PhaseTypes.PENALTY));
 
                         detections.incrementAndGet();
                     }
@@ -360,7 +361,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public PhaseRegistry getPhaseRegistry() {
-        return null;
+        return this.phaseRegistry;
     }
 
     @Override
