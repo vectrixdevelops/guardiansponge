@@ -266,9 +266,7 @@ public class GuardianPlugin implements Guardian<Event> {
                         }
 
                         checks.addAndGet(detectionManipulator.size(PhaseTypes.CHECK));
-                        // TODO: Implement Heuristic and Penalty Phase Viewer.
-//                        heuristics.addAndGet(detectionManipulator.size(PhaseTypes.HEURISTIC));
-//                        penalties.addAndGet(detectionManipulator.size(PhaseTypes.PENALTY));
+                        penalties.addAndGet(detectionManipulator.size(PhaseTypes.PENALTY));
 
                         detections.incrementAndGet();
                     }
