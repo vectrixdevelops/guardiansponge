@@ -23,7 +23,9 @@
  */
 package io.github.connorhartley.guardian;
 
+import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
 import com.me4502.modularframework.ModuleController;
+import io.github.connorhartley.guardian.detection.check.GuardianCheckViewer;
 import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.check.movement.InvalidCheck;
 import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
@@ -54,6 +56,10 @@ public final class GuardianLoader {
 
     public void loadPenalties() {
         this.plugin.getPenaltyRegistry().put(this.plugin, ResetPenalty.class, new ResetPenalty());
+    }
+
+    public void loadPhases() {
+        this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.CHECK, new GuardianCheckViewer(this.plugin));
     }
 
 }

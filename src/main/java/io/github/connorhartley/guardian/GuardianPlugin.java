@@ -27,7 +27,9 @@ import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.GuardianState;
 import com.ichorpowered.guardian.api.detection.Detection;
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionRegistry;
+import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
 import com.ichorpowered.guardian.api.detection.heuristic.HeuristicRegistry;
 import com.ichorpowered.guardian.api.detection.module.ModuleRegistry;
@@ -35,6 +37,9 @@ import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
 import com.ichorpowered.guardian.api.event.GuardianEvent;
 import com.ichorpowered.guardian.api.event.GuardianListener;
 import com.ichorpowered.guardian.api.event.origin.Origin;
+import com.ichorpowered.guardian.api.phase.PhaseManipulator;
+import com.ichorpowered.guardian.api.phase.PhaseRegistry;
+import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
 import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.util.ImplementationException;
@@ -46,7 +51,12 @@ import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionRegistry;
 import io.github.connorhartley.guardian.detection.check.GuardianCheckRegistry;
 import io.github.connorhartley.guardian.detection.penalty.GuardianPenaltyRegistry;
-import io.github.connorhartley.guardian.event.state.*;
+import io.github.connorhartley.guardian.event.state.GuardianInitializationEvent;
+import io.github.connorhartley.guardian.event.state.GuardianPostInitialization;
+import io.github.connorhartley.guardian.event.state.GuardianPreInitializationEvent;
+import io.github.connorhartley.guardian.event.state.GuardianStartedEvent;
+import io.github.connorhartley.guardian.event.state.GuardianStartingEvent;
+import io.github.connorhartley.guardian.phase.GuardianPhaseRegistry;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceListener;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
@@ -125,6 +135,7 @@ public class GuardianPlugin implements Guardian<Event> {
     private GuardianCheckRegistry checkRegistry;
     private GuardianSequenceRegistry sequenceRegistry;
     private GuardianPenaltyRegistry penaltyRegistry;
+    private GuardianPhaseRegistry phaseRegistry;
     private GuardianSequenceManager sequenceManager;
     private GuardianLoader guardianLoader;
 
@@ -183,6 +194,7 @@ public class GuardianPlugin implements Guardian<Event> {
         this.checkRegistry = new GuardianCheckRegistry(this);
         this.sequenceRegistry = new GuardianSequenceRegistry(this);
         this.penaltyRegistry = new GuardianPenaltyRegistry(this);
+        this.phaseRegistry = new GuardianPhaseRegistry(this);
 
         this.lifeState = GuardianState.PRE_INITIALIZATION;
 
@@ -211,6 +223,7 @@ public class GuardianPlugin implements Guardian<Event> {
     public void onServerStarting(GameStartingServerEvent event) {
         this.getLogger().info(this.initializationPrefix + " Running module registration.");
 
+        this.guardianLoader.loadPhases();
         this.guardianLoader.loadPenalties();
         this.guardianLoader.loadChecks();
         this.guardianLoader.loadModules(this.moduleSubsystem);
@@ -231,7 +244,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
         AtomicInteger detections = new AtomicInteger(0);
         AtomicInteger checks = new AtomicInteger(0);
-        AtomicInteger heurstics = new AtomicInteger(0);
+        AtomicInteger heuristics = new AtomicInteger(0);
         AtomicInteger penalties = new AtomicInteger(0);
 
         this.moduleSubsystem.getModules().stream()
@@ -241,23 +254,27 @@ public class GuardianPlugin implements Guardian<Event> {
                     if (moduleWrapper.getModule().get() instanceof Detection) {
                         AbstractDetection detection = (AbstractDetection) moduleWrapper.getModule().get();
 
-                        detections.incrementAndGet();
-
-                        detection.getChecks().forEach(check -> {
-                            this.getSequenceRegistry().put(this, check.getClass(), check.getSequence());
-                            checks.incrementAndGet();
-                        });
-
                         this.eventBus.register(detection);
 
                         Sponge.getRegistry().register(DetectionType.class, detection);
 
-                        penalties.addAndGet(detection.getPenalties().size());
+                        PhaseManipulator detectionManipulator = detection.getPhaseManipulator();
+
+                        while (detectionManipulator.hasNext(PhaseTypes.CHECK)) {
+                            Check<GuardianPlugin, DetectionConfiguration> check = detectionManipulator.next(PhaseTypes.CHECK);
+                            this.getSequenceRegistry().put(this, check.getClass(), check.getSequence());
+                        }
+
+                        checks.addAndGet(detectionManipulator.size(PhaseTypes.CHECK));
+                        heuristics.addAndGet(detectionManipulator.size(PhaseTypes.HEURISTIC));
+                        penalties.addAndGet(detectionManipulator.size(PhaseTypes.PENALTY));
+
+                        detections.incrementAndGet();
                     }
                 });
 
         this.getLogger().info(ConsoleFormatter.builder()
-                .fg(Ansi.Color.YELLOW, "Loaded " + penalties.get() + " punishment(s), " + heurstics.get() +
+                .fg(Ansi.Color.YELLOW, "Loaded " + penalties.get() + " punishment(s), " + heuristics.get() +
                         " heuristic(s) and " + checks.get() + " check(s) for " + detections.get() + " detection(s).")
                 .buildAndGet()
         );
@@ -339,6 +356,11 @@ public class GuardianPlugin implements Guardian<Event> {
     @Override
     public SequenceRegistry getSequenceRegistry() {
         return this.sequenceRegistry;
+    }
+
+    @Override
+    public PhaseRegistry getPhaseRegistry() {
+        return null;
     }
 
     @Override

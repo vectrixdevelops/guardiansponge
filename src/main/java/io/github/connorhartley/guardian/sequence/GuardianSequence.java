@@ -33,7 +33,7 @@ import com.ichorpowered.guardian.api.sequence.Sequence;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureRegistry;
-import com.ichorpowered.guardian.api.util.IdentifierKey;
+import com.ichorpowered.guardian.api.util.key.NamedKey;
 import io.github.connorhartley.guardian.report.GuardianSummary;
 import io.github.connorhartley.guardian.sequence.action.GuardianAction;
 import org.spongepowered.api.entity.living.player.Player;
@@ -44,8 +44,8 @@ import java.util.Iterator;
 
 public class GuardianSequence<E, F extends DetectionConfiguration> implements Sequence<E, F> {
 
-    public static IdentifierKey<String> INITIAL_LOCATION =
-            IdentifierKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION");
+    public static NamedKey INITIAL_LOCATION =
+            NamedKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION");
 
     private final EntityEntry entry;
     private final Check<E, F> check;

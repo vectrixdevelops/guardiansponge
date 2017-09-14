@@ -29,7 +29,7 @@ import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.IdentifierKey;
+import com.ichorpowered.guardian.api.util.key.NamedKey;
 import io.github.connorhartley.guardian.sequence.GuardianSequence;
 import io.github.connorhartley.guardian.sequence.capture.AbstractCapture;
 import org.spongepowered.api.data.key.Keys;
@@ -51,8 +51,8 @@ public class PlayerControlCapture {
 
     public static class Invalid<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
 
-        public static IdentifierKey<String> INVALID_MOVEMENT =
-                IdentifierKey.of(Invalid.class.getCanonicalName().toUpperCase() + "_INVALID_MOVEMENT");
+        public static NamedKey INVALID_MOVEMENT =
+                NamedKey.of(Invalid.class.getCanonicalName().toUpperCase() + "_INVALID_MOVEMENT");
 
         public Invalid(E owner, Detection<E, F> detection) {
             super(owner, detection);
@@ -102,17 +102,17 @@ public class PlayerControlCapture {
 
     public static class Common<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
 
-        public static IdentifierKey<String> VERTICAL_OFFSET =
-                IdentifierKey.of(Common.class.getCanonicalName().toUpperCase() + "_VERTICAL_OFFSET");
+        public static NamedKey VERTICAL_OFFSET =
+                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_VERTICAL_OFFSET");
 
-        public static IdentifierKey<String> HORIZONTAL_OFFSET =
-                IdentifierKey.of(Common.class.getCanonicalName().toUpperCase() + "_HORIZONTAL_OFFSET");
+        public static NamedKey HORIZONTAL_OFFSET =
+                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_HORIZONTAL_OFFSET");
 
-        public static IdentifierKey<String> CONTROL_STATE_TICKS =
-                IdentifierKey.of(Common.class.getCanonicalName().toUpperCase() + "_CONTROL_STATE_TICKS");
+        public static NamedKey CONTROL_STATE_TICKS =
+                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_CONTROL_STATE_TICKS");
 
-        public static IdentifierKey<String> UPDATE =
-                IdentifierKey.of(Common.class.getCanonicalName().toUpperCase() + "_UPDATE");
+        public static NamedKey UPDATE =
+                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_UPDATE");
 
         private double liftOffset = 0;
 

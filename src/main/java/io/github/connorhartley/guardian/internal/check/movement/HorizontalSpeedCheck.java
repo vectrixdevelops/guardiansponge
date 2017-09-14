@@ -40,9 +40,10 @@ import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.util.Collections;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 
 public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConfiguration> {
 
@@ -176,6 +177,11 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
         @Override
         public Check<GuardianPlugin, DetectionConfiguration> create(Detection<GuardianPlugin, DetectionConfiguration> detection) {
             return new HorizontalSpeedCheck(this, detection);
+        }
+
+        @Override
+        public Class<? extends Check> getCheckClass() {
+            return HorizontalSpeedCheck.class;
         }
 
     }

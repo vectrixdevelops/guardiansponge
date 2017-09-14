@@ -26,8 +26,6 @@ package io.github.connorhartley.guardian.detection.penalty;
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.util.Tuple;
 

@@ -23,16 +23,9 @@
  */
 package io.github.connorhartley.guardian.detection;
 
-import com.google.common.collect.Lists;
 import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionChain;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.check.Check;
-import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
-import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
-import com.ichorpowered.guardian.api.detection.penalty.Penalty;
-import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
 import com.ichorpowered.guardian.api.event.GuardianListener;
 import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.GuardianPlugin;
@@ -46,8 +39,6 @@ import javax.annotation.Nonnull;
 public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension, GuardianListener {
 
     private final GuardianPlugin plugin;
-    private final List<Check<GuardianPlugin, DetectionConfiguration>> checks = new ArrayList<>();
-    private final List<Penalty> penalties = new ArrayList<>();
     private final List<PenaltyReader.Action> actions = new ArrayList<>();
     private final List<PenaltyReader.ActionLevel> actionLevels = new ArrayList<>();
 
@@ -56,55 +47,10 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("unchecked")
-    public void initializeDetection() {
-        this.actions.addAll(PenaltyReader.Holder.INSTANCE.parseActions(this));
-        this.actionLevels.addAll(PenaltyReader.Holder.INSTANCE.parseActionLevels(this));
-
-        this.getChain().<CheckBlueprint<GuardianPlugin, DetectionConfiguration>>get(DetectionChain.ProcessType.CHECK)
-                .forEach(checkClass -> {
-                    CheckBlueprint<GuardianPlugin, DetectionConfiguration> blueprint =
-                            (CheckBlueprint<GuardianPlugin, DetectionConfiguration>) this.plugin.getCheckRegistry().get(checkClass);
-
-                    if (blueprint != null) this.checks.add(blueprint.create(this));
-                });
-
-        this.getChain().<Penalty>get(DetectionChain.ProcessType.PENALTY)
-                .forEach(penaltyClass -> {
-                    Penalty penalty = this.plugin.getPenaltyRegistry().get(penaltyClass);
-
-                    this.actions.forEach(action -> {
-                        if (penalty == null) return;
-
-                        if (action.getId().equals(penalty.getId())) {
-                            this.penalties.add(penalty);
-                        }
-                    });
-                });
-    }
-
     @Nonnull
     @Override
     public GuardianPlugin getOwner() {
         return this.plugin;
-    }
-
-    @Nonnull
-    @Override
-    public List<Check<GuardianPlugin, DetectionConfiguration>> getChecks() {
-        return this.checks;
-    }
-
-    @Nonnull
-    @Override
-    public List<Heuristic> getHeuristics() {
-        return Lists.newArrayList();
-    }
-
-    @Nonnull
-    @Override
-    public List<Penalty> getPenalties() {
-        return this.penalties;
     }
 
     @Nonnull

@@ -24,19 +24,17 @@
 package io.github.connorhartley.guardian.internal.detection;
 
 import com.google.inject.Inject;
-import com.ichorpowered.guardian.api.detection.DetectionChain;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.event.sequence.SequenceResultEvent;
+import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.detection.AbstractDetection;
-import io.github.connorhartley.guardian.detection.GuardianDetectionChain;
-import io.github.connorhartley.guardian.detection.penalty.PenaltyReader;
+import io.github.connorhartley.guardian.detection.GuardianDetectionPhase;
 import io.github.connorhartley.guardian.internal.check.movement.InvalidCheck;
 import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
+import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
 import io.github.connorhartley.guardian.util.HoconLoaderPatch;
-import net.kyori.event.Subscribe;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 import tech.ferus.util.config.ConfigFile;
@@ -44,7 +42,6 @@ import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -59,8 +56,8 @@ import javax.annotation.Nonnull;
 public class InvalidMovementDetection extends AbstractDetection {
 
     private State state = State.UNDEFINED;
-    private DetectionChain detectionChain;
     private InvalidMovementConfiguration detectionConfiguration;
+    private GuardianDetectionPhase<GuardianPlugin, DetectionConfiguration> phaseManipulator;
 
     @Inject
     public InvalidMovementDetection(@ModuleContainer PluginContainer moduleContainer) {
@@ -72,18 +69,21 @@ public class InvalidMovementDetection extends AbstractDetection {
         this.detectionConfiguration = new InvalidMovementConfiguration(this, this.getOwner().getConfigDirectory());
         this.detectionConfiguration.load();
 
-        this.detectionChain = new GuardianDetectionChain();
-        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, InvalidCheck.Blueprint.class);
+        this.phaseManipulator = new GuardianDetectionPhase<>(this.getOwner(), this, new GuardianPhaseFilter()
+                // Check
+                .include(InvalidCheck.class)
 
-        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.PENALTY, ResetPenalty.class);
-
-        this.initializeDetection();
+                // Penalty
+                .include(ResetPenalty.class)
+        );
     }
 
     @Override
     public void onDeconstruction() {
 
     }
+
+
 
     @Nonnull
     @Override
@@ -103,9 +103,10 @@ public class InvalidMovementDetection extends AbstractDetection {
         return this.state;
     }
 
+    @Nonnull
     @Override
-    public DetectionChain getChain() {
-        return this.detectionChain;
+    public DetectionPhase<GuardianPlugin, DetectionConfiguration> getPhaseManipulator() {
+        return this.phaseManipulator;
     }
 
     public static class InvalidMovementConfiguration implements DetectionConfiguration {

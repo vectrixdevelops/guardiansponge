@@ -28,20 +28,20 @@ import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.IdentifierKey;
+import com.ichorpowered.guardian.api.util.key.NamedKey;
 import io.github.connorhartley.guardian.sequence.capture.AbstractCapture;
 import org.spongepowered.api.entity.Entity;
 
 public class PlayerLocationCapture<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
 
-    public static IdentifierKey<String> INITIAL_LOCATION =
-            IdentifierKey.of(PlayerLocationCapture.class.getCanonicalName().toUpperCase() + "_INITIAL_LOCATION");
+    public static NamedKey INITIAL_LOCATION =
+            NamedKey.of(PlayerLocationCapture.class.getCanonicalName().toUpperCase() + "_INITIAL_LOCATION");
 
-    public static IdentifierKey<String> PRESET_LOCATION =
-            IdentifierKey.of(PlayerLocationCapture.class.getCanonicalName().toUpperCase() + "_PRESENT_LOCATION");
+    public static NamedKey PRESET_LOCATION =
+            NamedKey.of(PlayerLocationCapture.class.getCanonicalName().toUpperCase() + "_PRESENT_LOCATION");
 
-    public static IdentifierKey<String> UPDATE =
-            IdentifierKey.of(PlayerLocationCapture.class.getCanonicalName().toUpperCase() + "_UPDATE");
+    public static NamedKey UPDATE =
+            NamedKey.of(PlayerLocationCapture.class.getCanonicalName().toUpperCase() + "_UPDATE");
 
     public PlayerLocationCapture(E owner, Detection<E, F> detection) {
         super(owner, detection);

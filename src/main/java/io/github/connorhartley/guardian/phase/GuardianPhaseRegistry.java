@@ -21,77 +21,71 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.detection;
+package io.github.connorhartley.guardian.phase;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.DetectionRegistry;
+import com.ichorpowered.guardian.api.phase.PhaseRegistry;
+import com.ichorpowered.guardian.api.phase.PhaseViewer;
+import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.util.ConsoleFormatter;
 import org.fusesource.jansi.Ansi;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class GuardianDetectionRegistry implements DetectionRegistry {
+public class GuardianPhaseRegistry implements PhaseRegistry {
 
     private final GuardianPlugin plugin;
-    private final BiMap<Class<? extends Detection>, Detection> detectionRegistry = HashBiMap.create();
+    private final BiMap<NamedTypeKey, PhaseViewer> phaseRegistry = HashBiMap.create();
 
-    public GuardianDetectionRegistry(GuardianPlugin plugin) {
+    public GuardianPhaseRegistry(GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public <C> void put(@Nonnull C plugin, @Nonnull Class<? extends Detection> aClass, @Nonnull Detection detection) {
-        if (this.detectionRegistry.containsKey(aClass)) {
+    public <C, T> void put(@Nonnull C pluginContainer, @Nonnull NamedTypeKey<T> key, @Nonnull PhaseViewer<T> phaseViewer) {
+        if (this.phaseRegistry.containsKey(key)) {
             this.plugin.getLogger().warn(ConsoleFormatter.builder()
                     .fg(Ansi.Color.YELLOW,
-                            "Attempted to put a detection into the registry that already exists!")
+                            "Attempted to put a phase viewer into the registry that already exists!")
                     .buildAndGet()
             );
 
             return;
         }
 
-        this.detectionRegistry.put(aClass, detection);
+        this.phaseRegistry.put(key, phaseViewer);
     }
 
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <E, F extends DetectionConfiguration> Detection<E, F> expect(@Nonnull Class<? extends Detection<E, F>> aClass) throws NoSuchElementException {
-        if (!this.detectionRegistry.containsKey(aClass)) throw new NoSuchElementException();
-        return (Detection<E, F>) this.detectionRegistry.get(aClass);
+    public <T> PhaseViewer<T> expect(@Nonnull NamedTypeKey<T> key) {
+        if (!this.phaseRegistry.containsKey(key)) throw new NoSuchElementException();
+        return (PhaseViewer<T>) this.phaseRegistry.get(key);
     }
 
     @Nullable
     @Override
-    public Detection get(@Nonnull Class<? extends Detection> aClass) {
-        return this.detectionRegistry.get(aClass);
+    public PhaseViewer get(@Nonnull NamedTypeKey key) {
+        return this.phaseRegistry.get(key);
     }
 
     @Nullable
     @Override
-    public Class<? extends Detection> key(@Nonnull Detection detection) {
-        return this.detectionRegistry.inverse().get(detection);
+    public NamedTypeKey key(@Nonnull PhaseViewer phaseViewer) {
+        return this.phaseRegistry.inverse().get(phaseViewer);
     }
 
     @Nonnull
     @Override
-    public Set<Class<? extends Detection>> keySet() {
-        return this.detectionRegistry.keySet();
-    }
-
-    @Override
-    public Iterator<Detection> iterator() {
-        return this.detectionRegistry.values().iterator();
+    public Set<NamedTypeKey> keySet() {
+        return this.phaseRegistry.keySet();
     }
 
 }

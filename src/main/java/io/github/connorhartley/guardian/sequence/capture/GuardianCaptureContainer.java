@@ -26,8 +26,8 @@ package io.github.connorhartley.guardian.sequence.capture;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.IdentifierKey;
 import com.ichorpowered.guardian.api.util.Transform;
+import com.ichorpowered.guardian.api.util.key.NamedKey;
 
 import java.util.Set;
 
@@ -50,8 +50,8 @@ public class GuardianCaptureContainer implements CaptureContainer {
     }
 
     @Override
-    public <T> void put(@Nonnull IdentifierKey<String> key, @Nonnull T value) {
-        this.container.put(key.get(), value);
+    public <T> void put(@Nonnull NamedKey key, @Nonnull T value) {
+        this.container.put(key.getName(), value);
     }
 
     @Override
@@ -60,8 +60,8 @@ public class GuardianCaptureContainer implements CaptureContainer {
     }
 
     @Override
-    public <T> void transform(@Nonnull IdentifierKey<String> key, @Nonnull Transform<T> transform) {
-        this.container.put(key.get(), transform.transform((T) this.container.get(key.get())));
+    public <T> void transform(@Nonnull NamedKey key, @Nonnull Transform<T> transform) {
+        this.container.put(key.getName(), transform.transform((T) this.container.get(key.getName())));
     }
 
     @Nullable
@@ -74,8 +74,8 @@ public class GuardianCaptureContainer implements CaptureContainer {
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull IdentifierKey<String> key) {
-        return (T) this.container.get(key.get());
+    public <T> T get(@Nonnull NamedKey key) {
+        return (T) this.container.get(key.getName());
     }
 
     @Nullable

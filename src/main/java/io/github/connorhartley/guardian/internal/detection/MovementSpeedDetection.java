@@ -24,16 +24,17 @@
 package io.github.connorhartley.guardian.internal.detection;
 
 import com.google.inject.Inject;
-import com.ichorpowered.guardian.api.detection.DetectionChain;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
+import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.detection.AbstractDetection;
-import io.github.connorhartley.guardian.detection.GuardianDetectionChain;
+import io.github.connorhartley.guardian.detection.GuardianDetectionPhase;
 import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
 import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
+import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
 import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -55,8 +56,8 @@ import javax.annotation.Nonnull;
 public class MovementSpeedDetection extends AbstractDetection {
 
     private State state = State.UNDEFINED;
-    private DetectionChain detectionChain;
     private MovementSpeedConfiguration detectionConfiguration;
+    private GuardianDetectionPhase<GuardianPlugin, DetectionConfiguration> phaseManipulator;
 
     @Inject
     public MovementSpeedDetection(@ModuleContainer PluginContainer moduleContainer) {
@@ -68,13 +69,14 @@ public class MovementSpeedDetection extends AbstractDetection {
         this.detectionConfiguration = new MovementSpeedConfiguration(this, this.getOwner().getConfigDirectory());
         this.detectionConfiguration.load();
 
-        this.detectionChain = new GuardianDetectionChain();
-        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, HorizontalSpeedCheck.Blueprint.class);
-        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.CHECK, VerticalSpeedCheck.Blueprint.class);
+        this.phaseManipulator = new GuardianDetectionPhase<>(this.getOwner(), this, new GuardianPhaseFilter()
+                // Check
+                .include(HorizontalSpeedCheck.class)
+                .include(VerticalSpeedCheck.class)
 
-        this.detectionChain.add(this.getOwner(), DetectionChain.ProcessType.PENALTY, ResetPenalty.class);
-
-        this.initializeDetection();
+                // Penalty
+                .include(ResetPenalty.class)
+        );
     }
 
     @Override
@@ -100,9 +102,10 @@ public class MovementSpeedDetection extends AbstractDetection {
         return this.state;
     }
 
+    @Nonnull
     @Override
-    public DetectionChain getChain() {
-        return this.detectionChain;
+    public DetectionPhase<GuardianPlugin, DetectionConfiguration> getPhaseManipulator() {
+        return this.phaseManipulator;
     }
 
     public static class MovementSpeedConfiguration implements DetectionConfiguration {

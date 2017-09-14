@@ -164,6 +164,11 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
             return new InvalidCheck(this, detection);
         }
 
+        @Override
+        public Class<? extends Check> getCheckClass() {
+            return InvalidCheck.class;
+        }
+
     }
 
 }
