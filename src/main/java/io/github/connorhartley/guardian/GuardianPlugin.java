@@ -50,6 +50,7 @@ import com.me4502.precogs.detection.DetectionType;
 import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionRegistry;
 import io.github.connorhartley.guardian.detection.check.GuardianCheckRegistry;
+import io.github.connorhartley.guardian.detection.heuristics.GuardianHeuristicRegistry;
 import io.github.connorhartley.guardian.detection.penalty.GuardianPenaltyRegistry;
 import io.github.connorhartley.guardian.event.state.GuardianInitializationEvent;
 import io.github.connorhartley.guardian.event.state.GuardianPostInitialization;
@@ -132,8 +133,9 @@ public class GuardianPlugin implements Guardian<Event> {
     /* Registries / Managers */
     private GuardianConfiguration configuration;
     private GuardianDetectionRegistry detectionRegistry;
-    private GuardianCheckRegistry checkRegistry;
     private GuardianSequenceRegistry sequenceRegistry;
+    private GuardianCheckRegistry checkRegistry;
+    private GuardianHeuristicRegistry heuristicRegistry;
     private GuardianPenaltyRegistry penaltyRegistry;
     private GuardianPhaseRegistry phaseRegistry;
     private GuardianSequenceManager sequenceManager;
@@ -191,8 +193,9 @@ public class GuardianPlugin implements Guardian<Event> {
         this.getLogger().info(this.initializationPrefix + " Running registry initialization.");
 
         this.detectionRegistry = new GuardianDetectionRegistry(this);
-        this.checkRegistry = new GuardianCheckRegistry(this);
         this.sequenceRegistry = new GuardianSequenceRegistry(this);
+        this.checkRegistry = new GuardianCheckRegistry(this);
+        this.heuristicRegistry = new GuardianHeuristicRegistry(this);
         this.penaltyRegistry = new GuardianPenaltyRegistry(this);
         this.phaseRegistry = new GuardianPhaseRegistry(this);
 
@@ -325,7 +328,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public SimpleEventBus<GuardianEvent, GuardianListener> getEventBus() {
-        return null;
+        return this.eventBus;
     }
 
     @Override
@@ -345,7 +348,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public HeuristicRegistry getHeuristicRegistry() {
-        return null;
+        return this.heuristicRegistry;
     }
 
     @Override
