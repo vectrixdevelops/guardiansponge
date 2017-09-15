@@ -25,13 +25,21 @@ package io.github.connorhartley.guardian.sequence;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.ichorpowered.guardian.api.detection.Detection;
+import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
+import com.ichorpowered.guardian.api.detection.DetectionPhase;
+import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
+import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
+import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
+import com.ichorpowered.guardian.api.report.Summary;
 import com.ichorpowered.guardian.api.sequence.Sequence;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.github.connorhartley.guardian.GuardianPlugin;
+import io.github.connorhartley.guardian.detection.GuardianDetectionPhase;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.scheduler.Task;
 
@@ -109,6 +117,26 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
             }
 
             // Fire SequenceFinishEvent.
+
+            // ----------------  Phase Transition TEMPORARY PATH ------------------
+
+            DetectionPhase<?, ?> detectionPhase = sequence.getSequenceBlueprint().getCheck().getDetection().getPhaseManipulator();
+            Detection detection = ((Sequence) sequence).getSequenceBlueprint().getCheck().getDetection();
+            Summary summary = ((Sequence) sequence).getSummary();
+
+            while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
+                Heuristic heuristic = detectionPhase.next(PhaseTypes.HEURISTIC);
+
+                summary = heuristic.getSupplier().apply(entry, detection, summary);
+            }
+
+            while (detectionPhase.hasNext(PhaseTypes.PENALTY)) {
+                Penalty penalty = detectionPhase.next(PhaseTypes.PENALTY);
+
+                penalty.getPredicate().test(entry, detection, summary);
+            }
+
+            // --------------------------------------------------------------------
 
             // Pop report.
 

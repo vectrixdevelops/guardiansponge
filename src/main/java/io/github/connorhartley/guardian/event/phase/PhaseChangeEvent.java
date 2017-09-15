@@ -21,38 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.connorhartley.guardian.internal.penalty;
+package io.github.connorhartley.guardian.event.phase;
 
 import com.google.common.reflect.TypeToken;
+import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.penalty.Penalty;
-import com.ichorpowered.guardian.api.detection.penalty.PenaltyPredicate;
-import io.github.connorhartley.guardian.sequence.SequenceReport;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
+import com.ichorpowered.guardian.api.event.GuardianEvent;
+import com.ichorpowered.guardian.api.event.origin.Origin;
+import com.ichorpowered.guardian.api.phase.PhaseViewer;
+import net.kyori.lunar.reflect.Reified;
 
 import javax.annotation.Nonnull;
 
-public class ResetPenalty implements Penalty {
+public class PhaseChangeEvent<T> implements GuardianEvent, Reified<T> {
 
-    @Override
-    public String getId() {
-        return "reset";
+    private final Detection detection;
+    private final PhaseViewer<T> phaseViewer;
+    private final Class<T> phaseClass;
+    private final Origin origin;
+
+
+    public PhaseChangeEvent(Detection detection, PhaseViewer<T> phaseViewer, Class<T> phaseClass, Origin origin) {
+        this.detection = detection;
+        this.phaseViewer = phaseViewer;
+        this.phaseClass = phaseClass;
+        this.origin = origin;
     }
 
     @Nonnull
     @Override
-    public <E, F extends DetectionConfiguration> PenaltyPredicate<E, F> getPredicate() {
-        return (entityEntry, detection, summary) -> {
-            if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return false;
-            Player player = entityEntry.getEntity(TypeToken.of(Player.class)).get();
-
-            if (!player.hasPermission("") || summary.view(SequenceReport.class) == null ||
-                summary.view(SequenceReport.class).get("initial_location") == null) return false;
-
-            return player.setLocationSafely(summary.view(SequenceReport.class).get("initial_location"));
-        };
+    public TypeToken<T> type() {
+        return TypeToken.of(this.phaseClass);
     }
 
+    public <E, F extends DetectionConfiguration> Detection<E, F> getDetection() {
+        return this.detection;
+    }
+
+    public PhaseViewer<T> getPhaseViewer() {
+        return this.phaseViewer;
+    }
+
+    public Class<T> getPhaseClass() {
+        return this.phaseClass;
+    }
+
+    @Override
+    public Origin getOrigin() {
+        return this.origin;
+    }
 }

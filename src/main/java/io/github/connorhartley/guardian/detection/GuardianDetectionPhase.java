@@ -26,11 +26,13 @@ package io.github.connorhartley.guardian.detection;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
+import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.phase.PhaseFilter;
 import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import io.github.connorhartley.guardian.GuardianPlugin;
+import io.github.connorhartley.guardian.event.phase.PhaseChangeEvent;
 import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,10 +64,12 @@ public class GuardianDetectionPhase<E, F extends DetectionConfiguration> impleme
         PhaseViewer<T> phaseViewer = this.plugin.getPhaseRegistry().expect(phaseKey);
 
         T phase = phaseViewer.getOrCreatePhase(this.detection);
+
+        this.plugin.getEventBus().post(new PhaseChangeEvent<>(this.detection, phaseViewer, (Class<T>) phase.getClass(),
+                Origin.source(this.detection).owner(this.plugin).named("key", phaseKey)
+                        .named("filter", this.phaseFilter).build()));
+
         phaseViewer.next();
-
-        // TODO: Fire phase change event!
-
         return phase;
     }
 
