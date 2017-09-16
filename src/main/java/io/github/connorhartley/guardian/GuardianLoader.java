@@ -33,20 +33,24 @@ import io.github.connorhartley.guardian.internal.check.movement.InvalidCheck;
 import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
 import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
 
-public final class GuardianLoader {
+import javax.annotation.Nonnull;
+
+final class GuardianLoader {
 
     private final GuardianPlugin plugin;
 
-    public GuardianLoader(GuardianPlugin plugin) {
+    GuardianLoader(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
-    public void loadModules(ModuleController<GuardianPlugin> moduleController) {
+    void loadModules(ModuleController<GuardianPlugin> moduleController) {
         moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.InvalidMovementDetection");
         moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.MovementSpeedDetection");
     }
 
-    public void loadChecks() {
+    void loadChecks() {
+        if (this.plugin.getCheckRegistry() == null) return;
+
         this.plugin.getCheckRegistry().put(this.plugin, HorizontalSpeedCheck.Blueprint.class,
                 new HorizontalSpeedCheck.Blueprint());
         this.plugin.getCheckRegistry().put(this.plugin, VerticalSpeedCheck.Blueprint.class,
@@ -56,11 +60,15 @@ public final class GuardianLoader {
 
     }
 
-    public void loadPenalties() {
+    void loadPenalties() {
+        if (this.plugin.getPenaltyRegistry() == null) return;
+
         this.plugin.getPenaltyRegistry().put(this.plugin, ResetPenalty.class, new ResetPenalty());
     }
 
-    public void loadPhases() {
+    void loadPhases() {
+        if (this.plugin.getPhaseRegistry() == null) return;
+
         this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.CHECK, new GuardianCheckViewer(this.plugin));
         this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.HEURISTIC, new GuardianHeuristicViewer(this.plugin));
         this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.PENALTY, new GuardianPenaltyViewer(this.plugin));

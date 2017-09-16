@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 public class GuardianPhaseFilter implements PhaseFilter {
 
     private final List<Class<?>> inclusion = new ArrayList<>();
@@ -37,35 +39,35 @@ public class GuardianPhaseFilter implements PhaseFilter {
     public GuardianPhaseFilter() {}
 
     @Override
-    public PhaseFilter include(Class<?> include) {
+    public PhaseFilter include(@Nonnull Class<?> include) {
         this.exclusion.remove(include);
         this.inclusion.add(include);
         return this;
     }
 
     @Override
-    public PhaseFilter include(Class<?>... includeAll) {
+    public PhaseFilter include(@Nonnull Class<?>... includeAll) {
         this.exclusion.removeAll(Arrays.asList(includeAll));
         this.inclusion.addAll(Arrays.asList(includeAll));
         return this;
     }
 
     @Override
-    public PhaseFilter exclude(Class<?> exclude) {
+    public PhaseFilter exclude(@Nonnull Class<?> exclude) {
         this.inclusion.remove(exclude);
         this.exclusion.add(exclude);
         return this;
     }
 
     @Override
-    public PhaseFilter exclude(Class<?>... excludeAll) {
+    public PhaseFilter exclude(@Nonnull Class<?>... excludeAll) {
         this.inclusion.removeAll(Arrays.asList(excludeAll));
         this.exclusion.addAll(Arrays.asList(excludeAll));
         return this;
     }
 
     @Override
-    public boolean accept(Class<?> phaseClass) {
+    public boolean accept(@Nonnull Class<?> phaseClass) {
         if (this.inclusion.isEmpty()) return !this.exclusion.contains(phaseClass);
         return this.inclusion.contains(phaseClass) && !this.exclusion.contains(phaseClass);
     }

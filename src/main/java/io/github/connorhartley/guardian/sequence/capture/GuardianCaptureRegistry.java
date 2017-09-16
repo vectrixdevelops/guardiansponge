@@ -44,7 +44,7 @@ public class GuardianCaptureRegistry implements CaptureRegistry {
     private final BiMap<Class<? extends Capture>, Capture> captureRegistry;
     private final CaptureContainer captureContainer;
 
-    public GuardianCaptureRegistry(EntityEntry entry) {
+    public GuardianCaptureRegistry(@Nonnull EntityEntry entry) {
         this.entry = entry;
         this.captureRegistry = HashBiMap.create();
         this.captureContainer = GuardianCaptureContainer.create();

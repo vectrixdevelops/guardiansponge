@@ -34,10 +34,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 public class PenaltyReader {
 
     private PenaltyReader() {}
 
+    @Nonnull
     @SuppressWarnings("unchecked")
     public <E, F extends DetectionConfiguration> List<Action> parseActions(Detection<E, F> detection) {
         Map<String, List<String>> actionsMap = (Map<String, List<String>>) detection.getConfiguration().getStorage()
@@ -49,6 +52,7 @@ public class PenaltyReader {
         return actions;
     }
 
+    @Nonnull
     @SuppressWarnings("unchecked")
     public <E, F extends DetectionConfiguration> List<ActionLevel> parseActionLevels(Detection<E, F> detection) {
         List<ActionLevel> actionLevels = new ArrayList<>();
@@ -71,15 +75,17 @@ public class PenaltyReader {
         private final String id;
         private final List<String> elements;
 
-        private Action(String id, List<String> elements) {
+        private Action(@Nonnull String id, @Nonnull List<String> elements) {
             this.id = id;
             this.elements = elements;
         }
 
+        @Nonnull
         public String getId() {
             return this.id;
         }
 
+        @Nonnull
         public List<String> getElements() {
             return this.elements;
         }
@@ -101,20 +107,24 @@ public class PenaltyReader {
         private final List<String> types;
         private final Tuple<Double, Double> range;
 
-        private ActionLevel(String id, List<String> types, Tuple<Double, Double> range) {
+        private ActionLevel(@Nonnull String id, @Nonnull List<String> types,
+                            @Nonnull Tuple<Double, Double> range) {
             this.id = id;
             this.types = types;
             this.range = range;
         }
 
+        @Nonnull
         public String getId() {
             return this.id;
         }
 
+        @Nonnull
         public List<String> getType() {
             return this.types;
         }
 
+        @Nonnull
         public Tuple<Double, Double> getRange() {
             return this.range;
         }
@@ -123,6 +133,7 @@ public class PenaltyReader {
 
     public static class Holder {
 
+        @Nonnull
         public final static PenaltyReader INSTANCE = new PenaltyReader();
 
     }

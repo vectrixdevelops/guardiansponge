@@ -116,8 +116,8 @@ public class InvalidMovementDetection extends AbstractDetection {
 
         private HoconConfigFile configFile;
 
-        public InvalidMovementConfiguration(@Nonnull InvalidMovementDetection detection,
-                                            @Nonnull Path configDir) {
+        InvalidMovementConfiguration(@Nonnull InvalidMovementDetection detection,
+                                     @Nonnull Path configDir) {
             this.detection = detection;
             this.configDir = configDir;
         }

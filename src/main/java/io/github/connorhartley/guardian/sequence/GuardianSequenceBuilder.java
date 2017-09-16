@@ -51,26 +51,26 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implem
 
     @SafeVarargs
     @Override
-    public final SequenceBuilder<E, F> capture(Capture<E, F>... captures) {
+    public final SequenceBuilder<E, F> capture(@Nonnull Capture<E, F>... captures) {
         this.captures.addAll(Arrays.asList(captures));
         return this;
     }
 
     @Nonnull
     @Override
-    public <T> ActionBuilder<E, F, T> action(@Nullable Class<T> aClass) {
+    public <T> ActionBuilder<E, F, T> action(@Nonnull Class<T> aClass) {
         return this.action(new GuardianAction<>(aClass));
     }
 
     @Nonnull
     @Override
-    public <T> ActionBuilder<E, F, T> action(@Nullable ActionBlueprint<T> actionBlueprint) {
+    public <T> ActionBuilder<E, F, T> action(@Nonnull ActionBlueprint<T> actionBlueprint) {
         return this.action(actionBlueprint.create());
     }
 
     @Nonnull
     @Override
-    public <T> ActionBuilder<E, F, T> action(@Nullable Action<T> action) {
+    public <T> ActionBuilder<E, F, T> action(@Nonnull Action<T> action) {
         this.actions.add((GuardianAction<T>) action);
 
         return new GuardianActionBuilder<>(this, action);
@@ -78,11 +78,11 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implem
 
     @Nonnull
     @Override
-    public <C> SequenceBlueprint<E, F> build(C pluginContainer, Check<E, F> check) {
+    public <C> SequenceBlueprint<E, F> build(@Nonnull C pluginContainer, @Nonnull Check<E, F> check) {
         return new AbstractSequenceBlueprint<E, F>(check) {
             @Nonnull
             @Override
-            public Sequence<E, F> create(EntityEntry entry) {
+            public Sequence<E, F> create(@Nonnull EntityEntry entry) {
                 GuardianCaptureRegistry captureRegistry = new GuardianCaptureRegistry(entry);
                 GuardianSequenceBuilder.this.captures.forEach(aCapture -> captureRegistry.put(pluginContainer, aCapture.getClass(), aCapture));
 

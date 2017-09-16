@@ -46,7 +46,7 @@ public class GuardianAction<T> implements Action<T> {
     private int delay;
     private int expire;
 
-    public GuardianAction(Class<T> aClass) {
+    public GuardianAction(@Nonnull Class<T> aClass) {
         this.eventClass = aClass;
     }
 
@@ -73,7 +73,7 @@ public class GuardianAction<T> implements Action<T> {
                     Summary<E, F> summary = condition.<E, F>get().apply(entry, event, sequence.getCaptureRegistry().getContainer(), sequence.getSummary(), lastActionTime);
 
                     if (summary.view(SequenceReport.class) == null) return false;
-                    return !summary.view(SequenceReport.class).passed();
+                    return !summary.view(SequenceReport.class).isPassed();
                 });
     }
 
@@ -95,7 +95,7 @@ public class GuardianAction<T> implements Action<T> {
                     Summary<E, F> summary = condition.<E, F>get().apply(entry, event, sequence.getCaptureRegistry().getContainer(), sequence.getSummary(), lastActionTime);
 
                     if (summary.view(SequenceReport.class) == null) return false;
-                    return summary.view(SequenceReport.class).passed();
+                    return summary.view(SequenceReport.class).isPassed();
                 });
     }
 

@@ -34,6 +34,8 @@ import io.github.connorhartley.guardian.GuardianPlugin;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
+
 public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
 
     private final GuardianPlugin plugin;
@@ -44,7 +46,7 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
     private Heuristic element;
     private int phaseIndes = 0;
 
-    public GuardianHeuristicViewer(GuardianPlugin plugin) {
+    public GuardianHeuristicViewer(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
 
         this.heuristicIterator = this.plugin.getHeuristicRegistry().iterator();
@@ -54,11 +56,13 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
         }
     }
 
+    @Nonnull
     @Override
-    public <E, F extends DetectionConfiguration> Heuristic getOrCreatePhase(Detection<E, F> detection) {
+    public <E, F extends DetectionConfiguration> Heuristic getOrCreatePhase(@Nonnull Detection<E, F> detection) {
         return this.element;
     }
 
+    @Nonnull
     @Override
     public Class<? extends Heuristic> getPhaseClass() {
         return this.element.getClass();
@@ -73,6 +77,7 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
         this.phaseIndes += 1;
     }
 
+    @Nonnull
     @Override
     public PhaseState getPhaseState() {
         return this.phaseState;
@@ -89,7 +94,7 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
     }
 
     @Override
-    public int size(PhaseFilter phaseFilter) {
+    public int size(@Nonnull PhaseFilter phaseFilter) {
         AtomicInteger size = new AtomicInteger(0);
 
         this.plugin.getHeuristicRegistry().keySet().forEach(key -> {

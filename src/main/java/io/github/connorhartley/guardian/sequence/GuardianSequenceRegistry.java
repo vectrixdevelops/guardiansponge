@@ -45,7 +45,7 @@ public final class GuardianSequenceRegistry implements SequenceRegistry {
     private final GuardianPlugin plugin;
     private final BiMap<Class<? extends Check>, SequenceBlueprint> blueprintRegistry = HashBiMap.create();
 
-    public GuardianSequenceRegistry(GuardianPlugin plugin) {
+    public GuardianSequenceRegistry(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -55,7 +55,7 @@ public final class GuardianSequenceRegistry implements SequenceRegistry {
             this.plugin.getLogger().warn(ConsoleFormatter.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a blueprint into the registry that already exists!")
-                    .build().get()
+                    .buildAndGet()
             );
 
             return;

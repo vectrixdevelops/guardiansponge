@@ -43,11 +43,14 @@ public class GuardianSummary<E, F extends DetectionConfiguration> implements Sum
     private final EntityEntry entry;
     private final Detection<E, F> detection;
     private final BiMap<Class<?>, Report> reportRegistry = HashBiMap.create();
+    private final Origin origin;
 
-    public GuardianSummary(E owner, Detection<E, F> detection, EntityEntry entry) {
+    public GuardianSummary(@Nonnull E owner, @Nonnull Detection<E, F> detection,
+                           @Nonnull EntityEntry entry, @Nonnull Origin origin) {
         this.owner = owner;
         this.entry = entry;
         this.detection = detection;
+        this.origin = origin;
     }
 
     @Nonnull
@@ -82,9 +85,10 @@ public class GuardianSummary<E, F extends DetectionConfiguration> implements Sum
     @Nonnull
     @Override
     public Origin getOrigin() {
-        return null;
+        return this.origin;
     }
 
+    @Nonnull
     @Override
     public Iterator<Report> iterator() {
         return this.reportRegistry.values().iterator();

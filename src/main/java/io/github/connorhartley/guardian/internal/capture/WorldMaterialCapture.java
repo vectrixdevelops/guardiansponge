@@ -36,6 +36,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import javax.annotation.Nonnull;
+
 public class WorldMaterialCapture<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
 
     public static NamedKey SPEED_AMPLIFIER =
@@ -48,7 +50,7 @@ public class WorldMaterialCapture<E, F extends DetectionConfiguration> extends A
     private double solidSpeedModifier = 1.02;
     private double liquidSpeedModifier = 1.01;
 
-    public WorldMaterialCapture(E owner, Detection<E, F> detection) {
+    public WorldMaterialCapture(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
         super(owner, detection);
 
         this.gasSpeedModifier = detection.getConfiguration().getStorage()
@@ -65,13 +67,13 @@ public class WorldMaterialCapture<E, F extends DetectionConfiguration> extends A
     }
 
     @Override
-    public void start(EntityEntry entry, CaptureContainer captureContainer) {
+    public void start(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
         captureContainer.put(WorldMaterialCapture.SPEED_AMPLIFIER, 1.0);
         captureContainer.put(WorldMaterialCapture.UPDATE, 0);
     }
 
     @Override
-    public void update(EntityEntry entry, CaptureContainer captureContainer) {
+    public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
         if (!entry.getEntity(TypeToken.of(Player.class)).isPresent()
                 || captureContainer.<Location<World>>get(GuardianSequence.INITIAL_LOCATION) == null) return;
         Player player = entry.getEntity(TypeToken.of(Player.class)).get();
@@ -98,5 +100,5 @@ public class WorldMaterialCapture<E, F extends DetectionConfiguration> extends A
     }
 
     @Override
-    public void stop(EntityEntry entry, CaptureContainer captureContainer) {}
+    public void stop(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {}
 }

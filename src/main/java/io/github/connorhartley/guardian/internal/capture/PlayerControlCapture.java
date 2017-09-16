@@ -42,6 +42,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 public class PlayerControlCapture {
 
     public static String FLY = "fly";
@@ -54,17 +56,17 @@ public class PlayerControlCapture {
         public static NamedKey INVALID_MOVEMENT =
                 NamedKey.of(Invalid.class.getCanonicalName().toUpperCase() + "_INVALID_MOVEMENT");
 
-        public Invalid(E owner, Detection<E, F> detection) {
+        public Invalid(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
             super(owner, detection);
         }
 
         @Override
-        public void start(EntityEntry entry, CaptureContainer captureContainer) {
+        public void start(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
             captureContainer.put(Invalid.INVALID_MOVEMENT, Sets.newHashSet());
         }
 
         @Override
-        public void update(EntityEntry entry, CaptureContainer captureContainer) {
+        public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
             if (!entry.getEntity(TypeToken.of(Player.class)).isPresent()) return;
             Player player = entry.getEntity(TypeToken.of(Player.class)).get();
 
@@ -96,7 +98,7 @@ public class PlayerControlCapture {
         }
 
         @Override
-        public void stop(EntityEntry entry, CaptureContainer captureContainer) {}
+        public void stop(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {}
 
     }
 
@@ -121,7 +123,7 @@ public class PlayerControlCapture {
         private double sprintOffset = 0;
         private double flyOffset = 0;
 
-        public Common(E owner, Detection<E, F> detection) {
+        public Common(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
             super(owner, detection);
 
             this.liftOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", "lift")
@@ -141,7 +143,7 @@ public class PlayerControlCapture {
         }
 
         @Override
-        public void start(EntityEntry entry, CaptureContainer captureContainer) {
+        public void start(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
             Map<String, Integer> controlState = new HashMap<>();
             controlState.put(FLY, 0);
             controlState.put(WALK, 0);
@@ -155,7 +157,7 @@ public class PlayerControlCapture {
         }
 
         @Override
-        public void update(EntityEntry entry, CaptureContainer captureContainer) {
+        public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
             if (!entry.getEntity(TypeToken.of(Player.class)).isPresent() || captureContainer.<Location<World>>get(GuardianSequence.INITIAL_LOCATION) == null) return;
             Player player = entry.getEntity(TypeToken.of(Player.class)).get();
 
@@ -196,7 +198,7 @@ public class PlayerControlCapture {
         }
 
         @Override
-        public void stop(EntityEntry entry, CaptureContainer captureContainer) {}
+        public void stop(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {}
 
     }
 

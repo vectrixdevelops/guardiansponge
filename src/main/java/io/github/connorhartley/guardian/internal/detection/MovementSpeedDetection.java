@@ -117,8 +117,8 @@ public class MovementSpeedDetection extends AbstractDetection {
 
         private HoconConfigFile configFile;
 
-        public MovementSpeedConfiguration(@Nonnull MovementSpeedDetection detection,
-                                          @Nonnull Path configDir) {
+        MovementSpeedConfiguration(@Nonnull MovementSpeedDetection detection,
+                                   @Nonnull Path configDir) {
             this.detection = detection;
             this.configDir = configDir;
         }

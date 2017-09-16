@@ -42,6 +42,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
 
 public class GuardianSequence<E, F extends DetectionConfiguration> implements Sequence<E, F> {
 
@@ -49,7 +52,6 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
             NamedKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION");
 
     private final EntityEntry entry;
-    private final Check<E, F> check;
     private final GuardianSummary<E, F> summary;
     private final CaptureRegistry captureRegistry;
     private final SequenceBlueprint<E, F> sequenceBlueprint;
@@ -62,20 +64,20 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
     private boolean cancelled = false;
     private long last = System.currentTimeMillis();
 
-    public GuardianSequence(EntityEntry entry, SequenceBlueprint<E, F> sequenceBlueprint, Check<E, F> check,
-                            Collection<GuardianAction> action, CaptureRegistry captureRegistry) {
+    public GuardianSequence(@Nonnull EntityEntry entry, @Nonnull SequenceBlueprint<E, F> sequenceBlueprint,
+                            @Nonnull Check<E, F> check, @Nonnull Collection<GuardianAction> action,
+                            @Nonnull CaptureRegistry captureRegistry) {
         this.entry = entry;
-        this.check = check;
         this.captureRegistry = captureRegistry;
         this.sequenceBlueprint = sequenceBlueprint;
 
         this.actions.addAll(action);
-        this.summary = new GuardianSummary<>(check.getDetection().getOwner(), check.getDetection(), entry);
+        this.summary = new GuardianSummary<>(check.getDetection().getOwner(), check.getDetection(), entry, this.originSource.build());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> boolean apply(EntityEntry entry, T event) {
+    public <T> boolean apply(@Nonnull EntityEntry entry, @Nonnull T event) {
         Iterator<GuardianAction> iterator = this.actions.iterator();
 
         if (iterator.hasNext()) {
@@ -147,24 +149,25 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
         return true;
     }
 
-    public <T> boolean fail(EntityEntry entry, T event, GuardianAction<T> action, Origin origin) {
+    private <T> boolean fail(@Nonnull EntityEntry entry, @Nonnull T event,
+                             @Nonnull GuardianAction<T> action, @Nonnull Origin origin) {
         this.cancelled = action.fail(this, entry, event, this.last);
-
-        // TODO: Sequence fail event.
-
         return false;
     }
 
+    @Nonnull
     @Override
     public Summary<E, F> getSummary() {
         return this.summary;
     }
 
+    @Nonnull
     @Override
     public CaptureRegistry getCaptureRegistry() {
         return this.captureRegistry;
     }
 
+    @Nonnull
     @Override
     public SequenceBlueprint<E, F> getSequenceBlueprint() {
         return this.sequenceBlueprint;
@@ -206,6 +209,21 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
     @Override
     public boolean isFinished() {
         return this.finished;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.entry, this.captureRegistry, this.sequenceBlueprint);
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) return true;
+        if (object == null || !(object instanceof GuardianSequence<?, ?>)) return false;
+        final GuardianSequence<?, ?> that = (GuardianSequence<?, ?>) object;
+        return Objects.equals(this.entry, that.entry)
+                && Objects.equals(this.captureRegistry, that.captureRegistry)
+                && Objects.equals(this.sequenceBlueprint, that.sequenceBlueprint);
     }
 
 }

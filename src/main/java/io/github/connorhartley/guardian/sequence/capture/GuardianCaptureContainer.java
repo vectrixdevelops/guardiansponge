@@ -42,7 +42,7 @@ public class GuardianCaptureContainer implements CaptureContainer {
         return new GuardianCaptureContainer();
     }
 
-    public GuardianCaptureContainer() {}
+    private GuardianCaptureContainer() {}
 
     @Override
     public <T> void put(@Nonnull String id, @Nullable T value) {
@@ -88,4 +88,5 @@ public class GuardianCaptureContainer implements CaptureContainer {
     public Set<String> keySet() {
         return this.container.keySet();
     }
+
 }

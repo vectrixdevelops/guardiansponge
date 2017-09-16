@@ -27,25 +27,32 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.sequence.condition.Condition;
 import com.ichorpowered.guardian.api.sequence.condition.ConditionSupplier;
 
-public class GuardianCondition<E, F extends DetectionConfiguration, T> implements Condition<T> {
+import javax.annotation.Nonnull;
 
-    private final ConditionSupplier<E, F, T> condition;
+public class GuardianCondition<K, L extends DetectionConfiguration, M> implements Condition<M> {
+
+    private final ConditionSupplier condition;
     private final Type type;
 
-    public static <E, F extends DetectionConfiguration, K> GuardianCondition<E, F, K> of(ConditionSupplier<E, F, K> condition, Type type) {
+    @Nonnull
+    public static <A, B extends DetectionConfiguration, C> GuardianCondition<A, B, C> of(
+            @Nonnull ConditionSupplier<A, B, C> condition, @Nonnull Type type) {
         return new GuardianCondition<>(condition, type);
     }
 
-    public GuardianCondition(ConditionSupplier<E, F, T> condition, Type type) {
+    private GuardianCondition(@Nonnull ConditionSupplier<K, L, M> condition, @Nonnull Type type) {
         this.condition = condition;
         this.type = type;
     }
 
+    @Nonnull
     @Override
-    public ConditionSupplier<E, F, T> get() {
-        return this.condition;
+    @SuppressWarnings("unchecked")
+    public <E, F extends DetectionConfiguration> ConditionSupplier<E, F, M> get() {
+        return (ConditionSupplier<E, F, M>) this.condition;
     }
 
+    @Nonnull
     @Override
     public Type getType() {
         return this.type;

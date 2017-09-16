@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 
 public class ResetPenalty implements Penalty {
 
+    @Nonnull
     @Override
     public String getId() {
         return "reset";

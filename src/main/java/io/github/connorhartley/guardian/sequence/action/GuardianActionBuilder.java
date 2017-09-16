@@ -34,63 +34,74 @@ import com.ichorpowered.guardian.api.sequence.condition.Condition;
 import com.ichorpowered.guardian.api.sequence.condition.ConditionSupplier;
 import io.github.connorhartley.guardian.sequence.condition.GuardianCondition;
 
+import javax.annotation.Nonnull;
+
 public class GuardianActionBuilder<E, F extends DetectionConfiguration, T> implements ActionBuilder<E, F, T> {
 
     private final Action<T> action;
     private final SequenceBuilder<E, F> sequenceBuilder;
 
-    public GuardianActionBuilder(SequenceBuilder<E, F> sequenceBuilder, Action<T> action) {
+    public GuardianActionBuilder(@Nonnull SequenceBuilder<E, F> sequenceBuilder, @Nonnull Action<T> action) {
         this.sequenceBuilder = sequenceBuilder;
         this.action = action;
     }
 
+    @Nonnull
     @Override
-    public ActionBuilder<E, F, T> condition(ConditionSupplier<E, F, T> conditionSupplier) {
+    public ActionBuilder<E, F, T> condition(@Nonnull ConditionSupplier<E, F, T> conditionSupplier) {
         this.action.addCondition(GuardianCondition.of(conditionSupplier, Condition.Type.NORMAL));
         return this;
     }
 
+    @Nonnull
     @Override
     public ActionBuilder<E, F, T> delay(int value) {
         this.action.setDelay(value);
         return this;
     }
 
+    @Nonnull
     @Override
     public ActionBuilder<E, F, T> expire(int value) {
         this.action.setExpire(value);
         return this;
     }
 
+    @Nonnull
     @Override
-    public ActionBuilder<E, F, T> success(ConditionSupplier<E, F, T> conditionSupplier) {
+    public ActionBuilder<E, F, T> success(@Nonnull ConditionSupplier<E, F, T> conditionSupplier) {
         this.action.addCondition(GuardianCondition.of(conditionSupplier, Condition.Type.SUCCESS));
         return this;
     }
 
+    @Nonnull
     @Override
-    public ActionBuilder<E, F, T> failure(ConditionSupplier<E, F, T> conditionSupplier) {
+    public ActionBuilder<E, F, T> failure(@Nonnull ConditionSupplier<E, F, T> conditionSupplier) {
         this.action.addCondition(GuardianCondition.of(conditionSupplier, Condition.Type.FAIL));
         return this;
     }
 
+    @Nonnull
     @Override
-    public <K> ActionBuilder<E, F, K> action(Class<K> aClass) {
+    public <K> ActionBuilder<E, F, K> action(@Nonnull Class<K> aClass) {
         return this.action(new GuardianAction<>(aClass));
     }
 
+    @Nonnull
     @Override
-    public <K> ActionBuilder<E, F, K> action(ActionBlueprint<K> actionBlueprint) {
+    public <K> ActionBuilder<E, F, K> action(@Nonnull ActionBlueprint<K> actionBlueprint) {
         return this.action(actionBlueprint.create());
     }
 
+    @Nonnull
     @Override
-    public <K> ActionBuilder<E, F, K> action(Action<K> action) {
+    public <K> ActionBuilder<E, F, K> action(@Nonnull Action<K> action) {
         return this.sequenceBuilder.action(action);
     }
 
+    @Nonnull
     @Override
-    public <C> SequenceBlueprint<E, F> build(C pluginContainer, Check<E, F> check) {
+    public <C> SequenceBlueprint<E, F> build(@Nonnull C pluginContainer, @Nonnull Check<E, F> check) {
         return this.sequenceBuilder.build(pluginContainer, check);
     }
 

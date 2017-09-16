@@ -42,7 +42,7 @@ public final class GuardianPenaltyRegistry implements PenaltyRegistry {
     private GuardianPlugin plugin;
     private BiMap<Class<? extends Penalty>, Penalty> penaltyRegistry = HashBiMap.create();
 
-    public GuardianPenaltyRegistry(GuardianPlugin plugin) {
+    public GuardianPenaltyRegistry(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -52,7 +52,7 @@ public final class GuardianPenaltyRegistry implements PenaltyRegistry {
             this.plugin.getLogger().warn(ConsoleFormatter.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a penalty into the registry that already exists!")
-                    .build().get()
+                    .buildAndGet()
             );
 
             return;

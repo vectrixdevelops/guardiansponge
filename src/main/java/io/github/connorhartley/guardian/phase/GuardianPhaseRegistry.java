@@ -43,7 +43,7 @@ public class GuardianPhaseRegistry implements PhaseRegistry {
     private final GuardianPlugin plugin;
     private final BiMap<NamedTypeKey, PhaseViewer> phaseRegistry = HashBiMap.create();
 
-    public GuardianPhaseRegistry(GuardianPlugin plugin) {
+    public GuardianPhaseRegistry(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 

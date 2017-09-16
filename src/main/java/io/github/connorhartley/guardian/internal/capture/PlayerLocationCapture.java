@@ -32,6 +32,8 @@ import com.ichorpowered.guardian.api.util.key.NamedKey;
 import io.github.connorhartley.guardian.sequence.capture.AbstractCapture;
 import org.spongepowered.api.entity.Entity;
 
+import javax.annotation.Nonnull;
+
 public class PlayerLocationCapture<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
 
     public static NamedKey INITIAL_LOCATION =
@@ -43,12 +45,12 @@ public class PlayerLocationCapture<E, F extends DetectionConfiguration> extends 
     public static NamedKey UPDATE =
             NamedKey.of(PlayerLocationCapture.class.getCanonicalName().toUpperCase() + "_UPDATE");
 
-    public PlayerLocationCapture(E owner, Detection<E, F> detection) {
+    public PlayerLocationCapture(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
         super(owner, detection);
     }
 
     @Override
-    public void start(EntityEntry entry, CaptureContainer captureContainer) {
+    public void start(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
         if (!entry.getEntity(TypeToken.of(Entity.class)).isPresent()) return;
         Entity entity = entry.getEntity(TypeToken.of(Entity.class)).get();
 
@@ -58,7 +60,7 @@ public class PlayerLocationCapture<E, F extends DetectionConfiguration> extends 
     }
 
     @Override
-    public void update(EntityEntry entry, CaptureContainer captureContainer) {
+    public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
         if (!entry.getEntity(TypeToken.of(Entity.class)).isPresent()) return;
         Entity entity = entry.getEntity(TypeToken.of(Entity.class)).get();
 
@@ -67,6 +69,6 @@ public class PlayerLocationCapture<E, F extends DetectionConfiguration> extends 
     }
 
     @Override
-    public void stop(EntityEntry entry, CaptureContainer captureContainer) {}
+    public void stop(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {}
 
 }

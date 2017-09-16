@@ -86,6 +86,7 @@ import org.spongepowered.api.text.format.TextColors;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Plugin(
@@ -127,10 +128,12 @@ public class GuardianPlugin implements Guardian<Event> {
     private ModuleController<GuardianPlugin> moduleSubsystem;
 
     /* Event System */
+
     private SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
 
 
     /* Registries / Managers */
+
     private GuardianConfiguration configuration;
     private GuardianDetectionRegistry detectionRegistry;
     private GuardianSequenceRegistry sequenceRegistry;
@@ -187,8 +190,7 @@ public class GuardianPlugin implements Guardian<Event> {
         this.moduleSubsystem = ShadedModularFramework.registerModuleController(this, Sponge.getGame());
         this.moduleSubsystem.setPluginContainer(this.pluginContainer);
 
-        ASMEventExecutorFactory<GuardianEvent, GuardianListener> eventExecutor = new ASMEventExecutorFactory<>();
-        this.eventBus = new SimpleEventBus<>(eventExecutor);
+        this.eventBus = new SimpleEventBus<>(new ASMEventExecutorFactory<GuardianEvent, GuardianListener>());
 
         this.getLogger().info(this.initializationPrefix + " Running registry initialization.");
 
@@ -261,6 +263,8 @@ public class GuardianPlugin implements Guardian<Event> {
 
                         Sponge.getRegistry().register(DetectionType.class, detection);
 
+                        this.detectionRegistry.put(this, detection.getClass(), detection);
+
                         PhaseManipulator detectionManipulator = detection.getPhaseManipulator();
 
                         while (detectionManipulator.hasNext(PhaseTypes.CHECK)) {
@@ -317,57 +321,68 @@ public class GuardianPlugin implements Guardian<Event> {
         return this.configDir.getParent();
     }
 
+    @Nullable
     @Override
     public <T extends Guardian> T getInstance(@Nullable Class<T> aClass) throws ImplementationException {
         if (aClass == null || !aClass.isInstance(this)) throw new ImplementationException("Could not assign instance from class " + aClass);
         return (T) this;
     }
 
+    @Nullable
     @Override
     public GuardianState getState() {
         return this.lifeState;
     }
 
+    @Nullable
     @Override
     public SimpleEventBus<GuardianEvent, GuardianListener> getEventBus() {
         return this.eventBus;
     }
 
+    @Nullable
     @Override
     public ModuleRegistry getModuleRegistry() {
         return null;
     }
 
+    @Nullable
     @Override
     public DetectionRegistry getDetectionRegistry() {
         return this.detectionRegistry;
     }
 
+    @Nullable
     @Override
     public CheckRegistry getCheckRegistry() {
         return this.checkRegistry;
     }
 
+    @Nullable
     @Override
     public HeuristicRegistry getHeuristicRegistry() {
         return this.heuristicRegistry;
     }
 
+    @Nullable
     @Override
     public PenaltyRegistry getPenaltyRegistry() {
         return this.penaltyRegistry;
     }
 
+    @Nullable
     @Override
     public SequenceRegistry getSequenceRegistry() {
         return this.sequenceRegistry;
     }
 
+    @Nullable
     @Override
     public PhaseRegistry getPhaseRegistry() {
         return this.phaseRegistry;
     }
 
+    @Nullable
     @Override
     public SequenceManager<Event> getSequenceManager() {
         return this.sequenceManager;

@@ -42,7 +42,7 @@ public class GuardianHeuristicRegistry implements HeuristicRegistry {
     private final GuardianPlugin plugin;
     private final BiMap<Class<? extends Heuristic>, Heuristic> heuristicRegistry = HashBiMap.create();
 
-    public GuardianHeuristicRegistry(GuardianPlugin plugin) {
+    public GuardianHeuristicRegistry(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -52,7 +52,7 @@ public class GuardianHeuristicRegistry implements HeuristicRegistry {
             this.plugin.getLogger().warn(ConsoleFormatter.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a heuristic into the registry that already exists!")
-                    .build().get()
+                    .buildAndGet()
             );
 
             return;

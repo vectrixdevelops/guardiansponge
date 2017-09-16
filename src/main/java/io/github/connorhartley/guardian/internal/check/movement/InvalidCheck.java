@@ -28,6 +28,7 @@ import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
+import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.internal.capture.PlayerControlCapture;
@@ -105,7 +106,7 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
                 // TODO: Permission check.
 
                 .condition((entityEntry, event, captureContainer, summary, last) -> {
-                    summary.set(SequenceReport.class, new SequenceReport(false));
+                    summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(event).owner(entityEntry).build()));
 
                     if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return summary;
 
@@ -133,7 +134,7 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
 
                     if (controls.isEmpty()) return summary;
 
-                    SequenceReport report = new SequenceReport(true);
+                    SequenceReport report = new SequenceReport(true, Origin.source(event).owner(entityEntry).build());
                     report.put("type", "Invalid Movement");
 
                     report.put("information", Collections.singletonList(

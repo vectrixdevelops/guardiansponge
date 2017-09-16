@@ -39,7 +39,7 @@ public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
     private final T entity;
     private final UUID uuid;
 
-    public static <E> GuardianEntityEntry<E> of(E entity, UUID uuid) {
+    public static <E> GuardianEntityEntry<E> of(@Nonnull E entity, @Nonnull UUID uuid) {
         return new GuardianEntityEntry<>(entity, uuid);
     }
 

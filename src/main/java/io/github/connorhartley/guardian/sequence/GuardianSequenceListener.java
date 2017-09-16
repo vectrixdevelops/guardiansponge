@@ -29,6 +29,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
+import org.spongepowered.api.event.filter.type.Exclude;
+import org.spongepowered.api.event.filter.type.Include;
 import org.spongepowered.api.plugin.PluginContainer;
 
 public final class GuardianSequenceListener {
@@ -40,9 +42,15 @@ public final class GuardianSequenceListener {
     }
 
     @Listener
+    @Exclude(MoveEntityEvent.Teleport.class)
     public void moveEntityEvent(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
         this.plugin.getSequenceManager().invokeFor(GuardianEntityEntry.of(player, player.getUniqueId()), event,
                 sequence -> !event.getCause().containsType(PluginContainer.class));
+    }
+
+    @Listener
+    public void moveEntityEventTeleport(MoveEntityEvent.Teleport event, @Getter("getTargetEntity") Player player) {
+        // TODO: Sequence removal.
     }
 
 }

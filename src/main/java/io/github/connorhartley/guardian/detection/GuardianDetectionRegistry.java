@@ -44,7 +44,7 @@ public final class GuardianDetectionRegistry implements DetectionRegistry {
     private final GuardianPlugin plugin;
     private final BiMap<Class<? extends Detection>, Detection> detectionRegistry = HashBiMap.create();
 
-    public GuardianDetectionRegistry(GuardianPlugin plugin) {
+    public GuardianDetectionRegistry(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -89,6 +89,7 @@ public final class GuardianDetectionRegistry implements DetectionRegistry {
         return this.detectionRegistry.keySet();
     }
 
+    @Nonnull
     @Override
     public Iterator<Detection> iterator() {
         return this.detectionRegistry.values().iterator();

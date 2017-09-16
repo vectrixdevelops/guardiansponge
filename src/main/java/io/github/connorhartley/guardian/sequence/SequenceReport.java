@@ -26,6 +26,7 @@ package io.github.connorhartley.guardian.sequence;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.report.Report;
 
+import java.util.HashMap;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -33,37 +34,41 @@ import javax.annotation.Nullable;
 
 public class SequenceReport implements Report {
 
+    private final HashMap<String, Object> reportMap = new HashMap<>();
     private final boolean pass;
+    private final Origin origin;
 
-    public SequenceReport(boolean pass) {
+    public SequenceReport(boolean pass, @Nonnull Origin origin) {
         this.pass = pass;
+        this.origin = origin;
     }
 
-    @Nonnull
-    public boolean passed() {
+    public boolean isPassed() {
         return this.pass;
     }
 
     @Override
-    public <T> void put(@Nonnull String s, @Nullable T t) {
-
+    public <T> void put(@Nonnull String key, @Nullable T object) {
+        this.reportMap.put(key, object);
     }
 
     @Nullable
     @Override
-    public <T> T get(@Nonnull String s) throws IllegalArgumentException {
-        return null;
+    @SuppressWarnings("unchecked")
+    public <T> T get(@Nonnull String key) throws IllegalArgumentException {
+        return (T) this.reportMap.get(key);
     }
 
+    @Nonnull
     @Override
     public Set<String> keySet() {
-        return null;
+        return this.reportMap.keySet();
     }
 
     @Nonnull
     @Override
     public Origin getOrigin() {
-        return null;
+        return this.origin;
     }
 
 }

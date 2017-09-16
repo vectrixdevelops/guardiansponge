@@ -37,29 +37,35 @@ import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class GuardianDetectionPhase<E, F extends DetectionConfiguration> implements DetectionPhase<E, F> {
 
     private final GuardianPlugin plugin;
     private final Detection<E, F> detection;
     private final PhaseFilter phaseFilter;
 
-    public GuardianDetectionPhase(GuardianPlugin plugin, Detection<E, F> detection) {
+    public GuardianDetectionPhase(@Nonnull GuardianPlugin plugin, @Nonnull Detection<E, F> detection) {
         this(plugin, detection, new GuardianPhaseFilter());
     }
 
-    public GuardianDetectionPhase(GuardianPlugin plugin, Detection<E, F> detection, PhaseFilter phaseFilter) {
+    public GuardianDetectionPhase(@Nonnull GuardianPlugin plugin, @Nonnull Detection<E, F> detection,
+                                  @Nonnull PhaseFilter phaseFilter) {
         this.plugin = plugin;
         this.detection = detection;
         this.phaseFilter = phaseFilter;
     }
 
+    @Nonnull
     @Override
     public Detection<E, F> getDetection() {
         return this.detection;
     }
 
+    @Nullable
     @Override
-    public <T> T next(NamedTypeKey<T> phaseKey) {
+    public <T> T next(@Nonnull NamedTypeKey<T> phaseKey) {
         if (!this.phaseFilter.accept(this.plugin.getPhaseRegistry().expect(phaseKey).getPhaseClass())) return null;
         PhaseViewer<T> phaseViewer = this.plugin.getPhaseRegistry().expect(phaseKey);
 
@@ -74,7 +80,7 @@ public class GuardianDetectionPhase<E, F extends DetectionConfiguration> impleme
     }
 
     @Override
-    public <T> boolean hasNext(NamedTypeKey<T> phaseKey) {
+    public <T> boolean hasNext(@Nonnull NamedTypeKey<T> phaseKey) {
         PhaseViewer<T> phaseViewer = this.plugin.getPhaseRegistry().expect(phaseKey);
 
         if (phaseViewer.index() + 1 <= phaseViewer.size()) {
@@ -89,11 +95,13 @@ public class GuardianDetectionPhase<E, F extends DetectionConfiguration> impleme
         return false;
     }
 
+    @Nullable
     @Override
-    public <T> PhaseState getViewerState(NamedTypeKey<T> phaseKey) {
+    public <T> PhaseState getViewerState(@Nonnull NamedTypeKey<T> phaseKey) {
         return this.plugin.getPhaseRegistry().expect(phaseKey).getPhaseState();
     }
 
+    @Nonnull
     @Override
     public PhaseFilter getFilter() {
         return this.phaseFilter;

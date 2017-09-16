@@ -27,6 +27,8 @@ import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.event.state.StartingEvent;
 
+import javax.annotation.Nonnull;
+
 public class GuardianStartingEvent implements StartingEvent {
 
     private final Guardian guardian;
@@ -34,16 +36,18 @@ public class GuardianStartingEvent implements StartingEvent {
 
     private boolean cancelled = false;
 
-    public GuardianStartingEvent(Guardian guardian, Origin origin) {
+    public GuardianStartingEvent(@Nonnull Guardian guardian, @Nonnull Origin origin) {
         this.guardian = guardian;
         this.origin = origin;
     }
 
+    @Nonnull
     @Override
     public Guardian getGuardian() {
         return this.guardian;
     }
 
+    @Nonnull
     @Override
     public Origin getOrigin() {
         return this.origin;

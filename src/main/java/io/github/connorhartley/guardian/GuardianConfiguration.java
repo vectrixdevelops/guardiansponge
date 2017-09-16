@@ -47,19 +47,20 @@ public class GuardianConfiguration {
     private HoconConfigFile configFile;
     private boolean loaded = false;
 
-    public GuardianConfiguration(@Nonnull GuardianPlugin plugin,
-                                 @Nonnull Path configDir) {
+    GuardianConfiguration(@Nonnull GuardianPlugin plugin,
+                          @Nonnull Path configDir) {
         this.plugin = plugin;
         this.configDir = configDir;
     }
 
-    public List<String> getEnabledModules() throws ObjectMappingException {
+    @Nonnull
+    List<String> getEnabledModules() throws ObjectMappingException {
         if (!this.loaded) return Lists.newArrayList();
 
         return this.getStorage().getNode("general", "enabled").getList(TypeToken.of(String.class));
     }
 
-    public void load() {
+    void load() {
         try {
             this.configFile = HoconLoaderPatch.load(this.configDir.resolve(FILE_NAME),
                     "/" + FILE_NAME, !this.exists());

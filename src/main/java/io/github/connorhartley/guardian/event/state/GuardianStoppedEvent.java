@@ -27,21 +27,25 @@ import com.ichorpowered.guardian.api.GuardianBasic;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.event.state.StoppedEvent;
 
+import javax.annotation.Nonnull;
+
 public class GuardianStoppedEvent implements StoppedEvent {
 
     private final GuardianBasic guardianBasic;
     private final Origin origin;
 
-    public GuardianStoppedEvent(GuardianBasic guardianBasic, Origin origin) {
+    public GuardianStoppedEvent(@Nonnull GuardianBasic guardianBasic, @Nonnull Origin origin) {
         this.guardianBasic = guardianBasic;
         this.origin = origin;
     }
 
+    @Nonnull
     @Override
     public GuardianBasic getGuardian() {
         return this.guardianBasic;
     }
 
+    @Nonnull
     @Override
     public Origin getOrigin() {
         return this.origin;

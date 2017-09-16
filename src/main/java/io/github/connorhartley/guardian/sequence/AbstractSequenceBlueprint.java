@@ -33,7 +33,7 @@ public abstract class AbstractSequenceBlueprint<E, F extends DetectionConfigurat
 
     private final Check<E, F> check;
 
-    public AbstractSequenceBlueprint(Check<E, F> check) {
+    AbstractSequenceBlueprint(@Nonnull Check<E, F> check) {
         this.check = check;
     }
 

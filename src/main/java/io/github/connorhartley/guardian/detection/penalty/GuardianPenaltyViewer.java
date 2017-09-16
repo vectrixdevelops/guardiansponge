@@ -34,6 +34,8 @@ import io.github.connorhartley.guardian.GuardianPlugin;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
+
 public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
 
     private final GuardianPlugin plugin;
@@ -44,7 +46,7 @@ public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
     private Penalty element;
     private int phaseIndex = 0;
 
-    public GuardianPenaltyViewer(GuardianPlugin plugin) {
+    public GuardianPenaltyViewer(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
 
         this.penaltyIterator = this.plugin.getPenaltyRegistry().iterator();
@@ -54,12 +56,13 @@ public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
         }
     }
 
-
+    @Nonnull
     @Override
-    public <E, F extends DetectionConfiguration> Penalty getOrCreatePhase(Detection<E, F> detection) {
+    public <E, F extends DetectionConfiguration> Penalty getOrCreatePhase(@Nonnull Detection<E, F> detection) {
         return this.element;
     }
 
+    @Nonnull
     @Override
     public Class<? extends Penalty> getPhaseClass() {
         return this.element.getClass();
@@ -74,6 +77,7 @@ public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
         this.phaseIndex += 1;
     }
 
+    @Nonnull
     @Override
     public PhaseState getPhaseState() {
         return this.phaseState;
@@ -90,7 +94,7 @@ public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
     }
 
     @Override
-    public int size(PhaseFilter phaseFilter) {
+    public int size(@Nonnull PhaseFilter phaseFilter) {
         AtomicInteger size = new AtomicInteger(0);
 
         this.plugin.getPenaltyRegistry().keySet().forEach(key -> {

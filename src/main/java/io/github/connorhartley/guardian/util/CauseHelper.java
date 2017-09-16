@@ -30,6 +30,8 @@ import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.event.cause.EventContextKey;
 
+import javax.annotation.Nonnull;
+
 /*
  * Inspired by the Nucleus CauseStackHelper class.
  */
@@ -41,10 +43,12 @@ public final class CauseHelper {
         CauseHelper.plugin = plugin;
     }
 
+    @Nonnull
     public static CauseStackManager.StackFrame populateCauseFrame(Object... stack) {
         return populateCauseFrame(EventContext.empty(), stack);
     }
 
+    @Nonnull
     public static CauseStackManager.StackFrame populateCauseFrame(EventContext eventContext, Object... stack) {
         CauseStackManager.StackFrame stackFrame = Sponge.getCauseStackManager().pushCauseFrame();
         eventContext.asMap().forEach((eventContextKey, o) -> Sponge.getCauseStackManager().addContext((EventContextKey) eventContextKey, o));
@@ -58,10 +62,12 @@ public final class CauseHelper {
         return stackFrame;
     }
 
+    @Nonnull
     public static Cause populateCause(Object... stack) {
         return populateCause(EventContext.empty(), stack);
     }
 
+    @Nonnull
     public static Cause populateCause(EventContext eventContext, Object... stack) {
         if (Sponge.getServer().isMainThread()) {
             try (CauseStackManager.StackFrame stackFrame = populateCauseFrame(eventContext, stack)) {

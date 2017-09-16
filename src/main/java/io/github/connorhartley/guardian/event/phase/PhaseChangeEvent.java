@@ -41,7 +41,8 @@ public class PhaseChangeEvent<T> implements GuardianEvent, Reified<T> {
     private final Origin origin;
 
 
-    public PhaseChangeEvent(Detection detection, PhaseViewer<T> phaseViewer, Class<T> phaseClass, Origin origin) {
+    public PhaseChangeEvent(@Nonnull Detection detection, @Nonnull PhaseViewer<T> phaseViewer,
+                            @Nonnull Class<T> phaseClass, @Nonnull Origin origin) {
         this.detection = detection;
         this.phaseViewer = phaseViewer;
         this.phaseClass = phaseClass;
@@ -54,18 +55,22 @@ public class PhaseChangeEvent<T> implements GuardianEvent, Reified<T> {
         return TypeToken.of(this.phaseClass);
     }
 
+    @Nonnull
     public <E, F extends DetectionConfiguration> Detection<E, F> getDetection() {
         return this.detection;
     }
 
+    @Nonnull
     public PhaseViewer<T> getPhaseViewer() {
         return this.phaseViewer;
     }
 
+    @Nonnull
     public Class<T> getPhaseClass() {
         return this.phaseClass;
     }
 
+    @Nonnull
     @Override
     public Origin getOrigin() {
         return this.origin;

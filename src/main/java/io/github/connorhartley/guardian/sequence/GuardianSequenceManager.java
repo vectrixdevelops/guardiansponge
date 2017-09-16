@@ -55,7 +55,7 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
 
     private final Multimap<UUID, Sequence<?, ?>> sequences = HashMultimap.create();
 
-    public GuardianSequenceManager(GuardianPlugin plugin, GuardianSequenceRegistry sequenceRegistry) {
+    public GuardianSequenceManager(@Nonnull GuardianPlugin plugin, @Nonnull GuardianSequenceRegistry sequenceRegistry) {
         this.plugin = plugin;
         this.sequenceRegistry = sequenceRegistry;
     }
@@ -204,7 +204,7 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
         this.sequences.get(entry.getUniqueId()).removeIf(Sequence::isExpired);
     }
 
-    public void update() {
+    void update() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
             EntityEntry entry = GuardianEntityEntry.of(player, player.getUniqueId());
 
@@ -226,7 +226,7 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
 
         private Task task;
 
-        public SequenceTask(GuardianPlugin plugin, GuardianSequenceManager sequenceManager) {
+        public SequenceTask(@Nonnull GuardianPlugin plugin, @Nonnull GuardianSequenceManager sequenceManager) {
             this.plugin = plugin;
             this.sequenceManager = sequenceManager;
         }

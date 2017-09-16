@@ -42,7 +42,8 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
     private final List<PenaltyReader.Action> actions = new ArrayList<>();
     private final List<PenaltyReader.ActionLevel> actionLevels = new ArrayList<>();
 
-    public AbstractDetection(GuardianPlugin plugin, String id, String name) {
+    public AbstractDetection(@Nonnull GuardianPlugin plugin, @Nonnull String id,
+                             @Nonnull String name) {
         super(id, name);
         this.plugin = plugin;
     }

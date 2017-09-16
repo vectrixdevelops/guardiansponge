@@ -44,7 +44,7 @@ public final class GuardianCheckRegistry implements CheckRegistry {
     private final GuardianPlugin plugin;
     private final BiMap<Class<? extends CheckBlueprint>, CheckBlueprint> checkRegistry = HashBiMap.create();
 
-    public GuardianCheckRegistry(GuardianPlugin plugin) {
+    public GuardianCheckRegistry(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -54,7 +54,7 @@ public final class GuardianCheckRegistry implements CheckRegistry {
             this.plugin.getLogger().warn(ConsoleFormatter.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a check into the registry that already exists!")
-                    .build().get()
+                    .buildAndGet()
             );
 
             return;
