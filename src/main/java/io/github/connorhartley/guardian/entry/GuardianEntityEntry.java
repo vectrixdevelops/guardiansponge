@@ -25,14 +25,16 @@ package io.github.connorhartley.guardian.entry;
 
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
+import net.kyori.lunar.reflect.Reified;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GuardianEntityEntry<T> implements EntityEntry {
+public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
 
     private final T entity;
     private final UUID uuid;
@@ -57,6 +59,25 @@ public class GuardianEntityEntry<T> implements EntityEntry {
     public <E> Optional<E> getEntity(TypeToken<E> typeToken) {
         if (!typeToken.getType().equals(this.entity)) return Optional.empty();
         return Optional.ofNullable((E) this.entity);
+    }
+
+    @Nonnull
+    @Override
+    public TypeToken<T> type() {
+        return TypeToken.of((Class<T>) this.entity.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.entity, this.uuid);
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) return true;
+        if (object == null || !(object instanceof EntityEntry)) return false;
+        return Objects.equals(this.entity, ((EntityEntry) object).getEntity(type()))
+                && Objects.equals(this.uuid, ((EntityEntry) object).getUniqueId());
     }
 
 }

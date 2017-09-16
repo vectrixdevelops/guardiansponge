@@ -26,7 +26,6 @@ package io.github.connorhartley.guardian.sequence;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.detection.penalty.Penalty;
@@ -39,10 +38,12 @@ import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.detection.GuardianDetectionPhase;
+import io.github.connorhartley.guardian.entry.GuardianEntityEntry;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.scheduler.Task;
 
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -52,7 +53,7 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
     private final GuardianPlugin plugin;
     private final SequenceRegistry sequenceRegistry;
 
-    private final Multimap<EntityEntry, Sequence<?, ?>> sequences = HashMultimap.create();
+    private final Multimap<UUID, Sequence<?, ?>> sequences = HashMultimap.create();
 
     public GuardianSequenceManager(GuardianPlugin plugin, GuardianSequenceRegistry sequenceRegistry) {
         this.plugin = plugin;
@@ -62,7 +63,7 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
     @Override
     public void invoke(@Nonnull EntityEntry entry, @Nonnull Event event) {
         // Sequence Executor
-        this.sequences.get(entry).removeIf(sequence -> this.invokeSequence(sequence, entry, event));
+        this.sequences.get(entry.getUniqueId()).removeIf(sequence -> this.invokeSequence(sequence, entry, event));
 
         // Sequence Blueprint Executor
         this.invokeBlueprint(entry, event);
@@ -71,7 +72,7 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
     @Override
     public void invokeFor(@Nonnull EntityEntry entry, @Nonnull Event event, Predicate<Sequence> predicate) {
         // Sequence Executor
-        this.sequences.get(entry).removeIf(sequence -> {
+        this.sequences.get(entry.getUniqueId()).removeIf(sequence -> {
 
             // Note: Do not simplify this. Only invoke the sequence if you have confirmed the predicate test FIRST.
             //       otherwise it defeats the purpose of the test (sequence check is particularly expensive when not
@@ -151,7 +152,7 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
 
             // 1. Check for matching sequence.
 
-            if (this.sequences.get(entry).stream()
+            if (this.sequences.get(entry.getUniqueId()).stream()
                     .anyMatch(playerSequence -> playerSequence.getSequenceBlueprint()
                             .equals(sequenceBlueprint))) continue;
 
@@ -178,32 +179,43 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
                     continue;
                 }
 
-                this.sequences.put(entry, sequence);
+                this.sequences.put(entry.getUniqueId(), sequence);
             }
         }
     }
 
     @Override
     public void clean(boolean force) {
-        GuardianSequenceManager.this.sequences.keys().forEach(player -> GuardianSequenceManager.this.clean(player, force));
+        Sponge.getServer().getOnlinePlayers().forEach(player -> {
+            EntityEntry entityEntry = GuardianEntityEntry.of(player, player.getUniqueId());
+
+            this.clean(entityEntry, force);
+        });
     }
 
     @Override
     public void clean(@Nonnull EntityEntry entry, boolean force) {
-        if (force) GuardianSequenceManager.this.sequences.removeAll(entry);
-        else GuardianSequenceManager.this.sequences.entries().forEach((el) -> {
-            if (el.getKey().equals(entry) && el.getValue().isExpired())
-                GuardianSequenceManager.this.sequences.remove(el.getKey(), el.getValue());
-        });
+        if (force) {
+            this.sequences.removeAll(entry);
+            return;
+        }
+
+        if (this.sequences.get(entry.getUniqueId()) == null || this.sequences.get(entry.getUniqueId()).isEmpty()) return;
+        this.sequences.get(entry.getUniqueId()).removeIf(Sequence::isExpired);
     }
 
     public void update() {
-        GuardianSequenceManager.this.sequences.forEach((entry, playerSequence) -> {
-            if (playerSequence.isRunning()) {
-                for (Capture capture : playerSequence.getCaptureRegistry()) {
-                    capture.update(entry, playerSequence.getCaptureRegistry().getContainer());
+        Sponge.getServer().getOnlinePlayers().forEach(player -> {
+            EntityEntry entry = GuardianEntityEntry.of(player, player.getUniqueId());
+
+            if (this.sequences.get(entry.getUniqueId()) == null || this.sequences.get(entry.getUniqueId()).isEmpty()) return;
+            this.sequences.get(entry.getUniqueId()).forEach(sequence -> {
+                if (sequence.isRunning()) {
+                    for (Capture capture : sequence.getCaptureRegistry()) {
+                        capture.update(entry, sequence.getCaptureRegistry().getContainer());
+                    }
                 }
-            }
+            });
         });
     }
 

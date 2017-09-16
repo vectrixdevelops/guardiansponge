@@ -46,22 +46,22 @@ public class GuardianCaptureContainer implements CaptureContainer {
 
     @Override
     public <T> void put(@Nonnull String id, @Nullable T value) {
-        this.container.put(id, value);
+        this.container.forcePut(id, value);
     }
 
     @Override
     public <T> void put(@Nonnull NamedKey key, @Nonnull T value) {
-        this.container.put(key.getName(), value);
+        this.container.forcePut(key.getName(), value);
     }
 
     @Override
     public <T> void transform(@Nonnull String key, @Nullable Transform<T> transform) {
-        this.container.put(key, transform.transform((T) this.container.get(key)));
+        this.container.forcePut(key, transform.transform((T) this.container.get(key)));
     }
 
     @Override
     public <T> void transform(@Nonnull NamedKey key, @Nonnull Transform<T> transform) {
-        this.container.put(key.getName(), transform.transform((T) this.container.get(key.getName())));
+        this.container.forcePut(key.getName(), transform.transform((T) this.container.get(key.getName())));
     }
 
     @Nullable

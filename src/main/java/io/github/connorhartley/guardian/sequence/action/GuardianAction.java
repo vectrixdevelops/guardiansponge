@@ -46,15 +46,9 @@ public class GuardianAction<T> implements Action<T> {
     private int delay;
     private int expire;
 
-    @SuppressWarnings("unchecked")
-    public static <K> GuardianAction<K> of(Action<K> action) {
-        return new GuardianAction<>((Class<K>) action.getClass());
-    }
-
     public GuardianAction(Class<T> aClass) {
         this.eventClass = aClass;
     }
-
 
     @Override
     public void addCondition(@Nonnull Condition<T> condition) {
@@ -78,7 +72,7 @@ public class GuardianAction<T> implements Action<T> {
                 .noneMatch(condition -> {
                     Summary<E, F> summary = condition.<E, F>get().apply(entry, event, sequence.getCaptureRegistry().getContainer(), sequence.getSummary(), lastActionTime);
 
-                    if (summary.view(SequenceReport.class) == null) return true;
+                    if (summary.view(SequenceReport.class) == null) return false;
                     return !summary.view(SequenceReport.class).passed();
                 });
     }
@@ -117,7 +111,7 @@ public class GuardianAction<T> implements Action<T> {
 
     @Nonnull
     @Override
-    public Class<? extends T> getEvent() {
+    public Class<T> getEvent() {
         return this.eventClass;
     }
 

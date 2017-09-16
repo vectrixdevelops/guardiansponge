@@ -52,16 +52,16 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
 
     private double analysisTime = 40;
     private double minimumTickRange = 30;
-    private double maximumTickRange = 50;
+    private double maximumTickRange = 60;
 
     public HorizontalSpeedCheck(CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint,
                               Detection<GuardianPlugin, DetectionConfiguration> detection) {
         this.checkBlueprint = checkBlueprint;
         this.detection = detection;
 
-        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "time").getDouble(2d) / 0.05;
-        this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "minimum").getDouble(0.75);
-        this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "maximum").getDouble(1.25);
+//        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "time").getDouble(2d) / 0.05;
+//        this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "minimum").getDouble(0.75);
+//        this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "maximum").getDouble(1.25);
     }
 
     @Nonnull
@@ -98,71 +98,71 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
                 // After : Move Entity Event
 
                 .action(MoveEntityEvent.class)
-                .delay(Double.valueOf(this.analysisTime).intValue())
-                .expire(Double.valueOf(this.maximumTickRange).intValue())
+                    .delay(Double.valueOf(this.analysisTime).intValue())
+                    .expire(Double.valueOf(this.maximumTickRange).intValue())
 
-                // TODO: Permission check.
+                    // TODO: Permission check.
 
-                .condition((entityEntry, event, captureContainer, summary, last) -> {
-                    summary.set(SequenceReport.class, new SequenceReport(false));
+                    .condition((entityEntry, event, captureContainer, summary, last) -> {
+                        summary.set(SequenceReport.class, new SequenceReport(false));
 
-                    if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return summary;
-                    Player player = entityEntry.getEntity(TypeToken.of(Player.class)).get();
+                        if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return summary;
+                        Player player = entityEntry.getEntity(TypeToken.of(Player.class)).get();
 
                         /*
                          * Capture Collection
                          */
 
-                    Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
-                    Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
-                    Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
+                        Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
+                        Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
+                        Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
 
-                    Integer controlTicks = captureContainer.get(PlayerControlCapture.Common.CONTROL_STATE_TICKS);
-                    Integer verticalTicks = captureContainer.get(PlayerControlCapture.Common.UPDATE);
-                    Double horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_OFFSET);
+                        Integer controlTicks = captureContainer.get(PlayerControlCapture.Common.CONTROL_STATE_TICKS);
+                        Integer verticalTicks = captureContainer.get(PlayerControlCapture.Common.UPDATE);
+                        Double horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_OFFSET);
 
                         /*
                          * Analysis
                          */
 
-                    if (locationTicks == null || initial == null || present == null || controlTicks == null ||
-                            verticalTicks == null || horizontalOffset == null) return summary;
+                        if (locationTicks == null || initial == null || present == null || controlTicks == null ||
+                                verticalTicks == null || horizontalOffset == null) return summary;
 
-                    if (locationTicks < this.minimumTickRange) {
-                        this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
+                        if (locationTicks < this.minimumTickRange) {
+                            this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
+                            return summary;
+                        } else if (locationTicks > this.maximumTickRange) {
+                            return summary;
+                        }
+
+                        if (player.get(Keys.VEHICLE).isPresent()) return summary;
+
+                        long current = System.currentTimeMillis();
+
+                        double horizontalDisplacement = Math.abs((present.getX() - initial.getX()) + (present.getZ() - initial.getZ()));
+
+                        double maximumHorizontalDisplacement = (horizontalOffset *
+                                (horizontalOffset / 0.2)) * (((
+                                ((1 / verticalTicks) * ((long) this.analysisTime * 1000)) + (current - last)
+                        ) / 2) / 1000) + 0.01; // TODO: This should take into account material data and many other factors too.
+
+                        if (horizontalDisplacement > maximumHorizontalDisplacement) {
+                            SequenceReport report = new SequenceReport(true);
+                            report.put("type", "Horizontal Speed");
+
+                            report.put("information", Collections.singletonList(
+                                    "Overshot maximum movement by " + (horizontalDisplacement - maximumHorizontalDisplacement) + ".")
+                            );
+
+                            report.put("initial_location", initial);
+                            report.put("final_location", present);
+                            report.put("severity", (horizontalDisplacement - maximumHorizontalDisplacement) / horizontalDisplacement);
+
+                            summary.set(SequenceReport.class, report);
+                        }
+
                         return summary;
-                    } else if (locationTicks > this.maximumTickRange) {
-                        return summary;
-                    }
-
-                    if (player.get(Keys.VEHICLE).isPresent()) return summary;
-
-                    long current = System.currentTimeMillis();
-
-                    double horizontalDisplacement = Math.abs((present.getX() - initial.getX()) + (present.getZ() - initial.getZ()));
-
-                    double maximumHorizontalDisplacement = (horizontalOffset *
-                            (horizontalOffset / 0.2)) * (((
-                            ((1 / verticalTicks) * ((long) this.analysisTime * 1000)) + (current - last)
-                    ) / 2) / 1000) + 0.01; // TODO: This should take into account material data and many other factors too.
-
-                    if (horizontalDisplacement > maximumHorizontalDisplacement) {
-                        SequenceReport report = new SequenceReport(true);
-                        report.put("type", "Horizontal Speed");
-
-                        report.put("information", Collections.singletonList(
-                                "Overshot maximum movement by " + (horizontalDisplacement - maximumHorizontalDisplacement) + ".")
-                        );
-
-                        report.put("initial_location", initial);
-                        report.put("final_location", present);
-                        report.put("severity", (horizontalDisplacement - maximumHorizontalDisplacement) / horizontalDisplacement);
-
-                        summary.set(SequenceReport.class, report);
-                    }
-
-                    return summary;
-                })
+                    })
                 .build(this.detection.getOwner(), this);
     }
 

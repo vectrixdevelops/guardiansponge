@@ -282,6 +282,8 @@ public class GuardianPlugin implements Guardian<Event> {
                 .buildAndGet()
         );
 
+        Sponge.getEventManager().registerListeners(this, this.sequenceListener);
+
         this.lifeState = GuardianState.POST_INITIALIZATION;
 
         // Post : POST_INITIALIZATION Event

@@ -71,7 +71,7 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implem
     @Nonnull
     @Override
     public <T> ActionBuilder<E, F, T> action(@Nullable Action<T> action) {
-        this.actions.add(GuardianAction.of(action));
+        this.actions.add((GuardianAction<T>) action);
 
         return new GuardianActionBuilder<>(this, action);
     }
@@ -86,7 +86,7 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implem
                 GuardianCaptureRegistry captureRegistry = new GuardianCaptureRegistry(entry);
                 GuardianSequenceBuilder.this.captures.forEach(aCapture -> captureRegistry.put(pluginContainer, aCapture.getClass(), aCapture));
 
-                return new GuardianSequence<>(entry, this, check, GuardianSequenceBuilder.this.actions, captureRegistry);
+                return new GuardianSequence<>(entry, this, check, actions, captureRegistry);
             }
         };
     }

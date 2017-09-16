@@ -41,6 +41,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class GuardianSequence<E, F extends DetectionConfiguration> implements Sequence<E, F> {
 
@@ -52,7 +53,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
     private final GuardianSummary<E, F> summary;
     private final CaptureRegistry captureRegistry;
     private final SequenceBlueprint<E, F> sequenceBlueprint;
-    private final Collection<GuardianAction> actions = new ArrayList<>();
+    private final List<GuardianAction> actions = new ArrayList<>();
     private final Origin.Builder originSource = Origin.source(this);
 
     private int queue = 0;
@@ -85,7 +86,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
 
             // 1. Check that the event is the correct one for this action.
 
-            if (!action.getEvent().equals(event.getClass())) {
+            if (!action.getEvent().isAssignableFrom(event.getClass())) {
                 return fail(entry, event, action, this.originSource.build());
             }
 
@@ -106,14 +107,14 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
 
             // 3. Fail the action if it is being executed before the delay.
 
-            if (this.queue > 1 && this.last + ((typeAction.getDelay() / 20) * 1000) > current) {
+            if (this.queue > 1 && this.last + ((action.getDelay() / 20) * 1000) > current) {
                 return this.fail(entry, event, action, this.originSource
                         .named("overload", this.last + ((typeAction.getDelay() / 20) * 1000) - current).build());
             }
 
             // 4. Fail the action if it is being executed after the delay.
 
-            if (this.queue > 1 && this.last + ((typeAction.getExpire() / 20) * 1000) < current) {
+            if (this.queue > 1 && this.last + ((action.getExpire() / 20) * 1000) < current) {
                 return this.fail(entry, event, action, this.originSource
                         .named("overload", current - this.last + ((typeAction.getExpire() / 20) * 1000)).build());
             }
@@ -185,19 +186,18 @@ public class GuardianSequence<E, F extends DetectionConfiguration> implements Se
             return false;
         }
 
-        Iterator<GuardianAction> it = this.actions.iterator();
-        if (it.hasNext()) {
-            GuardianAction action = it.next();
-            long current = System.currentTimeMillis();
+        GuardianAction action = this.actions.get(0);
+        long current = System.currentTimeMillis();
 
-            if (this.last + ((action.getExpire() / 20) * 1000) < current) {
-                if (this.capturing) {
-                    // noinspection unchecked
-                    for (Capture<E, F> capture : this.captureRegistry) {
-                        capture.stop(entry, this.captureRegistry.getContainer());
-                    }
+        if (action != null && this.last + ((action.getExpire() / 20) * 1000) < current) {
+            if (this.capturing) {
+                // noinspection unchecked
+                for (Capture<E, F> capture : this.captureRegistry) {
+                    capture.stop(this.entry, this.captureRegistry.getContainer());
                 }
             }
+
+            return true;
         }
 
         return false;

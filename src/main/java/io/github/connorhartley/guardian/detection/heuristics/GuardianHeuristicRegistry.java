@@ -31,10 +31,11 @@ import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.util.ConsoleFormatter;
 import org.fusesource.jansi.Ansi;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class GuardianHeuristicRegistry implements HeuristicRegistry {
 

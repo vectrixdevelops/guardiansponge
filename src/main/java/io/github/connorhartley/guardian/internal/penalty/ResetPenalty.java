@@ -29,8 +29,6 @@ import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.detection.penalty.PenaltyPredicate;
 import io.github.connorhartley.guardian.sequence.SequenceReport;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 
 import javax.annotation.Nonnull;
 
