@@ -83,8 +83,6 @@ public class InvalidMovementDetection extends AbstractDetection {
 
     }
 
-
-
     @Nonnull
     @Override
     public String getPermission(@Nonnull String permissionTarget) {
