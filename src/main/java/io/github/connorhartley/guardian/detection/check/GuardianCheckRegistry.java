@@ -29,7 +29,8 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.util.ConsoleFormatter;
+import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
 import java.util.Iterator;
@@ -51,7 +52,7 @@ public final class GuardianCheckRegistry implements CheckRegistry {
     @Override
     public <C> void put(@Nonnull C pluginContainer, @Nonnull Class<? extends CheckBlueprint> key, @Nonnull CheckBlueprint check) {
         if (this.checkRegistry.containsKey(key)) {
-            this.plugin.getLogger().warn(ConsoleFormatter.builder()
+            this.plugin.getLogger().warn(ConsoleUtil.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a check into the registry that already exists!")
                     .buildAndGet()

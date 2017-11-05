@@ -28,14 +28,13 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionPhase;
 import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
 import io.github.connorhartley.guardian.internal.check.movement.VerticalSpeedCheck;
 import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
 import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
-import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 import tech.ferus.util.config.ConfigFile;
@@ -57,11 +56,11 @@ public class MovementSpeedDetection extends AbstractDetection {
 
     private State state = State.UNDEFINED;
     private MovementSpeedConfiguration detectionConfiguration;
-    private GuardianDetectionPhase<GuardianPlugin, DetectionConfiguration> phaseManipulator;
+    private GuardianDetectionPhase<GuardianPluginOld, DetectionConfiguration> phaseManipulator;
 
     @Inject
     public MovementSpeedDetection(@ModuleContainer PluginContainer moduleContainer) {
-        super((GuardianPlugin) moduleContainer.getInstance().get(), "movementspeed", "Movement Speed Detection");
+        super((GuardianPluginOld) moduleContainer.getInstance().get(), "movementspeed", "Movement Speed Detection");
     }
 
     @Override
@@ -104,7 +103,7 @@ public class MovementSpeedDetection extends AbstractDetection {
 
     @Nonnull
     @Override
-    public DetectionPhase<GuardianPlugin, DetectionConfiguration> getPhaseManipulator() {
+    public DetectionPhase<GuardianPluginOld, DetectionConfiguration> getPhaseManipulator() {
         return this.phaseManipulator;
     }
 

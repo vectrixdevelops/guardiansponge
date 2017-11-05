@@ -23,21 +23,20 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.entry.GuardianEntityEntry;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.type.Exclude;
-import org.spongepowered.api.event.filter.type.Include;
 import org.spongepowered.api.plugin.PluginContainer;
 
 public final class GuardianSequenceListener {
 
-    private final GuardianPlugin plugin;
+    private final GuardianPluginOld plugin;
 
-    public GuardianSequenceListener(GuardianPlugin plugin) {
+    public GuardianSequenceListener(GuardianPluginOld plugin) {
         this.plugin = plugin;
     }
 

@@ -29,7 +29,7 @@ import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.phase.PhaseFilter;
 import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.github.connorhartley.guardian.GuardianPluginOld;
 
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +38,7 @@ import javax.annotation.Nonnull;
 
 public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
 
-    private final GuardianPlugin plugin;
+    private final GuardianPluginOld plugin;
 
     private PhaseState phaseState = PhaseState.INITIALIZED;
 
@@ -46,7 +46,7 @@ public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
     private Penalty element;
     private int phaseIndex = 0;
 
-    public GuardianPenaltyViewer(@Nonnull GuardianPlugin plugin) {
+    public GuardianPenaltyViewer(@Nonnull GuardianPluginOld plugin) {
         this.plugin = plugin;
 
         this.penaltyIterator = this.plugin.getPenaltyRegistry().iterator();

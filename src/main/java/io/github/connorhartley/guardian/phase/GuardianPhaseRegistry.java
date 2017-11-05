@@ -29,7 +29,8 @@ import com.ichorpowered.guardian.api.phase.PhaseRegistry;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.util.ConsoleFormatter;
+import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
 import java.util.NoSuchElementException;
@@ -50,7 +51,7 @@ public class GuardianPhaseRegistry implements PhaseRegistry {
     @Override
     public <C, T> void put(@Nonnull C pluginContainer, @Nonnull NamedTypeKey<T> key, @Nonnull PhaseViewer<T> phaseViewer) {
         if (this.phaseRegistry.containsKey(key)) {
-            this.plugin.getLogger().warn(ConsoleFormatter.builder()
+            this.plugin.getLogger().warn(ConsoleUtil.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a phase viewer into the registry that already exists!")
                     .buildAndGet()

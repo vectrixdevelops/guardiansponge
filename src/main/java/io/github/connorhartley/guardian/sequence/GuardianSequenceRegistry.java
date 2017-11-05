@@ -30,7 +30,8 @@ import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.util.ConsoleFormatter;
+import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
 import java.util.Iterator;
@@ -52,7 +53,7 @@ public final class GuardianSequenceRegistry implements SequenceRegistry {
     @Override
     public <C> void put(@Nonnull C pluginContainer, @Nonnull Class<? extends Check> key, @Nonnull SequenceBlueprint sequenceBlueprint) {
         if (this.blueprintRegistry.containsKey(key)) {
-            this.plugin.getLogger().warn(ConsoleFormatter.builder()
+            this.plugin.getLogger().warn(ConsoleUtil.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a blueprint into the registry that already exists!")
                     .buildAndGet()

@@ -24,18 +24,8 @@
 package io.github.connorhartley.guardian;
 
 /**
- * Plugin Info
- *
- * Contains fields regarding plugin information filled at compile time.
- *
- *   \      oo
- *    \____|\mm
- *    //_//\ \_\
- *   /K-9/  \/_/
- *  /___/_____\
- * -----------
- *
- * " Wibbly wobbly timey wimey "
+ * Contains static fields that may be injected
+ * at compile time.
  */
 public final class PluginInfo {
 
@@ -46,9 +36,9 @@ public final class PluginInfo {
     public static final String VERSION = "@version@";
     public static final String DESCRIPTION = "@description@";
 
-    public static final String DATABASE_VERSION = "@databaseversion@";
-
     public static final String ELDER_VERSION = "@elderversion@";
     public static final String PRECOGS_VERSION = "@precogsversion";
+
+    public static final boolean EXPERIMENTAL = true;
 
 }

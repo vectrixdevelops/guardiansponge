@@ -40,7 +40,7 @@ repositories {
 
 dependencies {
     compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
-    compile 'com.ichorpowered.guardian.api:guardianapi:1.0.0-SNAPSHOT'
+    compile 'com.ichorpowered.guardian.api:guardianapi:1.0.1-SNAPSHOT'
 
     // External Dependencies
 
@@ -111,7 +111,7 @@ shadowJar {
     classifier = 'unminified'
     dependencies {
         include(dependency('org.apache.commons:commons-math3:3.6.1'))
-        include(dependency('com.ichorpowered.guardian.api:guardianapi:1.0.0-SNAPSHOT'))
+        include(dependency('com.ichorpowered.guardian.api:guardianapi:1.0.1-SNAPSHOT'))
 
         relocate ('com.mchange', 'io.github.connorhartley.guardian.util.database.mchange') {
             include(dependency('com.mchange:c3p0'))

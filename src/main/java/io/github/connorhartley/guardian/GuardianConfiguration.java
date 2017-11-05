@@ -25,7 +25,6 @@ package io.github.connorhartley.guardian;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
-import io.github.connorhartley.guardian.util.HoconLoaderPatch;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import tech.ferus.util.config.ConfigFile;
@@ -41,13 +40,13 @@ public class GuardianConfiguration {
 
     private static final String FILE_NAME = "guardian.conf";
 
-    private final GuardianPlugin plugin;
+    private final GuardianPluginOld plugin;
     private final Path configDir;
 
     private HoconConfigFile configFile;
     private boolean loaded = false;
 
-    GuardianConfiguration(@Nonnull GuardianPlugin plugin,
+    GuardianConfiguration(@Nonnull GuardianPluginOld plugin,
                           @Nonnull Path configDir) {
         this.plugin = plugin;
         this.configDir = configDir;

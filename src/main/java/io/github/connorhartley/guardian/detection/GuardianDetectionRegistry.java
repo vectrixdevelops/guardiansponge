@@ -29,7 +29,8 @@ import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionRegistry;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.util.ConsoleFormatter;
+import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
 import java.util.Iterator;
@@ -51,7 +52,7 @@ public final class GuardianDetectionRegistry implements DetectionRegistry {
     @Override
     public <C> void put(@Nonnull C plugin, @Nonnull Class<? extends Detection> aClass, @Nonnull Detection detection) {
         if (this.detectionRegistry.containsKey(aClass)) {
-            this.plugin.getLogger().warn(ConsoleFormatter.builder()
+            this.plugin.getLogger().warn(ConsoleUtil.builder()
                     .fg(Ansi.Color.YELLOW,
                             "Attempted to put a detection into the registry that already exists!")
                     .buildAndGet()

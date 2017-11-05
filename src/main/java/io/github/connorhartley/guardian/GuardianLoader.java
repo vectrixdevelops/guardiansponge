@@ -37,13 +37,13 @@ import javax.annotation.Nonnull;
 
 final class GuardianLoader {
 
-    private final GuardianPlugin plugin;
+    private final GuardianPluginOld plugin;
 
-    GuardianLoader(@Nonnull GuardianPlugin plugin) {
+    GuardianLoader(@Nonnull GuardianPluginOld plugin) {
         this.plugin = plugin;
     }
 
-    void loadModules(ModuleController<GuardianPlugin> moduleController) {
+    void loadModules(ModuleController<GuardianPluginOld> moduleController) {
         moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.InvalidMovementDetection");
         moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.MovementSpeedDetection");
     }
