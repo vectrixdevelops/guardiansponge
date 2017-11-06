@@ -1,6 +1,5 @@
 package io.github.connorhartley.guardian;
 
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.GuardianState;
@@ -20,19 +19,23 @@ import io.github.connorhartley.guardian.detection.heuristics.GuardianHeuristicRe
 import io.github.connorhartley.guardian.detection.penalty.GuardianPenaltyRegistry;
 import io.github.connorhartley.guardian.launch.Bootstrap;
 import io.github.connorhartley.guardian.launch.component.CorePluginComponent;
-import io.github.connorhartley.guardian.launch.component.RegistryPluginComponent;
 import io.github.connorhartley.guardian.launch.message.SimpleComponentMessage;
 import io.github.connorhartley.guardian.phase.GuardianPhaseRegistry;
+import io.github.connorhartley.guardian.sequence.GuardianSequenceListener;
+import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
-import io.github.connorhartley.guardian.util.ObjectProvider;
+import io.github.connorhartley.guardian.util.ElementProvider;
 import net.kyori.event.SimpleEventBus;
 import org.slf4j.Logger;
+import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
+
+import java.nio.file.Path;
 
 @Plugin(
         id = PluginInfo.ID,
@@ -61,29 +64,39 @@ public class GuardianPlugin implements Guardian<Event> {
     /* Injected Fields */
     private final Logger logger;
     private final PluginContainer pluginContainer;
+    private final Path configDirectory;
 
     /* Bootstrap Fields */
     private final Bootstrap bootstrap;
 
     /* Core Fields */
-    public final ObjectProvider<Long> timeProvider = new ObjectProvider<>();
+    public final ElementProvider<Long> timeProvider = new ElementProvider<>();
 
-    public final ObjectProvider<GuardianState> stateProvider = new ObjectProvider<>();
-    public final ObjectProvider<SimpleEventBus<GuardianEvent, GuardianListener>> eventBusProvider = new ObjectProvider<>();
-    public final ObjectProvider<ModuleController<GuardianPlugin>> moduleControllerProvider = new ObjectProvider<>();
+    public final ElementProvider<GuardianState> stateProvider = new ElementProvider<>();
+    public final ElementProvider<SimpleEventBus<GuardianEvent, GuardianListener>> eventBusProvider = new ElementProvider<>();
+    public final ElementProvider<ModuleController<GuardianPlugin>> moduleControllerProvider = new ElementProvider<>();
 
     /* Registry Fields */
-    public final ObjectProvider<GuardianDetectionRegistry> detectionRegistryProvider = new ObjectProvider<>();
-    public final ObjectProvider<GuardianCheckRegistry> checkRegistryProvider = new ObjectProvider<>();
-    public final ObjectProvider<GuardianSequenceRegistry> sequenceRegistryProvider = new ObjectProvider<>();
-    public final ObjectProvider<GuardianHeuristicRegistry> heuristicRegistryProvider = new ObjectProvider<>();
-    public final ObjectProvider<GuardianPenaltyRegistry> penaltyRegistryProvider = new ObjectProvider<>();
-    public final ObjectProvider<GuardianPhaseRegistry> phaseRegistryProvider = new ObjectProvider<>();
+    public final ElementProvider<GuardianDetectionRegistry> detectionRegistryProvider = new ElementProvider<>();
+    public final ElementProvider<GuardianCheckRegistry> checkRegistryProvider = new ElementProvider<>();
+    public final ElementProvider<GuardianSequenceRegistry> sequenceRegistryProvider = new ElementProvider<>();
+    public final ElementProvider<GuardianHeuristicRegistry> heuristicRegistryProvider = new ElementProvider<>();
+    public final ElementProvider<GuardianPenaltyRegistry> penaltyRegistryProvider = new ElementProvider<>();
+    public final ElementProvider<GuardianPhaseRegistry> phaseRegistryProvider = new ElementProvider<>();
+
+    /* Manager Fields */
+    public final ElementProvider<GuardianConfiguration> guardianConfigurationProvider = new ElementProvider<>();
+    public final ElementProvider<GuardianSequenceManager> sequenceManagerProvider = new ElementProvider<>();
+    public final ElementProvider<GuardianSequenceManager.SequenceTask> sequenceTaskProvider = new ElementProvider<>();
+
+    public final ElementProvider<GuardianSequenceListener> sequenceListenerProvider = new ElementProvider<>();
 
     @Inject
-    public GuardianPlugin(Logger logger, PluginContainer pluginContainer) {
+    public GuardianPlugin(Logger logger, PluginContainer pluginContainer,
+                          @DefaultConfig(sharedRoot = false) Path configDirectory) {
         this.logger = logger;
         this.pluginContainer = pluginContainer;
+        this.configDirectory = configDirectory;
 
         this.bootstrap = new Bootstrap(this.logger, this);
     }
@@ -91,7 +104,6 @@ public class GuardianPlugin implements Guardian<Event> {
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
         this.bootstrap.addComponent("core", new CorePluginComponent(this.logger, this));
-        this.bootstrap.addComponent("registry", new RegistryPluginComponent(this.logger, this));
 
         this.bootstrap.send(Bootstrap.ComponentRequest.STARTUP,
                 new SimpleComponentMessage(System.currentTimeMillis(), "Game initialization.", this),
@@ -104,6 +116,10 @@ public class GuardianPlugin implements Guardian<Event> {
 
     public final PluginContainer getPluginContainer() {
         return this.pluginContainer;
+    }
+
+    public Path getConfigDirectory() {
+        return this.configDirectory.getParent();
     }
 
     public final ModuleController<GuardianPlugin> getModuleController() {

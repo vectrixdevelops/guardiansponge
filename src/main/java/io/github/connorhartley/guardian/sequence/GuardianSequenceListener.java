@@ -23,6 +23,7 @@
  */
 package io.github.connorhartley.guardian.sequence;
 
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.entry.GuardianEntityEntry;
 import org.spongepowered.api.entity.living.player.Player;
@@ -34,9 +35,9 @@ import org.spongepowered.api.plugin.PluginContainer;
 
 public final class GuardianSequenceListener {
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
 
-    public GuardianSequenceListener(GuardianPluginOld plugin) {
+    public GuardianSequenceListener(GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 

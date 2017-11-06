@@ -1,10 +1,10 @@
 package io.github.connorhartley.guardian.util;
 
-public class ObjectProvider<T> {
+public class ElementProvider<T> {
 
     private T object = null;
 
-    public ObjectProvider() {}
+    public ElementProvider() {}
 
     public final T get() {
         return this.object;

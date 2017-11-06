@@ -40,26 +40,26 @@ public class GuardianConfiguration {
 
     private static final String FILE_NAME = "guardian.conf";
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
     private final Path configDir;
 
     private HoconConfigFile configFile;
     private boolean loaded = false;
 
-    GuardianConfiguration(@Nonnull GuardianPluginOld plugin,
-                          @Nonnull Path configDir) {
+    public GuardianConfiguration(@Nonnull GuardianPlugin plugin,
+                                 @Nonnull Path configDir) {
         this.plugin = plugin;
         this.configDir = configDir;
     }
 
     @Nonnull
-    List<String> getEnabledModules() throws ObjectMappingException {
+    public List<String> getEnabledModules() throws ObjectMappingException {
         if (!this.loaded) return Lists.newArrayList();
 
         return this.getStorage().getNode("general", "enabled").getList(TypeToken.of(String.class));
     }
 
-    void load() {
+    public void load() {
         try {
             this.configFile = HoconLoaderPatch.load(this.configDir.resolve(FILE_NAME),
                     "/" + FILE_NAME, !this.exists());

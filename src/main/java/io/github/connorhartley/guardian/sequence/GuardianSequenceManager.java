@@ -37,6 +37,7 @@ import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.entry.GuardianEntityEntry;
 import org.spongepowered.api.Sponge;
@@ -50,12 +51,12 @@ import javax.annotation.Nonnull;
 
 public final class GuardianSequenceManager implements SequenceManager<Event> {
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
     private final SequenceRegistry sequenceRegistry;
 
     private final Multimap<UUID, Sequence<?, ?>> sequences = HashMultimap.create();
 
-    public GuardianSequenceManager(@Nonnull GuardianPluginOld plugin, @Nonnull GuardianSequenceRegistry sequenceRegistry) {
+    public GuardianSequenceManager(@Nonnull GuardianPlugin plugin, @Nonnull GuardianSequenceRegistry sequenceRegistry) {
         this.plugin = plugin;
         this.sequenceRegistry = sequenceRegistry;
     }
@@ -221,12 +222,12 @@ public final class GuardianSequenceManager implements SequenceManager<Event> {
 
     public static class SequenceTask {
 
-        private final GuardianPluginOld plugin;
+        private final GuardianPlugin plugin;
         private final GuardianSequenceManager sequenceManager;
 
         private Task task;
 
-        public SequenceTask(@Nonnull GuardianPluginOld plugin, @Nonnull GuardianSequenceManager sequenceManager) {
+        public SequenceTask(@Nonnull GuardianPlugin plugin, @Nonnull GuardianSequenceManager sequenceManager) {
             this.plugin = plugin;
             this.sequenceManager = sequenceManager;
         }

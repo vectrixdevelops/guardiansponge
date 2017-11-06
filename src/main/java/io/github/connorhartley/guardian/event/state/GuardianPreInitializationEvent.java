@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.event.state;
 
-import com.ichorpowered.guardian.api.GuardianBasic;
+import com.ichorpowered.guardian.api.SimpleGuardian;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.event.state.PreInitializationEvent;
 
@@ -31,20 +31,18 @@ import javax.annotation.Nonnull;
 
 public class GuardianPreInitializationEvent implements PreInitializationEvent {
 
-    private final GuardianBasic guardianBasic;
     private final Origin origin;
 
     private boolean cancelled = false;
 
-    public GuardianPreInitializationEvent(@Nonnull GuardianBasic guardianBasic, @Nonnull Origin origin) {
-        this.guardianBasic = guardianBasic;
+    public GuardianPreInitializationEvent(@Nonnull Origin origin) {
         this.origin = origin;
     }
 
     @Nonnull
     @Override
-    public GuardianBasic getGuardian() {
-        return this.guardianBasic;
+    public SimpleGuardian getGuardian() {
+        return null;
     }
 
     @Nonnull
