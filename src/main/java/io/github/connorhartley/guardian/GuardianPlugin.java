@@ -35,9 +35,13 @@ import org.slf4j.Logger;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppingEvent;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -96,8 +100,8 @@ public class GuardianPlugin implements Guardian<Event> {
     @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceManager sequenceManager;
     @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceManager.SequenceTask sequenceTask;
 
+    @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceRegistry sequenceRegistry;
     @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceListener sequenceListener;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceRegistry sequenceRegistry;
     @Property(modifier = PropertyModifier.FINAL) public GuardianLoader guardianLoader;
 
     @Inject
@@ -110,6 +114,8 @@ public class GuardianPlugin implements Guardian<Event> {
         this.facetBootstrap = new FacetBootstrap(this.logger, this);
         this.propertyInjector = PropertyInjectorFactory.create(this);
     }
+
+    // PLUGIN INITIALIZATION
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
@@ -135,6 +141,44 @@ public class GuardianPlugin implements Guardian<Event> {
                 new SimpleFacetMessage(System.currentTimeMillis(), "Server Started", this),
                 "game");
     }
+
+    // PLUGIN RELOAD
+
+    @Listener
+    public void onGameReload(GameReloadEvent event) {
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.RESTART,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Game Reload", this),
+                "game");
+
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.RESTART,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Game Reload", this),
+                "internal");
+    }
+
+    // PLUGIN SHUTDOWN
+
+    @Listener
+    public void onGameStoppingServer(GameStoppingServerEvent event) {
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.SHUTDOWN,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Server Shutdown", this),
+                "game");
+    }
+
+    @Listener
+    public void onGameStoppedServer(GameStoppedServerEvent event) {
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.SHUTDOWN,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Server Shutdown", this),
+                "internal");
+    }
+
+    @Listener
+    public void onGameStopping(GameStoppingEvent event) {
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.SHUTDOWN,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Server Shutdown", this),
+                "core");
+    }
+
+    // ACCESSORS
 
     public final PropertyInjector getPropertyInjector() {
         return this.propertyInjector;

@@ -132,9 +132,11 @@ public class InternalPluginFacet implements Facet {
         return true;
     }
 
-    public Boolean shutdown() {
-        this.logger.info(ConsoleUtil.of("Shutdown internals."));
+    public Boolean restart() {
+        return true;
+    }
 
+    public Boolean shutdown() {
         this.facetState = FacetState.STOP;
         return true;
     }

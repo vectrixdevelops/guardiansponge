@@ -71,8 +71,6 @@ public class GamePluginFacet implements Facet {
     }
 
     public Boolean shutdown() {
-        this.logger.info(ConsoleUtil.of("Shutting down..."));
-
         PropertyInjector propertyInjector = this.plugin.getPropertyInjector();
         propertyInjector.inject("state", GuardianState.STOPPING);
 
