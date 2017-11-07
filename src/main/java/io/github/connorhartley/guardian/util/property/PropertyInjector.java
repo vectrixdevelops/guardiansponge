@@ -21,14 +21,14 @@ public class PropertyInjector {
             final Property point = field.getAnnotation(Property.class);
             if (point == null) continue;
 
-            final String fieldName = field.getName() + "$" + field.getType().getName();
+            final String fieldName = field.getName();
             final String fieldAlias = point.alias();
 
             if (fieldAlias.equals("") || this.aliases.containsKey(point.alias())) {
-                this.fields.put(fieldName, new PropertyContainer(field, fieldName, point.effectFinal()));
+                this.fields.put(fieldName, new PropertyContainer(field, fieldName, point.modifier()));
             } else {
                 this.aliases.put(fieldAlias, fieldName);
-                this.fields.put(fieldName, new PropertyContainer(field, fieldAlias, point.effectFinal()));
+                this.fields.put(fieldName, new PropertyContainer(field, fieldAlias, point.modifier()));
             }
         }
     }
@@ -53,7 +53,7 @@ public class PropertyInjector {
         try {
             propertyContainer.getField().setAccessible(true);
 
-            if (propertyContainer.isEffectivelyFinal() && propertyContainer.getField().get(this.target) == null) {
+            if (propertyContainer.getModifier().equals(PropertyModifier.FINAL) && propertyContainer.getField().get(this.target) == null) {
                 propertyContainer.getField().set(this.target, object);
             } else {
                 propertyContainer.getField().set(this.target, object);
@@ -68,13 +68,13 @@ public class PropertyInjector {
         final Class<?> type;
         final Field field;
         final String alias;
-        final boolean effectivelyFinal;
+        final PropertyModifier propertyModifier;
 
-        PropertyContainer(final Field field, final String alias, final boolean effectivelyFinal) {
+        PropertyContainer(final Field field, final String alias, final PropertyModifier propertyModifier) {
             this.type = field.getType();
             this.field = field;
             this.alias = alias;
-            this.effectivelyFinal = effectivelyFinal;
+            this.propertyModifier = propertyModifier;
         }
 
         public Field getField() {
@@ -85,8 +85,8 @@ public class PropertyInjector {
             return this.alias;
         }
 
-        public boolean isEffectivelyFinal() {
-            return this.effectivelyFinal;
+        public PropertyModifier getModifier() {
+            return this.propertyModifier;
         }
     }
 

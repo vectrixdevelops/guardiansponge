@@ -12,6 +12,6 @@ public @interface Property {
 
     String alias() default "";
 
-    boolean effectFinal() default false;
+    PropertyModifier modifier() default PropertyModifier.UNDEFINED;
 
 }

@@ -29,6 +29,7 @@ import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
 import io.github.connorhartley.guardian.util.property.PropertyInjector;
 import io.github.connorhartley.guardian.util.property.PropertyInjectorFactory;
+import io.github.connorhartley.guardian.util.property.PropertyModifier;
 import net.kyori.event.SimpleEventBus;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.DefaultConfig;
@@ -77,27 +78,27 @@ public class GuardianPlugin implements Guardian<Event> {
     private final PropertyInjector propertyInjector;
 
     /* Core Fields */
-    @Property(alias = "coreTime") public Long time;
-    @Property(alias = "state") public GuardianState state;
-    @Property(alias = "eventBus") public SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
+    @Property public Long coreTime;
+    @Property public GuardianState state;
+    @Property public SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
 
-    @Property(alias = "moduleController") private ModuleController<GuardianPlugin> moduleController;
+    @Property private ModuleController<GuardianPlugin> moduleController;
 
     /* Registry Fields */
-    @Property(alias = "detectionRegistry", effectFinal = true) private GuardianDetectionRegistry detectionRegistry;
-    @Property(alias = "checkRegistry", effectFinal = true) private GuardianCheckRegistry checkRegistry;
-    @Property(alias = "sequenceRegistry", effectFinal = true) private GuardianSequenceRegistry sequenceRegistry;
-    @Property(alias = "heuristicRegistry", effectFinal = true) private GuardianHeuristicRegistry heuristicRegistry;
-    @Property(alias = "penaltyRegistry", effectFinal = true) private GuardianPenaltyRegistry penaltyRegistry;
-    @Property(alias = "phaseRegistry", effectFinal = true) private GuardianPhaseRegistry phaseRegistry;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianDetectionRegistry detectionRegistry;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianCheckRegistry checkRegistry;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianHeuristicRegistry heuristicRegistry;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianPenaltyRegistry penaltyRegistry;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianPhaseRegistry phaseRegistry;
 
     /* Manager Fields */
-    @Property(alias = "configuration", effectFinal = true) public GuardianConfiguration guardianConfiguration;
-    @Property(alias = "sequenceManager", effectFinal = true) public GuardianSequenceManager sequenceManager;
-    @Property(alias = "sequenceTask", effectFinal = true) public GuardianSequenceManager.SequenceTask sequenceTask;
+    @Property(modifier = PropertyModifier.FINAL) public GuardianConfiguration guardianConfiguration;
+    @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceManager sequenceManager;
+    @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceManager.SequenceTask sequenceTask;
 
-    @Property(alias = "sequenceListener", effectFinal = true) public GuardianSequenceListener sequenceListener;
-    @Property(alias = "loader", effectFinal = true) public GuardianLoader guardianLoader;
+    @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceListener sequenceListener;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceRegistry sequenceRegistry;
+    @Property(modifier = PropertyModifier.FINAL) public GuardianLoader guardianLoader;
 
     @Inject
     public GuardianPlugin(Logger logger, PluginContainer pluginContainer,
