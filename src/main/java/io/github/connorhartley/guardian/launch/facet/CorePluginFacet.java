@@ -78,7 +78,7 @@ public class CorePluginFacet implements Facet {
 
         SimpleGuardian.setInstance(this.plugin);
 
-        PropertyInjector propertyInjector = PropertyInjectorFactory.create(this.plugin);
+        PropertyInjector propertyInjector = this.plugin.getPropertyInjector();
 
         propertyInjector.inject("state", GuardianState.PRE_INITIALIZATION);
 

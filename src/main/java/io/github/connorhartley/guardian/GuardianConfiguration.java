@@ -28,7 +28,6 @@ import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import tech.ferus.util.config.ConfigFile;
-import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,7 +42,7 @@ public class GuardianConfiguration {
     private final GuardianPlugin plugin;
     private final Path configDir;
 
-    private HoconConfigFile configFile;
+    private ConfigFile<CommentedConfigurationNode> configFile;
     private boolean loaded = false;
 
     public GuardianConfiguration(@Nonnull GuardianPlugin plugin,
@@ -61,8 +60,8 @@ public class GuardianConfiguration {
 
     public void load() {
         try {
-            this.configFile = HoconLoaderPatch.load(this.configDir.resolve(FILE_NAME),
-                    "/" + FILE_NAME, !this.exists());
+            this.configFile = ConfigFile.loadHocon(this.configDir.resolve(FILE_NAME),
+                    "/" + FILE_NAME, false, false);
 
             this.loaded = true;
         } catch (IOException e) {

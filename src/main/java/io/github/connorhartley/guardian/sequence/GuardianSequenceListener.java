@@ -24,7 +24,6 @@
 package io.github.connorhartley.guardian.sequence;
 
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.entry.GuardianEntityEntry;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;

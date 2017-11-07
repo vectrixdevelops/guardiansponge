@@ -38,7 +38,6 @@ import com.ichorpowered.guardian.api.sequence.SequenceManager;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.entry.GuardianEntityEntry;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Event;

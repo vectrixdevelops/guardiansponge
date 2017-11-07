@@ -28,7 +28,6 @@ import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.detection.heuristic.HeuristicRegistry;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 

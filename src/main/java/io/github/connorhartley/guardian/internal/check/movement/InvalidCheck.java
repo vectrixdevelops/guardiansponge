@@ -30,7 +30,7 @@ import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
-import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.internal.capture.PlayerControlCapture;
 import io.github.connorhartley.guardian.internal.capture.PlayerLocationCapture;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceBuilder;
@@ -47,17 +47,17 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class InvalidCheck implements Check<GuardianPluginOld, DetectionConfiguration> {
+public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguration> {
 
-    private final CheckBlueprint<GuardianPluginOld, DetectionConfiguration> checkBlueprint;
-    private final Detection<GuardianPluginOld, DetectionConfiguration> detection;
+    private final CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint;
+    private final Detection<GuardianPlugin, DetectionConfiguration> detection;
 
     private double analysisTime = 40;
     private double minimumTickRange = 30;
     private double maximumTickRange = 50;
 
-    public InvalidCheck(CheckBlueprint<GuardianPluginOld, DetectionConfiguration> checkBlueprint,
-                        Detection<GuardianPluginOld, DetectionConfiguration> detection) {
+    public InvalidCheck(CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint,
+                        Detection<GuardianPlugin, DetectionConfiguration> detection) {
         this.checkBlueprint = checkBlueprint;
         this.detection = detection;
 
@@ -68,26 +68,26 @@ public class InvalidCheck implements Check<GuardianPluginOld, DetectionConfigura
 
     @Nonnull
     @Override
-    public GuardianPluginOld getOwner() {
+    public GuardianPlugin getOwner() {
         return this.detection.getOwner();
     }
 
     @Nonnull
     @Override
-    public Detection<GuardianPluginOld, DetectionConfiguration> getDetection() {
+    public Detection<GuardianPlugin, DetectionConfiguration> getDetection() {
         return this.detection;
     }
 
     @Nonnull
     @Override
-    public CheckBlueprint<GuardianPluginOld, DetectionConfiguration> getCheckBlueprint() {
+    public CheckBlueprint<GuardianPlugin, DetectionConfiguration> getCheckBlueprint() {
         return this.checkBlueprint;
     }
 
     @Nonnull
     @Override
-    public SequenceBlueprint<GuardianPluginOld, DetectionConfiguration> getSequence() {
-        return new GuardianSequenceBuilder<GuardianPluginOld, DetectionConfiguration>()
+    public SequenceBlueprint<GuardianPlugin, DetectionConfiguration> getSequence() {
+        return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
                 .capture(
                         new PlayerLocationCapture<>(this.detection.getOwner(), this.detection),
                         new PlayerControlCapture.Invalid<>(this.detection.getOwner(), this.detection)
@@ -158,10 +158,10 @@ public class InvalidCheck implements Check<GuardianPluginOld, DetectionConfigura
         return check.equals(this);
     }
 
-    public static class Blueprint implements CheckBlueprint<GuardianPluginOld, DetectionConfiguration> {
+    public static class Blueprint implements CheckBlueprint<GuardianPlugin, DetectionConfiguration> {
 
         @Override
-        public Check<GuardianPluginOld, DetectionConfiguration> create(Detection<GuardianPluginOld, DetectionConfiguration> detection) {
+        public Check<GuardianPlugin, DetectionConfiguration> create(Detection<GuardianPlugin, DetectionConfiguration> detection) {
             return new InvalidCheck(this, detection);
         }
 

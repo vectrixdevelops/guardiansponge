@@ -29,7 +29,6 @@ import com.ichorpowered.guardian.api.phase.PhaseRegistry;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 

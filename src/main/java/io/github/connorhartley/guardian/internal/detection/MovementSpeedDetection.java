@@ -28,7 +28,7 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
-import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.detection.AbstractDetection;
 import io.github.connorhartley.guardian.detection.GuardianDetectionPhase;
 import io.github.connorhartley.guardian.internal.check.movement.HorizontalSpeedCheck;
@@ -38,7 +38,6 @@ import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 import tech.ferus.util.config.ConfigFile;
-import tech.ferus.util.config.HoconConfigFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -56,11 +55,11 @@ public class MovementSpeedDetection extends AbstractDetection {
 
     private State state = State.UNDEFINED;
     private MovementSpeedConfiguration detectionConfiguration;
-    private GuardianDetectionPhase<GuardianPluginOld, DetectionConfiguration> phaseManipulator;
+    private GuardianDetectionPhase<GuardianPlugin, DetectionConfiguration> phaseManipulator;
 
     @Inject
     public MovementSpeedDetection(@ModuleContainer PluginContainer moduleContainer) {
-        super((GuardianPluginOld) moduleContainer.getInstance().get(), "movementspeed", "Movement Speed Detection");
+        super((GuardianPlugin) moduleContainer.getInstance().get(), "movementspeed", "Movement Speed Detection");
     }
 
     @Override
@@ -103,7 +102,7 @@ public class MovementSpeedDetection extends AbstractDetection {
 
     @Nonnull
     @Override
-    public DetectionPhase<GuardianPluginOld, DetectionConfiguration> getPhaseManipulator() {
+    public DetectionPhase<GuardianPlugin, DetectionConfiguration> getPhaseManipulator() {
         return this.phaseManipulator;
     }
 
@@ -114,7 +113,7 @@ public class MovementSpeedDetection extends AbstractDetection {
         private final MovementSpeedDetection detection;
         private final Path configDir;
 
-        private HoconConfigFile configFile;
+        private ConfigFile<CommentedConfigurationNode> configFile;
 
         MovementSpeedConfiguration(@Nonnull MovementSpeedDetection detection,
                                    @Nonnull Path configDir) {
@@ -125,8 +124,8 @@ public class MovementSpeedDetection extends AbstractDetection {
         @Override
         public void load() {
             try {
-                this.configFile = HoconLoaderPatch.load(this.configDir.resolve("detection").resolve(FILE_NAME),
-                        "/detection/" + FILE_NAME, !this.exists());
+                this.configFile = ConfigFile.loadHocon(this.configDir.resolve("detection").resolve(FILE_NAME),
+                        "/detection/" + FILE_NAME, false, false);
             } catch (IOException e) {
                 this.detection.getOwner().getLogger().error("A problem occurred attempting to load the " +
                         "guardian movement speed detection configuration!", e);

@@ -28,7 +28,7 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
 import com.ichorpowered.guardian.api.event.GuardianListener;
 import com.me4502.precogs.detection.DetectionType;
-import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.detection.penalty.PenaltyReader;
 
 import java.util.ArrayList;
@@ -36,13 +36,13 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPluginOld, DetectionConfiguration>, ModuleExtension, GuardianListener {
+public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension, GuardianListener {
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
     private final List<PenaltyReader.Action> actions = new ArrayList<>();
     private final List<PenaltyReader.ActionLevel> actionLevels = new ArrayList<>();
 
-    public AbstractDetection(@Nonnull GuardianPluginOld plugin, @Nonnull String id,
+    public AbstractDetection(@Nonnull GuardianPlugin plugin, @Nonnull String id,
                              @Nonnull String name) {
         super(id, name);
         this.plugin = plugin;
@@ -50,7 +50,7 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
 
     @Nonnull
     @Override
-    public GuardianPluginOld getOwner() {
+    public GuardianPlugin getOwner() {
         return this.plugin;
     }
 

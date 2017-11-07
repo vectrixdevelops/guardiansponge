@@ -23,7 +23,7 @@
  */
 package io.github.connorhartley.guardian.util;
 
-import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.cause.Cause;
@@ -37,9 +37,9 @@ import javax.annotation.Nonnull;
  */
 public final class CauseHelper {
 
-    private static GuardianPluginOld plugin;
+    private static GuardianPlugin plugin;
 
-    public CauseHelper(GuardianPluginOld plugin) {
+    public CauseHelper(GuardianPlugin plugin) {
         CauseHelper.plugin = plugin;
     }
 

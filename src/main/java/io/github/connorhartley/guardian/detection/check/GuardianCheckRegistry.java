@@ -29,7 +29,6 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.GuardianPluginOld;
 import io.github.connorhartley.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 

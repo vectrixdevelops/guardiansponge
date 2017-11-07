@@ -19,18 +19,24 @@ import io.github.connorhartley.guardian.detection.heuristics.GuardianHeuristicRe
 import io.github.connorhartley.guardian.detection.penalty.GuardianPenaltyRegistry;
 import io.github.connorhartley.guardian.launch.FacetBootstrap;
 import io.github.connorhartley.guardian.launch.facet.CorePluginFacet;
+import io.github.connorhartley.guardian.launch.facet.GamePluginFacet;
+import io.github.connorhartley.guardian.launch.facet.InternalPluginFacet;
 import io.github.connorhartley.guardian.util.property.Property;
 import io.github.connorhartley.guardian.launch.message.SimpleFacetMessage;
 import io.github.connorhartley.guardian.phase.GuardianPhaseRegistry;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceListener;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
+import io.github.connorhartley.guardian.util.property.PropertyInjector;
+import io.github.connorhartley.guardian.util.property.PropertyInjectorFactory;
 import net.kyori.event.SimpleEventBus;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -68,6 +74,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     /* FacetBootstrap Fields */
     private final FacetBootstrap facetBootstrap;
+    private final PropertyInjector propertyInjector;
 
     /* Core Fields */
     @Property(alias = "coreTime") public Long time;
@@ -85,12 +92,12 @@ public class GuardianPlugin implements Guardian<Event> {
     @Property(alias = "phaseRegistry", effectFinal = true) private GuardianPhaseRegistry phaseRegistry;
 
     /* Manager Fields */
-    @Property(alias = "configuration", effectFinal = true) GuardianConfiguration guardianConfiguration;
-    @Property(alias = "sequenceManager", effectFinal = true) GuardianSequenceManager sequenceManager;
-    @Property(alias = "sequenceTask", effectFinal = true) GuardianSequenceManager.SequenceTask sequenceTask;
+    @Property(alias = "configuration", effectFinal = true) public GuardianConfiguration guardianConfiguration;
+    @Property(alias = "sequenceManager", effectFinal = true) public GuardianSequenceManager sequenceManager;
+    @Property(alias = "sequenceTask", effectFinal = true) public GuardianSequenceManager.SequenceTask sequenceTask;
 
-    @Property(alias = "sequenceListener", effectFinal = true) GuardianSequenceListener sequenceListener;
-    @Property(alias = "loader", effectFinal = true) GuardianLoader guardianLoader;
+    @Property(alias = "sequenceListener", effectFinal = true) public GuardianSequenceListener sequenceListener;
+    @Property(alias = "loader", effectFinal = true) public GuardianLoader guardianLoader;
 
     @Inject
     public GuardianPlugin(Logger logger, PluginContainer pluginContainer,
@@ -100,19 +107,37 @@ public class GuardianPlugin implements Guardian<Event> {
         this.configDirectory = configDirectory;
 
         this.facetBootstrap = new FacetBootstrap(this.logger, this);
+        this.propertyInjector = PropertyInjectorFactory.create(this);
     }
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
         this.facetBootstrap.addComponent("core", new CorePluginFacet(this.logger, this));
+        this.facetBootstrap.addComponent("internal", new InternalPluginFacet(this.logger, this));
+        this.facetBootstrap.addComponent("game", new GamePluginFacet(this.logger, this));
 
         this.facetBootstrap.send(FacetBootstrap.FacetRequest.STARTUP,
-                new SimpleFacetMessage(System.currentTimeMillis(), "Game initialization.", this),
-                this.facetBootstrap.getIds());
+                new SimpleFacetMessage(System.currentTimeMillis(), "Game Initialization", this),
+                "core");
     }
 
     @Listener
+    public void onGameStartingServer(GameStartingServerEvent event) {
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.STARTUP,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Server Starting", this),
+                "internal");
+    }
 
+    @Listener
+    public void onGameStartedServer(GameStartedServerEvent event) {
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.STARTUP,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Server Started", this),
+                "game");
+    }
+
+    public final PropertyInjector getPropertyInjector() {
+        return this.propertyInjector;
+    }
 
     public final Logger getLogger() {
         return this.logger;
@@ -122,7 +147,7 @@ public class GuardianPlugin implements Guardian<Event> {
         return this.pluginContainer;
     }
 
-    public Path getConfigDirectory() {
+    public final Path getConfigDirectory() {
         return this.configDirectory.getParent();
     }
 

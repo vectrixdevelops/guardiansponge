@@ -43,12 +43,12 @@ public final class GuardianLoader {
         this.plugin = plugin;
     }
 
-    void loadModules(ModuleController<GuardianPluginOld> moduleController) {
+    public void loadModules(ModuleController<GuardianPlugin> moduleController) {
         moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.InvalidMovementDetection");
         moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.MovementSpeedDetection");
     }
 
-    void loadChecks() {
+    public void loadChecks() {
         if (this.plugin.getCheckRegistry() == null) return;
 
         this.plugin.getCheckRegistry().put(this.plugin, HorizontalSpeedCheck.Blueprint.class,
@@ -60,13 +60,13 @@ public final class GuardianLoader {
 
     }
 
-    void loadPenalties() {
+    public void loadPenalties() {
         if (this.plugin.getPenaltyRegistry() == null) return;
 
         this.plugin.getPenaltyRegistry().put(this.plugin, ResetPenalty.class, new ResetPenalty());
     }
 
-    void loadPhases() {
+    public void loadPhases() {
         if (this.plugin.getPhaseRegistry() == null) return;
 
         this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.CHECK, new GuardianCheckViewer(this.plugin));

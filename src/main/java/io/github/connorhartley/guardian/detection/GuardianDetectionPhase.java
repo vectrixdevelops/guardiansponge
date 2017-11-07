@@ -31,7 +31,7 @@ import com.ichorpowered.guardian.api.phase.PhaseFilter;
 import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
-import io.github.connorhartley.guardian.GuardianPluginOld;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.event.phase.PhaseChangeEvent;
 import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
 
@@ -42,15 +42,15 @@ import javax.annotation.Nullable;
 
 public class GuardianDetectionPhase<E, F extends DetectionConfiguration> implements DetectionPhase<E, F> {
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
     private final Detection<E, F> detection;
     private final PhaseFilter phaseFilter;
 
-    public GuardianDetectionPhase(@Nonnull GuardianPluginOld plugin, @Nonnull Detection<E, F> detection) {
+    public GuardianDetectionPhase(@Nonnull GuardianPlugin plugin, @Nonnull Detection<E, F> detection) {
         this(plugin, detection, new GuardianPhaseFilter());
     }
 
-    public GuardianDetectionPhase(@Nonnull GuardianPluginOld plugin, @Nonnull Detection<E, F> detection,
+    public GuardianDetectionPhase(@Nonnull GuardianPlugin plugin, @Nonnull Detection<E, F> detection,
                                   @Nonnull PhaseFilter phaseFilter) {
         this.plugin = plugin;
         this.detection = detection;

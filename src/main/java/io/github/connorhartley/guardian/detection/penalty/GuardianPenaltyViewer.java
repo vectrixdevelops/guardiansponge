@@ -30,7 +30,6 @@ import com.ichorpowered.guardian.api.phase.PhaseFilter;
 import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.GuardianPluginOld;
 
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
