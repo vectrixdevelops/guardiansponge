@@ -29,6 +29,7 @@ import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.phase.PhaseFilter;
 import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.GuardianPluginOld;
 
 import java.util.Iterator;
@@ -38,7 +39,7 @@ import javax.annotation.Nonnull;
 
 public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
 
     private PhaseState phaseState = PhaseState.INITIALIZED;
 
@@ -46,7 +47,7 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
     private Heuristic element;
     private int phaseIndes = 0;
 
-    public GuardianHeuristicViewer(@Nonnull GuardianPluginOld plugin) {
+    public GuardianHeuristicViewer(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
 
         this.heuristicIterator = this.plugin.getHeuristicRegistry().iterator();

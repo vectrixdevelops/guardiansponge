@@ -1,12 +1,12 @@
 package io.github.connorhartley.guardian.launch.message;
 
-public class SimpleComponentMessage implements ComponentMessage {
+public class SimpleFacetMessage implements FacetMessage {
 
     private final long time;
     private final String reason;
     private final Object source;
 
-    public SimpleComponentMessage(long time, String reason, Object source) {
+    public SimpleFacetMessage(long time, String reason, Object source) {
         this.time = time;
         this.reason = reason;
         this.source = source;

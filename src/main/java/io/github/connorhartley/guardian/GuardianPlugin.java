@@ -17,14 +17,14 @@ import io.github.connorhartley.guardian.detection.GuardianDetectionRegistry;
 import io.github.connorhartley.guardian.detection.check.GuardianCheckRegistry;
 import io.github.connorhartley.guardian.detection.heuristics.GuardianHeuristicRegistry;
 import io.github.connorhartley.guardian.detection.penalty.GuardianPenaltyRegistry;
-import io.github.connorhartley.guardian.launch.Bootstrap;
-import io.github.connorhartley.guardian.launch.component.CorePluginComponent;
-import io.github.connorhartley.guardian.launch.message.SimpleComponentMessage;
+import io.github.connorhartley.guardian.launch.FacetBootstrap;
+import io.github.connorhartley.guardian.launch.facet.CorePluginFacet;
+import io.github.connorhartley.guardian.util.property.Property;
+import io.github.connorhartley.guardian.launch.message.SimpleFacetMessage;
 import io.github.connorhartley.guardian.phase.GuardianPhaseRegistry;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceListener;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceManager;
 import io.github.connorhartley.guardian.sequence.GuardianSequenceRegistry;
-import io.github.connorhartley.guardian.util.ElementProvider;
 import net.kyori.event.SimpleEventBus;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.DefaultConfig;
@@ -66,30 +66,31 @@ public class GuardianPlugin implements Guardian<Event> {
     private final PluginContainer pluginContainer;
     private final Path configDirectory;
 
-    /* Bootstrap Fields */
-    private final Bootstrap bootstrap;
+    /* FacetBootstrap Fields */
+    private final FacetBootstrap facetBootstrap;
 
     /* Core Fields */
-    public final ElementProvider<Long> timeProvider = new ElementProvider<>();
+    @Property(alias = "coreTime") public Long time;
+    @Property(alias = "state") public GuardianState state;
+    @Property(alias = "eventBus") public SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
 
-    public final ElementProvider<GuardianState> stateProvider = new ElementProvider<>();
-    public final ElementProvider<SimpleEventBus<GuardianEvent, GuardianListener>> eventBusProvider = new ElementProvider<>();
-    public final ElementProvider<ModuleController<GuardianPlugin>> moduleControllerProvider = new ElementProvider<>();
+    @Property(alias = "moduleController") private ModuleController<GuardianPlugin> moduleController;
 
     /* Registry Fields */
-    public final ElementProvider<GuardianDetectionRegistry> detectionRegistryProvider = new ElementProvider<>();
-    public final ElementProvider<GuardianCheckRegistry> checkRegistryProvider = new ElementProvider<>();
-    public final ElementProvider<GuardianSequenceRegistry> sequenceRegistryProvider = new ElementProvider<>();
-    public final ElementProvider<GuardianHeuristicRegistry> heuristicRegistryProvider = new ElementProvider<>();
-    public final ElementProvider<GuardianPenaltyRegistry> penaltyRegistryProvider = new ElementProvider<>();
-    public final ElementProvider<GuardianPhaseRegistry> phaseRegistryProvider = new ElementProvider<>();
+    @Property(alias = "detectionRegistry", effectFinal = true) private GuardianDetectionRegistry detectionRegistry;
+    @Property(alias = "checkRegistry", effectFinal = true) private GuardianCheckRegistry checkRegistry;
+    @Property(alias = "sequenceRegistry", effectFinal = true) private GuardianSequenceRegistry sequenceRegistry;
+    @Property(alias = "heuristicRegistry", effectFinal = true) private GuardianHeuristicRegistry heuristicRegistry;
+    @Property(alias = "penaltyRegistry", effectFinal = true) private GuardianPenaltyRegistry penaltyRegistry;
+    @Property(alias = "phaseRegistry", effectFinal = true) private GuardianPhaseRegistry phaseRegistry;
 
     /* Manager Fields */
-    public final ElementProvider<GuardianConfiguration> guardianConfigurationProvider = new ElementProvider<>();
-    public final ElementProvider<GuardianSequenceManager> sequenceManagerProvider = new ElementProvider<>();
-    public final ElementProvider<GuardianSequenceManager.SequenceTask> sequenceTaskProvider = new ElementProvider<>();
+    @Property(alias = "configuration", effectFinal = true) GuardianConfiguration guardianConfiguration;
+    @Property(alias = "sequenceManager", effectFinal = true) GuardianSequenceManager sequenceManager;
+    @Property(alias = "sequenceTask", effectFinal = true) GuardianSequenceManager.SequenceTask sequenceTask;
 
-    public final ElementProvider<GuardianSequenceListener> sequenceListenerProvider = new ElementProvider<>();
+    @Property(alias = "sequenceListener", effectFinal = true) GuardianSequenceListener sequenceListener;
+    @Property(alias = "loader", effectFinal = true) GuardianLoader guardianLoader;
 
     @Inject
     public GuardianPlugin(Logger logger, PluginContainer pluginContainer,
@@ -98,17 +99,20 @@ public class GuardianPlugin implements Guardian<Event> {
         this.pluginContainer = pluginContainer;
         this.configDirectory = configDirectory;
 
-        this.bootstrap = new Bootstrap(this.logger, this);
+        this.facetBootstrap = new FacetBootstrap(this.logger, this);
     }
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
-        this.bootstrap.addComponent("core", new CorePluginComponent(this.logger, this));
+        this.facetBootstrap.addComponent("core", new CorePluginFacet(this.logger, this));
 
-        this.bootstrap.send(Bootstrap.ComponentRequest.STARTUP,
-                new SimpleComponentMessage(System.currentTimeMillis(), "Game initialization.", this),
-                this.bootstrap.getIds());
+        this.facetBootstrap.send(FacetBootstrap.FacetRequest.STARTUP,
+                new SimpleFacetMessage(System.currentTimeMillis(), "Game initialization.", this),
+                this.facetBootstrap.getIds());
     }
+
+    @Listener
+
 
     public final Logger getLogger() {
         return this.logger;
@@ -123,51 +127,51 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     public final ModuleController<GuardianPlugin> getModuleController() {
-        return this.moduleControllerProvider.get();
+        return this.moduleController;
     }
 
     @Override
     public final SimpleEventBus<GuardianEvent, GuardianListener> getEventBus() {
-        return this.eventBusProvider.get();
+        return this.eventBus;
     }
 
     @Override
     public final GuardianState getState() {
-        return this.stateProvider.get();
+        return this.state;
     }
 
     @Override
     public final DetectionRegistry getDetectionRegistry() {
-        return this.detectionRegistryProvider.get();
+        return this.detectionRegistry;
     }
 
     @Override
     public final CheckRegistry getCheckRegistry() {
-        return this.checkRegistryProvider.get();
+        return this.checkRegistry;
     }
 
     @Override
     public final HeuristicRegistry getHeuristicRegistry() {
-        return this.heuristicRegistryProvider.get();
+        return this.heuristicRegistry;
     }
 
     @Override
     public final PenaltyRegistry getPenaltyRegistry() {
-        return this.penaltyRegistryProvider.get();
+        return this.penaltyRegistry;
     }
 
     @Override
     public final SequenceRegistry getSequenceRegistry() {
-        return this.sequenceRegistryProvider.get();
+        return this.sequenceRegistry;
     }
 
     @Override
     public final PhaseRegistry getPhaseRegistry() {
-        return this.phaseRegistryProvider.get();
+        return this.phaseRegistry;
     }
 
     @Override
     public final SequenceManager<Event> getSequenceManager() {
-        return null;
+        return this.sequenceManager;
     }
 }

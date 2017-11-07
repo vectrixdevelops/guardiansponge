@@ -35,11 +35,11 @@ import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
 
 import javax.annotation.Nonnull;
 
-final class GuardianLoader {
+public final class GuardianLoader {
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
 
-    GuardianLoader(@Nonnull GuardianPluginOld plugin) {
+    public GuardianLoader(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 

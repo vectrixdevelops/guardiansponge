@@ -88,27 +88,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-@Plugin(
-        id = PluginInfo.ID,
-        name = PluginInfo.NAME,
-        version = PluginInfo.VERSION,
-        description = PluginInfo.DESCRIPTION,
-        authors = {
-                "Connor Hartley (vectrix)",
-                "Matthew Miller (me4502)"
-        },
-        dependencies = {
-                @Dependency(
-                        id = "precogs",
-                        version = PluginInfo.PRECOGS_VERSION
-                ),
-                @Dependency(
-                        id = "elderguardian",
-                        version = PluginInfo.ELDER_VERSION,
-                        optional = true
-                )
-        }
-)
 public class GuardianPluginOld implements Guardian<Event> {
 
     public static Text GUARDIAN_PREFIX = Text.of(TextColors.DARK_AQUA, "[", TextColors.AQUA, "Guardian",

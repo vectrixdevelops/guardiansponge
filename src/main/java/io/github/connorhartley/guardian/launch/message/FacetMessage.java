@@ -1,6 +1,6 @@
 package io.github.connorhartley.guardian.launch.message;
 
-public interface ComponentMessage {
+public interface FacetMessage {
 
     long getTime();
 

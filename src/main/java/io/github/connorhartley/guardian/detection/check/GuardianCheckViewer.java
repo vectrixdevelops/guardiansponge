@@ -30,6 +30,7 @@ import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.phase.PhaseFilter;
 import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
+import io.github.connorhartley.guardian.GuardianPlugin;
 import io.github.connorhartley.guardian.GuardianPluginOld;
 
 import java.util.Iterator;
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GuardianCheckViewer implements PhaseViewer<Check> {
 
-    private final GuardianPluginOld plugin;
+    private final GuardianPlugin plugin;
 
     private PhaseState phaseState = PhaseState.INITIALIZED;
 
@@ -45,7 +46,7 @@ public class GuardianCheckViewer implements PhaseViewer<Check> {
     private CheckBlueprint element;
     private int phaseIndex = 0;
 
-    public GuardianCheckViewer(GuardianPluginOld plugin) {
+    public GuardianCheckViewer(GuardianPlugin plugin) {
         this.plugin = plugin;
 
         this.checkBlueprintIterator = this.plugin.getCheckRegistry().iterator();
