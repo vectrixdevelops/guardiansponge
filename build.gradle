@@ -40,7 +40,7 @@ repositories {
 
 dependencies {
     compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
-    compile 'com.ichorpowered.guardian.api:guardianapi:1.0.1-SNAPSHOT'
+    compile 'com.ichorpowered.guardian.api:guardianapi:2.0.0-SNAPSHOT'
 
     // External Dependencies
 
