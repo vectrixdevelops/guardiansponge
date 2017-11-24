@@ -31,12 +31,19 @@ import org.spongepowered.api.event.Event;
 public abstract class AbstractSequenceBlueprint<E, F extends DetectionConfiguration> implements SequenceBlueprint<Event> {
 
     private final Detection<E, F> detection;
+    private final Class<? extends Event> trigger;
 
-    public AbstractSequenceBlueprint(final Detection<E, F> detection) {
+    public AbstractSequenceBlueprint(final Detection<E, F> detection, final Class<? extends Event> trigger) {
         this.detection = detection;
+        this.trigger = trigger;
     }
 
-    public Detection<E, F> getDetection() {
+    public final Detection<E, F> getDetection() {
         return this.detection;
+    }
+
+    @Override
+    public final Class<? extends Event> getTrigger() {
+        return this.trigger;
     }
 }

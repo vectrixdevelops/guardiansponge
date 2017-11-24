@@ -34,10 +34,19 @@ import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
+import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.report.GuardianSummary;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Event;
+import org.spongepowered.api.scheduler.Task;
 
-public class GuardianSequenceManager<E, F extends DetectionConfiguration> extends SequenceManager<Event> {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+public class GuardianSequenceManager extends SequenceManager<Event> {
+
+    private Map<UUID, SequenceContext> contextHistory = new HashMap<>();
 
     public GuardianSequenceManager(final SequenceRegistry<Event> sequenceRegistry) {
         super(sequenceRegistry);
@@ -47,28 +56,85 @@ public class GuardianSequenceManager<E, F extends DetectionConfiguration> extend
     public boolean _invokeObserver(final Event event,
                                    final Sequence<Event> sequence,
                                    final SequenceContext sequenceContext) {
+        this.contextHistory.put((UUID) sequenceContext.getId(), sequenceContext);
+
         boolean result = super._invokeObserver(event, sequence, sequenceContext);
 
         if (sequence.getState().equals(Sequence.State.FINISHED)) {
-
-            // ----------------  Phase Transition TEMPORARY PATH ------------------
-
-            DetectionPhase<?, ?> detectionPhase = ((AbstractSequenceBlueprint<E, F>) sequence.getBlueprint()).getDetection().getPhaseManipulator();
-            Detection detection = ((AbstractSequenceBlueprint<E, F>) sequence.getBlueprint()).getDetection();
-            GuardianSummary summary = ((GuardianSequence) sequence).getSummary();
-
-            while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
-                Heuristic heuristic = detectionPhase.next(PhaseTypes.HEURISTIC);
-            }
-
-            while (detectionPhase.hasNext(PhaseTypes.PENALTY)) {
-                Penalty penalty = detectionPhase.next(PhaseTypes.PENALTY);
-            }
-
-            // --------------------------------------------------------------------
-
+            this.transitionPhase(sequence);
         }
 
         return result;
+    }
+
+    @Override
+    public boolean _invokeScheduler(final Sequence<Event> sequence,
+                                    final SequenceContext sequenceContext) {
+        this.contextHistory.put((UUID) sequenceContext.getId(), sequenceContext);
+
+        boolean result = super._invokeScheduler(sequence, sequenceContext);
+
+        if (sequence.getState().equals(Sequence.State.FINISHED)) {
+            this.transitionPhase(sequence);
+        }
+
+        return result;
+    }
+
+    /**
+     * A temporary sequence transition phase.
+     *
+     * This will be removed later to be event driven.
+     *
+     * @param sequence the sequence
+     */
+    @Deprecated
+    private void transitionPhase(final Sequence<Event> sequence) {
+        DetectionPhase<?, ?> detectionPhase = ((AbstractSequenceBlueprint<?, ?>) sequence.getBlueprint()).getDetection().getPhaseManipulator();
+
+        while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
+            detectionPhase.next(PhaseTypes.HEURISTIC);
+        }
+
+        while (detectionPhase.hasNext(PhaseTypes.PENALTY)) {
+            detectionPhase.next(PhaseTypes.PENALTY);
+        }
+    }
+
+    private void tickScheduler() {
+        Sponge.getServer().getOnlinePlayers().forEach(player ->
+                this.updateSchedulerIf(
+                        this.contextHistory.getOrDefault(player.getUniqueId(),
+
+                        SequenceContext.builder()
+                                .id(player.getUniqueId())
+                                .build()),
+
+                        sequence -> ((Sequence) sequence).getState().equals(Sequence.State.ACTIVE)));
+    }
+
+    public static class SequenceTask {
+
+        private final GuardianPlugin plugin;
+        private final GuardianSequenceManager sequenceManager;
+
+        private Task task;
+
+        public SequenceTask(final GuardianPlugin plugin,
+                            final GuardianSequenceManager sequenceManager) {
+            this.plugin = plugin;
+            this.sequenceManager = sequenceManager;
+        }
+
+        public void start() {
+            this.task = Task.builder().execute(() -> {
+                this.sequenceManager.clean(false);
+                this.sequenceManager.tickScheduler();
+            }).name("Guardian - Sequence Tick").intervalTicks(1).submit(this.plugin);
+        }
+
+        public void stop() {
+            if (this.task != null) this.task.cancel();
+        }
     }
 }

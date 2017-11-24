@@ -23,6 +23,8 @@
  */
 package io.ichorpowered.guardian;
 
+import com.abilityapi.sequenceapi.SequenceManager;
+import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.GuardianState;
@@ -33,8 +35,6 @@ import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
 import com.ichorpowered.guardian.api.event.GuardianEvent;
 import com.ichorpowered.guardian.api.event.GuardianListener;
 import com.ichorpowered.guardian.api.phase.PhaseRegistry;
-import com.ichorpowered.guardian.api.sequence.SequenceManager;
-import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.me4502.modularframework.ModuleController;
 import io.ichorpowered.guardian.detection.GuardianDetectionRegistry;
 import io.ichorpowered.guardian.detection.check.GuardianCheckRegistry;
@@ -48,7 +48,6 @@ import io.ichorpowered.guardian.launch.message.SimpleFacetMessage;
 import io.ichorpowered.guardian.phase.GuardianPhaseRegistry;
 import io.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import io.ichorpowered.guardian.sequence.GuardianSequenceManager;
-import io.ichorpowered.guardian.sequence.GuardianSequenceRegistry;
 import io.ichorpowered.guardian.util.property.Property;
 import io.ichorpowered.guardian.util.property.PropertyInjector;
 import io.ichorpowered.guardian.util.property.PropertyInjectorFactory;
@@ -115,10 +114,11 @@ public class GuardianPlugin implements Guardian<Event> {
     /* Registry Fields */
     @Property(modifier = PropertyModifier.FINAL) private GuardianDetectionRegistry detectionRegistry;
     @Property(modifier = PropertyModifier.FINAL) private GuardianCheckRegistry checkRegistry;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceRegistry sequenceRegistry;
     @Property(modifier = PropertyModifier.FINAL) private GuardianHeuristicRegistry heuristicRegistry;
     @Property(modifier = PropertyModifier.FINAL) private GuardianPenaltyRegistry penaltyRegistry;
     @Property(modifier = PropertyModifier.FINAL) private GuardianPhaseRegistry phaseRegistry;
+
+    @Property(modifier = PropertyModifier.FINAL) private SequenceRegistry<Event> sequenceRegistry;
 
     /* Manager Fields */
     @Property(modifier = PropertyModifier.FINAL) public Configuration configuration;
@@ -255,9 +255,9 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    public final SequenceRegistry getSequenceRegistry() {
+    public SequenceRegistry getSequenceRegistry() {
         return this.sequenceRegistry;
-    }
+}
 
     @Override
     public final PhaseRegistry getPhaseRegistry() {
@@ -265,7 +265,8 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    public final SequenceManager<Event> getSequenceManager() {
+    @SuppressWarnings("unchecked")
+    public SequenceManager<Event> getSequenceManager() {
         return this.sequenceManager;
     }
 }
