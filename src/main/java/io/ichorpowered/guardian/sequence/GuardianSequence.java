@@ -28,20 +28,29 @@ import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverAction;
 import com.abilityapi.sequenceapi.action.type.schedule.ScheduleAction;
 import com.abilityapi.sequenceapi.context.SequenceContext;
+import com.abilityapi.sequenceapi.context.SequenceContextKey;
+import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.util.key.NamedKey;
+import com.ichorpowered.guardian.api.entry.EntityEntry;
+import com.ichorpowered.guardian.api.event.origin.Origin;
+import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
+import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.report.GuardianSummary;
+import io.ichorpowered.guardian.sequence.capture.GuardianCaptureContainer;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
+import org.spongepowered.api.world.Location;
 
 import java.util.Map;
 
 public class GuardianSequence<E, F extends DetectionConfiguration> extends Sequence<Event> {
 
-    public static NamedKey INITIAL_LOCATION =
-            NamedKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION");
+    public static NamedTypeKey<Location> INITIAL_LOCATION =
+            NamedTypeKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION", Location.class);
 
-    private final GuardianSummary<E, F> summary = null;
+    private final GuardianSummary<E, F> summary;
     private final GuardianCaptureRegistry captureRegistry;
 
     public GuardianSequence(final SequenceContext sequenceContext,
@@ -51,8 +60,47 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
                             final Map<ObserverAction<Event>, Integer> observerActions) {
         super(sequenceContext, sequenceBlueprint, scheduleActions, observerActions);
 
-        // TODO: Initialize summary.
         this.captureRegistry = captureRegistry;
+        this.captureRegistry.getContainer().merge(GuardianCaptureContainer.create());
+
+        this.summary = new GuardianSummary<>((E) sequenceContext.getOwner(),
+                (Detection<E, F>) sequenceContext.getSource(),
+                (GuardianEntityEntry) sequenceContext.get(SequenceContextKey.of("entry", null)),
+                Origin.merge(sequenceContext).build());
+    }
+
+    @Override
+    public boolean applyObserve(final Event event, final SequenceContext sequenceContext) {
+        final SequenceContextKey entryKey = SequenceContextKey.of("entry", null);
+
+        final EntityEntry entityEntry = (EntityEntry) sequenceContext.get(entryKey);
+        final Player player = entityEntry.getEntity(Player.class)
+                .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
+
+        if (player == null) return false;
+
+        if (this.getState().equals(State.INACTIVE)) {
+            this.captureRegistry.getContainer().putOnce(INITIAL_LOCATION, player.getLocation());
+        }
+
+        return super.applyObserve(event, sequenceContext);
+    }
+
+    @Override
+    public boolean applySchedule(final SequenceContext sequenceContext) {
+        final SequenceContextKey entryKey = SequenceContextKey.of("entry", null);
+
+        final EntityEntry entityEntry = (EntityEntry) sequenceContext.get(entryKey);
+        final Player player = entityEntry.getEntity(Player.class)
+                .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
+
+        if (player == null) return false;
+
+        if (this.getState().equals(State.INACTIVE)) {
+            this.captureRegistry.getContainer().putOnce(INITIAL_LOCATION, player.getLocation());
+        }
+
+        return super.applySchedule(sequenceContext);
     }
 
     public GuardianSummary<E, F> getSummary() {

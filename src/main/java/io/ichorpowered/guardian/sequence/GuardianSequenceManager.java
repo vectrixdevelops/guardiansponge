@@ -28,6 +28,7 @@ import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.abilityapi.sequenceapi.context.SequenceContext;
+import com.abilityapi.sequenceapi.context.SequenceContextKey;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
@@ -35,8 +36,10 @@ import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
 import io.ichorpowered.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.report.GuardianSummary;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.scheduler.Task;
 
@@ -102,15 +105,19 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
     }
 
     private void tickScheduler() {
-        Sponge.getServer().getOnlinePlayers().forEach(player ->
-                this.updateSchedulerIf(
-                        this.contextHistory.getOrDefault(player.getUniqueId(),
+        Sponge.getServer().getOnlinePlayers().forEach(player -> {
+            final GuardianEntityEntry<Player> playerEntry = GuardianEntityEntry.of(player, player.getUniqueId());
 
-                        SequenceContext.builder()
-                                .id(player.getUniqueId())
-                                .build()),
+            this.updateSchedulerIf(
+                    this.contextHistory.getOrDefault(player.getUniqueId(),
 
-                        sequence -> ((Sequence) sequence).getState().equals(Sequence.State.ACTIVE)));
+                    SequenceContext.builder()
+                            .id(playerEntry.getUniqueId())
+                            .custom(SequenceContextKey.of("entry", playerEntry), playerEntry)
+                            .build()),
+
+                    sequence -> ((Sequence) sequence).getState().equals(Sequence.State.ACTIVE));
+        });
     }
 
     public static class SequenceTask {

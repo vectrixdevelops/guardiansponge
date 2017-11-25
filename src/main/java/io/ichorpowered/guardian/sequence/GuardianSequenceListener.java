@@ -1,7 +1,9 @@
 package io.ichorpowered.guardian.sequence;
 
 import com.abilityapi.sequenceapi.context.SequenceContext;
+import com.abilityapi.sequenceapi.context.SequenceContextKey;
 import io.ichorpowered.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -18,11 +20,14 @@ public class GuardianSequenceListener {
 
     @Listener
     public void moveEntityEvent(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
+        final GuardianEntityEntry<Player> playerEntry = GuardianEntityEntry.of(player, player.getUniqueId());
+
         this.plugin.getSequenceManager().invokeObserverIf(event,
 
                 // TODO: Add more sequence context here from Sponge Causes.
                 SequenceContext.builder()
-                        .id(player.getUniqueId())
+                        .id(playerEntry.getUniqueId())
+                        .custom(SequenceContextKey.of("entry", playerEntry), playerEntry)
                         .build(),
 
                 // Don't execute movement sequences if a plugin occurs in the cause.

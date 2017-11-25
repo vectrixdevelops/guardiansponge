@@ -43,7 +43,7 @@ public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
         return new GuardianEntityEntry<>(entity, uuid);
     }
 
-    private GuardianEntityEntry(@Nullable T entity, @Nonnull UUID uuid) {
+    private GuardianEntityEntry(@Nonnull T entity, @Nonnull UUID uuid) {
         this.entity = entity;
         this.uuid = uuid;
     }
@@ -56,8 +56,8 @@ public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
 
     @Nonnull
     @Override
-    public <E> Optional<E> getEntity(TypeToken<E> typeToken) {
-        if (!typeToken.getType().equals(this.entity)) return Optional.empty();
+    public <E> Optional<E> getEntity(@Nonnull Class<E> clazz) {
+        if (!clazz.isAssignableFrom(this.entity.getClass())) return Optional.empty();
         return Optional.ofNullable((E) this.entity);
     }
 
@@ -76,7 +76,7 @@ public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
     public boolean equals(final Object object) {
         if (this == object) return true;
         if (object == null || !(object instanceof EntityEntry)) return false;
-        return Objects.equals(this.entity, ((EntityEntry) object).getEntity(type()))
+        return Objects.equals(this.entity, ((EntityEntry) object).getEntity(this.entity.getClass()))
                 && Objects.equals(this.uuid, ((EntityEntry) object).getUniqueId());
     }
 

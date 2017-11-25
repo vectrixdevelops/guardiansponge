@@ -28,7 +28,10 @@ import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import com.ichorpowered.guardian.api.util.Transform;
 import com.ichorpowered.guardian.api.util.key.NamedKey;
+import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -45,48 +48,74 @@ public class GuardianCaptureContainer implements CaptureContainer {
     private GuardianCaptureContainer() {}
 
     @Override
+    public <T> void putOnce(@Nonnull String key, @Nullable T value) {
+        if (!this.container.containsKey(key)) this.container.put(key, Object.class.cast(value));
+    }
+
+    @Override
+    public <T> void putOnce(@Nonnull NamedTypeKey<T> key, @Nullable T value) {
+        this.putOnce(key.getName(), value);
+    }
+
+    @Override
     public <T> void put(@Nonnull String id, @Nullable T value) {
-        this.container.forcePut(id, value);
+        this.container.remove(id);
+        this.container.put(id, Object.class.cast(value));
     }
 
     @Override
-    public <T> void put(@Nonnull NamedKey key, @Nonnull T value) {
-        this.container.forcePut(key.getName(), value);
+    public <T> void put(@Nonnull NamedTypeKey<T> key, @Nonnull T value) {
+        this.put(key.getName(), value);
+    }
+
+    @Nonnull
+    @Override
+    public CaptureContainer merge(@Nonnull CaptureContainer captureContainer) {
+        Set<Map.Entry<String, Object>> entries = ((GuardianCaptureContainer) captureContainer).container.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            this.container.put(entry.getKey(), entry.getValue());
+        }
+
+        return this;
     }
 
     @Override
-    public <T> void transform(@Nonnull String key, @Nullable Transform<T> transform) {
-        this.container.forcePut(key, transform.transform((T) this.container.get(key)));
+    public <T> void transform(@Nonnull String key, @Nullable Transform<T> transform, T defaultValue) {
+        if (!this.container.containsKey(key)) {
+            this.put(key, transform.transform(defaultValue));
+            return;
+        }
+
+        this.put(key, transform.transform((T) this.container.get(key)));
     }
 
     @Override
-    public <T> void transform(@Nonnull NamedKey key, @Nonnull Transform<T> transform) {
-        this.container.forcePut(key.getName(), transform.transform((T) this.container.get(key.getName())));
+    public <T> void transform(@Nonnull NamedTypeKey<T> key, @Nonnull Transform<T> transform, T defaultValue) {
+        this.transform(key.getName(), transform, defaultValue);
     }
 
     @Nullable
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull String id) {
-        return (T) this.container.get(id);
+    public <T> Optional<T> get(@Nonnull String key) {
+        return Optional.ofNullable((T) this.container.get(key));
     }
 
     @Nullable
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull NamedKey key) {
-        return (T) this.container.get(key.getName());
+    public <T> Optional<T> get(@Nonnull NamedTypeKey<T> key) {
+        return Optional.ofNullable((T) this.container.get(key.getName()));
     }
 
     @Nullable
     @Override
-    public <T> String key(T value) {
-        return this.container.inverse().get(value);
+    public <T> String key(@Nonnull T value) {
+        return this.key(value);
     }
 
+    @Nonnull
     @Override
     public Set<String> keySet() {
-        return this.container.keySet();
+        return this.keySet();
     }
-
 }
