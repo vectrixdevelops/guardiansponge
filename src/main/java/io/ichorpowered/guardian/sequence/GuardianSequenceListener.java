@@ -1,9 +1,9 @@
 package io.ichorpowered.guardian.sequence;
 
-import com.abilityapi.sequenceapi.context.SequenceContext;
-import com.abilityapi.sequenceapi.context.SequenceContextKey;
+import com.abilityapi.sequenceapi.SequenceContext;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
+import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -22,12 +22,14 @@ public class GuardianSequenceListener {
     public void moveEntityEvent(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
         final GuardianEntityEntry<Player> playerEntry = GuardianEntityEntry.of(player, player.getUniqueId());
 
+        // TODO: Block for teleportation.
+
         this.plugin.getSequenceManager().invokeObserverIf(event,
 
                 // TODO: Add more sequence context here from Sponge Causes.
                 SequenceContext.builder()
                         .id(playerEntry.getUniqueId())
-                        .custom(SequenceContextKey.of("entry", playerEntry), playerEntry)
+                        .custom(CommonContextKeys.ENTITY_ENTRY, playerEntry)
                         .build(),
 
                 // Don't execute movement sequences if a plugin occurs in the cause.

@@ -35,39 +35,33 @@ import javax.annotation.Nullable;
 public class SequenceReport implements Report {
 
     private final HashMap<String, Object> reportMap = new HashMap<>();
-    private final boolean pass;
     private final Origin origin;
 
-    public SequenceReport(boolean pass, @Nonnull Origin origin) {
-        this.pass = pass;
+    public SequenceReport(@Nonnull final Origin origin) {
         this.origin = origin;
     }
 
-    public boolean isPassed() {
-        return this.pass;
-    }
-
     @Override
-    public <T> void put(@Nonnull String key, @Nullable T object) {
+    public final <T> void put(@Nonnull final String key, @Nullable final T object) {
         this.reportMap.put(key, object);
     }
 
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull String key) throws IllegalArgumentException {
+    public final <T> T get(@Nonnull final String key) throws IllegalArgumentException {
         return (T) this.reportMap.get(key);
     }
 
     @Nonnull
     @Override
-    public Set<String> keySet() {
+    public final Set<String> keySet() {
         return this.reportMap.keySet();
     }
 
     @Nonnull
     @Override
-    public Origin getOrigin() {
+    public final Origin getOrigin() {
         return this.origin;
     }
 

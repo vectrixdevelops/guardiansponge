@@ -17,8 +17,8 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
+import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.event.Event;
-import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +40,7 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> extend
     }
 
     @Override
-    public ObserverActionBuilder<Event> observe(final Class<Event> event) {
+    public ObserverActionBuilder<Event> observe(final Class<? extends Event> event) {
         return this.observe(new ObserverAction<>(event));
     }
 
@@ -79,22 +79,22 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> extend
     @Override
     public final SequenceBlueprint<Event> build(final SequenceContext sequenceContext) {
         final SequenceContext context = SequenceContext.from(sequenceContext)
-                .custom(SequenceContextKey.of("captures", Lists.newArrayList()), this.captures).build();
+                .custom(CommonContextKeys.CAPTURES, this.captures).build();
 
         return new SequenceBlueprint<Event>() {
             @Override
-            public final Sequence create(final SequenceContext createSequenceContext) {
+            public final Sequence<Event> create(final SequenceContext createSequenceContext) {
                 final SequenceContext.Builder newOrigin = SequenceContext.from(createSequenceContext);
-                if (context != null) newOrigin.merge(context);
+                newOrigin.merge(context);
 
                 final GuardianCaptureRegistry captureRegistry = new GuardianCaptureRegistry(
-                        (GuardianEntityEntry) sequenceContext.get(SequenceContextKey.of("entry", null))
+                        (GuardianEntityEntry) sequenceContext.get(CommonContextKeys.ENTITY_ENTRY)
                 );
 
                 GuardianSequenceBuilder.this.captures.forEach(capture ->
                         captureRegistry.put(context.getOwner(), capture.getClass(), capture));
 
-                return new GuardianSequence(newOrigin.build(), this, captureRegistry, scheduleActions, this.validateSequence());
+                return new GuardianSequence<E, F>(newOrigin.build(), this, captureRegistry, scheduleActions, this.validateSequence());
             }
 
             @Override

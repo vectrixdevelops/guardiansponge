@@ -24,20 +24,14 @@
 package io.ichorpowered.guardian.sequence;
 
 import com.abilityapi.sequenceapi.Sequence;
-import com.abilityapi.sequenceapi.SequenceBlueprint;
+import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
-import com.abilityapi.sequenceapi.context.SequenceContext;
-import com.abilityapi.sequenceapi.context.SequenceContextKey;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
-import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
-import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
-import io.ichorpowered.guardian.report.GuardianSummary;
+import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -106,14 +100,14 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
 
     private void tickScheduler() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
-            final GuardianEntityEntry<Player> playerEntry = GuardianEntityEntry.of(player, player.getUniqueId());
+            final GuardianEntityEntry<Player> entityEntry = GuardianEntityEntry.of(player, player.getUniqueId());
 
             this.updateSchedulerIf(
                     this.contextHistory.getOrDefault(player.getUniqueId(),
 
                     SequenceContext.builder()
-                            .id(playerEntry.getUniqueId())
-                            .custom(SequenceContextKey.of("entry", playerEntry), playerEntry)
+                            .id(entityEntry.getUniqueId())
+                            .custom(CommonContextKeys.ENTITY_ENTRY, entityEntry)
                             .build()),
 
                     sequence -> ((Sequence) sequence).getState().equals(Sequence.State.ACTIVE));

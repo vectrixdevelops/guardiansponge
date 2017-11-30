@@ -23,25 +23,23 @@
  */
 package io.ichorpowered.guardian.internal.check.movement;
 
-import com.google.common.reflect.TypeToken;
+import com.abilityapi.sequenceapi.SequenceBlueprint;
+import com.abilityapi.sequenceapi.SequenceContext;
+import com.abilityapi.sequenceapi.action.condition.ConditionType;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import com.ichorpowered.guardian.api.report.Summary;
+import io.ichorpowered.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
 import io.ichorpowered.guardian.internal.capture.PlayerLocationCapture;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
-import io.ichorpowered.guardian.sequence.SequenceReport;
-import org.spongepowered.api.data.key.Keys;
+import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
+import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
-
-import java.util.Collections;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,9 +58,9 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
         this.checkBlueprint = checkBlueprint;
         this.detection = detection;
 
-//        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "time").getDouble(2d) / 0.05;
-//        this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "minimum").getDouble(0.75);
-//        this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "maximum").getDouble(1.25);
+        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "time").getDouble(2d) / 0.05;
+        this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "minimum").getDouble(0.75);
+        this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "maximum").getDouble(1.25);
     }
 
     @Nonnull
@@ -85,90 +83,48 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
 
     @Nonnull
     @Override
-    public SequenceBlueprint<GuardianPlugin, DetectionConfiguration> getSequence() {
+    public SequenceBlueprint getSequence() {
         return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
-                .capture(
-                        new PlayerLocationCapture<>(this.detection.getOwner(), this.detection),
-                        new PlayerControlCapture.Common<>(this.detection.getOwner(), this.detection)
-                )
+
+                .capture(new PlayerLocationCapture<>(this.detection.getOwner(), this.detection))
+                .capture(new PlayerControlCapture.Common<>(this.detection.getOwner(), this.detection))
 
                 // Trigger : Move Entity Event
 
-                .action(MoveEntityEvent.class)
+                .observe(MoveEntityEvent.class)
 
-                // After : Move Entity Event
-
-                .action(MoveEntityEvent.class)
+                .schedule()
                     .delay(Double.valueOf(this.analysisTime).intValue())
                     .expire(Double.valueOf(this.maximumTickRange).intValue())
 
-                    // TODO: Permission check.
+                    // TODO: Permission Condition
 
-                    .condition((entityEntry, event, captureContainer, summary, last) -> {
-                        summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(event).owner(entityEntry).build()));
+                    // Analysis Condition
 
-                        if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return summary;
-                        Player player = entityEntry.getEntity(TypeToken.of(Player.class)).get();
+                    .condition(sequenceContext -> {
+                        final GuardianEntityEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+                        final Summary<GuardianPlugin, DetectionConfiguration> summary = sequenceContext.get(CommonContextKeys.SUMMARY);
+                        final GuardianCaptureRegistry captureRegistry = sequenceContext.get(CommonContextKeys.CAPTURE_REGISTRY);
 
-                        /*
-                         * Capture Collection
-                         */
+                        if (!entityEntry.getEntity(Player.class).isPresent()) return false;
+                        final Player player = entityEntry.getEntity(Player.class).get();
 
-                        Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
-                        Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
-                        Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
+                        // TODO: Work in progress.
 
-                        Integer controlTicks = captureContainer.get(PlayerControlCapture.Common.CONTROL_STATE_TICKS);
-                        Integer verticalTicks = captureContainer.get(PlayerControlCapture.Common.UPDATE);
-                        Double horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_OFFSET);
+                        return true;
+                    }, ConditionType.NORMAL)
 
-                        /*
-                         * Analysis
-                         */
+                    // Report Collector Condition
 
-                        if (locationTicks == null || initial == null || present == null || controlTicks == null ||
-                                verticalTicks == null || horizontalOffset == null) return summary;
+                    .condition(sequenceContext -> {
+                        return true;
+                    }, ConditionType.SUCCESS)
 
-                        if (locationTicks < this.minimumTickRange) {
-                            this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
-                            return summary;
-                        } else if (locationTicks > this.maximumTickRange) {
-                            return summary;
-                        }
-
-                        if (player.get(Keys.VEHICLE).isPresent()) return summary;
-
-                        long current = System.currentTimeMillis();
-
-                        double horizontalDisplacement = Math.abs((present.getX() - initial.getX()) + (present.getZ() - initial.getZ()));
-
-                        double maximumHorizontalDisplacement = (horizontalOffset *
-                                (horizontalOffset / 0.2)) * (((
-                                ((1 / verticalTicks) * ((long) this.analysisTime * 1000)) + (current - last)
-                        ) / 2) / 1000) + 0.01; // TODO: This should take into account material data and many other factors too.
-
-                        if (horizontalDisplacement > maximumHorizontalDisplacement) {
-                            SequenceReport report = new SequenceReport(true, Origin.source(event).owner(entityEntry).build());
-                            report.put("type", "Horizontal Speed");
-
-                            report.put("information", Collections.singletonList(
-                                    "Overshot maximum movement by " + (horizontalDisplacement - maximumHorizontalDisplacement) + ".")
-                            );
-
-                            report.put("initial_location", initial);
-                            report.put("final_location", present);
-                            report.put("severity", (horizontalDisplacement - maximumHorizontalDisplacement) / horizontalDisplacement);
-
-                            summary.set(SequenceReport.class, report);
-                        }
-
-                        return summary;
-                    })
-                .build(this.detection.getOwner(), this);
+                .build(SequenceContext.builder().build());
     }
 
     @Override
-    public boolean compare(@Nullable Check<?, ?> check) {
+    public final boolean compare(@Nullable final Check<?, ?> check) {
         assert check != null;
         return check.equals(this);
     }
@@ -176,12 +132,13 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
     public static class Blueprint implements CheckBlueprint<GuardianPlugin, DetectionConfiguration> {
 
         @Override
-        public Check<GuardianPlugin, DetectionConfiguration> create(Detection<GuardianPlugin, DetectionConfiguration> detection) {
+        public final Check<GuardianPlugin, DetectionConfiguration> create(@Nonnull final Detection<GuardianPlugin, DetectionConfiguration> detection) {
             return new HorizontalSpeedCheck(this, detection);
         }
 
+        @Nonnull
         @Override
-        public Class<? extends Check> getCheckClass() {
+        public final Class<? extends Check> getCheckClass() {
             return HorizontalSpeedCheck.class;
         }
 

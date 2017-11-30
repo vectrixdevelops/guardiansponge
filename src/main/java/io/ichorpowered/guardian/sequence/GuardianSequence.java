@@ -25,19 +25,17 @@ package io.ichorpowered.guardian.sequence;
 
 import com.abilityapi.sequenceapi.Sequence;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
+import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverAction;
 import com.abilityapi.sequenceapi.action.type.schedule.ScheduleAction;
-import com.abilityapi.sequenceapi.context.SequenceContext;
-import com.abilityapi.sequenceapi.context.SequenceContextKey;
-import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
-import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.report.GuardianSummary;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureContainer;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
+import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -64,43 +62,49 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
         this.captureRegistry.getContainer().merge(GuardianCaptureContainer.create());
 
         this.summary = new GuardianSummary<>((E) sequenceContext.getOwner(),
-                (Detection<E, F>) sequenceContext.getSource(),
-                (GuardianEntityEntry) sequenceContext.get(SequenceContextKey.of("entry", null)),
+                sequenceContext.getSource(),
+                sequenceContext.get(CommonContextKeys.ENTITY_ENTRY),
                 Origin.merge(sequenceContext).build());
     }
 
     @Override
     public boolean applyObserve(final Event event, final SequenceContext sequenceContext) {
-        final SequenceContextKey entryKey = SequenceContextKey.of("entry", null);
-
-        final EntityEntry entityEntry = (EntityEntry) sequenceContext.get(entryKey);
+        final EntityEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
         final Player player = entityEntry.getEntity(Player.class)
                 .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
 
         if (player == null) return false;
 
+        final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
+                .custom(CommonContextKeys.CAPTURE_REGISTRY, this.captureRegistry)
+                .custom(CommonContextKeys.SUMMARY, this.summary)
+                .build();
+
         if (this.getState().equals(State.INACTIVE)) {
             this.captureRegistry.getContainer().putOnce(INITIAL_LOCATION, player.getLocation());
         }
 
-        return super.applyObserve(event, sequenceContext);
+        return super.applyObserve(event, mergedContext);
     }
 
     @Override
-    public boolean applySchedule(final SequenceContext sequenceContext) {
-        final SequenceContextKey entryKey = SequenceContextKey.of("entry", null);
-
-        final EntityEntry entityEntry = (EntityEntry) sequenceContext.get(entryKey);
+    public final boolean applySchedule(final SequenceContext sequenceContext) {
+        final EntityEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
         final Player player = entityEntry.getEntity(Player.class)
                 .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
 
         if (player == null) return false;
 
+        final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
+                .custom(CommonContextKeys.CAPTURE_REGISTRY, this.captureRegistry)
+                .custom(CommonContextKeys.SUMMARY, this.summary)
+                .build();
+
         if (this.getState().equals(State.INACTIVE)) {
             this.captureRegistry.getContainer().putOnce(INITIAL_LOCATION, player.getLocation());
         }
 
-        return super.applySchedule(sequenceContext);
+        return super.applySchedule(mergedContext);
     }
 
     public GuardianSummary<E, F> getSummary() {
