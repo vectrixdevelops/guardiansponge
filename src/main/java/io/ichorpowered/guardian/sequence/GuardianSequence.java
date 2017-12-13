@@ -26,8 +26,10 @@ package io.ichorpowered.guardian.sequence;
 import com.abilityapi.sequenceapi.Sequence;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
+import com.abilityapi.sequenceapi.action.Action;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverAction;
 import com.abilityapi.sequenceapi.action.type.schedule.ScheduleAction;
+import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.event.origin.Origin;
@@ -41,6 +43,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.world.Location;
 
+import java.util.List;
 import java.util.Map;
 
 public class GuardianSequence<E, F extends DetectionConfiguration> extends Sequence<Event> {
@@ -54,15 +57,14 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
     public GuardianSequence(final SequenceContext sequenceContext,
                             final SequenceBlueprint<Event> sequenceBlueprint,
                             final GuardianCaptureRegistry captureRegistry,
-                            final Map<ScheduleAction, Integer> scheduleActions,
-                            final Map<ObserverAction<Event>, Integer> observerActions) {
-        super(sequenceContext, sequenceBlueprint, scheduleActions, observerActions);
+                            final List<Action> actions) {
+        super(sequenceContext, sequenceBlueprint, actions);
 
         this.captureRegistry = captureRegistry;
         this.captureRegistry.getContainer().merge(GuardianCaptureContainer.create());
 
-        this.summary = new GuardianSummary<>((E) sequenceContext.getOwner(),
-                sequenceContext.getSource(),
+        this.summary = new GuardianSummary<>(((Detection<E, F>) sequenceContext.getOwner()).getOwner(),
+                sequenceContext.getOwner(),
                 sequenceContext.get(CommonContextKeys.ENTITY_ENTRY),
                 Origin.merge(sequenceContext).build());
     }
@@ -76,6 +78,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
         if (player == null) return false;
 
         final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
+                .custom(CommonContextKeys.LAST_ACTION_TIME, super.getLastActionTime())
                 .custom(CommonContextKeys.CAPTURE_REGISTRY, this.captureRegistry)
                 .custom(CommonContextKeys.SUMMARY, this.summary)
                 .build();
@@ -96,6 +99,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
         if (player == null) return false;
 
         final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
+                .custom(CommonContextKeys.LAST_ACTION_TIME, super.getLastActionTime())
                 .custom(CommonContextKeys.CAPTURE_REGISTRY, this.captureRegistry)
                 .custom(CommonContextKeys.SUMMARY, this.summary)
                 .build();
@@ -105,6 +109,10 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
         }
 
         return super.applySchedule(mergedContext);
+    }
+
+    public Detection<E, F> getOwner() {
+        return super.getSequenceContext().getOwner();
     }
 
     public GuardianSummary<E, F> getSummary() {

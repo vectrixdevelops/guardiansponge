@@ -2,37 +2,28 @@ package io.ichorpowered.guardian.sequence;
 
 import com.abilityapi.sequenceapi.Sequence;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
-import com.abilityapi.sequenceapi.SequenceBuilder;
+import com.abilityapi.sequenceapi.SequenceContext;
+import com.abilityapi.sequenceapi.action.Action;
+import com.abilityapi.sequenceapi.action.ActionBuilder;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverAction;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverActionBlueprint;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverActionBuilder;
 import com.abilityapi.sequenceapi.action.type.schedule.ScheduleAction;
 import com.abilityapi.sequenceapi.action.type.schedule.ScheduleActionBuilder;
-import com.abilityapi.sequenceapi.context.SequenceContext;
-import com.abilityapi.sequenceapi.context.SequenceContextKey;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
+import com.google.common.base.MoreObjects;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
-import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.event.Event;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
-public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> extends SequenceBuilder<Event> {
+public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implements ActionBuilder<Event> {
 
     private final List<Capture<E, F>> captures = new ArrayList<>();
 
-    private int index = 0;
-    private final Map<ScheduleAction, Integer> scheduleActions = new HashMap<>();
-    private final Map<ObserverAction<Event>, Integer> observerActions = new HashMap<>();
+    private final List<Action> actions = new ArrayList<>();
 
     public GuardianSequenceBuilder<E, F> capture(final Capture<E, F> capture) {
         this.captures.add(capture);
@@ -51,7 +42,7 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> extend
 
     @Override
     public ObserverActionBuilder<Event> observe(final ObserverAction<Event> action) {
-        this.observerActions.put(action, this.index++);
+        this.actions.add(action);
 
         return new ObserverActionBuilder<>(this, action);
     }
@@ -63,54 +54,68 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> extend
 
     @Override
     public ScheduleActionBuilder<Event> schedule(final ScheduleAction action) {
-        this.scheduleActions.put(action, this.index++);
+        this.actions.add(action);
 
         return new ScheduleActionBuilder<>(this, action);
     }
 
-    /**
-     * Returns a new {@link SequenceBlueprint} containing
-     * the {@link Sequence} of {@link ObserverAction}s and
-     * {@link ScheduleAction}s.
-     *
-     * @param sequenceContext the sequence context
-     * @return the sequence blueprint
-     */
     @Override
-    public final SequenceBlueprint<Event> build(final SequenceContext sequenceContext) {
-        final SequenceContext context = SequenceContext.from(sequenceContext)
-                .custom(CommonContextKeys.CAPTURES, this.captures).build();
-
+    public final SequenceBlueprint<Event> build(final SequenceContext buildContext) {
         return new SequenceBlueprint<Event>() {
             @Override
-            public final Sequence<Event> create(final SequenceContext createSequenceContext) {
-                final SequenceContext.Builder newOrigin = SequenceContext.from(createSequenceContext);
-                newOrigin.merge(context);
+            public final Sequence<Event> create(final SequenceContext createContext) {
+                final SequenceContext modifiedContext = SequenceContext.from(createContext)
+                        .custom(CommonContextKeys.TRIGGER, getTrigger())
+                        .merge(buildContext).build();
 
                 final GuardianCaptureRegistry captureRegistry = new GuardianCaptureRegistry(
-                        (GuardianEntityEntry) sequenceContext.get(CommonContextKeys.ENTITY_ENTRY)
+                        modifiedContext.get(CommonContextKeys.ENTITY_ENTRY)
                 );
 
                 GuardianSequenceBuilder.this.captures.forEach(capture ->
-                        captureRegistry.put(context.getOwner(), capture.getClass(), capture));
+                        captureRegistry.put(modifiedContext.getId(), capture.getClass(), capture));
 
-                return new GuardianSequence<E, F>(newOrigin.build(), this, captureRegistry, scheduleActions, this.validateSequence());
+                return new GuardianSequence<E, F>(modifiedContext, this, captureRegistry, GuardianSequenceBuilder.this.actions);
             }
 
             @Override
             public final Class<? extends Event> getTrigger() {
-                final BiMap<Integer, ObserverAction<Event>> observers = HashBiMap.create(validateSequence()).inverse();
-
-                return observers.get(0).getEventClass();
+                if (GuardianSequenceBuilder.this.actions.isEmpty()) throw new NoSuchElementException("Sequence could not be established without an initial observer action.");
+                if (GuardianSequenceBuilder.this.actions.get(0) instanceof ObserverAction) {
+                    return ((ObserverAction<Event>) GuardianSequenceBuilder.this.actions.get(0)).getEventClass();
+                } else throw new ClassCastException("Sequence could not be established without an initial observer action.");
             }
 
-            private Map<ObserverAction<Event>, Integer> validateSequence() throws NoSuchElementException {
-                if (observerActions.isEmpty() || !observerActions.containsValue(0)) throw
-                        new NoSuchElementException("Sequence could not be established without an initial observer.");
+            @Override
+            public SequenceContext getContext() {
+                return buildContext;
+            }
 
-                return observerActions;
+            @Override
+            public int hashCode() {
+                return Objects.hash(buildContext.getOwner(), buildContext.getRoot(), getTrigger());
+            }
+
+            @Override
+            public boolean equals(final Object other) {
+                if(this == other) return true;
+                if(other == null || !(other instanceof SequenceBlueprint<?>)) return false;
+                final SequenceBlueprint<?> that = (SequenceBlueprint<?>) other;
+                return Objects.equals(buildContext.getOwner(), that.getContext().getOwner())
+                        && Objects.equals(buildContext.getRoot(), that.getContext().getRoot())
+                        && Objects.equals(getTrigger(), that.getTrigger());
+            }
+
+            @Override
+            public String toString() {
+                return MoreObjects.toStringHelper(this)
+                        .add("owner", buildContext.getOwner())
+                        .add("root", buildContext.getRoot())
+                        .add("trigger", getTrigger())
+                        .toString();
             }
         };
     }
 
 }
+

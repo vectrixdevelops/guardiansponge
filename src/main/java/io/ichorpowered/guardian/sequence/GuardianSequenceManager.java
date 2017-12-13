@@ -29,6 +29,7 @@ import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
+import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
@@ -43,8 +44,6 @@ import java.util.UUID;
 
 public class GuardianSequenceManager extends SequenceManager<Event> {
 
-    private Map<UUID, SequenceContext> contextHistory = new HashMap<>();
-
     public GuardianSequenceManager(final SequenceRegistry<Event> sequenceRegistry) {
         super(sequenceRegistry);
     }
@@ -53,12 +52,10 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
     public boolean _invokeObserver(final Event event,
                                    final Sequence<Event> sequence,
                                    final SequenceContext sequenceContext) {
-        this.contextHistory.put((UUID) sequenceContext.getId(), sequenceContext);
-
         boolean result = super._invokeObserver(event, sequence, sequenceContext);
 
         if (sequence.getState().equals(Sequence.State.FINISHED)) {
-            this.transitionPhase(sequence);
+            this.transitionPhase((GuardianSequence) sequence);
         }
 
         return result;
@@ -67,12 +64,10 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
     @Override
     public boolean _invokeScheduler(final Sequence<Event> sequence,
                                     final SequenceContext sequenceContext) {
-        this.contextHistory.put((UUID) sequenceContext.getId(), sequenceContext);
-
         boolean result = super._invokeScheduler(sequence, sequenceContext);
 
         if (sequence.getState().equals(Sequence.State.FINISHED)) {
-            this.transitionPhase(sequence);
+            this.transitionPhase((GuardianSequence) sequence);
         }
 
         return result;
@@ -86,8 +81,8 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
      * @param sequence the sequence
      */
     @Deprecated
-    private void transitionPhase(final Sequence<Event> sequence) {
-        DetectionPhase<?, ?> detectionPhase = ((AbstractSequenceBlueprint<?, ?>) sequence.getBlueprint()).getDetection().getPhaseManipulator();
+    private void transitionPhase(final GuardianSequence sequence) {
+        DetectionPhase<?, ?> detectionPhase = sequence.getOwner().getPhaseManipulator();
 
         while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
             detectionPhase.next(PhaseTypes.HEURISTIC);
@@ -103,14 +98,26 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
             final GuardianEntityEntry<Player> entityEntry = GuardianEntityEntry.of(player, player.getUniqueId());
 
             this.updateSchedulerIf(
-                    this.contextHistory.getOrDefault(player.getUniqueId(),
-
                     SequenceContext.builder()
                             .id(entityEntry.getUniqueId())
                             .custom(CommonContextKeys.ENTITY_ENTRY, entityEntry)
-                            .build()),
+                            .build(),
 
-                    sequence -> ((Sequence) sequence).getState().equals(Sequence.State.ACTIVE));
+                    sequence -> {
+                        final GuardianSequence guardianSequence = (GuardianSequence) sequence;
+
+                        // Update captures.
+                        if (guardianSequence.getState().equals(Sequence.State.ACTIVE)) {
+                            for (Capture capture : guardianSequence.getCaptureRegistry()) {
+                                capture.update(entityEntry, guardianSequence.getCaptureRegistry().getContainer());
+                            }
+
+                            return true;
+                        }
+
+                        return false;
+                    }
+            );
         });
     }
 
@@ -128,10 +135,14 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
         }
 
         public void start() {
-            this.task = Task.builder().execute(() -> {
-                this.sequenceManager.clean(false);
-                this.sequenceManager.tickScheduler();
-            }).name("Guardian - Sequence Tick").intervalTicks(1).submit(this.plugin);
+            this.task = Task.builder()
+                    .name("Guardian - Sequence Tick")
+                    .execute(() -> {
+                        this.sequenceManager.clean(false);
+                        this.sequenceManager.tickScheduler();
+                    })
+                    .intervalTicks(1)
+                    .submit(this.plugin);
         }
 
         public void stop() {

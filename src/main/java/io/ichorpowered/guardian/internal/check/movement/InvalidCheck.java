@@ -23,18 +23,26 @@
  */
 package io.ichorpowered.guardian.internal.check.movement;
 
+import com.abilityapi.sequenceapi.SequenceBlueprint;
+import com.abilityapi.sequenceapi.SequenceContext;
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.event.origin.Origin;
+import com.ichorpowered.guardian.api.report.Summary;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
+import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import io.github.connorhartley.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
 import io.ichorpowered.guardian.internal.capture.PlayerLocationCapture;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import io.ichorpowered.guardian.sequence.SequenceReport;
+import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
+import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -86,70 +94,81 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
 
     @Nonnull
     @Override
-    public SequenceBlueprint<GuardianPlugin, DetectionConfiguration> getSequence() {
+    public SequenceBlueprint getSequence() {
         return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
-                .capture(
-                        new PlayerLocationCapture<>(this.detection.getOwner(), this.detection),
-                        new PlayerControlCapture.Invalid<>(this.detection.getOwner(), this.detection)
-                )
+
+                .capture(new PlayerLocationCapture<>(this.detection.getOwner(), this.detection))
+                .capture(new PlayerControlCapture.Invalid<>(this.detection.getOwner(), this.detection))
 
                 // Trigger : Move Entity Event
 
-                .action(MoveEntityEvent.class)
+                .observe(MoveEntityEvent.class)
 
-                // After : Move Entity Event
+                // Analysis : Move Entity Event
 
-                .action(MoveEntityEvent.class)
-                .delay(Double.valueOf(this.analysisTime).intValue())
-                .expire(Double.valueOf(this.maximumTickRange).intValue())
+                .observe(MoveEntityEvent.class)
+                    .delay(Double.valueOf(this.analysisTime).intValue())
+                    .expire(Double.valueOf(this.maximumTickRange).intValue())
 
-                // TODO: Permission check.
+                    // TODO: Permission check.
 
-                .condition((entityEntry, event, captureContainer, summary, last) -> {
-                    summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(event).owner(entityEntry).build()));
+                    .condition(sequenceContext -> {
+                        final GuardianEntityEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+                        final Summary<GuardianPlugin, DetectionConfiguration> summary = sequenceContext.get(CommonContextKeys.SUMMARY);
+                        final GuardianCaptureRegistry captureRegistry = sequenceContext.get(CommonContextKeys.CAPTURE_REGISTRY);
+                        final long lastActionTime = sequenceContext.get(CommonContextKeys.LAST_ACTION_TIME);
 
-                    if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return summary;
+                        summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
+
+                        if (!entityEntry.getEntity(Player.class).isPresent()) return false;
+                        Player player = entityEntry.getEntity(Player.class).get();
 
                         /*
                          * Capture Collection
                          */
 
-                    Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
-                    Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
-                    Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
-                    Set<String> controls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_MOVEMENT);
+                        final CaptureContainer captureContainer = captureRegistry.getContainer();
 
-                        /*
-                         * Analysis
-                         */
+                        Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
+                        Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
+                        Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
+                        Set<String> controls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_MOVEMENT);
 
-                    if (initial == null || present == null || controls == null || locationTicks == null) return summary;
+                            /*
+                             * Analysis
+                             */
 
-                    if (locationTicks < this.minimumTickRange) {
-                        this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
+                        if (initial == null || present == null || controls == null || locationTicks == null) return summary;
+
+                        if (locationTicks < this.minimumTickRange) {
+                            this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
+                            return summary;
+                        } else if (locationTicks > this.maximumTickRange) {
+                            return summary;
+                        }
+
+                        if (controls.isEmpty()) return summary;
+
+                        SequenceReport report = new SequenceReport(true, Origin.source(event).owner(entityEntry).build());
+                        report.put("type", "Invalid Movement");
+
+                        report.put("information", Collections.singletonList(
+                                "Received invalid controls of " + StringUtils.join(controls, ", ") + ".")
+                        );
+
+                        report.put("initial_location", initial);
+                        report.put("final_location", present);
+                        report.put("severity", 1d);
+
+                        summary.set(SequenceReport.class, report);
+
                         return summary;
-                    } else if (locationTicks > this.maximumTickRange) {
-                        return summary;
-                    }
+                    })
 
-                    if (controls.isEmpty()) return summary;
-
-                    SequenceReport report = new SequenceReport(true, Origin.source(event).owner(entityEntry).build());
-                    report.put("type", "Invalid Movement");
-
-                    report.put("information", Collections.singletonList(
-                            "Received invalid controls of " + StringUtils.join(controls, ", ") + ".")
-                    );
-
-                    report.put("initial_location", initial);
-                    report.put("final_location", present);
-                    report.put("severity", 1d);
-
-                    summary.set(SequenceReport.class, report);
-
-                    return summary;
-                })
-                .build(this.detection.getOwner(), this);
+                .build(SequenceContext.builder()
+                        .owner(this.detection)
+                        .root(this)
+                        .build());
     }
 
     @Override

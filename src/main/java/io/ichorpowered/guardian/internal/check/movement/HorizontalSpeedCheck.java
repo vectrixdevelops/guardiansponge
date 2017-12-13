@@ -120,7 +120,10 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
                         return true;
                     }, ConditionType.SUCCESS)
 
-                .build(SequenceContext.builder().build());
+                .build(SequenceContext.builder()
+                        .owner(this.detection)
+                        .root(this)
+                        .build());
     }
 
     @Override
