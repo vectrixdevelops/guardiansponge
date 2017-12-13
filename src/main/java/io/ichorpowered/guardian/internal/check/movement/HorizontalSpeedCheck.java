@@ -30,12 +30,14 @@ import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
+import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.report.Summary;
+import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
-import io.ichorpowered.guardian.internal.capture.PlayerLocationCapture;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
+import io.ichorpowered.guardian.sequence.SequenceReport;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -105,11 +107,18 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
                         final GuardianEntityEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
                         final Summary<GuardianPlugin, DetectionConfiguration> summary = sequenceContext.get(CommonContextKeys.SUMMARY);
                         final GuardianCaptureRegistry captureRegistry = sequenceContext.get(CommonContextKeys.CAPTURE_REGISTRY);
+                        final long lastActionTime = sequenceContext.get(CommonContextKeys.LAST_ACTION_TIME);
+
+                        summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
 
                         if (!entityEntry.getEntity(Player.class).isPresent()) return false;
-                        final Player player = entityEntry.getEntity(Player.class).get();
+                        Player player = entityEntry.getEntity(Player.class).get();
 
-                        // TODO: Work in progress.
+                        /*
+                         * Capture Collection
+                         */
+
+                        final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                         return true;
                     }, ConditionType.NORMAL)

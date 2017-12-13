@@ -23,6 +23,7 @@
  */
 package io.ichorpowered.guardian.internal.capture;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.Detection;
@@ -30,6 +31,7 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import com.ichorpowered.guardian.api.util.key.NamedKey;
+import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import io.ichorpowered.guardian.sequence.GuardianSequence;
 import io.ichorpowered.guardian.sequence.capture.AbstractCapture;
 import org.spongepowered.api.data.key.Keys;
@@ -37,15 +39,13 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
 public class PlayerControlCapture {
 
+    public static String LIFT = "lift";
     public static String FLY = "fly";
     public static String SNEAK = "sneak";
     public static String SPRINT = "sprint";
@@ -53,27 +53,23 @@ public class PlayerControlCapture {
 
     public static class Invalid<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
 
-        public static NamedKey INVALID_MOVEMENT =
-                NamedKey.of(Invalid.class.getCanonicalName().toUpperCase() + "_INVALID_MOVEMENT");
+        private static final String CLASS_NAME = Invalid.class.getSimpleName().toUpperCase();
+
+        public static NamedTypeKey<Set> INVALID_MOVEMENT =
+                NamedTypeKey.of(CLASS_NAME + "_INVALID_MOVEMENT", Set.class);
 
         public Invalid(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
             super(owner, detection);
         }
 
         @Override
-        public void start(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
-            captureContainer.put(Invalid.INVALID_MOVEMENT, Sets.newHashSet());
-        }
-
-        @Override
         public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
-            if (!entry.getEntity(TypeToken.of(Player.class)).isPresent()) return;
-            Player player = entry.getEntity(TypeToken.of(Player.class)).get();
+            if (!entry.getEntity(Player.class).isPresent()) return;
+            Player player = entry.getEntity(Player.class).get();
 
-            Set<String> cap = captureContainer.get(Invalid.INVALID_MOVEMENT);
+            Set<String> cap = captureContainer.get(Invalid.INVALID_MOVEMENT).orElse(new HashSet<>());
             if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                    assert cap != null;
                     if (!cap.contains("sneaking") || !cap.contains("sprinting")) {
                         cap.addAll(Arrays.asList("sneaking", "sprinting"));
                     }
@@ -81,125 +77,106 @@ public class PlayerControlCapture {
             } else if (player.get(Keys.IS_SLEEPING).isPresent() || player.get(Keys.IS_SLEEPING).get() ||
                     player.get(Keys.VEHICLE).isPresent()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                    assert cap != null;
                     if (!cap.contains("sitting") || !cap.contains("sprinting")) {
                         cap.addAll(Arrays.asList("sitting", "sprinting"));
                     }
                 } else if (player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get()) {
-                    assert cap != null;
                     if (!cap.contains("sitting") || !cap.contains("flying")) {
                         cap.addAll(Arrays.asList("sitting", "flying"));
                     }
                 }
             }
 
-            assert cap != null;
             captureContainer.put(Invalid.INVALID_MOVEMENT, cap);
         }
-
-        @Override
-        public void stop(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {}
 
     }
 
     public static class Common<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
 
-        public static NamedKey VERTICAL_OFFSET =
-                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_VERTICAL_OFFSET");
+        private static final String CLASS_NAME = Common.class.getSimpleName().toUpperCase();
 
-        public static NamedKey HORIZONTAL_OFFSET =
-                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_HORIZONTAL_OFFSET");
+        public static NamedTypeKey<Double> VERTICAL_OFFSET =
+                NamedTypeKey.of(CLASS_NAME + "_VERTICAL_OFFSET", Double.class);
 
-        public static NamedKey CONTROL_STATE_TICKS =
-                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_CONTROL_STATE_TICKS");
+        public static NamedTypeKey<Double> HORIZONTAL_OFFSET =
+                NamedTypeKey.of(CLASS_NAME + "_HORIZONTAL_OFFSET", Double.class);
 
-        public static NamedKey UPDATE =
-                NamedKey.of(Common.class.getCanonicalName().toUpperCase() + "_UPDATE");
+        public static NamedTypeKey<Map> CONTROL_STATE_TICKS =
+                NamedTypeKey.of(CLASS_NAME + "_CONTROL_STATE_TICKS", Map.class);
 
-        private double liftOffset = 0;
+        private double liftOffset = 2.012;
 
-        private double sneakOffset = 0;
-        private double walkOffset = 0;
-        private double sprintOffset = 0;
-        private double flyOffset = 0;
+        private double sneakOffset = 1.068;
+        private double walkOffset = 1.094;
+        private double sprintOffset = 1.124;
+        private double flyOffset = 1.218;
 
         public Common(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
             super(owner, detection);
 
-            this.liftOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", "lift")
-                    .getDouble(0d);
+            this.liftOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", LIFT)
+                    .getDouble(this.liftOffset);
 
             this.sneakOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", SNEAK)
-                    .getDouble(0d);
+                    .getDouble(this.sneakOffset);
 
             this.walkOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", WALK)
-                    .getDouble(0d);
+                    .getDouble(this.walkOffset);
 
             this.sprintOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", SPRINT)
-                    .getDouble(0d);
+                    .getDouble(this.sprintOffset);
 
             this.flyOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", FLY)
-                    .getDouble(0d);
+                    .getDouble(this.flyOffset);
         }
 
         @Override
-        public void start(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
+        public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
+            if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
+
+            Player player = entry.getEntity(Player.class).get();
+
             Map<String, Integer> controlState = new HashMap<>();
             controlState.put(FLY, 0);
             controlState.put(WALK, 0);
             controlState.put(SNEAK, 0);
             controlState.put(SPRINT, 0);
+            captureContainer.putOnce(Common.CONTROL_STATE_TICKS, controlState);
 
-            captureContainer.put(Common.VERTICAL_OFFSET, 1.0);
-            captureContainer.put(Common.HORIZONTAL_OFFSET, 1.0);
-            captureContainer.put(Common.CONTROL_STATE_TICKS, controlState);
-            captureContainer.put(Common.UPDATE, 0);
-        }
-
-        @Override
-        public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
-            if (!entry.getEntity(TypeToken.of(Player.class)).isPresent() || captureContainer.<Location<World>>get(GuardianSequence.INITIAL_LOCATION) == null) return;
-            Player player = entry.getEntity(TypeToken.of(Player.class)).get();
-
-            if ((player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get()) ||
-                    captureContainer.<Location>get(GuardianSequence.INITIAL_LOCATION).getY() != player.getLocation().getY()) {
-                captureContainer.<Double>transform(Common.VERTICAL_OFFSET, original -> original * this.liftOffset);
-
-                captureContainer.<Double>transform(Common.HORIZONTAL_OFFSET, original -> original * this.flyOffset);
-
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, (Map<String, Integer> original) -> {
-                    original.put(FLY, original.get(FLY) + 1);
-                    return original;
-                });
-            } else if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                captureContainer.<Double>transform(Common.HORIZONTAL_OFFSET, original -> original * this.sprintOffset);
-
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, (Map<String, Integer> original) -> {
-                    original.put(SPRINT, original.get(SPRINT) + 1);
-                    return original;
-                });
-            } else if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
-                captureContainer.<Double>transform(Common.HORIZONTAL_OFFSET, original -> original * this.sneakOffset);
-
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, (Map<String, Integer> original) -> {
-                    original.put(SNEAK, original.get(SNEAK) + 1);
-                    return original;
-                });
-            } else {
-                captureContainer.<Double>transform(Common.HORIZONTAL_OFFSET, original -> original * this.walkOffset);
-
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, (Map<String, Integer> original) -> {
-                    original.put(WALK, original.get(WALK) + 1);
-                    return original;
-                });
+            if (player.getLocation().getY() != captureContainer.get(GuardianSequence.INITIAL_LOCATION).get().getY()) {
+                captureContainer.transform(Common.VERTICAL_OFFSET, original -> original * this.liftOffset, this.liftOffset);
             }
 
-            captureContainer.<Integer>transform(Common.UPDATE, original -> original + 1);
+            if ((player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get())) {
+                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.flyOffset, this.flyOffset);
+
+                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                    ((Map<String, Integer>) original).put(FLY, ((Map<String, Integer>) original).get(FLY) + 1);
+                    return (Map<String, Integer>) original;
+                }, Maps.newHashMap());
+            } else if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
+                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.sprintOffset, this.sprintOffset);
+
+                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                    ((Map<String, Integer>) original).put(SPRINT, ((Map<String, Integer>) original).get(SPRINT) + 1);
+                    return (Map<String, Integer>) original;
+                }, Maps.newHashMap());
+            } else if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
+                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.sneakOffset, this.sneakOffset);
+
+                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                    ((Map<String, Integer>) original).put(SNEAK, ((Map<String, Integer>) original).get(SPRINT) + 1);
+                    return (Map<String, Integer>) original;
+                }, Maps.newHashMap());
+            } else {
+                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.walkOffset, this.walkOffset);
+
+                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                    ((Map<String, Integer>) original).put(WALK, ((Map<String, Integer>) original).get(WALK) + 1);
+                    return (Map<String, Integer>) original;
+                }, Maps.newHashMap());
+            }
         }
-
-        @Override
-        public void stop(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {}
-
     }
-
 }

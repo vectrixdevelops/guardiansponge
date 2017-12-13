@@ -32,7 +32,6 @@ import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import io.github.connorhartley.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
-import io.ichorpowered.guardian.internal.capture.PlayerLocationCapture;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import io.ichorpowered.guardian.sequence.SequenceReport;
 import org.spongepowered.api.data.key.Keys;

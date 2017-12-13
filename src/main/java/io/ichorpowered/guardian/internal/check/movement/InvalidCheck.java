@@ -25,7 +25,6 @@ package io.ichorpowered.guardian.internal.check.movement;
 
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
-import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
@@ -38,7 +37,6 @@ import io.github.connorhartley.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
-import io.ichorpowered.guardian.internal.capture.PlayerLocationCapture;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import io.ichorpowered.guardian.sequence.SequenceReport;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
