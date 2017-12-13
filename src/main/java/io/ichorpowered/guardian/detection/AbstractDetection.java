@@ -28,13 +28,12 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
 import com.ichorpowered.guardian.api.event.GuardianListener;
 import com.me4502.precogs.detection.DetectionType;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.detection.penalty.PenaltyReader;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension, GuardianListener {
 

@@ -17,7 +17,10 @@ import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.event.Event;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implements ActionBuilder<Event> {
 

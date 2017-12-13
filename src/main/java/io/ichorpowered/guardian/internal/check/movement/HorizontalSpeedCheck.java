@@ -36,15 +36,24 @@ import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
+import io.ichorpowered.guardian.internal.capture.PlayerEffectCapture;
+import io.ichorpowered.guardian.internal.capture.WorldMaterialCapture;
+import io.ichorpowered.guardian.sequence.GuardianSequence;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import io.ichorpowered.guardian.sequence.SequenceReport;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import io.ichorpowered.guardian.sequence.context.CommonContextKeys;
+import io.ichorpowered.guardian.util.MathUtil;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.world.Location;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 
 public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConfiguration> {
 
@@ -52,6 +61,7 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
     private final Detection<GuardianPlugin, DetectionConfiguration> detection;
 
     private double analysisTime = 40;
+    private double analysisIntercept = 9.84;
     private double minimumTickRange = 30;
     private double maximumTickRange = 60;
 
@@ -88,14 +98,15 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
     public SequenceBlueprint getSequence() {
         return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
 
-                .capture(new PlayerLocationCapture<>(this.detection.getOwner(), this.detection))
                 .capture(new PlayerControlCapture.Common<>(this.detection.getOwner(), this.detection))
+                .capture(new WorldMaterialCapture<>(this.detection.getOwner(), this.detection))
+                .capture(new PlayerEffectCapture<>(this.detection.getOwner(), this.detection))
 
                 // Trigger : Move Entity Event
 
                 .observe(MoveEntityEvent.class)
 
-                .schedule()
+                .observe(MoveEntityEvent.class)
                     .delay(Double.valueOf(this.analysisTime).intValue())
                     .expire(Double.valueOf(this.maximumTickRange).intValue())
 
@@ -120,14 +131,72 @@ public class HorizontalSpeedCheck implements Check<GuardianPlugin, DetectionConf
 
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
-                        return true;
+                        Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
+                        Optional<Double> effectSpeedAmplifier = captureContainer.get(PlayerEffectCapture.SPEED_AMPLIFIER);
+                        Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.SPEED_AMPLIFIER);
+                        Optional<Double> horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_OFFSET);
+                        Optional<Map> controlStateTicks = captureContainer.get(PlayerControlCapture.Common.CONTROL_STATE_TICKS);
+
+                        /*
+                         * Analysis
+                         */
+
+                        if (!initial.isPresent()
+                                || !effectSpeedAmplifier.isPresent()
+                                || !materialSpeedAmplifier.isPresent()
+                                || !horizontalOffset.isPresent()
+                                || !controlStateTicks.isPresent()) return false;
+
+                        long current = System.currentTimeMillis();
+
+                        // Finds the average between now and the last action.
+                        double averageClockRate = ((current - lastActionTime) / 1000) / 0.05;
+
+                        if (averageClockRate < this.minimumTickRange) {
+                            this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
+                            return false;
+                        } else if (averageClockRate > this.maximumTickRange) {
+                            return false;
+                        }
+
+                        if (player.get(Keys.VEHICLE).isPresent()) return false;
+
+                        double intercept = this.analysisIntercept + (effectSpeedAmplifier.orElse(0d) / this.analysisTime);
+
+                        // Finds the players displacement x and z in the world.
+                        double horizontalDisplacement = MathUtil.truncateDownTo(Math.abs((player.getLocation().getX() -
+                                initial.get().getX()) + (player.getLocation().getZ() - initial.get().getZ())), 4);
+
+                        // Finds the players maximum displacement for the context of their controls.
+                        double horizontalPlacement = MathUtil.truncateDownTo((((horizontalOffset.get() * materialSpeedAmplifier.get()) / 2)
+                                / averageClockRate) + intercept, 4);
+
+                        if (horizontalDisplacement <= 1 || horizontalPlacement <= 1) return false;
+
+                        if (horizontalDisplacement > horizontalPlacement) {
+                            // ------------------------- DEBUG -----------------------------
+                            System.out.println(player.getName() + " has been caught using horizontal speed hacks. (" +
+                                    (horizontalDisplacement - horizontalPlacement) + ")");
+                            // -------------------------------------------------------------
+
+                            SequenceReport report = new SequenceReport(true, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build());
+                            report.put("type", "Horizontal Speed");
+
+                            report.put("information", Collections.singletonList(
+                                    "Overshot maximum movement by " + (horizontalDisplacement - horizontalPlacement) + ".")
+                            );
+
+                            report.put("initial_location", initial);
+                            report.put("final_location", player.getLocation());
+                            report.put("severity", (horizontalDisplacement - horizontalPlacement) / horizontalDisplacement);
+
+                            summary.set(SequenceReport.class, report);
+
+                            return true;
+                        }
+
+                        return false;
                     }, ConditionType.NORMAL)
-
-                    // Report Collector Condition
-
-                    .condition(sequenceContext -> {
-                        return true;
-                    }, ConditionType.SUCCESS)
 
                 .build(SequenceContext.builder()
                         .owner(this.detection)

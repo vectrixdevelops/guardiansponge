@@ -32,10 +32,9 @@ import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.report.Report;
 import com.ichorpowered.guardian.api.report.Summary;
 
-import java.util.Iterator;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
 public class GuardianSummary<E, F extends DetectionConfiguration> implements Summary<E, F> {
 

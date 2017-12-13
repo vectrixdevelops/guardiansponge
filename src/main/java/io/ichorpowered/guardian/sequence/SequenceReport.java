@@ -3,11 +3,10 @@ package io.ichorpowered.guardian.sequence;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.report.Report;
 
-import java.util.HashMap;
-import java.util.Set;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Set;
 
 public class SequenceReport implements Report {
 

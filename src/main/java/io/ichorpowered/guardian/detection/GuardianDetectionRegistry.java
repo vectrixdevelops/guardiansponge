@@ -28,16 +28,15 @@ import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionRegistry;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public final class GuardianDetectionRegistry implements DetectionRegistry {
 
@@ -52,7 +51,7 @@ public final class GuardianDetectionRegistry implements DetectionRegistry {
     public <C> void put(@Nonnull C plugin, @Nonnull Class<? extends Detection> aClass, @Nonnull Detection detection) {
         if (this.detectionRegistry.containsKey(aClass)) {
             this.plugin.getLogger().warn(ConsoleUtil.builder()
-                    .fg(Ansi.Color.YELLOW,
+                    .add(Ansi.Color.YELLOW,
                             "Attempted to put a detection into the registry that already exists!")
                     .buildAndGet()
             );

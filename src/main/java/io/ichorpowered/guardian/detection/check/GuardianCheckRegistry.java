@@ -28,16 +28,15 @@ import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public final class GuardianCheckRegistry implements CheckRegistry {
 
@@ -52,8 +51,7 @@ public final class GuardianCheckRegistry implements CheckRegistry {
     public <C> void put(@Nonnull C pluginContainer, @Nonnull Class<? extends CheckBlueprint> key, @Nonnull CheckBlueprint check) {
         if (this.checkRegistry.containsKey(key)) {
             this.plugin.getLogger().warn(ConsoleUtil.builder()
-                    .fg(Ansi.Color.YELLOW,
-                            "Attempted to put a check into the registry that already exists!")
+                    .add(Ansi.Color.YELLOW, "Attempted to put a check into the registry that already exists!")
                     .buildAndGet()
             );
 

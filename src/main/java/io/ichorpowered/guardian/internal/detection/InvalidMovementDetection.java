@@ -28,20 +28,19 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
-import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.detection.AbstractDetection;
-import io.github.connorhartley.guardian.detection.GuardianDetectionPhase;
-import io.github.connorhartley.guardian.internal.check.movement.InvalidCheck;
-import io.github.connorhartley.guardian.internal.penalty.ResetPenalty;
-import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
+import io.ichorpowered.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.detection.AbstractDetection;
+import io.ichorpowered.guardian.detection.GuardianDetectionPhase;
+import io.ichorpowered.guardian.internal.check.movement.InvalidCheck;
+import io.ichorpowered.guardian.internal.penalty.ResetPenalty;
+import io.ichorpowered.guardian.phase.GuardianPhaseFilter;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 import tech.ferus.util.config.ConfigFile;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
-
-import javax.annotation.Nonnull;
 
 @Module(
         id = "invalidmovement",
@@ -59,7 +58,7 @@ public class InvalidMovementDetection extends AbstractDetection {
 
     @Inject
     public InvalidMovementDetection(@ModuleContainer PluginContainer moduleContainer) {
-        super((GuardianPlugin) moduleContainer.getInstance().get(), "invalidmovement", "Invalid Movement Detection");
+        super(GuardianPlugin.class.cast(moduleContainer.getInstance().get()), "invalidmovement", "Invalid Movement Detection");
     }
 
     @Override

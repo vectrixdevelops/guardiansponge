@@ -58,12 +58,7 @@ import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStartingServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppingEvent;
-import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -104,8 +99,7 @@ public class GuardianPlugin implements Guardian<Event> {
     private final PropertyInjector propertyInjector;
 
     /* Core Fields */
-    @Property
-    public Long coreTime;
+    @Property public Long coreTime;
     @Property public GuardianState state;
     @Property public SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
 
@@ -255,7 +249,7 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    public SequenceRegistry getSequenceRegistry() {
+    public final SequenceRegistry<Event> getSequenceRegistry() {
         return this.sequenceRegistry;
 }
 
@@ -265,8 +259,7 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public SequenceManager<Event> getSequenceManager() {
+    public final SequenceManager<Event> getSequenceManager() {
         return this.sequenceManager;
     }
 }

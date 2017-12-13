@@ -129,7 +129,10 @@ public class InternalPluginFacet implements Facet {
 
                         while (detectionManipulator.hasNext(PhaseTypes.CHECK)) {
                             Check<GuardianPlugin, DetectionConfiguration> check = detectionManipulator.next(PhaseTypes.CHECK);
-                            this.plugin.getSequenceRegistry().put(this, check.getClass(), check.getSequence());
+
+                            assert check != null;
+
+                            this.plugin.getSequenceRegistry().put(check.getSequence());
                         }
 
                         checks.addAndGet(detectionManipulator.size(PhaseTypes.CHECK));

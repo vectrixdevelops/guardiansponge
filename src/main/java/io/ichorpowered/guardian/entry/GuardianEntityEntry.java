@@ -27,12 +27,10 @@ import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import net.kyori.lunar.reflect.Reified;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
 

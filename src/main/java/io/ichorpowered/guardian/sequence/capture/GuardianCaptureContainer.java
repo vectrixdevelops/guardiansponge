@@ -27,15 +27,13 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import com.ichorpowered.guardian.api.util.Transform;
-import com.ichorpowered.guardian.api.util.key.NamedKey;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class GuardianCaptureContainer implements CaptureContainer {
 

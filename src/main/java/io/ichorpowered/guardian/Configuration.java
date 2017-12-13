@@ -29,11 +29,10 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import tech.ferus.util.config.ConfigFile;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 public class Configuration {
 

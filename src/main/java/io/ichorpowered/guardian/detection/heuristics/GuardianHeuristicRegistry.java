@@ -27,15 +27,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
 import com.ichorpowered.guardian.api.detection.heuristic.HeuristicRegistry;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.Set;
 
 public class GuardianHeuristicRegistry implements HeuristicRegistry {
 
@@ -50,8 +49,7 @@ public class GuardianHeuristicRegistry implements HeuristicRegistry {
     public <C> void put(@Nonnull C c, @Nonnull Class<? extends Heuristic> key, @Nonnull Heuristic heuristic) {
         if (this.heuristicRegistry.containsKey(key)) {
             this.plugin.getLogger().warn(ConsoleUtil.builder()
-                    .fg(Ansi.Color.YELLOW,
-                            "Attempted to put a heuristic into the registry that already exists!")
+                    .add(Ansi.Color.YELLOW, "Attempted to put a heuristic into the registry that already exists!")
                     .buildAndGet()
             );
 

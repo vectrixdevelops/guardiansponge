@@ -24,24 +24,18 @@
 package io.ichorpowered.guardian.internal.capture;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.key.NamedKey;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import io.ichorpowered.guardian.sequence.GuardianSequence;
 import io.ichorpowered.guardian.sequence.capture.AbstractCapture;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
-
-import java.util.*;
 
 import javax.annotation.Nonnull;
+import java.util.*;
 
 public class PlayerControlCapture {
 

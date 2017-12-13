@@ -87,6 +87,12 @@ public class GuardianCheckViewer implements PhaseViewer<Check> {
     }
 
     @Override
+    public void resetIndex() {
+        this.checkBlueprintIterator = this.plugin.getCheckRegistry().iterator();
+        this.phaseIndex = 0;
+    }
+
+    @Override
     public int size() {
         return this.plugin.getCheckRegistry().keySet().size();
     }

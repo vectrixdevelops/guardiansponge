@@ -27,8 +27,6 @@ import com.abilityapi.sequenceapi.Sequence;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.Action;
-import com.abilityapi.sequenceapi.action.type.observe.ObserverAction;
-import com.abilityapi.sequenceapi.action.type.schedule.ScheduleAction;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.entry.EntityEntry;
@@ -44,7 +42,6 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.world.Location;
 
 import java.util.List;
-import java.util.Map;
 
 public class GuardianSequence<E, F extends DetectionConfiguration> extends Sequence<Event> {
 
@@ -91,12 +88,12 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
     }
 
     @Override
-    public final boolean applySchedule(final SequenceContext sequenceContext) {
+    public final void applySchedule(final SequenceContext sequenceContext) {
         final EntityEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
         final Player player = entityEntry.getEntity(Player.class)
                 .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
 
-        if (player == null) return false;
+        if (player == null) return;
 
         final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
                 .custom(CommonContextKeys.LAST_ACTION_TIME, super.getLastActionTime())
@@ -108,7 +105,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
             this.captureRegistry.getContainer().putOnce(INITIAL_LOCATION, player.getLocation());
         }
 
-        return super.applySchedule(mergedContext);
+        super.applySchedule(mergedContext);
     }
 
     public Detection<E, F> getOwner() {

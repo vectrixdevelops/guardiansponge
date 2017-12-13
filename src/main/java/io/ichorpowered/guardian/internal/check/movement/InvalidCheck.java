@@ -25,18 +25,18 @@ package io.ichorpowered.guardian.internal.check.movement;
 
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
+import com.abilityapi.sequenceapi.action.condition.ConditionType;
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.check.Check;
 import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
 import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.api.report.Summary;
-import com.ichorpowered.guardian.api.sequence.SequenceBlueprint;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import io.github.connorhartley.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
 import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
+import io.ichorpowered.guardian.sequence.GuardianSequence;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import io.ichorpowered.guardian.sequence.SequenceReport;
 import io.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
@@ -45,13 +45,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
-
-import java.util.Collections;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 
 public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguration> {
 
@@ -95,7 +94,6 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
     public SequenceBlueprint getSequence() {
         return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
 
-                .capture(new PlayerLocationCapture<>(this.detection.getOwner(), this.detection))
                 .capture(new PlayerControlCapture.Invalid<>(this.detection.getOwner(), this.detection))
 
                 // Trigger : Move Entity Event
@@ -127,41 +125,48 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
 
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
-                        Integer locationTicks = captureContainer.get(PlayerLocationCapture.UPDATE);
-                        Location<World> present = captureContainer.get(PlayerLocationCapture.PRESET_LOCATION);
-                        Location<World> initial = captureContainer.get(PlayerLocationCapture.INITIAL_LOCATION);
-                        Set<String> controls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_MOVEMENT);
+                        Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
+                        Optional<Set> invalidControls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_MOVEMENT);
 
-                            /*
-                             * Analysis
-                             */
+                        /*
+                         * Analysis
+                         */
 
-                        if (initial == null || present == null || controls == null || locationTicks == null) return summary;
+                        if (!initial.isPresent() || !invalidControls.isPresent()) return false;
 
-                        if (locationTicks < this.minimumTickRange) {
+                        long current = System.currentTimeMillis();
+
+                        // Finds the average between now and the last action.
+                        double averageClockRate = ((current - lastActionTime) / 1000) / 0.05;
+
+                        if (averageClockRate < this.minimumTickRange) {
                             this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
-                            return summary;
-                        } else if (locationTicks > this.maximumTickRange) {
-                            return summary;
+                            return false;
+                        } else if (averageClockRate > this.maximumTickRange) {
+                            return false;
                         }
 
-                        if (controls.isEmpty()) return summary;
+                        if (invalidControls.get().isEmpty()) return false;
 
-                        SequenceReport report = new SequenceReport(true, Origin.source(event).owner(entityEntry).build());
+                        // ------------------------- DEBUG -----------------------------
+                        System.out.println(player.getName() + " has been caught using invalid movement hacks.");
+                        // -------------------------------------------------------------
+
+                        SequenceReport report = new SequenceReport(true, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build());
                         report.put("type", "Invalid Movement");
 
                         report.put("information", Collections.singletonList(
-                                "Received invalid controls of " + StringUtils.join(controls, ", ") + ".")
+                                "Received invalid controls of " + StringUtils.join((Set<String>) invalidControls.get(), ", ") + ".")
                         );
 
                         report.put("initial_location", initial);
-                        report.put("final_location", present);
+                        report.put("final_location", player.getLocation());
                         report.put("severity", 1d);
 
                         summary.set(SequenceReport.class, report);
 
-                        return summary;
-                    })
+                        return true;
+                    }, ConditionType.NORMAL)
 
                 .build(SequenceContext.builder()
                         .owner(this.detection)

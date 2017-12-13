@@ -31,10 +31,9 @@ import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import io.ichorpowered.guardian.GuardianPlugin;
 
+import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nonnull;
 
 public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
 
@@ -44,7 +43,7 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
 
     private Iterator<Heuristic> heuristicIterator;
     private Heuristic element;
-    private int phaseIndes = 0;
+    private int phaseIndex = 0;
 
     public GuardianHeuristicViewer(@Nonnull GuardianPlugin plugin) {
         this.plugin = plugin;
@@ -74,7 +73,7 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
             this.element = this.heuristicIterator.next();
         }
 
-        this.phaseIndes += 1;
+        this.phaseIndex += 1;
     }
 
     @Nonnull
@@ -85,7 +84,13 @@ public class GuardianHeuristicViewer implements PhaseViewer<Heuristic> {
 
     @Override
     public int index() {
-        return this.phaseIndes;
+        return this.phaseIndex;
+    }
+
+    @Override
+    public void resetIndex() {
+        this.heuristicIterator = this.plugin.getHeuristicRegistry().iterator();
+        this.phaseIndex = 0;
     }
 
     @Override

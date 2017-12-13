@@ -23,7 +23,6 @@
  */
 package io.ichorpowered.guardian.internal.penalty;
 
-import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.detection.penalty.PenaltyPredicate;
@@ -44,8 +43,8 @@ public class ResetPenalty implements Penalty {
     @Override
     public <E, F extends DetectionConfiguration> PenaltyPredicate<E, F> getPredicate() {
         return (entityEntry, detection, summary) -> {
-            if (!entityEntry.getEntity(TypeToken.of(Player.class)).isPresent()) return false;
-            Player player = entityEntry.getEntity(TypeToken.of(Player.class)).get();
+            if (!entityEntry.getEntity(Player.class).isPresent()) return false;
+            Player player = entityEntry.getEntity(Player.class).get();
 
             if (!player.hasPermission("") || summary.view(SequenceReport.class) == null ||
                 summary.view(SequenceReport.class).get("initial_location") == null) return false;

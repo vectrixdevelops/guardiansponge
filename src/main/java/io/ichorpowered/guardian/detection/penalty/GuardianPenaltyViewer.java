@@ -31,10 +31,9 @@ import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import io.ichorpowered.guardian.GuardianPlugin;
 
+import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nonnull;
 
 public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
 
@@ -86,6 +85,12 @@ public class GuardianPenaltyViewer implements PhaseViewer<Penalty> {
     @Override
     public int index() {
         return this.phaseIndex;
+    }
+
+    @Override
+    public void resetIndex() {
+        this.penaltyIterator = this.plugin.getPenaltyRegistry().iterator();
+        this.phaseIndex = 0;
     }
 
     @Override

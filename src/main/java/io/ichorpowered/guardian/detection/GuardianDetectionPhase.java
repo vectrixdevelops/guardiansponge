@@ -31,14 +31,13 @@ import com.ichorpowered.guardian.api.phase.PhaseFilter;
 import com.ichorpowered.guardian.api.phase.PhaseState;
 import com.ichorpowered.guardian.api.phase.PhaseViewer;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
-import io.github.connorhartley.guardian.GuardianPlugin;
-import io.github.connorhartley.guardian.phase.GuardianPhaseFilter;
+import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.event.phase.PhaseChangeEvent;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import io.ichorpowered.guardian.phase.GuardianPhaseFilter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GuardianDetectionPhase<E, F extends DetectionConfiguration> implements DetectionPhase<E, F> {
 

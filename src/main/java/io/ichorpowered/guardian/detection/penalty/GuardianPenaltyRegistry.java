@@ -27,15 +27,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
-import io.github.connorhartley.guardian.GuardianPlugin;
+import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.Set;
 
 public final class GuardianPenaltyRegistry implements PenaltyRegistry {
 
@@ -50,8 +49,7 @@ public final class GuardianPenaltyRegistry implements PenaltyRegistry {
     public <C> void put(@Nonnull C pluginContainer, @Nonnull Class<? extends Penalty> key, @Nonnull Penalty penalty) {
         if (this.penaltyRegistry.containsKey(key)) {
             this.plugin.getLogger().warn(ConsoleUtil.builder()
-                    .fg(Ansi.Color.YELLOW,
-                            "Attempted to put a penalty into the registry that already exists!")
+                    .add(Ansi.Color.YELLOW, "Attempted to put a penalty into the registry that already exists!")
                     .buildAndGet()
             );
 

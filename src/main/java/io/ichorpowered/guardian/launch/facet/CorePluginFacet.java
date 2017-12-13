@@ -23,6 +23,7 @@
  */
 package io.ichorpowered.guardian.launch.facet;
 
+import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.ichorpowered.guardian.api.GuardianState;
 import com.ichorpowered.guardian.api.SimpleGuardian;
 import com.ichorpowered.guardian.api.event.GuardianEvent;
@@ -49,7 +50,6 @@ import io.ichorpowered.guardian.launch.message.SimpleFacetMessage;
 import io.ichorpowered.guardian.phase.GuardianPhaseRegistry;
 import io.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import io.ichorpowered.guardian.sequence.GuardianSequenceManager;
-import io.ichorpowered.guardian.sequence.GuardianSequenceRegistry;
 import io.ichorpowered.guardian.util.ConsoleUtil;
 import io.ichorpowered.guardian.util.property.PropertyInjector;
 import net.kyori.event.ASMEventExecutorFactory;
@@ -58,6 +58,7 @@ import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.event.Event;
 
 public class CorePluginFacet implements Facet {
 
@@ -141,14 +142,15 @@ public class CorePluginFacet implements Facet {
 
         GuardianDetectionRegistry detectionRegistry = new GuardianDetectionRegistry(this.plugin);
         GuardianCheckRegistry checkRegistry = new GuardianCheckRegistry(this.plugin);
-        GuardianSequenceRegistry sequenceRegistry = new GuardianSequenceRegistry(this.plugin);
         GuardianHeuristicRegistry heuristicRegistry = new GuardianHeuristicRegistry(this.plugin);
         GuardianPenaltyRegistry penaltyRegistry = new GuardianPenaltyRegistry(this.plugin);
         GuardianPhaseRegistry phaseRegistry = new GuardianPhaseRegistry(this.plugin);
 
+        SequenceRegistry<Event> sequenceRegistry = new SequenceRegistry<>();
+
         this.logger.info(this.facetPrefix + "Initializing systems.");
 
-        GuardianSequenceManager sequenceManager = new GuardianSequenceManager(this.plugin, sequenceRegistry);
+        GuardianSequenceManager sequenceManager = new GuardianSequenceManager(sequenceRegistry);
         GuardianSequenceManager.SequenceTask sequenceTask = new GuardianSequenceManager.SequenceTask(this.plugin,
                 sequenceManager);
 

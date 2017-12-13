@@ -32,11 +32,10 @@ import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.util.ConsoleUtil;
 import org.fusesource.jansi.Ansi;
 
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 public class GuardianPhaseRegistry implements PhaseRegistry {
 
@@ -51,8 +50,7 @@ public class GuardianPhaseRegistry implements PhaseRegistry {
     public <C, T> void put(@Nonnull C pluginContainer, @Nonnull NamedTypeKey<T> key, @Nonnull PhaseViewer<T> phaseViewer) {
         if (this.phaseRegistry.containsKey(key)) {
             this.plugin.getLogger().warn(ConsoleUtil.builder()
-                    .fg(Ansi.Color.YELLOW,
-                            "Attempted to put a phase viewer into the registry that already exists!")
+                    .add(Ansi.Color.YELLOW, "Attempted to put a phase viewer into the registry that already exists!")
                     .buildAndGet()
             );
 

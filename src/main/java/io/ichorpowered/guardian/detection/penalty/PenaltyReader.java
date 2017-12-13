@@ -29,12 +29,11 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.util.Tuple;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
 
 public class PenaltyReader {
 

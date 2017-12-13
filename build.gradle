@@ -59,7 +59,7 @@ dependencies {
 }
 
 blossom {
-    def location = 'src/main/java/io/github/connorhartley/guardian/PluginInfo.java'
+    def location = 'src/main/java/io/ichorpowered/guardian/PluginInfo.java'
 
     replaceToken '@id@', project.pluginId, location
     replaceToken '@name@', project.pluginName, location

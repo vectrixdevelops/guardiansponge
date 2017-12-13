@@ -25,11 +25,10 @@ package io.ichorpowered.guardian.phase;
 
 import com.ichorpowered.guardian.api.phase.PhaseFilter;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 public class GuardianPhaseFilter implements PhaseFilter {
 

@@ -31,12 +31,11 @@ import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureRegistry;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class GuardianCaptureRegistry implements CaptureRegistry {
 
