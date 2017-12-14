@@ -4,10 +4,10 @@
 <p align="center">An Extensible AntiCheat Plugin For Sponge.</p>
 
 <p align="center">
-  <a href="https://travis-ci.org/ichorpowered/guardian"><img alt="Build Status" src="https://travis-ci.org/ichorpowered/guardian.svg?branch=master"></a>
+  <a href="https://travis-ci.org/ichorpowered/guardian"><img alt="Build Status" src="https://travis-ci.org/ichorpowered/guardian.svg?branch=bleeding"></a>
   <a href="https://github.com/SpongePowered/SpongeAPI"><img alt="Sponge Version" src="https://img.shields.io/badge/sponge--api-7.0.0-red.svg"></a>
-  <a href="https://ore.spongepowered.org/me4502/Precogs"><img alt="Precogs Version" src="https://img.shields.io/badge/precogs-1.1-blue.svg"></a>
-  <a href="https://discord.gg/pvSFtMm"><img alt="Join Discord" src="https://img.shields.io/badge/Join-Discord-blue.svg?style=flat-square"></a>
+  <a href="https://ore.spongepowered.org/me4502/Precogs"><img alt="Precogs Version" src="https://img.shields.io/badge/precogs-1.2-red.svg"></a>
+  <a href="https://discord.gg/pvSFtMm"><img alt="Join Discord" src="https://img.shields.io/badge/Join-Discord-blue.svg?style=flat-round"></a>
 </p>
 
 Guardian is an extensible AntiCheat for Sponge that gives you the flexibility to customize the checks to fit your servers needs.
@@ -21,33 +21,32 @@ The plugin is a work in progress and there are plans for more detections to be a
 
 ###### Movement:
 
-- [x] Horizontal Speed (Speed)
-- [x] Vertical Speed (Speed)
-- [x] Flight (Flight, Speed)
-- [x] JetPack (Flight, Speed) [Lacks specific]
-- [x] Jesus (Speed)
-- [x] Blink (Speed) [Lacks specific]
-- [x] Spider / WallClimb (Flight, Speed) [Lacks specific]
-- [x] Timer (Speed) [Lacks specific]
-- [x] Sneak (InvalidMovement, Speed)
-- [ ] FastLadder
+- [x] Horizontal Speed   (Movement Speed)
+- [x] Vertical Speed     (Movement Speed)
+- [ ] Flight             (Flight, Movement Speed)
+- [ ] JetPack            (Flight)
+- [ ] Jesus              (Speed)
+- [x] Blink              (Speed)
+- [ ] Spider / WallClimb (Flight, Movement Speed)
+- [x] Timer              (Speed)
+- [x] Sneak              (Invalid Movement, Movement Speed)
+- [x] FastLadder         (Movement Speed)
 - [ ] Phase/NoClip
 - [ ] MiniJump
-- [ ] Glide
-- [ ] SelfDamage
+- [x] Glide              (Movement Speed)
 - [ ] HighJump / LongJump
 
 And more coming soon.
 
 ##### Built-In Punishments:
 
-- [x] Warning
-- [x] Location Reset
-- [x] Staff Report
-- [x] Kick
+- [ ] Warning
+- [ ] Location Reset
+- [ ] Staff Report
+- [ ] Kick
 - [ ] Ban
 - [ ] Temporary Ban
-- [x] Custom
+- [ ] Custom
 
 Guardian has an optional mixin mod called [ElderGuardian](https://github.com/ichorpowered/elderguardian) that allows Guardian to access things beyond the Sponge API.
 It is recommended that you use it with Guardian to improve accuracy. Some detections may also require it to work.
@@ -86,7 +85,6 @@ Ensure that the SpongeAPI version is the same for the one you are using on your 
  - [ModularFramework](https://github.com/me4502/ModularFramework) providing a modular class loading system.
  - [Precogs](https://github.com/me4502/Precogs) providing a service for plugins to integrate with the AntiCheat. 
 
- - Thanks to [AbilityAPI](https://github.com/AbilityAPI/abilityapi) for inspiring the sequence system.
- - Thanks to [CraftBook](https://github.com/sk89q/CraftBook) for inspiring the configuration system.
+ - Thanks to [SequenceAPI](https://github.com/AbilityAPI/SequenceAPI) for providing the sequence system that powers all of the checks.
 
 
