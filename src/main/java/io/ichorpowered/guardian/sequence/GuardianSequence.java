@@ -55,7 +55,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
                             final SequenceBlueprint<Event> sequenceBlueprint,
                             final GuardianCaptureRegistry captureRegistry,
                             final List<Action> actions) {
-        super(sequenceContext, sequenceBlueprint, actions);
+        super(actions, sequenceContext, sequenceBlueprint, Sequence.getComparatorAssignable());
 
         this.captureRegistry = captureRegistry;
         this.captureRegistry.getContainer().merge(GuardianCaptureContainer.create());
