@@ -28,6 +28,8 @@ import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
+import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
+import com.ichorpowered.guardian.api.detection.penalty.Penalty;
 import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
 import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import io.ichorpowered.guardian.GuardianPlugin;
@@ -51,7 +53,7 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
         boolean result = super._invokeObserver(event, sequence, sequenceContext);
 
         if (sequence.getState().equals(Sequence.State.FINISHED)) {
-            this.transitionPhase((GuardianSequence) sequence);
+            this.transitionPhase(sequenceContext.get(CommonContextKeys.ENTITY_ENTRY), (GuardianSequence) sequence);
         }
 
         return result;
@@ -63,7 +65,7 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
         boolean result = super._invokeScheduler(sequence, sequenceContext);
 
         if (sequence.getState().equals(Sequence.State.FINISHED)) {
-            this.transitionPhase((GuardianSequence) sequence);
+            this.transitionPhase(sequenceContext.get(CommonContextKeys.ENTITY_ENTRY), (GuardianSequence) sequence);
         }
 
         return result;
@@ -77,15 +79,17 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
      * @param sequence the sequence
      */
     @Deprecated
-    private void transitionPhase(final GuardianSequence sequence) {
+    private void transitionPhase(final GuardianEntityEntry<Player> entityEntry, final GuardianSequence sequence) {
         DetectionPhase<?, ?> detectionPhase = sequence.getOwner().getPhaseManipulator();
 
         while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
-            detectionPhase.next(PhaseTypes.HEURISTIC);
+            Heuristic heuristic = detectionPhase.next(PhaseTypes.HEURISTIC);
+            heuristic.getSupplier().apply(entityEntry, sequence.getOwner(), sequence.getSummary());
         }
 
         while (detectionPhase.hasNext(PhaseTypes.PENALTY)) {
-            detectionPhase.next(PhaseTypes.PENALTY);
+            Penalty penalty = detectionPhase.next(PhaseTypes.PENALTY);
+            penalty.getPredicate().test(entityEntry, sequence.getOwner(), sequence.getSummary());
         }
     }
 

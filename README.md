@@ -21,15 +21,16 @@ The plugin is a work in progress and there are plans for more detections to be a
 
 ###### Movement:
 
-- [x] Horizontal Speed   (Movement Speed)
-- [x] Vertical Speed     (Movement Speed)
+- [x] HorizontalSpeed    (Movement Speed)
+- [x] VerticalSpeed      (Movement Speed)
 - [ ] Flight             (Flight, Movement Speed)
 - [ ] JetPack            (Flight)
-- [ ] Jesus              (Speed)
-- [x] Blink              (Speed)
+- [ ] Jesus              (Jesus, Movement Speed)
+- [x] Blink              (Movement Speed)
 - [ ] Spider / WallClimb (Flight, Movement Speed)
-- [x] Timer              (Speed)
-- [x] Sneak              (Invalid Movement, Movement Speed)
+- [x] Timer              (Movement Speed)
+- [x] AutoSneak          (Invalid Movement, Movement Speed)
+- [x] AutoSprint         (Invalid Movement, Movement Speed)
 - [x] FastLadder         (Movement Speed)
 - [ ] Phase/NoClip
 - [ ] MiniJump

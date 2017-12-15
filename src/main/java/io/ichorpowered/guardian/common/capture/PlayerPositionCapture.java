@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.ichorpowered.guardian.internal.capture;
+package io.ichorpowered.guardian.common.capture;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.ichorpowered.guardian.api.detection.Detection;

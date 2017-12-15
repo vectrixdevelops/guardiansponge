@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.ichorpowered.guardian.internal.detection;
+package io.ichorpowered.guardian.common.detection;
 
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
@@ -31,9 +31,9 @@ import com.me4502.modularframework.module.guice.ModuleContainer;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.detection.AbstractDetection;
 import io.ichorpowered.guardian.detection.GuardianDetectionPhase;
-import io.ichorpowered.guardian.internal.check.movement.HorizontalSpeedCheck;
-import io.ichorpowered.guardian.internal.check.movement.VerticalSpeedCheck;
-import io.ichorpowered.guardian.internal.penalty.ResetPenalty;
+import io.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
+import io.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
+import io.ichorpowered.guardian.common.penalty.ResetPenalty;
 import io.ichorpowered.guardian.phase.GuardianPhaseFilter;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -46,7 +46,7 @@ import java.nio.file.Path;
 @Module(id = "movementspeed",
         name = "Movement Speed Detection",
         authors = { "Connor Hartley (vectrix)" },
-        version = "0.1.0",
+        version = "0.2.0",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )

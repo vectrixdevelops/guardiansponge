@@ -22,7 +22,7 @@ plugins {
 defaultTasks 'licenseFormat', 'build'
 
 group = pluginGroup
-version = "${spongeVersion}-${pluginVersion}-${pluginPatch}"
+version = "${spongeVersion}-${pluginVersion}"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.ichorpowered.guardian.internal.check.movement;
+package io.ichorpowered.guardian.common.check.movement;
 
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
@@ -35,9 +35,9 @@ import com.ichorpowered.guardian.api.report.Summary;
 import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import io.ichorpowered.guardian.GuardianPlugin;
 import io.ichorpowered.guardian.entry.GuardianEntityEntry;
-import io.ichorpowered.guardian.internal.capture.PlayerControlCapture;
-import io.ichorpowered.guardian.internal.capture.PlayerEffectCapture;
-import io.ichorpowered.guardian.internal.capture.WorldMaterialCapture;
+import io.ichorpowered.guardian.common.capture.PlayerControlCapture;
+import io.ichorpowered.guardian.common.capture.PlayerEffectCapture;
+import io.ichorpowered.guardian.common.capture.WorldMaterialCapture;
 import io.ichorpowered.guardian.sequence.GuardianSequence;
 import io.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import io.ichorpowered.guardian.sequence.SequenceReport;

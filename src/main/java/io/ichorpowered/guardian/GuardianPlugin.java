@@ -138,7 +138,7 @@ public class GuardianPlugin implements Guardian<Event> {
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
         this.facetBootstrap.addComponent("core", new CorePluginFacet(this.logger, this));
-        this.facetBootstrap.addComponent("internal", new InternalPluginFacet(this.logger, this));
+        this.facetBootstrap.addComponent("common", new InternalPluginFacet(this.logger, this));
         this.facetBootstrap.addComponent("game", new GamePluginFacet(this.logger, this));
 
         this.facetBootstrap.send(FacetBootstrap.FacetRequest.STARTUP,
@@ -150,7 +150,7 @@ public class GuardianPlugin implements Guardian<Event> {
     public void onGameStartingServer(GameStartingServerEvent event) {
         this.facetBootstrap.send(FacetBootstrap.FacetRequest.STARTUP,
                 new SimpleFacetMessage(System.currentTimeMillis(), "Server Starting", this),
-                "internal");
+                "common");
     }
 
     @Listener
@@ -170,7 +170,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
         this.facetBootstrap.send(FacetBootstrap.FacetRequest.RESTART,
                 new SimpleFacetMessage(System.currentTimeMillis(), "Game Reload", this),
-                "internal");
+                "common");
     }
 
     // PLUGIN SHUTDOWN
@@ -186,7 +186,7 @@ public class GuardianPlugin implements Guardian<Event> {
     public void onGameStoppedServer(GameStoppedServerEvent event) {
         this.facetBootstrap.send(FacetBootstrap.FacetRequest.SHUTDOWN,
                 new SimpleFacetMessage(System.currentTimeMillis(), "Server Stopped", this),
-                "internal");
+                "common");
     }
 
     @Listener

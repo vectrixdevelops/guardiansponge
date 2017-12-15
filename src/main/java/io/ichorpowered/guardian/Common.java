@@ -28,10 +28,10 @@ import com.me4502.modularframework.ModuleController;
 import io.ichorpowered.guardian.detection.check.GuardianCheckViewer;
 import io.ichorpowered.guardian.detection.heuristics.GuardianHeuristicViewer;
 import io.ichorpowered.guardian.detection.penalty.GuardianPenaltyViewer;
-import io.ichorpowered.guardian.internal.check.movement.HorizontalSpeedCheck;
-import io.ichorpowered.guardian.internal.check.movement.InvalidCheck;
-import io.ichorpowered.guardian.internal.check.movement.VerticalSpeedCheck;
-import io.ichorpowered.guardian.internal.penalty.ResetPenalty;
+import io.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
+import io.ichorpowered.guardian.common.check.movement.InvalidCheck;
+import io.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
+import io.ichorpowered.guardian.common.penalty.ResetPenalty;
 
 import javax.annotation.Nonnull;
 
@@ -46,8 +46,8 @@ public final class Common {
     }
 
     public void loadModules(ModuleController<GuardianPlugin> moduleController) {
-        moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.InvalidMovementDetection");
-        moduleController.registerModule("io.github.connorhartley.guardian.internal.detection.MovementSpeedDetection");
+        moduleController.registerModule("io.github.connorhartley.guardian.common.detection.InvalidMovementDetection");
+        moduleController.registerModule("io.github.connorhartley.guardian.common.detection.MovementSpeedDetection");
     }
 
     public void loadChecks() {
