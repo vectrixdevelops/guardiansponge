@@ -29,6 +29,7 @@ import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
 import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
+import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
 import com.ichorpowered.guardian.common.penalty.ResetPenalty;
 import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.detection.GuardianDetectionPhase;
@@ -73,6 +74,7 @@ public class MovementSpeedDetection extends AbstractDetection {
 
                 // Penalty
                 .include(ResetPenalty.class)
+                .include(NotificationPenalty.class)
         );
     }
 

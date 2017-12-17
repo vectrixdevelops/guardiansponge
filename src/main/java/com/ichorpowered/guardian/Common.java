@@ -27,6 +27,7 @@ import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
 import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
 import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
 import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
+import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
 import com.ichorpowered.guardian.common.penalty.ResetPenalty;
 import com.ichorpowered.guardian.detection.check.GuardianCheckViewer;
 import com.ichorpowered.guardian.detection.heuristics.GuardianHeuristicViewer;
@@ -66,6 +67,7 @@ public final class Common {
         if (this.plugin.getPenaltyRegistry() == null) return;
 
         this.plugin.getPenaltyRegistry().put(this.plugin, ResetPenalty.class, new ResetPenalty());
+        this.plugin.getPenaltyRegistry().put(this.plugin, NotificationPenalty.class, new NotificationPenalty());
     }
 
     public void loadPhases() {
