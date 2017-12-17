@@ -68,7 +68,7 @@ public class PlayerControlCapture {
                         cap.addAll(Arrays.asList("sneaking", "sprinting"));
                     }
                 }
-            } else if (player.get(Keys.IS_SLEEPING).isPresent() || player.get(Keys.IS_SLEEPING).get() ||
+            } else if (player.get(Keys.IS_SLEEPING).isPresent() && player.get(Keys.IS_SLEEPING).get() ||
                     player.get(Keys.VEHICLE).isPresent()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
                     if (!cap.contains("sitting") || !cap.contains("sprinting")) {
