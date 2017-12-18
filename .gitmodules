@@ -1,0 +1,3 @@
+[submodule "guardianapi"]
+	path = guardianapi
+	url = https://github.com/ichorpowered/guardianapi

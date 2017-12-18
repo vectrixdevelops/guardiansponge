@@ -1,0 +1,129 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'net.sf.proguard:proguard-gradle:5.3.3'
+    }
+}
+
+apply plugin: 'org.spongepowered.plugin'
+
+sponge.plugin.id = 'guardian'
+
+license {
+    header = file('LICENSE.txt')
+    include '**/*.java'
+
+    ignoreFailures = false
+    strictCheck = true
+
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+blossom {
+    def location = 'src/main/java/com/ichorpowered/guardian/PluginInfo.java'
+
+    replaceToken '@id@', project.pluginId, location
+    replaceToken '@name@', project.pluginName, location
+    replaceToken '@version@', version, location
+    replaceToken '@description@', project.pluginDescription, location
+    replaceToken '@databaseversion@', project.databaseVersion, location
+    replaceToken '@elderversion@', project.elderVersion, location
+    replaceToken '@precogsversion@', project.precogsVersion, location
+}
+
+signing {
+    required false
+    sign configurations.archives
+}
+
+shadowJar {
+    classifier = 'dev'
+
+    dependencies {
+        include(dependency('org.apache.commons:commons-math3'))
+        include(dependency('com.ichorpowered.guardian.api:guardianapi'))
+        include(dependency('com.github.AbilityAPI:SequenceAPI'))
+
+        // Relocate Module Subsystem Framework
+        relocate ('com.me4502.modularframework', 'com.ichorpowered.guardian.relocate.modularframework') {
+            include(dependency('com.github.me4502:ModularFramework'))
+            exclude 'com.me4502.modularframework.ModularFramework'
+        }
+
+        relocate ('com.mchange', 'com.ichorpowered.guardian.relocate.mchange') {
+            include(dependency('com.mchange:c3p0'))
+            include(dependency('com.mchange:mchange-commons-java'))
+        }
+
+        relocate ('tech.ferus.util.sql', 'com.ichorpowered.guardian.relocate.basicsql') {
+            include(dependency('tech.ferus.util:basicsql-h2'))
+            include(dependency('tech.ferus.util:basicsql-mysql'))
+        }
+
+        relocate ('tech.ferus.util.config', 'com.ichorpowered.guardian.relocate.config') {
+            include(dependency('tech.ferus:ConfigKeys'))
+        }
+
+        relocate ('org.bstats', 'com.ichorpowered.guardian.relocate.metrics') {
+            include(dependency('org.bstats:bstats-sponge-lite'))
+        }
+
+        relocate ('net.kyori', 'com.ichorpowered.guardian.relocate.events') {
+            include(dependency('net.kyori:event'))
+            include(dependency('net.kyori:lunar'))
+        }
+
+        relocate ('org.fusesource.jansi', 'com.ichorpowered.guardian.relocate.jansi') {
+            include(dependency('org.fusesource.jansi:jansi'))
+        }
+    }
+    exclude 'GradleStart**'
+    exclude '.cache'
+    exclude 'LICENSE.txt'
+    exclude 'com/me4502/modularframework/ModularFramework.class'
+}
+
+class ProGuardTask extends proguard.gradle.ProGuardTask {
+    def keepclass(String className) {
+        keep "class ${className},${className}\$* { *; }"
+    }
+}
+
+task minifyShadedJar(type: ProGuardTask, group: 'Build', description: 'Minifies the shaded JAR.') {
+    def shadedFile = shadowJar.archivePath
+    def minifiedFile = file(shadedFile.path.replaceFirst('-dev', ''))
+
+    injars shadedFile
+    outjars minifiedFile
+
+    libraryjars files(configurations.runtime.collect())
+    libraryjars file("${System.getProperty('java.home')}/lib/rt.jar")
+
+    dontoptimize
+    dontobfuscate
+    dontwarn
+
+    keepattributes 'Signature, InnerClasses, Annotation'
+    keep "class !com.ichorpowered.guardian.relocate.**,com.ichorpowered.** { *; }"
+}
+
+artifacts {
+    tasks.minifyShadedJar.outJarFiles.each {
+        archives it
+    }
+
+    archives shadowJar
+}
+
+model {
+    tasks.signArchives {
+        dependsOn tasks.minifyShadedJar
+    }
+}

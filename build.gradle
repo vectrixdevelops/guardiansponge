@@ -1,9 +1,11 @@
 buildscript {
     repositories {
-        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
-        classpath 'net.sf.proguard:proguard-gradle:5.3.3'
+        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
     }
 }
 
@@ -13,40 +15,34 @@ plugins {
     id 'idea'
     id 'eclipse'
     id 'signing'
-    id 'com.github.hierynomus.license' version '0.14.0'
     id 'ninja.miserable.blossom' version '1.0.1'
     id 'com.github.johnrengelman.shadow' version '2.0.0'
     id 'org.spongepowered.plugin' version '0.8.1'
 }
 
+apply from: project("$gradle.guardianApiName").file("gradle/versions.gradle")
+apply from: project.file("gradle/versions.gradle")
+
 defaultTasks 'licenseFormat', 'build'
 
-group = pluginGroup
-version = "${spongeVersion}-${pluginVersion}"
+group = "com.ichorpowered"
+version = "${spongeApiVersion}-${pluginVersion}"
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-sponge.plugin.id = pluginId
+apply from: project("$gradle.guardianApiName").file("gradle/shared.gradle")
 
 repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
     maven { url 'https://repo.bstats.org/content/groups/public/' }
-    maven { url 'https://oss.sonatype.org/content/groups/public/' }
     maven { url 'http://repo.drnaylor.co.uk/artifactory/list/minecraft/' }
     maven { url 'http://repo.foxdenstudio.net/repository/maven-vectrix/' }
 }
 
 dependencies {
-    compileOnly 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+    compile project("$gradle.guardianApiName")
 
-    compile 'com.ichorpowered.guardian.api:guardianapi:2.0.0-SNAPSHOT'
+    compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}-SNAPSHOT"
 
     compileOnly 'com.github.me4502:Precogs:04c53049ea'
     compileOnly 'com.github.ichorpowered:elderguardian:-SNAPSHOT'
-
-    // Shaded Dependencies
 
     compile 'org.apache.commons:commons-math3:3.6.1'
     compile 'com.github.me4502:ModularFramework:35dc605747'
@@ -57,147 +53,9 @@ dependencies {
     compile 'tech.ferus.util:basicsql-mysql:2.0.1'
 }
 
-blossom {
-    def location = 'src/main/java/com/ichorpowered/guardian/PluginInfo.java'
-
-    replaceToken '@id@', project.pluginId, location
-    replaceToken '@name@', project.pluginName, location
-    replaceToken '@version@', version, location
-    replaceToken '@description@', project.pluginDescription, location
-    replaceToken '@databaseversion@', project.databaseVersion, location
-    replaceToken '@elderversion@', project.elderVersion, location
-    replaceToken '@precogsversion@', project.precogsVersion, location
-}
-
-if (JavaVersion.current().isJava8Compatible()) {
-    tasks.withType(Javadoc) {
-        options.addStringOption('Xdoclint:none', '-quiet')
-    }
-}
-
-signing {
-    required false
-    sign configurations.archives
-}
-
-license {
-    header = file('LICENSE.txt')
-    include '**/*.java'
-
-    ignoreFailures = false
-    strictCheck = true
-
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-    }
-}
-
-task sourceJar(type: Jar) {
-    classifier = 'source'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-jar {
-    classifier = 'dev'
-}
-
-shadowJar {
-    classifier = 'unminified'
-
-    dependencies {
-        include(dependency('org.apache.commons:commons-math3'))
-        include(dependency('com.ichorpowered.guardian.api:guardianapi'))
-        include(dependency('com.github.AbilityAPI:SequenceAPI'))
-
-        // Relocate Module Subsystem Framework
-        relocate ('com.me4502.modularframework', 'com.ichorpowered.guardian.relocate.modularframework') {
-            include(dependency('com.github.me4502:ModularFramework'))
-            exclude 'com.me4502.modularframework.ModularFramework'
-        }
-
-        relocate ('com.mchange', 'com.ichorpowered.guardian.relocate.mchange') {
-            include(dependency('com.mchange:c3p0'))
-            include(dependency('com.mchange:mchange-commons-java'))
-        }
-
-        relocate ('tech.ferus.util.sql', 'com.ichorpowered.guardian.relocate.basicsql') {
-            include(dependency('tech.ferus.util:basicsql-h2'))
-            include(dependency('tech.ferus.util:basicsql-mysql'))
-        }
-
-        relocate ('tech.ferus.util.config', 'com.ichorpowered.guardian.relocate.config') {
-            include(dependency('tech.ferus:ConfigKeys'))
-        }
-
-        relocate ('org.bstats', 'com.ichorpowered.guardian.relocate.metrics') {
-            include(dependency('org.bstats:bstats-sponge-lite'))
-        }
-
-        relocate ('net.kyori', 'com.ichorpowered.guardian.relocate.events') {
-            include(dependency('net.kyori:event'))
-            include(dependency('net.kyori:lunar'))
-        }
-
-        relocate ('org.fusesource.jansi', 'com.ichorpowered.guardian.relocate.jansi') {
-            include(dependency('org.fusesource.jansi:jansi'))
-        }
-    }
-    exclude 'GradleStart**'
-    exclude '.cache'
-    exclude 'LICENSE.txt'
-    exclude 'com/me4502/modularframework/ModularFramework.class'
-}
-
-task minifyShadedJar(type: ProGuardTask, group: 'Build', description: 'Minifies the shaded JAR.') {
-    def shadedFile = shadowJar.archivePath
-    def minifiedFile = file(shadedFile.path.replaceFirst('-unminified', ''))
-
-    injars shadedFile
-    outjars minifiedFile
-
-    libraryjars files(configurations.runtime.collect())
-    libraryjars file("${System.getProperty('java.home')}/lib/rt.jar")
-
-    dontoptimize
-    dontobfuscate
-    dontwarn
-
-    keepattributes 'Signature, InnerClasses, Annotation'
-    keep "class !com.ichorpowered.guardian.relocate.**,com.ichorpowered.** { *; }"
-}
-
-artifacts {
-    tasks.minifyShadedJar.outJarFiles.each {
-        archives it
-    }
-
-    archives shadowJar
-    archives sourceJar
-    archives javadocJar
-    archives jar
-}
-
-model {
-    tasks.signArchives {
-        dependsOn tasks.minifyShadedJar
-    }
-}
-
-class ProGuardTask extends proguard.gradle.ProGuardTask {
-    def keepclass(String className) {
-        keep "class ${className},${className}\$* { *; }"
-    }
-}
+apply from: project.file("gradle/implementation.gradle")
 
 tasks.minifyShadedJar.dependsOn(shadowJar)
 
 build.dependsOn(shadowJar)
-build.dependsOn(sourceJar)
-build.dependsOn(javadocJar)
-build.dependsOn(jar)
 build.dependsOn(minifyShadedJar)
