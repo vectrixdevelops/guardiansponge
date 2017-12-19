@@ -27,7 +27,6 @@ import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
 import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.ichorpowered.guardian.detection.AbstractDetection;
-import com.ichorpowered.guardian.detection.GuardianDetectionPhase;
 import com.me4502.modularframework.module.Module;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import tech.ferus.util.config.ConfigFile;

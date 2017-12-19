@@ -24,22 +24,15 @@
 package com.ichorpowered.guardian.detection;
 
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.module.ModuleExtension;
-import com.ichorpowered.guardian.api.event.GuardianListener;
-import com.ichorpowered.guardian.detection.penalty.PenaltyReader;
+import com.ichorpowered.guardianapi.detection.DetectionModule;
+import com.ichorpowered.guardianapi.event.GuardianListener;
 import com.me4502.precogs.detection.DetectionType;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 
-public abstract class AbstractDetection extends DetectionType implements Detection<GuardianPlugin, DetectionConfiguration>, ModuleExtension, GuardianListener {
+public abstract class AbstractDetection extends DetectionType implements DetectionModule, GuardianListener {
 
     private final GuardianPlugin plugin;
-    private final List<PenaltyReader.Action> actions = new ArrayList<>();
-    private final List<PenaltyReader.ActionLevel> actionLevels = new ArrayList<>();
 
     public AbstractDetection(@Nonnull GuardianPlugin plugin, @Nonnull String id,
                              @Nonnull String name) {
@@ -47,20 +40,9 @@ public abstract class AbstractDetection extends DetectionType implements Detecti
         this.plugin = plugin;
     }
 
-    @Nonnull
     @Override
-    public GuardianPlugin getOwner() {
+    public Object getPlugin() {
         return this.plugin;
-    }
-
-    @Nonnull
-    public List<PenaltyReader.Action> getActions() {
-        return this.actions;
-    }
-
-    @Nonnull
-    public List<PenaltyReader.ActionLevel> getActionLevels() {
-        return this.actionLevels;
     }
 
 }

@@ -28,12 +28,7 @@ import com.ichorpowered.guardian.Common;
 import com.ichorpowered.guardian.Configuration;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.PluginInfo;
-import com.ichorpowered.guardian.api.GuardianState;
-import com.ichorpowered.guardian.api.SimpleGuardian;
-import com.ichorpowered.guardian.api.event.GuardianEvent;
-import com.ichorpowered.guardian.api.event.GuardianListener;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.detection.GuardianDetectionRegistry;
+import com.ichorpowered.guardian.detection.GuardianDetectionManager;
 import com.ichorpowered.guardian.detection.check.GuardianCheckRegistry;
 import com.ichorpowered.guardian.detection.heuristics.GuardianHeuristicRegistry;
 import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyRegistry;
@@ -50,6 +45,11 @@ import com.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import com.ichorpowered.guardian.sequence.GuardianSequenceManager;
 import com.ichorpowered.guardian.util.ConsoleUtil;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
+import com.ichorpowered.guardianapi.GuardianState;
+import com.ichorpowered.guardianapi.SimpleGuardian;
+import com.ichorpowered.guardianapi.event.GuardianEvent;
+import com.ichorpowered.guardianapi.event.GuardianListener;
+import com.ichorpowered.guardianapi.event.origin.Origin;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
 import net.kyori.event.ASMEventExecutorFactory;
@@ -140,7 +140,7 @@ public class CorePluginFacet implements Facet {
 
         this.logger.info(this.facetPrefix + "Initializing registries.");
 
-        GuardianDetectionRegistry detectionRegistry = new GuardianDetectionRegistry(this.plugin);
+        GuardianDetectionManager detectionRegistry = new GuardianDetectionManager(this.plugin);
         GuardianCheckRegistry checkRegistry = new GuardianCheckRegistry(this.plugin);
         GuardianHeuristicRegistry heuristicRegistry = new GuardianHeuristicRegistry(this.plugin);
         GuardianPenaltyRegistry penaltyRegistry = new GuardianPenaltyRegistry(this.plugin);

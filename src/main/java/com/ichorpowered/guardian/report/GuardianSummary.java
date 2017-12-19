@@ -25,28 +25,28 @@ package com.ichorpowered.guardian.report;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.entry.EntityEntry;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.report.Report;
-import com.ichorpowered.guardian.api.report.Summary;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.report.Report;
+import com.ichorpowered.guardianapi.detection.report.Summary;
+import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
+import com.ichorpowered.guardianapi.event.origin.Origin;
+
+import java.util.Iterator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Iterator;
 
-public class GuardianSummary<E, F extends DetectionConfiguration> implements Summary<E, F> {
+public class GuardianSummary implements Summary {
 
-    private final E owner;
-    private final EntityEntry entry;
-    private final Detection<E, F> detection;
+    private final Object plugin;
+    private final PlayerEntry entry;
+    private final Detection detection;
     private final BiMap<Class<?>, Report> reportRegistry = HashBiMap.create();
     private final Origin origin;
 
-    public GuardianSummary(@Nonnull E owner, @Nonnull Detection<E, F> detection,
-                           @Nonnull EntityEntry entry, @Nonnull Origin origin) {
-        this.owner = owner;
+    public GuardianSummary(@Nonnull Object plugin, @Nonnull Detection detection,
+                           @Nonnull PlayerEntry entry, @Nonnull Origin origin) {
+        this.plugin = plugin;
         this.entry = entry;
         this.detection = detection;
         this.origin = origin;
@@ -54,19 +54,19 @@ public class GuardianSummary<E, F extends DetectionConfiguration> implements Sum
 
     @Nonnull
     @Override
-    public E getOwner() {
-        return this.owner;
+    public Object getPlugin() {
+        return this.plugin;
     }
 
     @Nonnull
     @Override
-    public EntityEntry getEntityEntry() {
+    public PlayerEntry getPlayerEntry() {
         return this.entry;
     }
 
     @Nonnull
     @Override
-    public Detection<E, F> getDetection() {
+    public Detection getDetection() {
         return this.detection;
     }
 

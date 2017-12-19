@@ -23,9 +23,11 @@
  */
 package com.ichorpowered.guardian.util.property;
 
+import com.google.common.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,9 +37,10 @@ public class PropertyInjector {
     private final Logger LOGGER = LoggerFactory.getLogger(PropertyInjector.class);
     private final Object target;
     private final Map<String, String> aliases = new HashMap<>();
-    private final Map<String, PropertyContainer> fields = new HashMap<>();
+    private final Map<String, PropertyContainer> fieldsByName = new HashMap<>();
+    private final Map<TypeToken, PropertyContainer> fieldsByType = new HashMap<>();
 
-    PropertyInjector(Object target) {
+    PropertyInjector(final Object target) {
         this.target = target;
 
         for (final Field field : this.target.getClass().getDeclaredFields()) {
@@ -47,22 +50,60 @@ public class PropertyInjector {
             final String fieldName = field.getName();
             final String fieldAlias = point.alias();
 
+            this.fieldsByType.put(TypeToken.of(field.getType()), new PropertyContainer(field, fieldName, point.modifier()));
+
             if (fieldAlias.equals("") || this.aliases.containsKey(point.alias())) {
-                this.fields.put(fieldName, new PropertyContainer(field, fieldName, point.modifier()));
+                this.fieldsByName.put(fieldName, new PropertyContainer(field, fieldName, point.modifier()));
             } else {
                 this.aliases.put(fieldAlias, fieldName);
-                this.fields.put(fieldName, new PropertyContainer(field, fieldAlias, point.modifier()));
+                this.fieldsByName.put(fieldName, new PropertyContainer(field, fieldAlias, point.modifier()));
             }
         }
     }
 
-    public <T> PropertyInjector inject(final String name, T object) {
+    public <T> PropertyInjector inject(final String name, final T object) {
         if (this.aliases.containsKey(name)) {
-            final PropertyContainer propertyContainer = this.fields.get(this.aliases.get(name));
+            final PropertyContainer propertyContainer = this.fieldsByName.get(this.aliases.get(name));
 
             this.inject(name, propertyContainer, object);
-        } else if (this.fields.containsKey(name)) {
-            final PropertyContainer propertyContainer = this.fields.get(name);
+        } else if (this.fieldsByName.containsKey(name)) {
+            final PropertyContainer propertyContainer = this.fieldsByName.get(name);
+
+            this.inject(name, propertyContainer, object);
+        } else {
+            LOGGER.warn("Skipping unknown injection field: {}", name);
+        }
+
+        return this;
+    }
+
+    public <T> PropertyInjector inject(final TypeToken<T> typeToken, final T object) {
+        if (this.fieldsByType.containsKey(typeToken)) {
+            final PropertyContainer propertyContainer = this.fieldsByType.get(typeToken);
+
+            this.inject(propertyContainer.getAlias(), propertyContainer, object);
+        } else {
+            LOGGER.warn("Skipping unknown injection field type: {}", typeToken.getType().getTypeName());
+        }
+
+        return this;
+    }
+
+    public <T> PropertyInjector inject(final TypeToken<T> typeToken, final String name, final T object) {
+        if (this.aliases.containsKey(name)) {
+            final PropertyContainer propertyContainer = this.fieldsByName.get(this.aliases.get(name));
+
+            if (!typeToken.getType().equals(propertyContainer.getField().getType())) {
+                LOGGER.warn("Skipping unknown injection field name and type: {} {}", propertyContainer.getField().getType().getTypeName(), name);
+            }
+
+            this.inject(name, propertyContainer, object);
+        } else if (this.fieldsByName.containsKey(name)) {
+            final PropertyContainer propertyContainer = this.fieldsByName.get(name);
+
+            if (!typeToken.getType().equals(propertyContainer.getField().getType())) {
+                LOGGER.warn("Skipping unknown injection field name and type: {} {}", propertyContainer.getField().getType().getTypeName(), name);
+            }
 
             this.inject(name, propertyContainer, object);
         } else {
@@ -98,6 +139,10 @@ public class PropertyInjector {
             this.field = field;
             this.alias = alias;
             this.propertyModifier = propertyModifier;
+        }
+
+        public Class<?> getType() {
+            return this.type;
         }
 
         public Field getField() {

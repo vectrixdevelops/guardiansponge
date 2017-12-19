@@ -26,16 +26,7 @@ package com.ichorpowered.guardian;
 import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.google.inject.Inject;
-import com.ichorpowered.guardian.api.Guardian;
-import com.ichorpowered.guardian.api.GuardianState;
-import com.ichorpowered.guardian.api.detection.DetectionRegistry;
-import com.ichorpowered.guardian.api.detection.check.CheckRegistry;
-import com.ichorpowered.guardian.api.detection.heuristic.HeuristicRegistry;
-import com.ichorpowered.guardian.api.detection.penalty.PenaltyRegistry;
-import com.ichorpowered.guardian.api.event.GuardianEvent;
-import com.ichorpowered.guardian.api.event.GuardianListener;
-import com.ichorpowered.guardian.api.phase.PhaseRegistry;
-import com.ichorpowered.guardian.detection.GuardianDetectionRegistry;
+import com.ichorpowered.guardian.detection.GuardianDetectionManager;
 import com.ichorpowered.guardian.detection.check.GuardianCheckRegistry;
 import com.ichorpowered.guardian.detection.heuristics.GuardianHeuristicRegistry;
 import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyRegistry;
@@ -51,6 +42,14 @@ import com.ichorpowered.guardian.util.property.Property;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
 import com.ichorpowered.guardian.util.property.PropertyInjectorFactory;
 import com.ichorpowered.guardian.util.property.PropertyModifier;
+import com.ichorpowered.guardianapi.Guardian;
+import com.ichorpowered.guardianapi.GuardianState;
+import com.ichorpowered.guardianapi.detection.DetectionManager;
+import com.ichorpowered.guardianapi.detection.check.CheckModel;
+import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
+import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
+import com.ichorpowered.guardianapi.event.GuardianEvent;
+import com.ichorpowered.guardianapi.event.GuardianListener;
 import com.me4502.modularframework.ModuleController;
 import net.kyori.event.SimpleEventBus;
 import org.slf4j.Logger;
@@ -107,7 +106,7 @@ public class GuardianPlugin implements Guardian<Event> {
     @Property private ModuleController<GuardianPlugin> moduleController;
 
     /* Registry Fields */
-    @Property(modifier = PropertyModifier.FINAL) private GuardianDetectionRegistry detectionRegistry;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianDetectionManager detectionRegistry;
     @Property(modifier = PropertyModifier.FINAL) private GuardianCheckRegistry checkRegistry;
     @Property(modifier = PropertyModifier.FINAL) private GuardianHeuristicRegistry heuristicRegistry;
     @Property(modifier = PropertyModifier.FINAL) private GuardianPenaltyRegistry penaltyRegistry;
@@ -230,37 +229,32 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    public final DetectionRegistry getDetectionRegistry() {
-        return this.detectionRegistry;
-    }
-
-    @Override
-    public final CheckRegistry getCheckRegistry() {
-        return this.checkRegistry;
-    }
-
-    @Override
-    public final HeuristicRegistry getHeuristicRegistry() {
-        return this.heuristicRegistry;
-    }
-
-    @Override
-    public final PenaltyRegistry getPenaltyRegistry() {
-        return this.penaltyRegistry;
-    }
-
-    @Override
-    public final SequenceRegistry<Event> getSequenceRegistry() {
-        return this.sequenceRegistry;
-}
-
-    @Override
-    public final PhaseRegistry getPhaseRegistry() {
-        return this.phaseRegistry;
+    public DetectionManager getDetectionManager() {
+        return null;
     }
 
     @Override
     public final SequenceManager<Event> getSequenceManager() {
         return this.sequenceManager;
+    }
+
+    @Override
+    public SequenceRegistry getSequenceRegistry() {
+        return null;
+    }
+
+    @Override
+    public CheckModel getCheckModel() {
+        return null;
+    }
+
+    @Override
+    public HeuristicModel getHeuristicModel() {
+        return null;
+    }
+
+    @Override
+    public PenaltyModel getPenaltyModel() {
+        return null;
     }
 }
