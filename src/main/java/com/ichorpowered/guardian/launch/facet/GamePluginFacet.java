@@ -24,9 +24,9 @@
 package com.ichorpowered.guardian.launch.facet;
 
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.event.state.GuardianStartedEvent;
-import com.ichorpowered.guardian.event.state.GuardianStartingEvent;
-import com.ichorpowered.guardian.event.state.GuardianStoppingEvent;
+import com.ichorpowered.guardian.event.GuardianStartedEvent;
+import com.ichorpowered.guardian.event.GuardianStartingEvent;
+import com.ichorpowered.guardian.event.GuardianStoppingEvent;
 import com.ichorpowered.guardian.launch.Facet;
 import com.ichorpowered.guardian.launch.FacetBootstrap;
 import com.ichorpowered.guardian.launch.FacetState;

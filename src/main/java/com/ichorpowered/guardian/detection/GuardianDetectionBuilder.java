@@ -25,8 +25,10 @@ package com.ichorpowered.guardian.detection;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
+import com.ichorpowered.guardian.content.AbstractContentContainer;
 import com.ichorpowered.guardian.detection.stage.GuardianStageCycle;
 import com.ichorpowered.guardian.util.property.PropertyInjectorFactory;
+import com.ichorpowered.guardianapi.content.ContentContainer;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
@@ -48,6 +50,7 @@ public class GuardianDetectionBuilder implements DetectionBuilder {
     private String id;
     private String name;
     private DetectionContentLoader detectionContentLoader;
+    private ContentContainer detectionContentContainer;
 
     public GuardianDetectionBuilder(final GuardianDetectionManager detectionManager, final Detection detection) {
         this.detectionManager = detectionManager;
@@ -84,11 +87,18 @@ public class GuardianDetectionBuilder implements DetectionBuilder {
     }
 
     @Override
+    public DetectionBuilder content(ContentContainer contentContainer) {
+        this.detectionContentContainer = contentContainer;
+        return this;
+    }
+
+    @Override
     public DetectionManager submit(Object plugin) {
         PropertyInjectorFactory.create(this.detection)
                 .inject(TypeToken.of(String.class), "id", this.id)
                 .inject(TypeToken.of(String.class), "name", this.name)
                 .inject(TypeToken.of(StageCycle.class), "stageCycle", new GuardianStageCycle(this.detectionManager, this.stageModelArchetypes))
+                .inject(TypeToken.of(ContentContainer.class), "content", this.detectionContentContainer)
                 .inject(TypeToken.of(DetectionContentLoader.class), "contentLoader", this.detectionContentLoader);
 
         return this.detectionManager;

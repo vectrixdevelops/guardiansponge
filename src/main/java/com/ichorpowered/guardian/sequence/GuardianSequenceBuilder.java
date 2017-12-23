@@ -34,10 +34,9 @@ import com.abilityapi.sequenceapi.action.type.observe.ObserverActionBuilder;
 import com.abilityapi.sequenceapi.action.type.schedule.ScheduleAction;
 import com.abilityapi.sequenceapi.action.type.schedule.ScheduleActionBuilder;
 import com.google.common.base.MoreObjects;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
+import com.ichorpowered.guardianapi.detection.capture.Capture;
 import org.spongepowered.api.event.Event;
 
 import java.util.ArrayList;
@@ -45,13 +44,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implements ActionBuilder<Event> {
+public class GuardianSequenceBuilder implements ActionBuilder<Event> {
 
-    private final List<Capture<E, F>> captures = new ArrayList<>();
+    private final List<Capture> captures = new ArrayList<>();
 
     private final List<Action> actions = new ArrayList<>();
 
-    public GuardianSequenceBuilder<E, F> capture(final Capture<E, F> capture) {
+    public GuardianSequenceBuilder capture(final Capture capture) {
         this.captures.add(capture);
         return this;
     }
@@ -101,7 +100,7 @@ public class GuardianSequenceBuilder<E, F extends DetectionConfiguration> implem
                 GuardianSequenceBuilder.this.captures.forEach(capture ->
                         captureRegistry.put(modifiedContext.getId(), capture.getClass(), capture));
 
-                return new GuardianSequence<E, F>(modifiedContext, this, captureRegistry, GuardianSequenceBuilder.this.actions);
+                return new GuardianSequence(modifiedContext, this, captureRegistry, GuardianSequenceBuilder.this.actions);
             }
 
             @Override

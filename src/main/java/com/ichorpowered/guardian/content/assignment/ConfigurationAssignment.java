@@ -21,44 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.event.state;
+package com.ichorpowered.guardian.content.assignment;
 
-import com.ichorpowered.guardianapi.SimpleGuardian;
-import com.ichorpowered.guardianapi.event.origin.Origin;
-import com.ichorpowered.guardianapi.event.state.InitializationEvent;
+import com.ichorpowered.guardianapi.content.transaction.ContentAssignment;
+import ninja.leaping.configurate.ConfigurationNode;
 
-import javax.annotation.Nonnull;
+public class ConfigurationAssignment implements ContentAssignment<ConfigurationNode> {
 
-public class GuardianInitializationEvent implements InitializationEvent {
+    private ConfigurationNode configurationNode;
 
-    private final Origin origin;
-
-    private boolean cancelled = false;
-
-    public GuardianInitializationEvent(@Nonnull Origin origin) {
-        this.origin = origin;
-    }
-
-    @Nonnull
     @Override
-    public SimpleGuardian getGuardian() {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public Origin getOrigin() {
-        return this.origin;
+    public ConfigurationNode lookup() {
+        return this.configurationNode;
     }
 
     @Override
-    public boolean cancelled() {
-        return this.cancelled;
+    public void set(ConfigurationNode assignment) {
+        this.configurationNode = assignment;
     }
-
-    @Override
-    public void cancelled(boolean cancelled) {
-        this.cancelled = cancelled;
-    }
-
 }

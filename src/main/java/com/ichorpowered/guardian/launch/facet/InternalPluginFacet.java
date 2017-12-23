@@ -25,7 +25,7 @@ package com.ichorpowered.guardian.launch.facet;
 
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.detection.AbstractDetection;
-import com.ichorpowered.guardian.event.state.GuardianPostInitialization;
+import com.ichorpowered.guardian.event.GuardianPostInitialization;
 import com.ichorpowered.guardian.launch.Facet;
 import com.ichorpowered.guardian.launch.FacetBootstrap;
 import com.ichorpowered.guardian.launch.FacetState;
@@ -125,7 +125,7 @@ public class InternalPluginFacet implements Facet {
                         this.plugin.getDetectionManager().provideDetection(detection.getClass(), detection);
 
                         // Register the detection and inject its properties.
-                        detection.getRegistration(this.plugin.getDetectionManager());
+                        detection.register(this.plugin.getDetectionManager());
 
                         // Call the load method.
                         detection.onLoad();

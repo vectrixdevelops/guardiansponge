@@ -21,22 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.event.state;
+package com.ichorpowered.guardian.event;
 
 import com.ichorpowered.guardianapi.Guardian;
 import com.ichorpowered.guardianapi.event.origin.Origin;
-import com.ichorpowered.guardianapi.event.state.PostInitializationEvent;
+import com.ichorpowered.guardianapi.event.state.StoppingEvent;
 
 import javax.annotation.Nonnull;
 
-public class GuardianPostInitialization implements PostInitializationEvent {
+public class GuardianStoppingEvent implements StoppingEvent {
 
     private final Guardian guardian;
     private final Origin origin;
 
     private boolean cancelled = false;
 
-    public GuardianPostInitialization(@Nonnull Guardian guardian, @Nonnull Origin origin) {
+    public GuardianStoppingEvent(@Nonnull Guardian guardian, @Nonnull Origin origin) {
         this.guardian = guardian;
         this.origin = origin;
     }

@@ -21,46 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.event.state;
+package com.ichorpowered.guardian.event;
 
-import com.ichorpowered.guardianapi.Guardian;
+import com.ichorpowered.guardianapi.SimpleGuardian;
 import com.ichorpowered.guardianapi.event.origin.Origin;
-import com.ichorpowered.guardianapi.event.state.StartingEvent;
+import com.ichorpowered.guardianapi.event.state.StoppedEvent;
 
 import javax.annotation.Nonnull;
 
-public class GuardianStartingEvent implements StartingEvent {
+public class GuardianStoppedEvent implements StoppedEvent {
 
-    private final Guardian guardian;
     private final Origin origin;
 
-    private boolean cancelled = false;
-
-    public GuardianStartingEvent(@Nonnull Guardian guardian, @Nonnull Origin origin) {
-        this.guardian = guardian;
+    public GuardianStoppedEvent(@Nonnull Origin origin) {
         this.origin = origin;
     }
 
     @Nonnull
     @Override
-    public Guardian getGuardian() {
-        return this.guardian;
+    public SimpleGuardian getGuardian() {
+        return null;
     }
 
     @Nonnull
     @Override
     public Origin getOrigin() {
         return this.origin;
-    }
-
-    @Override
-    public boolean cancelled() {
-        return this.cancelled;
-    }
-
-    @Override
-    public void cancelled(boolean cancelled) {
-        this.cancelled = cancelled;
     }
 
 }

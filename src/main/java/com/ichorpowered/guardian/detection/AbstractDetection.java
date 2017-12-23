@@ -23,26 +23,14 @@
  */
 package com.ichorpowered.guardian.detection;
 
-import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardianapi.detection.DetectionModule;
 import com.ichorpowered.guardianapi.event.GuardianListener;
 import com.me4502.precogs.detection.DetectionType;
 
-import javax.annotation.Nonnull;
-
 public abstract class AbstractDetection extends DetectionType implements DetectionModule, GuardianListener {
 
-    private final GuardianPlugin plugin;
-
-    public AbstractDetection(@Nonnull GuardianPlugin plugin, @Nonnull String id,
-                             @Nonnull String name) {
+    public AbstractDetection(final String id, final String name) {
         super(id, name);
-        this.plugin = plugin;
-    }
-
-    @Override
-    public Object getPlugin() {
-        return this.plugin;
     }
 
 }

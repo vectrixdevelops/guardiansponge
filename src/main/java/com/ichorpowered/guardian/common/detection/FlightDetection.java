@@ -23,17 +23,29 @@
  */
 package com.ichorpowered.guardian.common.detection;
 
+import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.DetectionPhase;
+import com.ichorpowered.guardian.content.AbstractContentContainer;
 import com.ichorpowered.guardian.detection.AbstractDetection;
+import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
+import com.ichorpowered.guardian.util.property.Property;
+import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.detection.DetectionBuilder;
+import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
+import com.ichorpowered.guardianapi.detection.DetectionManager;
+import com.ichorpowered.guardianapi.detection.check.CheckModel;
+import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
+import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
+import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import com.me4502.modularframework.module.Module;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import tech.ferus.util.config.ConfigFile;
+import com.me4502.modularframework.module.guice.ModuleContainer;
+import org.slf4j.Logger;
+import org.spongepowered.api.plugin.PluginContainer;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
 
 @Module(id = "fly",
         name = "Fly Detection",
@@ -44,88 +56,111 @@ import java.nio.file.Path;
 )
 public class FlightDetection extends AbstractDetection {
 
-    private State state = State.UNDEFINED;
-    private FlyConfiguration detectionConfiguration;
-    private GuardianDetectionPhase<GuardianPlugin, DetectionConfiguration> phaseManipulator;
+    private static String MODULE_ID = FlightDetection.class.getAnnotation(Module.class).id();
+    private static String MODULE_NAME = FlightDetection.class.getAnnotation(Module.class).name();
 
-    public FlightDetection(@Nonnull GuardianPlugin plugin, @Nonnull String id, @Nonnull String name) {
-        super(plugin, id, name);
+    private final GuardianPlugin plugin;
+
+    @Property private String id;
+    @Property private String name;
+    @Property private StageCycle stageCycle;
+    @Property private ContentContainer contentContainer;
+    @Property private DetectionContentLoader contentLoader;
+
+    @Inject
+    public FlightDetection(@ModuleContainer PluginContainer pluginContainer) {
+        super(FlightDetection.MODULE_ID, FlightDetection.MODULE_NAME);
+
+        this.plugin = (GuardianPlugin) pluginContainer.getInstance().orElse(null);
     }
 
     @Override
-    public void onConstruction() {
+    public void onConstruction() {}
 
+    @Override
+    public void onDeconstruction() {}
+
+    @Override
+    public void onLoad() {
+        this.contentLoader.set(this.contentContainer);
     }
 
     @Override
-    public void onDeconstruction() {
+    public DetectionManager register(final DetectionManager detectionManager) {
+        final Optional<DetectionBuilder> detectionBuilder = detectionManager.provider(FlightDetection.class);
+        if (!detectionBuilder.isPresent()) return detectionManager;
 
+        return detectionBuilder.get()
+                .id(FlightDetection.MODULE_ID)
+                .name(FlightDetection.MODULE_NAME)
+                .stage(CheckModel.class)
+                    .min(1)
+                    .max(99)
+                    .append()
+                .stage(HeuristicModel.class)
+                    .min(1)
+                    .max(99)
+                    .append()
+                .stage(PenaltyModel.class)
+                    .min(1)
+                    .max(99)
+                    .append()
+                .contentLoader(new FlightContentLoader(this, this.plugin.getConfigDirectory()))
+                .content(new FlightContent(this))
+                .submit(this.plugin);
     }
 
-    @Nonnull
     @Override
-    public String getPermission(@Nonnull String permissionTarget) {
-        return null;
+    public Logger getLogger() {
+        return this.plugin.getLogger();
     }
 
-    @Nonnull
     @Override
-    public DetectionConfiguration getConfiguration() {
-        return null;
+    public StageCycle getStageCycle() {
+        return this.stageCycle;
     }
 
-    @Nonnull
     @Override
-    public State getState() {
-        return null;
+    public ContentContainer getContentContainer() {
+        return this.contentContainer;
     }
 
-    @Nonnull
     @Override
-    public DetectionPhase<GuardianPlugin, DetectionConfiguration> getPhaseManipulator() {
-        return null;
+    public DetectionContentLoader getContentLoader() {
+        return this.contentLoader;
     }
 
-    public static class FlyConfiguration implements DetectionConfiguration {
+    @Override
+    public Object getPlugin() {
+        return this.plugin;
+    }
 
-        private static final String FILE_NAME = "fly.conf";
+    public static class FlightContent extends AbstractContentContainer {
 
         private final FlightDetection detection;
-        private final Path configDir;
 
-        private ConfigFile<CommentedConfigurationNode> configFile;
-
-        FlyConfiguration(@Nonnull FlightDetection detection,
-                         @Nonnull Path configDir) {
+        public FlightContent(final FlightDetection detection) {
             this.detection = detection;
-            this.configDir = configDir;
         }
 
         @Override
-        public void load() {
-            try {
-                this.configFile = ConfigFile.loadHocon(this.configDir.resolve("detection").resolve(FILE_NAME),
-                        "/detection/" + FILE_NAME, false, false);
-            } catch (IOException e) {
-                this.detection.getOwner().getLogger().error("A problem occurred attempting to load the " +
-                        "guardian movement speed detection configuration!", e);
-            }
+        public Set<ContentKey> getPossibleKeys() {
+            return null;
         }
 
-        @Nonnull
+    }
+
+    public static class FlightContentLoader extends AbstractDetectionContentLoader<FlightDetection> {
+
+        public FlightContentLoader(final FlightDetection detection,
+                                   final Path configurationDirectory) {
+            super(detection, configurationDirectory);
+        }
+
         @Override
-        public ConfigFile<CommentedConfigurationNode> getStorage() {
-            return this.configFile;
+        public String getRoot() {
+            return "fly.conf";
         }
 
-        @Nonnull
-        @Override
-        public Path getLocation() {
-            return this.configDir;
-        }
-
-        public boolean exists() {
-            return this.configDir.resolve("detection").resolve(FILE_NAME).toFile().exists();
-        }
     }
 }

@@ -31,6 +31,10 @@ import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
 import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
+import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 
@@ -45,19 +49,19 @@ public class PlayerControlCapture {
     public static String SPRINT = "sprint";
     public static String WALK = "walk";
 
-    public static class Invalid<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
+    public static class Invalid extends AbstractCapture {
 
         private static final String CLASS_NAME = Invalid.class.getSimpleName().toUpperCase();
 
         public static NamedTypeKey<Set> INVALID_MOVEMENT =
                 NamedTypeKey.of(CLASS_NAME + "_INVALID_MOVEMENT", Set.class);
 
-        public Invalid(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
-            super(owner, detection);
+        public Invalid(@Nonnull Object plugin, @Nonnull Detection detection) {
+            super(plugin, detection);
         }
 
         @Override
-        public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
+        public void update(@Nonnull PlayerEntry entry, @Nonnull CaptureContainer captureContainer) {
             if (!entry.getEntity(Player.class).isPresent()) return;
             Player player = entry.getEntity(Player.class).get();
 
@@ -86,7 +90,7 @@ public class PlayerControlCapture {
 
     }
 
-    public static class Common<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
+    public static class Common extends AbstractCapture {
 
         private static final String CLASS_NAME = Common.class.getSimpleName().toUpperCase();
 
@@ -106,8 +110,8 @@ public class PlayerControlCapture {
         private double sprintOffset = 1.124;
         private double flyOffset = 1.218;
 
-        public Common(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
-            super(owner, detection);
+        public Common(@Nonnull Object plugin, @Nonnull Detection detection) {
+            super(plugin, detection);
 
             this.liftOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", LIFT)
                     .getDouble(this.liftOffset);

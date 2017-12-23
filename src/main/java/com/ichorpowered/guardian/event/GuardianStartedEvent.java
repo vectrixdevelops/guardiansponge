@@ -21,53 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.event.phase;
+package com.ichorpowered.guardian.event;
 
-import com.google.common.reflect.TypeToken;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.event.GuardianEvent;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.phase.PhaseViewer;
-import net.kyori.lunar.reflect.Reified;
+import com.ichorpowered.guardianapi.Guardian;
+import com.ichorpowered.guardianapi.event.origin.Origin;
+import com.ichorpowered.guardianapi.event.state.StartedEvent;
 
 import javax.annotation.Nonnull;
 
-public class PhaseChangeEvent<T> implements GuardianEvent, Reified<T> {
+public class GuardianStartedEvent implements StartedEvent {
 
-    private final Detection detection;
-    private final PhaseViewer<T> phaseViewer;
-    private final Class<T> phaseClass;
+    private final Guardian guardian;
     private final Origin origin;
 
-
-    public PhaseChangeEvent(@Nonnull Detection detection, @Nonnull PhaseViewer<T> phaseViewer,
-                            @Nonnull Class<T> phaseClass, @Nonnull Origin origin) {
-        this.detection = detection;
-        this.phaseViewer = phaseViewer;
-        this.phaseClass = phaseClass;
+    public GuardianStartedEvent(@Nonnull Guardian guardian, @Nonnull Origin origin) {
+        this.guardian = guardian;
         this.origin = origin;
     }
 
     @Nonnull
     @Override
-    public TypeToken<T> type() {
-        return TypeToken.of(this.phaseClass);
-    }
-
-    @Nonnull
-    public <E, F extends DetectionConfiguration> Detection<E, F> getDetection() {
-        return this.detection;
-    }
-
-    @Nonnull
-    public PhaseViewer<T> getPhaseViewer() {
-        return this.phaseViewer;
-    }
-
-    @Nonnull
-    public Class<T> getPhaseClass() {
-        return this.phaseClass;
+    public Guardian getGuardian() {
+        return this.guardian;
     }
 
     @Nonnull
@@ -75,4 +50,5 @@ public class PhaseChangeEvent<T> implements GuardianEvent, Reified<T> {
     public Origin getOrigin() {
         return this.origin;
     }
+
 }

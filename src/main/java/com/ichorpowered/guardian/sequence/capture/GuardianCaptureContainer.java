@@ -25,9 +25,9 @@ package com.ichorpowered.guardian.sequence.capture;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.Transform;
-import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
+import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.util.Transform;
+import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

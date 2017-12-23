@@ -24,15 +24,19 @@
 package com.ichorpowered.guardian.entry;
 
 import com.google.common.reflect.TypeToken;
-import com.ichorpowered.guardian.api.entry.EntityEntry;
+import com.ichorpowered.guardian.content.AbstractContentContainer;
+import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
 import net.kyori.lunar.reflect.Reified;
 
 import javax.annotation.Nonnull;
+
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
-public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
+public class GuardianEntityEntry<T> extends AbstractContentContainer implements PlayerEntry, Reified<T> {
 
     private final T entity;
     private final UUID uuid;
@@ -66,6 +70,11 @@ public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
     }
 
     @Override
+    public Set<ContentKey> getPossibleKeys() {
+        return null;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(this.entity, this.uuid);
     }
@@ -73,9 +82,8 @@ public class GuardianEntityEntry<T> implements EntityEntry, Reified<T> {
     @Override
     public boolean equals(final Object object) {
         if (this == object) return true;
-        if (object == null || !(object instanceof EntityEntry)) return false;
-        return Objects.equals(this.entity, ((EntityEntry) object).getEntity(this.entity.getClass()))
-                && Objects.equals(this.uuid, ((EntityEntry) object).getUniqueId());
+        if (object == null || !(object instanceof PlayerEntry)) return false;
+        return Objects.equals(this.entity, ((PlayerEntry) object).getEntity(this.entity.getClass()))
+                && Objects.equals(this.uuid, ((PlayerEntry) object).getUniqueId());
     }
-
 }

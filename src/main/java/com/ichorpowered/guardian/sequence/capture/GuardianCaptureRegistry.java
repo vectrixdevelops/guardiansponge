@@ -25,25 +25,26 @@ package com.ichorpowered.guardian.sequence.capture;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.entry.EntityEntry;
-import com.ichorpowered.guardian.api.sequence.capture.Capture;
-import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.sequence.capture.CaptureRegistry;
+import com.ichorpowered.guardianapi.detection.capture.Capture;
+import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.detection.capture.CaptureRegistry;
+import com.ichorpowered.guardianapi.entry.entity.EntityEntry;
+import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class GuardianCaptureRegistry implements CaptureRegistry {
 
-    private final EntityEntry entry;
+    private final PlayerEntry entry;
     private final BiMap<Class<? extends Capture>, Capture> captureRegistry;
     private final CaptureContainer captureContainer;
 
-    public GuardianCaptureRegistry(@Nonnull EntityEntry entry) {
+    public GuardianCaptureRegistry(@Nonnull PlayerEntry entry) {
         this.entry = entry;
         this.captureRegistry = HashBiMap.create();
         this.captureContainer = GuardianCaptureContainer.create();
@@ -52,14 +53,6 @@ public class GuardianCaptureRegistry implements CaptureRegistry {
     @Override
     public <C> void put(@Nonnull C pluginContainer, @Nonnull Class<? extends Capture> aClass, @Nullable Capture capture) {
         this.captureRegistry.put(aClass, capture);
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E, F extends DetectionConfiguration> Capture<E, F> expect(@Nonnull Class<? extends Capture<E, F>> aClass) throws NoSuchElementException {
-        if (!this.captureRegistry.containsKey(aClass)) throw new NoSuchElementException();
-        return (Capture<E, F>) this.captureRegistry.get(aClass);
     }
 
     @Nullable

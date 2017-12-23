@@ -31,7 +31,6 @@ import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
 import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
 import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
 import com.ichorpowered.guardian.common.penalty.ResetPenalty;
-import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.phase.GuardianPhaseFilter;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;

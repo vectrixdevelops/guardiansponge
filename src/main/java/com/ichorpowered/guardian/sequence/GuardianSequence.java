@@ -27,15 +27,14 @@ import com.abilityapi.sequenceapi.Sequence;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.Action;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.entry.EntityEntry;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
 import com.ichorpowered.guardian.report.GuardianSummary;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureContainer;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
+import com.ichorpowered.guardianapi.event.origin.Origin;
+import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -43,12 +42,12 @@ import org.spongepowered.api.world.Location;
 
 import java.util.List;
 
-public class GuardianSequence<E, F extends DetectionConfiguration> extends Sequence<Event> {
+public class GuardianSequence extends Sequence<Event> {
 
     public static NamedTypeKey<Location> INITIAL_LOCATION =
             NamedTypeKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION", Location.class);
 
-    private final GuardianSummary<E, F> summary;
+    private final GuardianSummary summary;
     private final GuardianCaptureRegistry captureRegistry;
 
     public GuardianSequence(final SequenceContext sequenceContext,
@@ -60,7 +59,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
         this.captureRegistry = captureRegistry;
         this.captureRegistry.getContainer().merge(GuardianCaptureContainer.create());
 
-        this.summary = new GuardianSummary<>(((Detection<E, F>) sequenceContext.getOwner()).getOwner(),
+        this.summary = new GuardianSummary(((Detection) sequenceContext.getOwner()).getPlugin(),
                 sequenceContext.getOwner(),
                 sequenceContext.get(CommonContextKeys.ENTITY_ENTRY),
                 Origin.merge(sequenceContext).build());
@@ -68,7 +67,7 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
 
     @Override
     public boolean applyObserve(final Event event, final SequenceContext sequenceContext) {
-        final EntityEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+        final PlayerEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
         final Player player = entityEntry.getEntity(Player.class)
                 .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
 
@@ -89,9 +88,9 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
 
     @Override
     public final void applySchedule(final SequenceContext sequenceContext) {
-        final EntityEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
-        final Player player = entityEntry.getEntity(Player.class)
-                .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
+        final PlayerEntry playerEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+        final Player player = playerEntry.getEntity(Player.class)
+                .orElse(Sponge.getServer().getPlayer(playerEntry.getUniqueId()).orElse(null));
 
         if (player == null) return;
 
@@ -108,11 +107,11 @@ public class GuardianSequence<E, F extends DetectionConfiguration> extends Seque
         super.applySchedule(mergedContext);
     }
 
-    public Detection<E, F> getOwner() {
+    public Detection getOwner() {
         return super.getSequenceContext().getOwner();
     }
 
-    public GuardianSummary<E, F> getSummary() {
+    public GuardianSummary getSummary() {
         return this.summary;
     }
 

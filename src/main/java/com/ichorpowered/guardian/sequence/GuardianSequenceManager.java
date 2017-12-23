@@ -28,13 +28,9 @@ import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.api.detection.DetectionPhase;
-import com.ichorpowered.guardian.api.detection.heuristic.Heuristic;
-import com.ichorpowered.guardian.api.detection.penalty.Penalty;
-import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
-import com.ichorpowered.guardian.api.sequence.capture.Capture;
 import com.ichorpowered.guardian.entry.GuardianEntityEntry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
+import com.ichorpowered.guardianapi.detection.capture.Capture;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -80,17 +76,17 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
      */
     @Deprecated
     private void transitionPhase(final GuardianEntityEntry<Player> entityEntry, final GuardianSequence sequence) {
-        DetectionPhase<?, ?> detectionPhase = sequence.getOwner().getPhaseManipulator();
-
-        while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
-            Heuristic heuristic = detectionPhase.next(PhaseTypes.HEURISTIC);
-            heuristic.getSupplier().apply(entityEntry, sequence.getOwner(), sequence.getSummary());
-        }
-
-        while (detectionPhase.hasNext(PhaseTypes.PENALTY)) {
-            Penalty penalty = detectionPhase.next(PhaseTypes.PENALTY);
-            penalty.getPredicate().test(entityEntry, sequence.getOwner(), sequence.getSummary());
-        }
+//        DetectionPhase<?, ?> detectionPhase = sequence.getOwner().getPhaseManipulator();
+//
+//        while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
+//            Heuristic heuristic = detectionPhase.next(PhaseTypes.HEURISTIC);
+//            heuristic.getSupplier().apply(entityEntry, sequence.getOwner(), sequence.getSummary());
+//        }
+//
+//        while (detectionPhase.hasNext(PhaseTypes.PENALTY)) {
+//            Penalty penalty = detectionPhase.next(PhaseTypes.PENALTY);
+//            penalty.getPredicate().test(entityEntry, sequence.getOwner(), sequence.getSummary());
+//        }
     }
 
     private void tickScheduler() {

@@ -23,32 +23,30 @@
  */
 package com.ichorpowered.guardian.sequence.capture;
 
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.sequence.capture.Capture;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.capture.Capture;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractCapture<E, F extends DetectionConfiguration> implements Capture<E, F> {
+public abstract class AbstractCapture implements Capture {
 
-    private final E owner;
-    private final Detection<E, F> detection;
+    private final Object plugin;
+    private final Detection detection;
 
-    public AbstractCapture(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
-        this.owner = owner;
+    public AbstractCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
+        this.plugin = plugin;
         this.detection = detection;
     }
 
     @Nonnull
     @Override
-    public E getOwner() {
-        return this.owner;
+    public Detection getDetection() {
+        return this.detection;
     }
 
     @Nonnull
-    @Override
-    public Detection<E, F> getDetection() {
-        return this.detection;
+    public Object getPlugin() {
+        return this.plugin;
     }
 
 }

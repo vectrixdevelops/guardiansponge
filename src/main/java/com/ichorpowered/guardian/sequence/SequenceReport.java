@@ -23,8 +23,8 @@
  */
 package com.ichorpowered.guardian.sequence;
 
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.report.Report;
+import com.ichorpowered.guardianapi.detection.report.Report;
+import com.ichorpowered.guardianapi.event.origin.Origin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
