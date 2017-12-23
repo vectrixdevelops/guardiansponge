@@ -24,8 +24,6 @@
 package com.ichorpowered.guardian.launch.facet;
 
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.api.GuardianState;
-import com.ichorpowered.guardian.api.event.origin.Origin;
 import com.ichorpowered.guardian.event.state.GuardianStartedEvent;
 import com.ichorpowered.guardian.event.state.GuardianStartingEvent;
 import com.ichorpowered.guardian.event.state.GuardianStoppingEvent;
@@ -35,6 +33,8 @@ import com.ichorpowered.guardian.launch.FacetState;
 import com.ichorpowered.guardian.launch.exception.FacetException;
 import com.ichorpowered.guardian.launch.message.FacetMessage;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
+import com.ichorpowered.guardianapi.GuardianState;
+import com.ichorpowered.guardianapi.event.origin.Origin;
 import org.slf4j.Logger;
 
 public class GamePluginFacet implements Facet {
@@ -77,15 +77,15 @@ public class GamePluginFacet implements Facet {
 
         // STATE: STARTING
 
-        this.plugin.sequenceTask.start();
+        this.plugin.getSequenceTask().start();
 
-        this.plugin.eventBus.post(new GuardianStartingEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
+        this.plugin.getEventBus().post(new GuardianStartingEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
 
         propertyInjector.inject("state", GuardianState.STARTED);
 
         // STATE: STARTED
 
-        this.plugin.eventBus.post(new GuardianStartedEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
+        this.plugin.getEventBus().post(new GuardianStartedEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
 
         this.facetState = FacetState.START;
         return true;
@@ -95,9 +95,9 @@ public class GamePluginFacet implements Facet {
         PropertyInjector propertyInjector = this.plugin.getPropertyInjector();
         propertyInjector.inject("state", GuardianState.STOPPING);
 
-        this.plugin.eventBus.post(new GuardianStoppingEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
+        this.plugin.getEventBus().post(new GuardianStoppingEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
 
-        this.plugin.sequenceTask.stop();
+        this.plugin.getSequenceTask().stop();
 
         this.facetState = FacetState.STOP;
         return true;

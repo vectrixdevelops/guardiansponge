@@ -29,9 +29,6 @@ import com.ichorpowered.guardian.Configuration;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.PluginInfo;
 import com.ichorpowered.guardian.detection.GuardianDetectionManager;
-import com.ichorpowered.guardian.detection.check.GuardianCheckRegistry;
-import com.ichorpowered.guardian.detection.heuristics.GuardianHeuristicRegistry;
-import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyRegistry;
 import com.ichorpowered.guardian.event.state.GuardianInitializationEvent;
 import com.ichorpowered.guardian.event.state.GuardianPreInitializationEvent;
 import com.ichorpowered.guardian.launch.Facet;
@@ -40,7 +37,6 @@ import com.ichorpowered.guardian.launch.FacetState;
 import com.ichorpowered.guardian.launch.exception.FacetException;
 import com.ichorpowered.guardian.launch.message.FacetMessage;
 import com.ichorpowered.guardian.launch.message.SimpleFacetMessage;
-import com.ichorpowered.guardian.phase.GuardianPhaseRegistry;
 import com.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import com.ichorpowered.guardian.sequence.GuardianSequenceManager;
 import com.ichorpowered.guardian.util.ConsoleUtil;
@@ -125,10 +121,10 @@ public class CorePluginFacet implements Facet {
 
         // PROVIDE: PRE_INITIALIZATION
         propertyInjector.inject("coreTime", componentMessage.getTime());
-        propertyInjector.inject("eventBus", eventBus);
         propertyInjector.inject("moduleController", moduleController);
+        propertyInjector.inject("eventBus", eventBus);
 
-        this.plugin.eventBus.post(new GuardianPreInitializationEvent(Origin.source(this.plugin.getPluginContainer()).build()));
+        this.plugin.getEventBus().post(new GuardianPreInitializationEvent(Origin.source(this.plugin.getPluginContainer()).build()));
 
         propertyInjector.inject("state", GuardianState.INITIALIZATION);
 
@@ -140,11 +136,7 @@ public class CorePluginFacet implements Facet {
 
         this.logger.info(this.facetPrefix + "Initializing registries.");
 
-        GuardianDetectionManager detectionRegistry = new GuardianDetectionManager(this.plugin);
-        GuardianCheckRegistry checkRegistry = new GuardianCheckRegistry(this.plugin);
-        GuardianHeuristicRegistry heuristicRegistry = new GuardianHeuristicRegistry(this.plugin);
-        GuardianPenaltyRegistry penaltyRegistry = new GuardianPenaltyRegistry(this.plugin);
-        GuardianPhaseRegistry phaseRegistry = new GuardianPhaseRegistry(this.plugin);
+        GuardianDetectionManager detectionManager = new GuardianDetectionManager(this.plugin);
 
         SequenceRegistry<Event> sequenceRegistry = new SequenceRegistry<>();
 
@@ -158,22 +150,18 @@ public class CorePluginFacet implements Facet {
         Common common = new Common(this.plugin);
 
         // PROVIDE: INITIALIZATION
+        propertyInjector.inject("common", common);
         propertyInjector.inject("configuration", configuration);
 
-        propertyInjector.inject("detectionRegistry", detectionRegistry);
-        propertyInjector.inject("checkRegistry", checkRegistry);
-        propertyInjector.inject("sequenceRegistry", sequenceRegistry);
-        propertyInjector.inject("heuristicRegistry", heuristicRegistry);
-        propertyInjector.inject("penaltyRegistry", penaltyRegistry);
-        propertyInjector.inject("phaseRegistry", phaseRegistry);
-
+        propertyInjector.inject("detectionManager", detectionManager);
         propertyInjector.inject("sequenceManager", sequenceManager);
         propertyInjector.inject("sequenceTask", sequenceTask);
 
-        propertyInjector.inject("sequenceListener", sequenceListener);
-        propertyInjector.inject("common", common);
+        propertyInjector.inject("sequenceRegistry", sequenceRegistry);
 
-        this.plugin.eventBus.post(new GuardianInitializationEvent(Origin.source(this.plugin.getPluginContainer()).build()));
+        propertyInjector.inject("sequenceListener", sequenceListener);
+
+        this.plugin.getEventBus().post(new GuardianInitializationEvent(Origin.source(this.plugin.getPluginContainer()).build()));
 
         this.facetState = FacetState.START;
         return true;

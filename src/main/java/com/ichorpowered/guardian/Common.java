@@ -23,18 +23,13 @@
  */
 package com.ichorpowered.guardian;
 
-import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
-import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
-import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
-import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
-import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
-import com.ichorpowered.guardian.common.penalty.ResetPenalty;
-import com.ichorpowered.guardian.detection.check.GuardianCheckViewer;
-import com.ichorpowered.guardian.detection.heuristics.GuardianHeuristicViewer;
-import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyViewer;
+import com.ichorpowered.guardian.detection.check.GuardianCheckModel;
+import com.ichorpowered.guardian.detection.heuristic.GuardianHeuristicModel;
+import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyModel;
+import com.ichorpowered.guardianapi.detection.check.CheckModel;
+import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
+import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
 import com.me4502.modularframework.ModuleController;
-
-import javax.annotation.Nonnull;
 
 public final class Common {
 
@@ -42,7 +37,7 @@ public final class Common {
 
     private final GuardianPlugin plugin;
 
-    public Common(@Nonnull GuardianPlugin plugin) {
+    public Common(final GuardianPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -52,30 +47,27 @@ public final class Common {
     }
 
     public void loadChecks() {
-        if (this.plugin.getCheckRegistry() == null) return;
+        final GuardianCheckModel checkModel = new GuardianCheckModel();
 
-        this.plugin.getCheckRegistry().put(this.plugin, HorizontalSpeedCheck.Blueprint.class,
-                new HorizontalSpeedCheck.Blueprint());
-        this.plugin.getCheckRegistry().put(this.plugin, VerticalSpeedCheck.Blueprint.class,
-                new VerticalSpeedCheck.Blueprint());
-        this.plugin.getCheckRegistry().put(this.plugin, InvalidCheck.Blueprint.class,
-                new InvalidCheck.Blueprint());
+        // Register Check Stages
 
+        this.plugin.getDetectionManager().provideStageModel(CheckModel.class, checkModel);
+
+    }
+
+    public void loadHeuristics() {
+        final GuardianHeuristicModel heuristicModel = new GuardianHeuristicModel();
+
+        // Register Heuristic Models
+
+        this.plugin.getDetectionManager().provideStageModel(HeuristicModel.class, heuristicModel);
     }
 
     public void loadPenalties() {
-        if (this.plugin.getPenaltyRegistry() == null) return;
+        final GuardianPenaltyModel penaltyModel = new GuardianPenaltyModel();
 
-        this.plugin.getPenaltyRegistry().put(this.plugin, ResetPenalty.class, new ResetPenalty());
-        this.plugin.getPenaltyRegistry().put(this.plugin, NotificationPenalty.class, new NotificationPenalty());
+        // Register Penalty Models
+
+        this.plugin.getDetectionManager().provideStageModel(PenaltyModel.class, penaltyModel);
     }
-
-    public void loadPhases() {
-        if (this.plugin.getPhaseRegistry() == null) return;
-
-        this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.CHECK, new GuardianCheckViewer(this.plugin));
-        this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.HEURISTIC, new GuardianHeuristicViewer(this.plugin));
-        this.plugin.getPhaseRegistry().put(this.plugin, PhaseTypes.PENALTY, new GuardianPenaltyViewer(this.plugin));
-    }
-
 }

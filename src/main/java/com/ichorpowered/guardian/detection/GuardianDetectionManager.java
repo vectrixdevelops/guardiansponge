@@ -49,17 +49,22 @@ public final class GuardianDetectionManager implements DetectionManager {
 
     @Override
     public DetectionManager provideDetection(Class<? extends Detection> detectionClass, Detection detection) {
-        return null;
+        this.detectionIdMap.put(detection.getId(), detectionClass);
+        this.detectionInstanceMap.put(detectionClass, detection);
+        return this;
     }
 
     @Override
     public DetectionManager provideStageModel(Class<? extends StageModel> stageModelClass, StageModel stageModel) {
-        return null;
+        this.stageModelIdMap.put(stageModel.getId(), stageModelClass);
+        this.stageModelInstanceMap.put(stageModelClass, stageModel);
+        return this;
     }
 
     @Override
     public Optional<DetectionBuilder> provider(Class<? extends Detection> detectionClass) {
-        return Optional.empty();
+        if (!this.detectionInstanceMap.containsKey(detectionClass)) return Optional.empty();
+        return Optional.of(new GuardianDetectionBuilder(this, this.detectionInstanceMap.get(detectionClass)));
     }
 
     @Override

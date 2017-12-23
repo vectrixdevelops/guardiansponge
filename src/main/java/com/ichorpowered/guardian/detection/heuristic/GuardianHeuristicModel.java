@@ -70,6 +70,11 @@ public class GuardianHeuristicModel implements HeuristicModel {
     }
 
     @Override
+    public int getSize() {
+        return this.heuristicMap.size();
+    }
+
+    @Override
     public Iterator<Heuristic> iterator() {
         return this.heuristicMap.values().iterator();
     }

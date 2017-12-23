@@ -49,6 +49,7 @@ dependencies {
     compile 'org.bstats:bstats-sponge-lite:1.1'
     compile "org.fusesource.jansi:jansi:1.16"
 
+    compile 'tech.ferus:ConfigKeys:5.1.0'
     compile 'tech.ferus.util:basicsql-h2:2.0.1'
     compile 'tech.ferus.util:basicsql-mysql:2.0.1'
 }

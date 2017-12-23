@@ -24,13 +24,6 @@
 package com.ichorpowered.guardian.launch.facet;
 
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.api.GuardianState;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.check.Check;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.phase.PhaseManipulator;
-import com.ichorpowered.guardian.api.phase.type.PhaseTypes;
 import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.event.state.GuardianPostInitialization;
 import com.ichorpowered.guardian.launch.Facet;
@@ -40,6 +33,12 @@ import com.ichorpowered.guardian.launch.exception.FacetException;
 import com.ichorpowered.guardian.launch.message.FacetMessage;
 import com.ichorpowered.guardian.util.ConsoleUtil;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
+import com.ichorpowered.guardianapi.GuardianState;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.check.CheckModel;
+import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
+import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
+import com.ichorpowered.guardianapi.event.origin.Origin;
 import com.me4502.modularframework.module.ModuleWrapper;
 import com.me4502.precogs.detection.DetectionType;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -90,17 +89,16 @@ public class InternalPluginFacet implements Facet {
 
         // STATE: POST_INITIALIZATION
 
-        this.plugin.common.loadPenalties();
-        this.plugin.common.loadChecks();
-        this.plugin.common.loadModules(this.plugin.getModuleController());
-        this.plugin.common.loadPhases();
+        this.plugin.getCommon().loadPenalties();
+        this.plugin.getCommon().loadChecks();
+        this.plugin.getCommon().loadModules(this.plugin.getModuleController());
 
         this.logger.info(ConsoleUtil.of(Ansi.Color.YELLOW, "Discovered {} module(s).",
                 String.valueOf(this.plugin.getModuleController().getModules().size())));
 
         this.plugin.getModuleController().enableModules(moduleWrapper -> {
             try {
-                if (this.plugin.configuration.getEnabledModules().contains(moduleWrapper.getId())) return true;
+                if (this.plugin.getConfiguration().getEnabledModules().contains(moduleWrapper.getId())) return true;
             } catch (ObjectMappingException e) {
                 this.logger.error("Failed to acquire enable modules list from the configuration.", e);
             }
@@ -119,25 +117,27 @@ public class InternalPluginFacet implements Facet {
                     if (moduleWrapper.getModule().get() instanceof Detection) {
                         AbstractDetection detection = (AbstractDetection) moduleWrapper.getModule().get();
 
-                        this.plugin.eventBus.register(detection);
-
+                        // Precogs detection registration.
                         Sponge.getRegistry().register(DetectionType.class, detection);
 
-                        this.plugin.getDetectionRegistry().put(this, detection.getClass(), detection);
+                        //
+                        this.plugin.getEventBus().register(detection);
+                        this.plugin.getDetectionManager().provideDetection(detection.getClass(), detection);
 
-                        PhaseManipulator detectionManipulator = detection.getPhaseManipulator();
+                        // Register the detection and inject its properties.
+                        detection.getRegistration(this.plugin.getDetectionManager());
 
-                        while (detectionManipulator.hasNext(PhaseTypes.CHECK)) {
-                            Check<GuardianPlugin, DetectionConfiguration> check = detectionManipulator.next(PhaseTypes.CHECK);
+                        // Call the load method.
+                        detection.onLoad();
 
-                            assert check != null;
+                        if (this.plugin.getDetectionManager().getStageModel(CheckModel.class).isPresent())
+                            detections.addAndGet(detection.getStageCycle().sizeFor(this.plugin.getDetectionManager().getStageModel(CheckModel.class).get()));
 
-                            this.plugin.getSequenceRegistry().put(check.getSequence());
-                        }
+                        if (this.plugin.getDetectionManager().getStageModel(HeuristicModel.class).isPresent())
+                            heuristics.addAndGet(detection.getStageCycle().sizeFor(this.plugin.getDetectionManager().getStageModel(HeuristicModel.class).get()));
 
-                        checks.addAndGet(detectionManipulator.size(PhaseTypes.CHECK));
-                        heuristics.addAndGet(detectionManipulator.size(PhaseTypes.HEURISTIC));
-                        penalties.addAndGet(detectionManipulator.size(PhaseTypes.PENALTY));
+                        if (this.plugin.getDetectionManager().getStageModel(PenaltyModel.class).isPresent())
+                            penalties.addAndGet(detection.getStageCycle().sizeFor(this.plugin.getDetectionManager().getStageModel(PenaltyModel.class).get()));
 
                         detections.incrementAndGet();
                     }
@@ -150,9 +150,9 @@ public class InternalPluginFacet implements Facet {
                 String.valueOf(checks.get()),
                 String.valueOf(detections.get())));
 
-        this.plugin.eventBus.post(new GuardianPostInitialization(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
+        this.plugin.getEventBus().post(new GuardianPostInitialization(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
 
-        Sponge.getEventManager().registerListeners(this.plugin, this.plugin.sequenceListener);
+        Sponge.getEventManager().registerListeners(this.plugin, this.plugin.getSequenceListener());
 
         this.facetState = FacetState.START;
         return true;

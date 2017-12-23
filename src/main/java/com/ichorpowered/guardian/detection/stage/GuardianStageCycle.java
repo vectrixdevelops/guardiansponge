@@ -40,20 +40,18 @@ import java.util.function.Predicate;
 public class GuardianStageCycle implements StageCycle {
 
     private final DetectionManager detectionManager;
-    private final List<StageModelArchetype<?>> stageModelArchetypes;
-
-    private final Multimap<StageModel<?>, Stage> refinedModels = HashMultimap.create();
+    private final List<StageModelArchetype<?>> modelArchetypes;
+    private final Multimap<StageModel<?>, Stage> filteredStages = HashMultimap.create();
 
     private Iterator<StageModel<?>> modelIterator;
-    private Iterator<Stage> stageIterator;
-
+    private Iterator<? extends Stage> stageIterator;
     private StageModel<?> presentStageModel;
     private Stage presentStage;
 
     public GuardianStageCycle(final DetectionManager detectionManager,
-                              final List<StageModelArchetype<?>> stageModelArchetypes) {
+                              final List<StageModelArchetype<?>> modelArchetypes) {
         this.detectionManager = detectionManager;
-        this.stageModelArchetypes = stageModelArchetypes;
+        this.modelArchetypes = modelArchetypes;
 
         this.evaluateCycle();
     }
@@ -63,7 +61,7 @@ public class GuardianStageCycle implements StageCycle {
     public boolean next() {
         // Initiates the cycle.
         if (this.modelIterator == null && this.stageIterator == null) {
-            this.modelIterator = this.refinedModels.keys().iterator();
+            this.modelIterator = this.filteredStages.keys().iterator();
 
             if (this.modelIterator.hasNext()) {
                 this.presentStageModel = this.modelIterator.next();
@@ -100,7 +98,7 @@ public class GuardianStageCycle implements StageCycle {
             this.presentStage = this.stageIterator.next();
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -126,31 +124,36 @@ public class GuardianStageCycle implements StageCycle {
     @Override
     public int size() {
         if (this.presentStageModel == null) return 0;
-        return this.refinedModels.get(this.presentStageModel).size();
+        return this.filteredStages.get(this.presentStageModel).size();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<Class<? extends StageModel<?>>> getAll() {
-        return Lists.newArrayList((Class<? extends StageModel<?>>[]) this.stageModelArchetypes.stream()
+        return Lists.newArrayList((Class<? extends StageModel<?>>[]) this.modelArchetypes.stream()
                 .map(stageModelArchetype -> stageModelArchetype.getModelClass())
                 .toArray());
     }
 
     @Override
+    public int sizeFor(StageModel<?> stageModel) {
+        return this.filteredStages.get(stageModel).size();
+    }
+
+    @Override
     public int totalSize() {
-        return this.refinedModels.size();
+        return this.filteredStages.size();
     }
 
     private void evaluateCycle() {
-        for (StageModelArchetype<?> stageModelArchetype : this.stageModelArchetypes) {
+        for (StageModelArchetype<?> stageModelArchetype : this.modelArchetypes) {
             final StageModel<?> stageModel = this.detectionManager.getStageModel(stageModelArchetype.getModelClass()).orElse(null);
             final Predicate<Stage> currentFilter = (Predicate<Stage>) stageModelArchetype.getModelFilter();
 
             if (stageModel == null) continue;
 
             for (Stage stage : stageModel) {
-                if (currentFilter.test(stage)) this.refinedModels.put(stageModel, stage);
+                if (currentFilter.test(stage)) this.filteredStages.put(stageModel, stage);
             }
         }
     }

@@ -70,6 +70,11 @@ public class GuardianPenaltyModel implements PenaltyModel {
     }
 
     @Override
+    public int getSize() {
+        return this.penaltyMap.size();
+    }
+
+    @Override
     public Iterator<Penalty> iterator() {
         return this.penaltyMap.values().iterator();
     }

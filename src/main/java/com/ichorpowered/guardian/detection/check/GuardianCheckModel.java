@@ -26,6 +26,7 @@ package com.ichorpowered.guardian.detection.check;
 import com.google.common.collect.Maps;
 import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.check.CheckModel;
+import com.ichorpowered.guardianapi.detection.stage.Stage;
 import com.ichorpowered.guardianapi.detection.stage.model.StageModel;
 
 import java.util.Iterator;
@@ -67,6 +68,11 @@ public class GuardianCheckModel implements CheckModel {
     @Override
     public Optional<? extends Check> get(Class<? extends Check> stageClass) {
         return Optional.ofNullable(this.checkMap.get(stageClass));
+    }
+
+    @Override
+    public int getSize() {
+        return this.checkMap.size();
     }
 
     @Override

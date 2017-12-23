@@ -88,7 +88,7 @@ public class GuardianDetectionBuilder implements DetectionBuilder {
         PropertyInjectorFactory.create(this.detection)
                 .inject(TypeToken.of(String.class), "id", this.id)
                 .inject(TypeToken.of(String.class), "name", this.name)
-                .inject(TypeToken.of(StageCycle.class), "stageCycle", new GuardianStageCycle(this.stageModelArchetypes))
+                .inject(TypeToken.of(StageCycle.class), "stageCycle", new GuardianStageCycle(this.detectionManager, this.stageModelArchetypes))
                 .inject(TypeToken.of(DetectionContentLoader.class), "contentLoader", this.detectionContentLoader);
 
         return this.detectionManager;

@@ -23,9 +23,9 @@
  */
 package com.ichorpowered.guardian.event.state;
 
-import com.ichorpowered.guardian.api.SimpleGuardian;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.event.state.PreInitializationEvent;
+import com.ichorpowered.guardianapi.SimpleGuardian;
+import com.ichorpowered.guardianapi.event.origin.Origin;
+import com.ichorpowered.guardianapi.event.state.PreInitializationEvent;
 
 import javax.annotation.Nonnull;
 

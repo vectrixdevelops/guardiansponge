@@ -27,15 +27,14 @@ import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.detection.GuardianDetectionManager;
-import com.ichorpowered.guardian.detection.check.GuardianCheckRegistry;
-import com.ichorpowered.guardian.detection.heuristics.GuardianHeuristicRegistry;
-import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyRegistry;
+import com.ichorpowered.guardian.detection.check.GuardianCheckModel;
+import com.ichorpowered.guardian.detection.heuristic.GuardianHeuristicModel;
+import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyModel;
 import com.ichorpowered.guardian.launch.FacetBootstrap;
 import com.ichorpowered.guardian.launch.facet.CorePluginFacet;
 import com.ichorpowered.guardian.launch.facet.GamePluginFacet;
 import com.ichorpowered.guardian.launch.facet.InternalPluginFacet;
 import com.ichorpowered.guardian.launch.message.SimpleFacetMessage;
-import com.ichorpowered.guardian.phase.GuardianPhaseRegistry;
 import com.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import com.ichorpowered.guardian.sequence.GuardianSequenceManager;
 import com.ichorpowered.guardian.util.property.Property;
@@ -57,7 +56,12 @@ import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.*;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStartingServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppingEvent;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -93,37 +97,33 @@ public class GuardianPlugin implements Guardian<Event> {
     private final PluginContainer pluginContainer;
     private final Path configDirectory;
 
-    /* Facet Bootstrap Fields */
+    /* Bootstrap Fields */
     private final FacetBootstrap facetBootstrap;
     private final PropertyInjector propertyInjector;
 
     /* Core Fields */
-    @Property
-    public Long coreTime;
-    @Property public GuardianState state;
-    @Property public SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
+    @Property private Long coreTime;
+    @Property private GuardianState state;
 
-    @Property private ModuleController<GuardianPlugin> moduleController;
-
-    /* Registry Fields */
-    @Property(modifier = PropertyModifier.FINAL) private GuardianDetectionManager detectionRegistry;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianCheckRegistry checkRegistry;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianHeuristicRegistry heuristicRegistry;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianPenaltyRegistry penaltyRegistry;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianPhaseRegistry phaseRegistry;
-
-    @Property(modifier = PropertyModifier.FINAL) private SequenceRegistry<Event> sequenceRegistry;
+    @Property(modifier = PropertyModifier.FINAL) private Common common;
+    @Property(modifier = PropertyModifier.FINAL) private Configuration configuration;
+    @Property(modifier = PropertyModifier.FINAL) private ModuleController<GuardianPlugin> moduleController;
+    @Property(modifier = PropertyModifier.FINAL) private SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
 
     /* Manager Fields */
-    @Property(modifier = PropertyModifier.FINAL) public Configuration configuration;
-    @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceManager sequenceManager;
-    @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceManager.SequenceTask sequenceTask;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianDetectionManager detectionManager;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceManager sequenceManager;
+    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceManager.SequenceTask sequenceTask;
 
-    @Property(modifier = PropertyModifier.FINAL) public GuardianSequenceListener sequenceListener;
-    @Property(modifier = PropertyModifier.FINAL) public Common common;
+    /* Register Fields */
+    @Property(modifier = PropertyModifier.FINAL) private SequenceRegistry<Event> sequenceRegistry;
+
+    /* Listeners */
+    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceListener sequenceListener;
 
     @Inject
-    public GuardianPlugin(Logger logger, PluginContainer pluginContainer,
+    public GuardianPlugin(Logger logger,
+                          PluginContainer pluginContainer,
                           @DefaultConfig(sharedRoot = false) Path configDirectory) {
         this.logger = logger;
         this.pluginContainer = pluginContainer;
@@ -214,6 +214,14 @@ public class GuardianPlugin implements Guardian<Event> {
         return this.configDirectory.getParent();
     }
 
+    public Common getCommon() {
+        return this.common;
+    }
+
+    public Configuration getConfiguration() {
+        return this.configuration;
+    }
+
     public final ModuleController<GuardianPlugin> getModuleController() {
         return this.moduleController;
     }
@@ -230,7 +238,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public DetectionManager getDetectionManager() {
-        return null;
+        return this.detectionManager;
     }
 
     @Override
@@ -240,21 +248,14 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Override
     public SequenceRegistry getSequenceRegistry() {
-        return null;
+        return this.sequenceRegistry;
     }
 
-    @Override
-    public CheckModel getCheckModel() {
-        return null;
+    public GuardianSequenceManager.SequenceTask getSequenceTask() {
+        return this.sequenceTask;
     }
 
-    @Override
-    public HeuristicModel getHeuristicModel() {
-        return null;
-    }
-
-    @Override
-    public PenaltyModel getPenaltyModel() {
-        return null;
+    public GuardianSequenceListener getSequenceListener() {
+        return this.sequenceListener;
     }
 }
