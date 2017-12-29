@@ -23,7 +23,9 @@
  */
 package com.ichorpowered.guardian.content.transaction;
 
+import com.ichorpowered.guardian.content.EmptyContentContainer;
 import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
 
@@ -40,6 +42,10 @@ public class GuardianSingleValue<E> implements SingleValue<E> {
     public GuardianSingleValue(final ContentKey contentKey, final ContentContainer contentContainer) {
         this.contentKey = contentKey;
         this.contentContainer = contentContainer;
+    }
+
+    public static <B> GuardianSingleValue<B> empty() {
+        return new GuardianSingleValue<>(ContentKeys.UNDEFINED, new EmptyContentContainer());
     }
 
     public GuardianSingleValue<E> setDirty(final boolean dirty) {

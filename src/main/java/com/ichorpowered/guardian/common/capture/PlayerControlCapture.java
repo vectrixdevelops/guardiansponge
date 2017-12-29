@@ -24,13 +24,10 @@
 package com.ichorpowered.guardian.common.capture;
 
 import com.google.common.collect.Maps;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.entry.EntityEntry;
-import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
+import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
@@ -113,24 +110,24 @@ public class PlayerControlCapture {
         public Common(@Nonnull Object plugin, @Nonnull Detection detection) {
             super(plugin, detection);
 
-            this.liftOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", LIFT)
-                    .getDouble(this.liftOffset);
+            this.liftOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_LIFT_SPEED)
+                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.liftOffset);
 
-            this.sneakOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", SNEAK)
-                    .getDouble(this.sneakOffset);
+            this.sneakOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_SNEAK_SPEED)
+                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.sneakOffset);
 
-            this.walkOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", WALK)
-                    .getDouble(this.walkOffset);
+            this.walkOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_WALK_SPEED)
+                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.walkOffset);
 
-            this.sprintOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", SPRINT)
-                    .getDouble(this.sprintOffset);
+            this.sprintOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_SPRINT_SPEED)
+                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.sprintOffset);
 
-            this.flyOffset = this.getDetection().getConfiguration().getStorage().getNode("analysis", "control-values", FLY)
-                    .getDouble(this.flyOffset);
+            this.flyOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_FLY_SPEED)
+                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.flyOffset);
         }
 
         @Override
-        public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
+        public void update(@Nonnull PlayerEntry entry, @Nonnull CaptureContainer captureContainer) {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
 
             Player player = entry.getEntity(Player.class).get();

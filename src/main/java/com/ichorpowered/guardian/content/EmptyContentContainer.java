@@ -21,31 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.content.assignment;
+package com.ichorpowered.guardian.content;
 
-import com.google.common.collect.Lists;
-import com.ichorpowered.guardianapi.content.transaction.ContentAssignment;
+import com.google.common.collect.Sets;
+import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 
-import java.util.ArrayList;
+import java.util.Set;
 
-public class ConfigurationAssignment implements ContentAssignment<ArrayList<String>> {
-
-    private ArrayList<String> assignment;
-
-    public static ConfigurationAssignment of(String... nodeName) {
-        ConfigurationAssignment configurationAssignment = new ConfigurationAssignment();
-        configurationAssignment.set(Lists.newArrayList(nodeName));
-
-        return configurationAssignment;
-    }
+public class EmptyContentContainer extends AbstractContentContainer {
 
     @Override
-    public ArrayList<String> lookup() {
-        return this.assignment;
+    public Set<ContentKey> getPossibleKeys() {
+        return Sets.newHashSet();
     }
 
-    @Override
-    public void set(ArrayList<String> assignment) {
-        this.assignment = assignment;
-    }
 }

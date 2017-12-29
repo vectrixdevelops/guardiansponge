@@ -24,15 +24,19 @@
 package com.ichorpowered.guardian.common.capture;
 
 import com.flowpowered.math.vector.Vector3d;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.entry.EntityEntry;
-import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
+import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardian.util.ContentUtil;
 import com.ichorpowered.guardian.util.WorldUtil;
 import com.ichorpowered.guardian.util.entity.BoundingBox;
+import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.ContentKeys;
+import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
+import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
@@ -42,7 +46,7 @@ import java.util.Optional;
 
 public class PlayerPositionCapture {
 
-    public static class RelativeAltitude<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
+    public static class RelativeAltitude extends AbstractCapture {
 
         private static final String CLASS_NAME = RelativeAltitude.class.getSimpleName().toUpperCase();
 
@@ -55,30 +59,37 @@ public class PlayerPositionCapture {
         private final double amount;
         private final boolean liftOnly;
 
-        public RelativeAltitude(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
-            this(owner, detection, 0.25);
+        public RelativeAltitude(@Nonnull Object plugin, @Nonnull Detection detection) {
+            this(plugin, detection, 0.25);
         }
 
-        public RelativeAltitude(@Nonnull E owner, @Nonnull Detection<E, F> detection,
+        public RelativeAltitude(@Nonnull Object plugin, @Nonnull Detection detection,
                                 double amount) {
-            this(owner, detection, amount, false);
+            this(plugin, detection, amount, false);
         }
 
-        public RelativeAltitude(@Nonnull E owner, @Nonnull Detection<E, F> detection,
+        public RelativeAltitude(@Nonnull Object plugin, @Nonnull Detection detection,
                                 double amount, boolean liftOnly) {
-            super(owner, detection);
+            super(plugin, detection);
 
             this.amount = amount;
             this.liftOnly = liftOnly;
         }
 
         @Override
-        public void update(EntityEntry entry, CaptureContainer captureContainer) {
+        public void update(PlayerEntry entry, CaptureContainer captureContainer) {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
             Player player = entry.getEntity(Player.class).get();
 
-            boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
-            BoundingBox playerBox = WorldUtil.getBoundingBox(0.92, isSneaking ? 1.66 : 1.81);
+            final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
+            final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
+            final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
+
+            final double playerWidth = playerBoxWidth.getElement().orElse(1.0) + playerBoxSafety.getElement().orElse(0.08);
+            final double playerHeight = playerBoxHeight.getElement().orElse(1.75) + playerBoxSafety.getElement().orElse(0.08);
+
+            final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
+            final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
 
             final Location location = player.getLocation();
 

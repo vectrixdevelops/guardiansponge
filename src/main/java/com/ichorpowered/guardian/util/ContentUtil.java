@@ -21,31 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.content.assignment;
+package com.ichorpowered.guardian.util;
 
-import com.google.common.collect.Lists;
-import com.ichorpowered.guardianapi.content.transaction.ContentAssignment;
+import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
 
-public class ConfigurationAssignment implements ContentAssignment<ArrayList<String>> {
+public class ContentUtil {
 
-    private ArrayList<String> assignment;
-
-    public static ConfigurationAssignment of(String... nodeName) {
-        ConfigurationAssignment configurationAssignment = new ConfigurationAssignment();
-        configurationAssignment.set(Lists.newArrayList(nodeName));
-
-        return configurationAssignment;
+    public static <T> Optional<SingleValue<T>> getFirst(ContentKey<T> contentKey, ContentContainer... contentContainers) {
+        return Arrays.stream(contentContainers)
+                .map(contentContainer -> contentContainer.<T>get(contentKey))
+                .filter(Optional::isPresent)
+                .map(Optional::<SingleValue<T>>get)
+                .findFirst();
     }
 
-    @Override
-    public ArrayList<String> lookup() {
-        return this.assignment;
-    }
-
-    @Override
-    public void set(ArrayList<String> assignment) {
-        this.assignment = assignment;
-    }
 }

@@ -24,24 +24,31 @@
 package com.ichorpowered.guardian.common.capture;
 
 import com.google.common.collect.Maps;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.entry.EntityEntry;
-import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
-import com.ichorpowered.guardian.api.util.key.NamedTypeKey;
+import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardian.util.ContentUtil;
 import com.ichorpowered.guardian.util.WorldUtil;
 import com.ichorpowered.guardian.util.entity.BoundingBox;
+import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.ContentKeys;
+import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
+import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
+import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class WorldMaterialCapture<E, F extends DetectionConfiguration> extends AbstractCapture<E, F> {
+public class WorldMaterialCapture extends AbstractCapture {
 
     private static final String CLASS_NAME = WorldMaterialCapture.class.getSimpleName().toUpperCase();
 
@@ -55,28 +62,21 @@ public class WorldMaterialCapture<E, F extends DetectionConfiguration> extends A
     public static String LIQUID = "liquid";
     public static String SOLID = "solid";
 
-    private double gasSpeedModifier = 1.065;
-    private double solidSpeedModifier = 1.045;
-    private double liquidSpeedModifier = 1.035;
+    private Map<String, Double> materialSpeed;
+    private Map<String, Double> matterSpeed;
 
-    public WorldMaterialCapture(@Nonnull E owner, @Nonnull Detection<E, F> detection) {
-        super(owner, detection);
+    public WorldMaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
+        super(plugin, detection);
 
-        this.gasSpeedModifier = detection.getConfiguration().getStorage()
-                .getNode("analysis", "material-values", "gas")
-                .getDouble(this.gasSpeedModifier);
+        this.materialSpeed = (Map<String, Double>) detection.getContentContainer().<Map>get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
+                .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
 
-        this.solidSpeedModifier = detection.getConfiguration().getStorage()
-                .getNode("analysis", "material-values", "solid")
-                .getDouble(this.solidSpeedModifier);
-
-        this.liquidSpeedModifier = detection.getConfiguration().getStorage()
-                .getNode("analysis", "material-values", "liquid")
-                .getDouble(this.liquidSpeedModifier);
+        this.matterSpeed = (Map<String, Double>) detection.getContentContainer().<Map>get(ContentKeys.MOVEMENT_MATTER_SPEED)
+                .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
     }
 
     @Override
-    public void update(@Nonnull EntityEntry entry, @Nonnull CaptureContainer captureContainer) {
+    public void update(@Nonnull PlayerEntry entry, @Nonnull CaptureContainer captureContainer) {
         if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
         Player player = entry.getEntity(Player.class).get();
 
@@ -87,36 +87,58 @@ public class WorldMaterialCapture<E, F extends DetectionConfiguration> extends A
 
         captureContainer.putOnce(WorldMaterialCapture.MATERIAL_STATE_TICKS, materialState);
 
-        boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
-        double playerBoxHeight = isSneaking ? 1.66 : 1.81;
-        Location location = player.getLocation();
+        final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
+        final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
+        final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
 
-        BoundingBox playerBox = WorldUtil.getBoundingBox(0.92, playerBoxHeight);
+        final double playerWidth = playerBoxWidth.getElement().orElse(1.0) + playerBoxSafety.getElement().orElse(0.08);
+        final double playerHeight = playerBoxHeight.getElement().orElse(1.75) + playerBoxSafety.getElement().orElse(0.08);
+
+        final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
+        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
+
+        final Location<World> location = player.getLocation();
 
         // Checks
 
-        if (WorldUtil.isEmptyUnder(player, playerBox, playerBoxHeight)) {
-            captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * this.gasSpeedModifier, this.gasSpeedModifier);
+        if (WorldUtil.isEmptyUnder(player, playerBox, isSneaking ? (playerHeight - 0.25) : playerHeight)) {
+            final double gasSpeed = this.matterSpeed.get(GAS);
+
+            captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * gasSpeed, gasSpeed);
 
             captureContainer.transform(WorldMaterialCapture.MATERIAL_STATE_TICKS, original -> {
                 ((Map<String, Integer>) original).put(GAS, ((Map<String, Integer>) original).get(GAS) + 1);
                 return (Map<String, Integer>) original;
             }, Maps.newHashMap());
         } else if (WorldUtil.anyLiquidAtDepth(location, playerBox, 1) || WorldUtil.anyLiquidAtDepth(location, playerBox, 0)
-                || WorldUtil.anyLiquidAtDepth(location, playerBox, -playerBoxHeight)) {
-            captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * this.liquidSpeedModifier, this.liquidSpeedModifier);
+                || WorldUtil.anyLiquidAtDepth(location, playerBox, isSneaking ? -(playerHeight - 0.25) : -playerHeight)) {
+            final double liquidSpeed = this.matterSpeed.get(LIQUID);
+
+            captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * liquidSpeed, liquidSpeed);
 
             captureContainer.transform(WorldMaterialCapture.MATERIAL_STATE_TICKS, original -> {
                 ((Map<String, Integer>) original).put(LIQUID, ((Map<String, Integer>) original).get(LIQUID) + 1);
                 return (Map<String, Integer>) original;
             }, Maps.newHashMap());
         } else {
-            captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * this.solidSpeedModifier, this.solidSpeedModifier);
+            final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksAtDepth(location, playerBox, 1);
 
-            captureContainer.transform(WorldMaterialCapture.MATERIAL_STATE_TICKS, original -> {
-                ((Map<String, Integer>) original).put(SOLID, ((Map<String, Integer>) original).get(SOLID) + 1);
-                return (Map<String, Integer>) original;
-            }, Maps.newHashMap());
+            for (BlockType blockType : surroundingBlockTypes) {
+                double speedModifier;
+
+                if (this.materialSpeed.containsKey(blockType.getName().toLowerCase())) {
+                    speedModifier = this.materialSpeed.get(blockType.getName().toLowerCase());
+                } else {
+                    speedModifier = this.matterSpeed.get(SOLID);
+                }
+
+                captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * speedModifier, speedModifier);
+
+                captureContainer.transform(WorldMaterialCapture.MATERIAL_STATE_TICKS, original -> {
+                    ((Map<String, Integer>) original).put(SOLID, ((Map<String, Integer>) original).get(SOLID) + 1);
+                    return (Map<String, Integer>) original;
+                }, Maps.newHashMap());
+            }
         }
     }
 }

@@ -37,7 +37,7 @@ public final class PluginInfo {
     public static final String DESCRIPTION = "@description@";
 
     public static final String ELDER_VERSION = "@elderversion@";
-    public static final String PRECOGS_VERSION = "@precogsversion";
+    public static final String PRECOGS_VERSION = "@precogsversion@";
 
     public static final boolean EXPERIMENTAL = true;
 
