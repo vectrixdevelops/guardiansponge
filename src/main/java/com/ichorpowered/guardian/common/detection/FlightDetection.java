@@ -144,7 +144,7 @@ public class FlightDetection extends AbstractDetection {
         }
 
         @Override
-        public Set<ContentKey> getPossibleKeys() {
+        public Set<ContentKey<?>> getPossibleKeys() {
             return null;
         }
 

@@ -31,6 +31,7 @@ import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.entry.GuardianEntityEntry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import com.ichorpowered.guardianapi.detection.capture.Capture;
+import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -76,6 +77,13 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
      */
     @Deprecated
     private void transitionPhase(final GuardianEntityEntry<Player> entityEntry, final GuardianSequence sequence) {
+        final StageCycle stageCycle = sequence.getOwner().getStageCycle();
+
+        if (stageCycle.getModelId().isPresent()) {
+            final String modelId = stageCycle.getModelId().get();
+
+
+        }
 //        DetectionPhase<?, ?> detectionPhase = sequence.getOwner().getPhaseManipulator();
 //
 //        while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {

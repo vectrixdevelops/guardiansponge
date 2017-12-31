@@ -76,12 +76,12 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
                     final ConfigurationAssignment configurationAssignment = assignment.get();
                     final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
 
-                    this.contentContainer.offer(key, value);
+                    this.contentContainer.offer((ContentKey) key, value);
                 });
     }
 
     @Override
-    public void acquireAll(Set<ContentKey> contentKeys) {
+    public void acquireAll(Set<ContentKey<?>> contentKeys) {
         if (this.contentContainer == null) return;
 
         try {
@@ -100,7 +100,7 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
                     final ConfigurationAssignment configurationAssignment = assignment.get();
                     final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
 
-                    this.contentContainer.offer(key, value);
+                    this.contentContainer.offer((ContentKey) key, value);
                 });
     }
 

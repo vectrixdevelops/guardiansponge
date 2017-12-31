@@ -26,7 +26,6 @@ package com.ichorpowered.guardian.detection.check;
 import com.google.common.collect.Maps;
 import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.check.CheckModel;
-import com.ichorpowered.guardianapi.detection.stage.Stage;
 import com.ichorpowered.guardianapi.detection.stage.model.StageModel;
 
 import java.util.Iterator;
@@ -35,7 +34,7 @@ import java.util.Optional;
 
 public class GuardianCheckModel implements CheckModel {
 
-    private Map<Class<? extends Check>, Check> checkMap = Maps.newHashMap();
+    private Map<Class<? extends Check<?>>, Check<?>> checkMap = Maps.newHashMap();
 
     @Override
     public String getId() {
@@ -48,25 +47,25 @@ public class GuardianCheckModel implements CheckModel {
     }
 
     @Override
-    public StageModel register(Check stage) {
-        this.checkMap.put(stage.getClass(), stage);
+    public StageModel<Check<?>> register(Check<?> stage) {
+        this.checkMap.put((Class<? extends Check<?>>) stage.getClass(), stage);
         return this;
     }
 
     @Override
-    public StageModel unregister(Class<? extends Check> stageClass) {
+    public StageModel<Check<?>> unregister(Class<? extends Check<?>> stageClass) {
         this.checkMap.remove(stageClass);
         return this;
     }
 
     @Override
-    public StageModel unregister(Check stage) {
+    public StageModel<Check<?>> unregister(Check stage) {
         this.checkMap.remove(stage.getClass(), stage);
         return this;
     }
 
     @Override
-    public Optional<? extends Check> get(Class<? extends Check> stageClass) {
+    public Optional<? extends Check> get(Class<? extends Check<?>> stageClass) {
         return Optional.ofNullable(this.checkMap.get(stageClass));
     }
 
@@ -76,7 +75,7 @@ public class GuardianCheckModel implements CheckModel {
     }
 
     @Override
-    public Iterator<Check> iterator() {
+    public Iterator<Check<?>> iterator() {
         return this.checkMap.values().iterator();
     }
 }

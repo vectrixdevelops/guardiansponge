@@ -29,11 +29,12 @@ import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
 import com.ichorpowered.guardianapi.util.Transform;
 import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class GuardianCaptureContainer implements CaptureContainer {
 

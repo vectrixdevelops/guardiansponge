@@ -27,8 +27,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.ichorpowered.guardian.content.transaction.GuardianBatchValue;
 import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
-import com.ichorpowered.guardianapi.content.ContentLoader;
 import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.ContentLoader;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.content.transaction.result.BatchValue;
 import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
@@ -42,7 +42,7 @@ import java.util.Set;
 public abstract class AbstractContentContainer implements ContentContainer {
 
     private final ContentLoader contentLoader;
-    private final Set<ContentKey> keySet = Sets.newHashSet();
+    private final Set<ContentKey<?>> keySet = Sets.newHashSet();
     private final Map<String, SingleValue<?>> container = Maps.newHashMap();
 
     public AbstractContentContainer() {
@@ -54,7 +54,7 @@ public abstract class AbstractContentContainer implements ContentContainer {
     }
 
     @Override
-    public <E> SingleValue<E> offer(ContentKey key, E value) {
+    public <E> SingleValue<E> offer(ContentKey<E> key, E value) {
         GuardianSingleValue<E> singleValueResult = new GuardianSingleValue<>(key, this);
 
         if (!this.keySet.contains(key)) this.keySet.add(key);
@@ -65,11 +65,11 @@ public abstract class AbstractContentContainer implements ContentContainer {
 
     @Override
     public <E> Optional<SingleValue<E>> offer(String id, E value) {
-        Optional<ContentKey> contentKey = this.getPossibleKeys().stream()
+        Optional<ContentKey<?>> contentKey = this.getPossibleKeys().stream()
                 .filter(key -> key.getId().equals(id))
                 .findFirst();
 
-        return contentKey.map(identifiedKey -> this.offer(identifiedKey, value));
+        return contentKey.map(identifiedKey -> this.offer((ContentKey<E>) identifiedKey, value));
     }
 
     @Override
@@ -82,7 +82,7 @@ public abstract class AbstractContentContainer implements ContentContainer {
     }
 
     @Override
-    public <E> Optional<SingleValue<E>> get(ContentKey key) {
+    public <E> Optional<SingleValue<E>> get(ContentKey<E> key) {
         if (!this.keySet.contains(key)) return Optional.empty();
         if (!this.container.containsKey(key.getId())) return Optional.empty();
 
@@ -91,15 +91,15 @@ public abstract class AbstractContentContainer implements ContentContainer {
 
     @Override
     public <E> Optional<SingleValue<E>> get(String id) {
-        Optional<ContentKey> contentKey = this.getPossibleKeys().stream()
+        Optional<ContentKey<?>> contentKey = this.getPossibleKeys().stream()
                 .filter(key -> key.getId().equals(id))
                 .findFirst();
 
-        return contentKey.map(identifiedKey -> this.<E>get(identifiedKey).orElse(null));
+        return contentKey.map(identifiedKey -> this.get((ContentKey<E>) identifiedKey).orElse(null));
     }
 
     @Override
-    public Set<ContentKey> getKeys() {
+    public Set<ContentKey<?>> getKeys() {
         return this.keySet;
     }
 

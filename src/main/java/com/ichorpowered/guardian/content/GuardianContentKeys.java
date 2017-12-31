@@ -39,6 +39,34 @@ public class GuardianContentKeys {
                 .name("undefined")
                 .build();
 
+        ContentKeys.ANALYSIS_TIME = GuardianContentKey.<Double>builder()
+                .id("guardian:analysis_time")
+                .name("time")
+                .element(TypeToken.of(Double.class))
+                .assignment(ConfigurationAssignment.of("analysis", "time"))
+                .build();
+
+        ContentKeys.ANALYSIS_INTERCEPT = GuardianContentKey.<Double>builder()
+                .id("guardian:analysis_intercept")
+                .name("intercept")
+                .element(TypeToken.of(Double.class))
+                .assignment(ConfigurationAssignment.of("analysis", "intercept"))
+                .build();
+
+        ContentKeys.ANALYSIS_MINIMUM_TICK = GuardianContentKey.<Double>builder()
+                .id("guardian:analysis_minimum_tick")
+                .name("minimum_tick")
+                .element(TypeToken.of(Double.class))
+                .assignment(ConfigurationAssignment.of("analysis", "minimum-tick"))
+                .build();
+
+        ContentKeys.ANALYSIS_MAXIMUM_TICK = GuardianContentKey.<Double>builder()
+                .id("guardian:analysis_maximum_tick")
+                .name("maximum_tick")
+                .element(TypeToken.of(Double.class))
+                .assignment(ConfigurationAssignment.of("analysis", "maximum-tick"))
+                .build();
+
         ContentKeys.MOVEMENT_LIFT_SPEED = GuardianContentKey.<Double>builder()
                 .id("guardian:movement_lift_speed")
                 .name("lift_speed")

@@ -31,7 +31,6 @@ import com.ichorpowered.guardianapi.detection.stage.model.StageModel;
 import com.ichorpowered.guardianapi.detection.stage.model.StageModelArchetype;
 import com.ichorpowered.guardianapi.detection.stage.model.StageModelBuilder;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;

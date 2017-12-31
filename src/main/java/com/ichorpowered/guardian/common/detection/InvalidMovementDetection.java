@@ -37,9 +37,10 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.plugin.PluginContainer;
 import tech.ferus.util.config.ConfigFile;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
+
+import javax.annotation.Nonnull;
 
 @Module(
         id = "invalidmovement",

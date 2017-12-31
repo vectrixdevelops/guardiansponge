@@ -26,10 +26,11 @@ package com.ichorpowered.guardian.sequence;
 import com.ichorpowered.guardianapi.detection.report.Report;
 import com.ichorpowered.guardianapi.event.origin.Origin;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class SequenceReport implements Report {
 

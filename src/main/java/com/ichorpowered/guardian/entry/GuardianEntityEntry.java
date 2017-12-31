@@ -29,12 +29,12 @@ import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
 import net.kyori.lunar.reflect.Reified;
 
-import javax.annotation.Nonnull;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.annotation.Nonnull;
 
 public class GuardianEntityEntry<T> extends AbstractContentContainer implements PlayerEntry, Reified<T> {
 

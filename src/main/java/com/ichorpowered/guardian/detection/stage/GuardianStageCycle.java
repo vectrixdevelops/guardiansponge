@@ -59,25 +59,9 @@ public class GuardianStageCycle implements StageCycle {
     @Override
     @SuppressWarnings("unchecked")
     public boolean next() {
-        // Initiates the cycle.
-        if (this.modelIterator == null && this.stageIterator == null) {
-            this.modelIterator = this.filteredStages.keys().iterator();
-
-            if (this.modelIterator.hasNext()) {
-                this.presentStageModel = this.modelIterator.next();
-
-                // Setup Stage Iterator
-                this.stageIterator = this.presentStageModel.iterator();
-
-                if (this.stageIterator.hasNext()) {
-                    this.presentStage = this.stageIterator.next();
-                }
-            } else {
-                // finished
-                return false;
-            }
-
-            return true;
+        final Boolean cycleInit = this.initializeCycle();
+        if (cycleInit != null) {
+            return cycleInit;
         }
 
         if (!this.stageIterator.hasNext()) {
@@ -89,6 +73,9 @@ public class GuardianStageCycle implements StageCycle {
 
                 if (this.stageIterator.hasNext()) {
                     this.presentStage = this.stageIterator.next();
+                } else {
+                    // Shouldn't reach this point but in case it does.
+                    this.next();
                 }
             } else {
                 // finished
@@ -96,6 +83,33 @@ public class GuardianStageCycle implements StageCycle {
             }
         } else {
             this.presentStage = this.stageIterator.next();
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean nextModel() {
+        final Boolean cycleInit = this.initializeCycle();
+        if (cycleInit != null) {
+            return cycleInit;
+        }
+
+        if (this.modelIterator.hasNext()) {
+            this.presentStageModel = this.modelIterator.next();
+
+            // Setup Stage Iterator
+            this.stageIterator = this.presentStageModel.iterator();
+
+            if (this.stageIterator.hasNext()) {
+                this.presentStage = this.stageIterator.next();
+            } else {
+                // Shouldn't reach this point but in case it does.
+                this.nextModel();
+            }
+        } else {
+            // finished
+            return false;
         }
 
         return true;
@@ -143,6 +157,30 @@ public class GuardianStageCycle implements StageCycle {
     @Override
     public int totalSize() {
         return this.filteredStages.size();
+    }
+
+    private Boolean initializeCycle() {
+        if (this.modelIterator == null && this.stageIterator == null) {
+            this.modelIterator = this.filteredStages.keys().iterator();
+
+            if (this.modelIterator.hasNext()) {
+                this.presentStageModel = this.modelIterator.next();
+
+                // Setup Stage Iterator
+                this.stageIterator = this.presentStageModel.iterator();
+
+                if (this.stageIterator.hasNext()) {
+                    this.presentStage = this.stageIterator.next();
+                }
+            } else {
+                // finished
+                return false;
+            }
+
+            return true;
+        }
+
+        return null;
     }
 
     private void evaluateCycle() {

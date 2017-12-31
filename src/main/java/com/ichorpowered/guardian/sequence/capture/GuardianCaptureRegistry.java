@@ -31,12 +31,11 @@ import com.ichorpowered.guardianapi.detection.capture.CaptureRegistry;
 import com.ichorpowered.guardianapi.entry.entity.EntityEntry;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
 
 public class GuardianCaptureRegistry implements CaptureRegistry {
 

@@ -37,9 +37,10 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.entity.living.player.Player;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 public class PlayerEffectCapture extends AbstractCapture {
 

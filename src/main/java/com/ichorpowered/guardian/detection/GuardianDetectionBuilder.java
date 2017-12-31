@@ -25,7 +25,6 @@ package com.ichorpowered.guardian.detection;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
-import com.ichorpowered.guardian.content.AbstractContentContainer;
 import com.ichorpowered.guardian.detection.stage.GuardianStageCycle;
 import com.ichorpowered.guardian.util.property.PropertyInjectorFactory;
 import com.ichorpowered.guardianapi.content.ContentContainer;
