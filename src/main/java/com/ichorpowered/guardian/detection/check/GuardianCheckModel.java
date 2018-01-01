@@ -38,7 +38,7 @@ public class GuardianCheckModel implements CheckModel {
 
     @Override
     public String getId() {
-        return "guardian:model:check";
+        return "guardian:check_model";
     }
 
     @Override

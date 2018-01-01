@@ -42,17 +42,12 @@ import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
 import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.slf4j.Logger;
 import org.spongepowered.api.plugin.PluginContainer;
-import tech.ferus.util.config.ConfigFile;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.annotation.Nonnull;
 
 @Module(id = "movementspeed",
         name = "Movement Speed Detection",

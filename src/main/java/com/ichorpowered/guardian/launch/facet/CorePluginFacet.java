@@ -142,7 +142,7 @@ public class CorePluginFacet implements Facet {
 
         this.logger.info(this.facetPrefix + "Initializing systems.");
 
-        GuardianSequenceManager sequenceManager = new GuardianSequenceManager(sequenceRegistry);
+        GuardianSequenceManager sequenceManager = new GuardianSequenceManager(this.plugin, sequenceRegistry);
         GuardianSequenceManager.SequenceTask sequenceTask = new GuardianSequenceManager.SequenceTask(this.plugin,
                 sequenceManager);
 

@@ -31,6 +31,9 @@ import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.entry.GuardianEntityEntry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import com.ichorpowered.guardianapi.detection.capture.Capture;
+import com.ichorpowered.guardianapi.detection.check.Check;
+import com.ichorpowered.guardianapi.detection.heuristic.Heuristic;
+import com.ichorpowered.guardianapi.detection.penalty.Penalty;
 import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -39,8 +42,12 @@ import org.spongepowered.api.scheduler.Task;
 
 public class GuardianSequenceManager extends SequenceManager<Event> {
 
-    public GuardianSequenceManager(final SequenceRegistry<Event> sequenceRegistry) {
+    private final GuardianPlugin plugin;
+
+    public GuardianSequenceManager(final GuardianPlugin plugin,
+                                   final SequenceRegistry<Event> sequenceRegistry) {
         super(sequenceRegistry);
+        this.plugin = plugin;
     }
 
     @Override
@@ -68,33 +75,31 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
         return result;
     }
 
-    /**
-     * A temporary sequence transition phase.
-     *
-     * This will be removed later to be event driven.
-     *
-     * @param sequence the sequence
-     */
-    @Deprecated
     private void transitionPhase(final GuardianEntityEntry<Player> entityEntry, final GuardianSequence sequence) {
         final StageCycle stageCycle = sequence.getOwner().getStageCycle();
 
-        if (stageCycle.getModelId().isPresent()) {
-            final String modelId = stageCycle.getModelId().get();
+        if (!stageCycle.getModelId().isPresent()) stageCycle.nextModel();
 
+        while (stageCycle.hasNext()) {
+            if (stageCycle.getStage().isPresent() && stageCycle.getStage().get().getClass().equals(Check.class)) {
+                if (!stageCycle.nextModel()) return;
+                continue;
+            }
 
+            if (stageCycle.getStage().isPresent() && stageCycle.getStage().get().getClass().equals(Heuristic.class)) {
+                if (!stageCycle.getStage().isPresent()) continue;
+                Heuristic heuristic = (Heuristic) stageCycle.getStage().get();
+                // Execute heuristic.
+            }
+
+            if (stageCycle.getStage().isPresent() && stageCycle.getStage().get().getClass().equals(Penalty.class)) {
+                if (!stageCycle.getStage().isPresent()) continue;
+                Penalty penalty = (Penalty) stageCycle.getStage().get();
+                // Execute penalty.
+            }
+
+            if (!stageCycle.next()) return;
         }
-//        DetectionPhase<?, ?> detectionPhase = sequence.getOwner().getPhaseManipulator();
-//
-//        while (detectionPhase.hasNext(PhaseTypes.HEURISTIC)) {
-//            Heuristic heuristic = detectionPhase.next(PhaseTypes.HEURISTIC);
-//            heuristic.getSupplier().apply(entityEntry, sequence.getOwner(), sequence.getSummary());
-//        }
-//
-//        while (detectionPhase.hasNext(PhaseTypes.PENALTY)) {
-//            Penalty penalty = detectionPhase.next(PhaseTypes.PENALTY);
-//            penalty.getPredicate().test(entityEntry, sequence.getOwner(), sequence.getSummary());
-//        }
     }
 
     private void tickScheduler() {

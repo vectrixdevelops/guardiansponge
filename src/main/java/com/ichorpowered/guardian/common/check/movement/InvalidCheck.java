@@ -26,23 +26,24 @@ package com.ichorpowered.guardian.common.check.movement;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.condition.ConditionType;
-import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.check.Check;
-import com.ichorpowered.guardian.api.detection.check.CheckBlueprint;
-import com.ichorpowered.guardian.api.event.origin.Origin;
-import com.ichorpowered.guardian.api.report.Summary;
-import com.ichorpowered.guardian.api.sequence.capture.CaptureContainer;
+import com.google.common.collect.Sets;
 import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
+import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardian.entry.GuardianEntityEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import com.ichorpowered.guardian.sequence.SequenceReport;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
+import com.ichorpowered.guardianapi.content.ContentKeys;
+import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.detection.check.Check;
+import com.ichorpowered.guardianapi.detection.report.Summary;
+import com.ichorpowered.guardianapi.event.origin.Origin;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 
@@ -51,51 +52,46 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguration> {
+public class InvalidCheck implements Check<Event> {
 
-    private final CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint;
-    private final Detection<GuardianPlugin, DetectionConfiguration> detection;
+    public InvalidCheck() {}
 
-    private double analysisTime = 40;
-    private double minimumTickRange = 30;
-    private double maximumTickRange = 50;
+    @Override
+    public String getId() {
+        return "guardian:invalidcheck";
+    }
 
-    public InvalidCheck(CheckBlueprint<GuardianPlugin, DetectionConfiguration> checkBlueprint,
-                        Detection<GuardianPlugin, DetectionConfiguration> detection) {
-        this.checkBlueprint = checkBlueprint;
-        this.detection = detection;
+    @Override
+    public String getName() {
+        return "Invalid Movement Check";
+    }
 
-        this.analysisTime = this.detection.getConfiguration().getStorage().getNode("analysis", "time").getDouble(2d) / 0.05;
-        this.minimumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "minimum").getDouble(0.75);
-        this.maximumTickRange = this.analysisTime * this.detection.getConfiguration().getStorage().getNode("analysis", "range", "maximum").getDouble(1.25);
+    @Override
+    public Set<String> getTags() {
+        return Sets.newHashSet(
+                "guardian",
+                "internal",
+                "movement",
+                "invalidmovement"
+        );
     }
 
     @Nonnull
     @Override
-    public GuardianPlugin getOwner() {
-        return this.detection.getOwner();
-    }
+    public SequenceBlueprint<Event> getSequence(final Detection detection) {
+        final Double analysisTime = detection.getContentContainer().get(ContentKeys.ANALYSIS_TIME).orElse(GuardianSingleValue.empty())
+                .getElement().orElse(0d);
 
-    @Nonnull
-    @Override
-    public Detection<GuardianPlugin, DetectionConfiguration> getDetection() {
-        return this.detection;
-    }
+        final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianSingleValue.empty())
+                .getElement().orElse(0d);
 
-    @Nonnull
-    @Override
-    public CheckBlueprint<GuardianPlugin, DetectionConfiguration> getCheckBlueprint() {
-        return this.checkBlueprint;
-    }
+        final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianSingleValue.empty())
+                .getElement().orElse(0d);
 
-    @Nonnull
-    @Override
-    public SequenceBlueprint getSequence() {
-        return new GuardianSequenceBuilder<GuardianPlugin, DetectionConfiguration>()
+        return new GuardianSequenceBuilder()
 
-                .capture(new PlayerControlCapture.Invalid<>(this.detection.getOwner(), this.detection))
+                .capture(new PlayerControlCapture.Invalid(detection.getPlugin(), detection))
 
                 // Trigger : Move Entity Event
 
@@ -104,14 +100,14 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
                 // Analysis : Move Entity Event
 
                 .observe(MoveEntityEvent.class)
-                    .delay(Double.valueOf(this.analysisTime).intValue())
-                    .expire(Double.valueOf(this.maximumTickRange).intValue())
+                    .delay(analysisTime.intValue())
+                    .expire(maximumTickRate.intValue())
 
                     // TODO: Permission check.
 
                     .condition(sequenceContext -> {
                         final GuardianEntityEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
-                        final Summary<GuardianPlugin, DetectionConfiguration> summary = sequenceContext.get(CommonContextKeys.SUMMARY);
+                        final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
                         final GuardianCaptureRegistry captureRegistry = sequenceContext.get(CommonContextKeys.CAPTURE_REGISTRY);
                         final long lastActionTime = sequenceContext.get(CommonContextKeys.LAST_ACTION_TIME);
 
@@ -140,10 +136,10 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
                         // Finds the average between now and the last action.
                         double averageClockRate = ((current - lastActionTime) / 1000) / 0.05;
 
-                        if (averageClockRate < this.minimumTickRange) {
-                            this.getOwner().getLogger().warn("The server may be overloaded. A check could not be completed.");
+                        if (averageClockRate < minimumTickRate) {
+                            detection.getLogger().warn("The server may be overloaded. A check could not be completed.");
                             return false;
-                        } else if (averageClockRate > this.maximumTickRange) {
+                        } else if (averageClockRate > maximumTickRate) {
                             return false;
                         }
 
@@ -170,29 +166,8 @@ public class InvalidCheck implements Check<GuardianPlugin, DetectionConfiguratio
                     }, ConditionType.NORMAL)
 
                 .build(SequenceContext.builder()
-                        .owner(this.detection)
+                        .owner(detection)
                         .root(this)
                         .build());
     }
-
-    @Override
-    public boolean compare(@Nullable Check<?, ?> check) {
-        assert check != null;
-        return check.equals(this);
-    }
-
-    public static class Blueprint implements CheckBlueprint<GuardianPlugin, DetectionConfiguration> {
-
-        @Override
-        public Check<GuardianPlugin, DetectionConfiguration> create(Detection<GuardianPlugin, DetectionConfiguration> detection) {
-            return new InvalidCheck(this, detection);
-        }
-
-        @Override
-        public Class<? extends Check> getCheckClass() {
-            return InvalidCheck.class;
-        }
-
-    }
-
 }

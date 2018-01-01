@@ -79,6 +79,9 @@ public class GuardianStageCycle implements StageCycle {
                 }
             } else {
                 // finished
+                this.modelIterator = null;
+                this.stageIterator = null;
+
                 return false;
             }
         } else {
@@ -109,10 +112,18 @@ public class GuardianStageCycle implements StageCycle {
             }
         } else {
             // finished
+            this.modelIterator = null;
+            this.stageIterator = null;
+
             return false;
         }
 
         return true;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return this.stageIterator.hasNext() || this.modelIterator.hasNext();
     }
 
     @Override

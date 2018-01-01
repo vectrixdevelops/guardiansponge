@@ -25,22 +25,28 @@ package com.ichorpowered.guardian.common.detection;
 
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.DetectionPhase;
 import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
-import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
-import com.ichorpowered.guardian.common.penalty.ResetPenalty;
-import com.ichorpowered.guardian.phase.GuardianPhaseFilter;
+import com.ichorpowered.guardian.content.AbstractContentContainer;
+import com.ichorpowered.guardian.detection.AbstractDetection;
+import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
+import com.ichorpowered.guardian.util.property.Property;
+import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.detection.DetectionBuilder;
+import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
+import com.ichorpowered.guardianapi.detection.DetectionManager;
+import com.ichorpowered.guardianapi.detection.check.CheckModel;
+import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
+import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
+import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import org.slf4j.Logger;
 import org.spongepowered.api.plugin.PluginContainer;
-import tech.ferus.util.config.ConfigFile;
 
-import java.io.IOException;
 import java.nio.file.Path;
-
-import javax.annotation.Nonnull;
+import java.util.Optional;
+import java.util.Set;
 
 @Module(
         id = "invalidmovement",
@@ -52,28 +58,28 @@ import javax.annotation.Nonnull;
 )
 public class InvalidMovementDetection extends AbstractDetection {
 
-    private State state = State.UNDEFINED;
-    private InvalidMovementConfiguration detectionConfiguration;
-    private GuardianDetectionPhase<GuardianPlugin, DetectionConfiguration> phaseManipulator;
+    private static String MODULE_ID = InvalidMovementDetection.class.getAnnotation(Module.class).id();
+    private static String MODULE_NAME = InvalidMovementDetection.class.getAnnotation(Module.class).name();
+
+    private final GuardianPlugin plugin;
+
+    @Property
+    private String id;
+    @Property private String name;
+    @Property private StageCycle stageCycle;
+    @Property private ContentContainer contentContainer;
+    @Property private DetectionContentLoader contentLoader;
 
     @Inject
-    public InvalidMovementDetection(@ModuleContainer PluginContainer moduleContainer) {
-        super(GuardianPlugin.class.cast(moduleContainer.getInstance().get()), "invalidmovement", "Invalid Movement Detection");
+    public InvalidMovementDetection(@ModuleContainer PluginContainer pluginContainer) {
+        super(InvalidMovementDetection.MODULE_ID, InvalidMovementDetection.MODULE_NAME);
+
+        this.plugin = (GuardianPlugin) pluginContainer.<GuardianPlugin>getInstance().orElse(null);
     }
 
     @Override
     public void onConstruction() {
-        this.detectionConfiguration = new InvalidMovementConfiguration(this, this.getOwner().getConfigDirectory());
-        this.detectionConfiguration.load();
 
-        this.phaseManipulator = new GuardianDetectionPhase<>(this.getOwner(), this, new GuardianPhaseFilter()
-                // Check
-                .include(InvalidCheck.class)
-
-                // Penalty
-                .include(ResetPenalty.class)
-                .include(NotificationPenalty.class)
-        );
     }
 
     @Override
@@ -81,72 +87,87 @@ public class InvalidMovementDetection extends AbstractDetection {
 
     }
 
-    @Nonnull
     @Override
-    public String getPermission(@Nonnull String permissionTarget) {
-        return null;
+    public void onLoad() {
+        this.contentLoader.set(this.contentContainer);
     }
 
-    @Nonnull
     @Override
-    public DetectionConfiguration getConfiguration() {
-        return this.detectionConfiguration;
+    public DetectionManager register(DetectionManager detectionManager) {
+        final Optional<DetectionBuilder> detectionBuilder = detectionManager.provider(MovementSpeedDetection.class);
+        if (!detectionBuilder.isPresent()) return detectionManager;
+
+        return detectionBuilder.get()
+                .id(InvalidMovementDetection.MODULE_ID)
+                .name(InvalidMovementDetection.MODULE_NAME)
+                .stage(CheckModel.class)
+                    .min(1)
+                    .max(99)
+                    .filter(check -> check.getTags().contains("invalidmovement"))
+                    .include(InvalidCheck.class)
+                    .append()
+                .stage(HeuristicModel.class)
+                    .min(1)
+                    .max(99)
+                    .append()
+                .stage(PenaltyModel.class)
+                    .min(1)
+                    .max(99)
+                    .append()
+                .contentLoader(new InvalidMovementContentLoader(this, this.plugin.getConfigDirectory()))
+                .content(new InvalidMovementContent(this))
+                .submit(this.plugin);
     }
 
-    @Nonnull
     @Override
-    public State getState() {
-        return this.state;
+    public Logger getLogger() {
+        return this.plugin.getLogger();
     }
 
-    @Nonnull
     @Override
-    public DetectionPhase<GuardianPlugin, DetectionConfiguration> getPhaseManipulator() {
-        return this.phaseManipulator;
+    public StageCycle getStageCycle() {
+        return this.stageCycle;
     }
 
-    public static class InvalidMovementConfiguration implements DetectionConfiguration {
+    @Override
+    public ContentContainer getContentContainer() {
+        return this.contentContainer;
+    }
 
-        private static final String FILE_NAME = "invalidmovement.conf";
+    @Override
+    public DetectionContentLoader getContentLoader() {
+        return this.contentLoader;
+    }
+
+    @Override
+    public Object getPlugin() {
+        return this.plugin;
+    }
+
+    public static class InvalidMovementContent extends AbstractContentContainer {
 
         private final InvalidMovementDetection detection;
-        private final Path configDir;
 
-        private ConfigFile<CommentedConfigurationNode> configFile;
-
-        InvalidMovementConfiguration(@Nonnull InvalidMovementDetection detection,
-                                     @Nonnull Path configDir) {
+        public InvalidMovementContent(final InvalidMovementDetection detection) {
             this.detection = detection;
-            this.configDir = configDir;
         }
 
         @Override
-        public void load() {
-            try {
-                this.configFile = ConfigFile.loadHocon(this.configDir.resolve("detection").resolve(FILE_NAME),
-                        "/detection/" + FILE_NAME, false, false);
-            } catch (IOException e) {
-                this.detection.getOwner().getLogger().error("A problem occurred attempting to load the " +
-                        "guardian invalid movement detection configuration!", e);
-            }
+        public Set<ContentKey<?>> getPossibleKeys() {
+            return null;
         }
-
-        @Nonnull
-        @Override
-        public ConfigFile<CommentedConfigurationNode> getStorage() {
-            return this.configFile;
-        }
-
-        @Nonnull
-        @Override
-        public Path getLocation() {
-            return this.configDir;
-        }
-
-        public boolean exists() {
-            return this.configDir.resolve("detection").resolve(FILE_NAME).toFile().exists();
-        }
-
     }
 
+    public static class InvalidMovementContentLoader extends AbstractDetectionContentLoader<InvalidMovementDetection> {
+
+        public InvalidMovementContentLoader(final InvalidMovementDetection detection,
+                                            final Path configurationDirectory) {
+            super(detection, configurationDirectory);
+        }
+
+        @Override
+        public String getRoot() {
+            return "invalidmovement.conf";
+        }
+    }
 }
