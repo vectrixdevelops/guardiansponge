@@ -27,6 +27,8 @@ import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
 import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
+import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
+import com.ichorpowered.guardian.common.penalty.ResetPenalty;
 import com.ichorpowered.guardian.content.AbstractContentContainer;
 import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
@@ -113,6 +115,8 @@ public class MovementSpeedDetection extends AbstractDetection {
                 .stage(PenaltyModel.class)
                     .min(1)
                     .max(99)
+                    .include(ResetPenalty.class)
+                    .include(NotificationPenalty.class)
                     .append()
                 .contentLoader(new MovementSpeedContentLoader(this, this.plugin.getConfigDirectory()))
                 .content(new MovementSpeedContent(this))

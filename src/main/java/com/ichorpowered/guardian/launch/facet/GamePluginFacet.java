@@ -32,15 +32,19 @@ import com.ichorpowered.guardian.launch.FacetBootstrap;
 import com.ichorpowered.guardian.launch.FacetState;
 import com.ichorpowered.guardian.launch.exception.FacetException;
 import com.ichorpowered.guardian.launch.message.FacetMessage;
+import com.ichorpowered.guardian.util.ConsoleUtil;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
 import com.ichorpowered.guardianapi.GuardianState;
 import com.ichorpowered.guardianapi.event.origin.Origin;
+import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 
 public class GamePluginFacet implements Facet {
 
     private final Logger logger;
     private final GuardianPlugin plugin;
+
+    private final String facetPrefix = ConsoleUtil.of(Ansi.Color.CYAN, " GAME ");
 
     private FacetState facetState = FacetState.STOP;
 
@@ -77,6 +81,10 @@ public class GamePluginFacet implements Facet {
 
         // STATE: STARTING
 
+        this.logger.info(ConsoleUtil.of(this.facetPrefix + "Preparing environment adaptions."));
+
+        // TODO: Environment adaptions are a future feature.
+
         this.plugin.getSequenceTask().start();
 
         this.plugin.getEventBus().post(new GuardianStartingEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
@@ -84,6 +92,9 @@ public class GamePluginFacet implements Facet {
         propertyInjector.inject("state", GuardianState.STARTED);
 
         // STATE: STARTED
+
+        this.logger.info(ConsoleUtil.of(this.facetPrefix + "Startup complete. ({} sec)",
+                String.valueOf((double) (System.currentTimeMillis() - this.plugin.getCoreTime()) / 1000)));
 
         this.plugin.getEventBus().post(new GuardianStartedEvent(this.plugin, Origin.source(this.plugin.getPluginContainer()).build()));
 

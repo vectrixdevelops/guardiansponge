@@ -28,6 +28,7 @@ import com.ichorpowered.guardian.launch.exception.FacetException;
 import com.ichorpowered.guardian.launch.message.FacetMessage;
 import com.ichorpowered.guardian.launch.message.SimpleFacetMessage;
 import org.slf4j.Logger;
+import org.spongepowered.api.Sponge;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,7 +87,7 @@ public class FacetBootstrap {
         } else {
             this.logger.error("Guardian has encountered an exception: ", e);
 
-            if (this.attemptedRecoveries <= 3) {
+            if (this.attemptedRecoveries <= 1) {
                 this.logger.info("Attempting to recover...");
                 recover();
                 return;

@@ -23,11 +23,13 @@
  */
 package com.ichorpowered.guardian.common.penalty;
 
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.penalty.Penalty;
-import com.ichorpowered.guardian.api.detection.penalty.PenaltyPredicate;
+import com.google.common.collect.Sets;
 import com.ichorpowered.guardian.sequence.SequenceReport;
+import com.ichorpowered.guardianapi.detection.penalty.Penalty;
+import com.ichorpowered.guardianapi.util.StagePredicate;
 import org.spongepowered.api.entity.living.player.Player;
+
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -36,21 +38,34 @@ public class ResetPenalty implements Penalty {
     @Nonnull
     @Override
     public String getId() {
-        return "reset";
+        return "guardian:reset";
     }
 
-    @Nonnull
     @Override
-    public <E, F extends DetectionConfiguration> PenaltyPredicate<E, F> getPredicate() {
-        return (entityEntry, detection, summary) -> {
-            if (!entityEntry.getEntity(Player.class).isPresent()) return false;
-            Player player = entityEntry.getEntity(Player.class).get();
+    public String getName() {
+        return "Reset Penalty";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Sets.newHashSet(
+                "guardian",
+                "internal",
+                "aggressivepenalty",
+                "reset"
+        );
+    }
+
+    @Override
+    public StagePredicate getPredicate() {
+        return (detection, summary, playerEntry) -> {
+            if (!playerEntry.getEntity(Player.class).isPresent()) return false;
+            Player player = playerEntry.getEntity(Player.class).get();
 
             if (!player.hasPermission("") || summary.view(SequenceReport.class) == null ||
-                summary.view(SequenceReport.class).get("initial_location") == null) return false;
+                    summary.view(SequenceReport.class).get("initial_location") == null) return false;
 
             return player.setLocationSafely(summary.view(SequenceReport.class).get("initial_location"));
         };
     }
-
 }

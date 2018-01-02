@@ -23,14 +23,16 @@
  */
 package com.ichorpowered.guardian.common.penalty;
 
-import com.ichorpowered.guardian.api.detection.DetectionConfiguration;
-import com.ichorpowered.guardian.api.detection.penalty.Penalty;
-import com.ichorpowered.guardian.api.detection.penalty.PenaltyPredicate;
+import com.google.common.collect.Sets;
+import com.ichorpowered.guardianapi.detection.penalty.Penalty;
+import com.ichorpowered.guardianapi.util.StagePredicate;
 import com.me4502.modularframework.module.Module;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -39,14 +41,30 @@ public class NotificationPenalty implements Penalty {
     @Nonnull
     @Override
     public String getId() {
-        return "notification";
+        return "guardian:notification";
+    }
+
+    @Override
+    public String getName() {
+        return "Penalty Notification";
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Sets.newHashSet(
+                "guardian",
+                "internal",
+                "passivepenalty",
+                "notify"
+        );
     }
 
     @Nonnull
     @Override
-    public <E, F extends DetectionConfiguration> PenaltyPredicate<E, F> getPredicate() {
-        return (entityEntry, detection, summary) -> {
-            Player reported = entityEntry.getEntity(Player.class).get();
+    public StagePredicate getPredicate() {
+        return (detection, summary, playerEntry) -> {
+            if (!playerEntry.getEntity(Player.class).isPresent()) return false;
+            final Player reported = playerEntry.getEntity(Player.class).get();
 
             Sponge.getServer().getOnlinePlayers().forEach(player -> {
                 if (!player.hasPermission("guardian.report.notifier")) return;

@@ -31,7 +31,7 @@ import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
 import com.ichorpowered.guardian.common.capture.PlayerEffectCapture;
 import com.ichorpowered.guardian.common.capture.WorldMaterialCapture;
 import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
-import com.ichorpowered.guardian.entry.GuardianEntityEntry;
+import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import com.ichorpowered.guardian.sequence.SequenceReport;
@@ -113,7 +113,7 @@ public class HorizontalSpeedCheck implements Check<Event> {
                 // Analysis Condition
 
                 .condition(sequenceContext -> {
-                    final GuardianEntityEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+                    final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
                     final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
                     final GuardianCaptureRegistry captureRegistry = sequenceContext.get(CommonContextKeys.CAPTURE_REGISTRY);
                     final long lastActionTime = sequenceContext.get(CommonContextKeys.LAST_ACTION_TIME);

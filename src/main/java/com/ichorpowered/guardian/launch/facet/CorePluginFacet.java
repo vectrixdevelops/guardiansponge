@@ -169,14 +169,14 @@ public class CorePluginFacet implements Facet {
 
     public Boolean restart(SimpleFacetMessage message) {
         this.logger.info(ConsoleUtil.of("Restarted. Reason '{}' by '{}'",
-                message.getReason(), message.getSource().getClass().getName()));
+                message.getReason(), message.getSource().getClass().getSimpleName()));
 
         return true;
     }
 
     public Boolean shutdown(SimpleFacetMessage message) {
         this.logger.info(ConsoleUtil.of("Shutdown. Reason '{}' by '{}'",
-                message.getReason(), message.getSource().getClass().getName()));
+                message.getReason(), message.getSource().getClass().getSimpleName()));
 
         this.facetState = FacetState.STOP;
         return true;

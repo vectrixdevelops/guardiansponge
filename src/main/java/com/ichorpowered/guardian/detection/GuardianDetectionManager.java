@@ -40,8 +40,8 @@ public final class GuardianDetectionManager implements DetectionManager {
     private final Map<String, Class<? extends Detection>> detectionIdMap = Maps.newHashMap();
     private final Map<Class<? extends Detection>, Detection> detectionInstanceMap = Maps.newHashMap();
 
-    private final Map<String, Class<? extends StageModel>> stageModelIdMap = Maps.newHashMap();
-    private final Map<Class<? extends StageModel>, StageModel> stageModelInstanceMap = Maps.newHashMap();
+    private final Map<String, Class<? extends StageModel<?>>> stageModelIdMap = Maps.newHashMap();
+    private final Map<Class<? extends StageModel>, StageModel<?>> stageModelInstanceMap = Maps.newHashMap();
 
     public GuardianDetectionManager(final GuardianPlugin plugin) {
         this.plugin = plugin;
@@ -55,7 +55,7 @@ public final class GuardianDetectionManager implements DetectionManager {
     }
 
     @Override
-    public DetectionManager provideStageModel(Class<? extends StageModel> stageModelClass, StageModel stageModel) {
+    public DetectionManager provideStageModel(Class<? extends StageModel<?>> stageModelClass, StageModel<?> stageModel) {
         this.stageModelIdMap.put(stageModel.getId(), stageModelClass);
         this.stageModelInstanceMap.put(stageModelClass, stageModel);
         return this;
@@ -78,12 +78,12 @@ public final class GuardianDetectionManager implements DetectionManager {
     }
 
     @Override
-    public Optional<? extends StageModel> getStageModel(String id) {
+    public Optional<? extends StageModel<?>> getStageModel(String id) {
         return Optional.ofNullable(this.stageModelInstanceMap.get(this.stageModelIdMap.get(id)));
     }
 
     @Override
-    public Optional<? extends StageModel> getStageModel(Class<? extends StageModel> stageModelClass) {
+    public Optional<? extends StageModel<?>> getStageModel(Class<? extends StageModel<?>> stageModelClass) {
         return Optional.ofNullable(this.stageModelInstanceMap.get(stageModelClass));
     }
 }

@@ -28,7 +28,7 @@ import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.SequenceManager;
 import com.abilityapi.sequenceapi.SequenceRegistry;
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.entry.GuardianEntityEntry;
+import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import com.ichorpowered.guardianapi.detection.capture.Capture;
 import com.ichorpowered.guardianapi.detection.check.Check;
@@ -75,7 +75,7 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
         return result;
     }
 
-    private void transitionPhase(final GuardianEntityEntry<Player> entityEntry, final GuardianSequence sequence) {
+    private void transitionPhase(final GuardianPlayerEntry<Player> entityEntry, final GuardianSequence sequence) {
         final StageCycle stageCycle = sequence.getOwner().getStageCycle();
 
         if (!stageCycle.getModelId().isPresent()) stageCycle.nextModel();
@@ -104,7 +104,7 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
 
     private void tickScheduler() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
-            final GuardianEntityEntry<Player> entityEntry = GuardianEntityEntry.of(player, player.getUniqueId());
+            final GuardianPlayerEntry<Player> entityEntry = GuardianPlayerEntry.of(player, player.getUniqueId());
 
             this.updateSchedulerIf(
                     SequenceContext.builder()

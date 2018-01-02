@@ -59,13 +59,13 @@ public class GuardianCheckModel implements CheckModel {
     }
 
     @Override
-    public StageModel<Check<?>> unregister(Check stage) {
+    public StageModel<Check<?>> unregister(Check<?> stage) {
         this.checkMap.remove(stage.getClass(), stage);
         return this;
     }
 
     @Override
-    public Optional<? extends Check> get(Class<? extends Check<?>> stageClass) {
+    public Optional<? extends Check<?>> get(Class<? extends Check<?>> stageClass) {
         return Optional.ofNullable(this.checkMap.get(stageClass));
     }
 

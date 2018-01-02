@@ -31,7 +31,7 @@ import java.util.Set;
 public class EmptyContentContainer extends AbstractContentContainer {
 
     @Override
-    public Set<ContentKey> getPossibleKeys() {
+    public Set<ContentKey<?>> getPossibleKeys() {
         return Sets.newHashSet();
     }
 

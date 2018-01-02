@@ -25,7 +25,7 @@ package com.ichorpowered.guardian.sequence;
 
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.entry.GuardianEntityEntry;
+import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -45,7 +45,7 @@ public class GuardianSequenceListener {
     @Listener
     @Exclude(MoveEntityEvent.Teleport.class)
     public void moveEntityEvent(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
-        final GuardianEntityEntry<Player> playerEntry = GuardianEntityEntry.of(player, player.getUniqueId());
+        final GuardianPlayerEntry<Player> playerEntry = GuardianPlayerEntry.of(player, player.getUniqueId());
 
         // TODO: Block for teleportation.
 

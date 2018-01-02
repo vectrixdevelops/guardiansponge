@@ -23,6 +23,11 @@
  */
 package com.ichorpowered.guardian;
 
+import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
+import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
+import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
+import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
+import com.ichorpowered.guardian.common.penalty.ResetPenalty;
 import com.ichorpowered.guardian.detection.check.GuardianCheckModel;
 import com.ichorpowered.guardian.detection.heuristic.GuardianHeuristicModel;
 import com.ichorpowered.guardian.detection.penalty.GuardianPenaltyModel;
@@ -48,26 +53,29 @@ public final class Common {
 
     public void loadChecks() {
         final GuardianCheckModel checkModel = new GuardianCheckModel();
+        this.plugin.getDetectionManager().provideStageModel(CheckModel.class, checkModel);
 
         // Register Check Stages
 
-        this.plugin.getDetectionManager().provideStageModel(CheckModel.class, checkModel);
-
+        checkModel.register(new HorizontalSpeedCheck());
+        checkModel.register(new InvalidCheck());
+        checkModel.register(new VerticalSpeedCheck());
     }
 
     public void loadHeuristics() {
         final GuardianHeuristicModel heuristicModel = new GuardianHeuristicModel();
+        this.plugin.getDetectionManager().provideStageModel(HeuristicModel.class, heuristicModel);
 
         // Register Heuristic Models
-
-        this.plugin.getDetectionManager().provideStageModel(HeuristicModel.class, heuristicModel);
     }
 
     public void loadPenalties() {
         final GuardianPenaltyModel penaltyModel = new GuardianPenaltyModel();
+        this.plugin.getDetectionManager().provideStageModel(PenaltyModel.class, penaltyModel);
 
         // Register Penalty Models
 
-        this.plugin.getDetectionManager().provideStageModel(PenaltyModel.class, penaltyModel);
+        penaltyModel.register(new NotificationPenalty());
+        penaltyModel.register(new ResetPenalty());
     }
 }

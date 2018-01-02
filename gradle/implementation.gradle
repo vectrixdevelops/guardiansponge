@@ -47,8 +47,8 @@ shadowJar {
     classifier = 'dev'
 
     dependencies {
+        include(project("${gradle.guardianApiName}"))
         include(dependency('org.apache.commons:commons-math3'))
-        include(dependency('com.ichorpowered.guardian.api:guardianapi'))
         include(dependency('com.github.AbilityAPI:SequenceAPI'))
 
         // Relocate Module Subsystem Framework

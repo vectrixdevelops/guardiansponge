@@ -53,6 +53,8 @@ public class InternalPluginFacet implements Facet {
     private final Logger logger;
     private final GuardianPlugin plugin;
 
+    private final String facetPrefix = ConsoleUtil.of(Ansi.Color.CYAN, " INTERNAL ");
+
     private FacetState facetState = FacetState.STOP;
 
     public InternalPluginFacet(final Logger logger, final GuardianPlugin plugin) {
@@ -93,6 +95,8 @@ public class InternalPluginFacet implements Facet {
         this.plugin.getCommon().loadChecks();
         this.plugin.getCommon().loadModules(this.plugin.getModuleController());
 
+        this.logger.info(ConsoleUtil.of(this.facetPrefix + " Preparing modules."));
+
         this.logger.info(ConsoleUtil.of(Ansi.Color.YELLOW, "Discovered {} module(s).",
                 String.valueOf(this.plugin.getModuleController().getModules().size())));
 
@@ -131,7 +135,7 @@ public class InternalPluginFacet implements Facet {
                         detection.onLoad();
 
                         if (this.plugin.getDetectionManager().getStageModel(CheckModel.class).isPresent())
-                            detections.addAndGet(detection.getStageCycle().sizeFor(this.plugin.getDetectionManager().getStageModel(CheckModel.class).get()));
+                            checks.addAndGet(detection.getStageCycle().sizeFor(this.plugin.getDetectionManager().getStageModel(CheckModel.class).get()));
 
                         if (this.plugin.getDetectionManager().getStageModel(HeuristicModel.class).isPresent())
                             heuristics.addAndGet(detection.getStageCycle().sizeFor(this.plugin.getDetectionManager().getStageModel(HeuristicModel.class).get()));

@@ -36,16 +36,16 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-public class GuardianEntityEntry<T> extends AbstractContentContainer implements PlayerEntry, Reified<T> {
+public class GuardianPlayerEntry<T> extends AbstractContentContainer implements PlayerEntry, Reified<T> {
 
     private final T entity;
     private final UUID uuid;
 
-    public static <E> GuardianEntityEntry<E> of(@Nonnull E entity, @Nonnull UUID uuid) {
-        return new GuardianEntityEntry<>(entity, uuid);
+    public static <E> GuardianPlayerEntry<E> of(@Nonnull E entity, @Nonnull UUID uuid) {
+        return new GuardianPlayerEntry<>(entity, uuid);
     }
 
-    private GuardianEntityEntry(@Nonnull T entity, @Nonnull UUID uuid) {
+    private GuardianPlayerEntry(@Nonnull T entity, @Nonnull UUID uuid) {
         this.entity = entity;
         this.uuid = uuid;
     }
@@ -70,7 +70,7 @@ public class GuardianEntityEntry<T> extends AbstractContentContainer implements 
     }
 
     @Override
-    public Set<ContentKey> getPossibleKeys() {
+    public Set<ContentKey<?>> getPossibleKeys() {
         return null;
     }
 

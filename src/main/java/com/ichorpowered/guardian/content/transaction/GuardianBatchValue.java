@@ -28,6 +28,7 @@ import com.ichorpowered.guardianapi.content.ContentContainer;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.content.transaction.result.BatchValue;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 

@@ -26,6 +26,7 @@ package com.ichorpowered.guardian.common.detection;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
+import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
 import com.ichorpowered.guardian.content.AbstractContentContainer;
 import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
@@ -94,7 +95,7 @@ public class InvalidMovementDetection extends AbstractDetection {
 
     @Override
     public DetectionManager register(DetectionManager detectionManager) {
-        final Optional<DetectionBuilder> detectionBuilder = detectionManager.provider(MovementSpeedDetection.class);
+        final Optional<DetectionBuilder> detectionBuilder = detectionManager.provider(InvalidMovementDetection.class);
         if (!detectionBuilder.isPresent()) return detectionManager;
 
         return detectionBuilder.get()
@@ -113,6 +114,7 @@ public class InvalidMovementDetection extends AbstractDetection {
                 .stage(PenaltyModel.class)
                     .min(1)
                     .max(99)
+                    .include(NotificationPenalty.class)
                     .append()
                 .contentLoader(new InvalidMovementContentLoader(this, this.plugin.getConfigDirectory()))
                 .content(new InvalidMovementContent(this))

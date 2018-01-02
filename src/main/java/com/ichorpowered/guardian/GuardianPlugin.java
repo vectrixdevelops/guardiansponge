@@ -192,6 +192,11 @@ public class GuardianPlugin implements Guardian<Event> {
 
     // ACCESSORS
 
+
+    public final long getCoreTime() {
+        return this.coreTime;
+    }
+
     public final PropertyInjector getPropertyInjector() {
         return this.propertyInjector;
     }
