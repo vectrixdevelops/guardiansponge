@@ -35,9 +35,11 @@ import com.ichorpowered.guardian.util.ConsoleUtil;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
 import com.ichorpowered.guardianapi.GuardianState;
 import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.check.CheckModel;
 import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
 import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
+import com.ichorpowered.guardianapi.detection.stage.model.StageModel;
 import com.ichorpowered.guardianapi.event.origin.Origin;
 import com.me4502.modularframework.module.ModuleWrapper;
 import com.me4502.precogs.detection.DetectionType;
@@ -46,6 +48,7 @@ import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InternalPluginFacet implements Facet {
@@ -130,6 +133,13 @@ public class InternalPluginFacet implements Facet {
 
                         // Register the detection and inject its properties.
                         detection.register(this.plugin.getDetectionManager());
+
+                        final Optional<CheckModel> stageModel = (Optional<CheckModel>) this.plugin.getDetectionManager().getStageModel(CheckModel.class);
+                        if (stageModel.isPresent()) {
+                            for (final Check<?> check : stageModel.get()) {
+                                this.plugin.getSequenceRegistry().put(check.getSequence(detection));
+                            }
+                        }
 
                         // Call the load method.
                         detection.onLoad();
