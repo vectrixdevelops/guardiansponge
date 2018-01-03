@@ -36,9 +36,9 @@ public class GuardianContentKey<T> implements ContentKey<T> {
     private final String id;
     private final String name;
     private final TypeToken<T> elementType;
-    private final Set<? extends ContentAssignment<?>> assignments;
+    private final Set<ContentAssignment<?>> assignments;
 
-    public GuardianContentKey(final Builder builder) {
+    public GuardianContentKey(final Builder<T> builder) {
         this.id = builder.id;
         this.name = builder.name;
         this.elementType = builder.elementType;
@@ -65,7 +65,7 @@ public class GuardianContentKey<T> implements ContentKey<T> {
     }
 
     @Override
-    public Set<? extends ContentAssignment<?>> getAssignments() {
+    public Set<ContentAssignment<?>> getAssignments() {
         return this.assignments;
     }
 
@@ -73,7 +73,7 @@ public class GuardianContentKey<T> implements ContentKey<T> {
 
         private String id;
         private String name;
-        private TypeToken<?> elementType;
+        private TypeToken<B> elementType;
         private Set<ContentAssignment<?>> assignments = Sets.newHashSet();
 
         @Override

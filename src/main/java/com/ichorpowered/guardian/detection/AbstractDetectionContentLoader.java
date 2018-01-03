@@ -26,6 +26,7 @@ package com.ichorpowered.guardian.detection;
 import com.ichorpowered.guardian.content.assignment.ConfigurationAssignment;
 import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.transaction.ContentAssignment;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
@@ -68,12 +69,12 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
 
         this.contentContainer.getPossibleKeys()
                 .forEach(key -> {
-                    final Optional<? extends ConfigurationAssignment> assignment = (Optional<? extends ConfigurationAssignment>) key.getAssignments().stream()
+                    final Optional<ContentAssignment<?>> assignment = key.getAssignments().stream()
                             .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
                             .findFirst();
 
                     if (!assignment.isPresent()) return;
-                    final ConfigurationAssignment configurationAssignment = assignment.get();
+                    final ContentAssignment<?> configurationAssignment = assignment.get();
                     final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
 
                     this.contentContainer.offer((ContentKey) key, value);
@@ -92,12 +93,12 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
 
         contentKeys
                 .forEach(key -> {
-                    final Optional<? extends ConfigurationAssignment> assignment = (Optional<? extends ConfigurationAssignment>) key.getAssignments().stream()
+                    final Optional<ContentAssignment<?>> assignment = key.getAssignments().stream()
                             .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
                             .findFirst();
 
                     if (!assignment.isPresent()) return;
-                    final ConfigurationAssignment configurationAssignment = assignment.get();
+                    final ContentAssignment<?> configurationAssignment = assignment.get();
                     final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
 
                     this.contentContainer.offer((ContentKey) key, value);
@@ -105,7 +106,7 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
     }
 
     @Override
-    public void acquireSingle(ContentKey contentKey) {
+    public void acquireSingle(ContentKey<?> contentKey) {
         if (this.contentContainer == null) return;
 
         try {
@@ -114,15 +115,15 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
             e.printStackTrace();
         }
 
-        final Optional<? extends ConfigurationAssignment> assignment = (Optional<? extends ConfigurationAssignment>) contentKey.getAssignments().stream()
+        final Optional<ContentAssignment<?>> assignment = contentKey.getAssignments().stream()
                 .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
                 .findFirst();
 
         if (!assignment.isPresent()) return;
-        final ConfigurationAssignment configurationAssignment = assignment.get();
+        final ContentAssignment<?> configurationAssignment = assignment.get();
         final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
 
-        this.contentContainer.offer(contentKey, value);
+        this.contentContainer.offer((ContentKey) contentKey, value);
     }
 
     @Override
@@ -147,12 +148,12 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
         }
 
         this.contentContainer.forEach(singleValue -> {
-            final Optional<? extends ConfigurationAssignment> assignment = (Optional<? extends ConfigurationAssignment>) singleValue.getKey().getAssignments().stream()
+            final Optional<ContentAssignment<?>> assignment = singleValue.getKey().getAssignments().stream()
                     .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
                     .findFirst();
 
             if (!assignment.isPresent()) return;
-            final ConfigurationAssignment configurationAssignment = assignment.get();
+            final ContentAssignment<?> configurationAssignment = assignment.get();
 
             this.configurationFile.getNode(configurationAssignment.lookup()).setValue(singleValue.getElement());
 

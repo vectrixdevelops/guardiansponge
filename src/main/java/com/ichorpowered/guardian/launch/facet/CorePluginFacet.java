@@ -28,6 +28,7 @@ import com.ichorpowered.guardian.Common;
 import com.ichorpowered.guardian.Configuration;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.PluginInfo;
+import com.ichorpowered.guardian.content.GuardianContentKeys;
 import com.ichorpowered.guardian.detection.GuardianDetectionManager;
 import com.ichorpowered.guardian.event.GuardianInitializationEvent;
 import com.ichorpowered.guardian.event.GuardianPreInitializationEvent;
@@ -148,6 +149,9 @@ public class CorePluginFacet implements Facet {
 
         GuardianSequenceListener sequenceListener = new GuardianSequenceListener(this.plugin);
         Common common = new Common(this.plugin);
+
+        GuardianContentKeys contentKeys = new GuardianContentKeys();
+        contentKeys.createKeys();
 
         // PROVIDE: INITIALIZATION
         propertyInjector.inject("common", common);

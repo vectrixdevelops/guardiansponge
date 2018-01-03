@@ -93,6 +93,10 @@ public class InvalidMovementDetection extends AbstractDetection {
     @Override
     public void onLoad() {
         this.contentLoader.set(this.contentContainer);
+
+        this.contentLoader.load();
+
+        this.contentLoader.acquireAll();
     }
 
     @Override
