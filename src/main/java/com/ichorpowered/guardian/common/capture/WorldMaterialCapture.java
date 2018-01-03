@@ -69,10 +69,10 @@ public class WorldMaterialCapture extends AbstractCapture {
     public WorldMaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
         super(plugin, detection);
 
-        this.materialSpeed = (Map<String, Double>) detection.getContentContainer().<Map>get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
+        this.materialSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
                 .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
 
-        this.matterSpeed = (Map<String, Double>) detection.getContentContainer().<Map>get(ContentKeys.MOVEMENT_MATTER_SPEED)
+        this.matterSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED)
                 .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
     }
 

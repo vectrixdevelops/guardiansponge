@@ -124,7 +124,7 @@ public class InternalPluginFacet implements Facet {
                         // Precogs detection registration.
                         Sponge.getRegistry().register(DetectionType.class, detection);
 
-                        //
+                        // Register event listeners and provide detection to the manager.
                         this.plugin.getEventBus().register(detection);
                         this.plugin.getDetectionManager().provideDetection(detection.getClass(), detection);
 

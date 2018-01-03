@@ -23,6 +23,7 @@
  */
 package com.ichorpowered.guardian.common.detection;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
@@ -34,6 +35,7 @@ import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
 import com.ichorpowered.guardian.util.property.Property;
 import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
@@ -158,7 +160,23 @@ public class MovementSpeedDetection extends AbstractDetection {
 
         @Override
         public Set<ContentKey<?>> getPossibleKeys() {
-            return null;
+            return Sets.newHashSet(
+                    ContentKeys.ANALYSIS_TIME,
+                    ContentKeys.ANALYSIS_INTERCEPT,
+                    ContentKeys.ANALYSIS_MINIMUM_TICK,
+                    ContentKeys.ANALYSIS_MAXIMUM_TICK,
+                    ContentKeys.BOX_PLAYER_WIDTH,
+                    ContentKeys.BOX_PLAYER_HEIGHT,
+                    ContentKeys.BOX_PLAYER_SAFETY,
+                    ContentKeys.MOVEMENT_LIFT_SPEED,
+                    ContentKeys.MOVEMENT_SNEAK_SPEED,
+                    ContentKeys.MOVEMENT_WALK_SPEED,
+                    ContentKeys.MOVEMENT_SPRINT_SPEED,
+                    ContentKeys.MOVEMENT_FLY_SPEED,
+                    ContentKeys.MOVEMENT_EFFECT_SPEED,
+                    ContentKeys.MOVEMENT_MATTER_SPEED,
+                    ContentKeys.MOVEMENT_MATERIAL_SPEED
+            );
         }
     }
 

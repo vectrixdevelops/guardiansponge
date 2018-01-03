@@ -23,6 +23,7 @@
  */
 package com.ichorpowered.guardian.common.detection;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
@@ -32,6 +33,7 @@ import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
 import com.ichorpowered.guardian.util.property.Property;
 import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
@@ -156,7 +158,11 @@ public class InvalidMovementDetection extends AbstractDetection {
 
         @Override
         public Set<ContentKey<?>> getPossibleKeys() {
-            return null;
+            return Sets.newHashSet(
+                    ContentKeys.ANALYSIS_TIME,
+                    ContentKeys.ANALYSIS_MINIMUM_TICK,
+                    ContentKeys.ANALYSIS_MAXIMUM_TICK
+            );
         }
     }
 

@@ -83,6 +83,8 @@ public class FlightDetection extends AbstractDetection {
     @Override
     public void onLoad() {
         this.contentLoader.set(this.contentContainer);
+
+        // TODO: Create and load configuration.
     }
 
     @Override

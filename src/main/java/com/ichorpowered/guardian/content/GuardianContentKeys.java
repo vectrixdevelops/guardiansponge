@@ -71,84 +71,84 @@ public class GuardianContentKeys {
                 .id("guardian:movement_lift_speed")
                 .name("lift_speed")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("speed", "control", "lift"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "lift"))
                 .build();
 
         ContentKeys.MOVEMENT_SNEAK_SPEED = GuardianContentKey.<Double>builder()
                 .id("guardian:movement_sneak_speed")
                 .name("sneak_speed")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("speed", "control", "sneak"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "sneak"))
                 .build();
 
         ContentKeys.MOVEMENT_WALK_SPEED = GuardianContentKey.<Double>builder()
                 .id("guardian:movement_walk_speed")
                 .name("walk_speed")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("speed", "control", "walk"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "walk"))
                 .build();
 
         ContentKeys.MOVEMENT_SPRINT_SPEED = GuardianContentKey.<Double>builder()
                 .id("guardian:movement_sprint_speed")
                 .name("sprint_speed")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("speed", "control", "sprint"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "sprint"))
                 .build();
 
         ContentKeys.MOVEMENT_FLY_SPEED = GuardianContentKey.<Double>builder()
                 .id("guardian:movement_fly_speed")
                 .name("fly_speed")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("speed", "control", "fly"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "fly"))
                 .build();
 
         ContentKeys.MOVEMENT_MATERIAL_SPEED = GuardianContentKey.<Map>builder()
                 .id("guardian:movement_material_speed")
                 .name("movement_material_speed")
                 .element(TypeToken.of(Map.class))
-                .assignment(ConfigurationAssignment.of("speed", "material"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "material"))
                 .build();
 
         ContentKeys.MOVEMENT_MATTER_SPEED = GuardianContentKey.<Map>builder()
                 .id("guardian:movement_matter_speed")
                 .name("movement_matter_speed")
                 .element(TypeToken.of(Map.class))
-                .assignment(ConfigurationAssignment.of("speed", "matter"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "matter"))
                 .build();
 
         ContentKeys.MOVEMENT_EFFECT_SPEED = GuardianContentKey.<Map>builder()
                 .id("guardian:movement_effect_speed")
                 .name("effect_speed")
                 .element(TypeToken.of(Map.class))
-                .assignment(ConfigurationAssignment.of("speed", "effect"))
+                .assignment(ConfigurationAssignment.of("analysis", "speed", "effect"))
                 .build();
 
         ContentKeys.MOVEMENT_EFFECT_LIFT = GuardianContentKey.<Map>builder()
                 .id("guardian:movement_effect_lift")
                 .name("effect_lift")
                 .element(TypeToken.of(Map.class))
-                .assignment(ConfigurationAssignment.of("lift", "effect"))
+                .assignment(ConfigurationAssignment.of("analysis", "lift", "effect"))
                 .build();
 
         ContentKeys.BOX_PLAYER_WIDTH = GuardianContentKey.<Double>builder()
                 .id("guardian:box_player_width")
                 .name("player_width")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("model", "player", "width"))
+                .assignment(ConfigurationAssignment.of("analysis", "model", "player", "width"))
                 .build();
 
         ContentKeys.BOX_PLAYER_HEIGHT = GuardianContentKey.<Double>builder()
                 .id("guardian:box_player_height")
                 .name("player_height")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("model", "player", "height"))
+                .assignment(ConfigurationAssignment.of("analysis", "model", "player", "height"))
                 .build();
 
         ContentKeys.BOX_PLAYER_SAFETY = GuardianContentKey.<Double>builder()
                 .id("guardian:box_player_safety")
                 .name("player_safety")
                 .element(TypeToken.of(Double.class))
-                .assignment(ConfigurationAssignment.of("model", "player", "safety"))
+                .assignment(ConfigurationAssignment.of("analysis", "model", "player", "safety"))
                 .build();
     }
 

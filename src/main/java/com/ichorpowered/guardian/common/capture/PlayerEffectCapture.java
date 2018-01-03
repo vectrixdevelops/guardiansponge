@@ -60,12 +60,12 @@ public class PlayerEffectCapture extends AbstractCapture {
 
         // Movement
 
-        this.effectSpeed = (Map<String, Double>) this.getDetection().getContentContainer().<Map>get(ContentKeys.MOVEMENT_EFFECT_SPEED)
+        this.effectSpeed = (Map<String, Double>) this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_EFFECT_SPEED)
                 .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
 
         // Lift
 
-        this.effectLift = (Map<String, Double>) this.getDetection().getContentContainer().<Map>get(ContentKeys.MOVEMENT_EFFECT_LIFT)
+        this.effectLift = (Map<String, Double>) this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_EFFECT_LIFT)
                 .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
     }
 
