@@ -60,9 +60,7 @@ public class GuardianStageCycle implements StageCycle {
     @SuppressWarnings("unchecked")
     public boolean next() {
         final Boolean cycleInit = this.initializeCycle();
-        if (cycleInit != null) {
-            return cycleInit;
-        }
+        if (cycleInit != null) return cycleInit;
 
         if (!this.stageIterator.hasNext()) {
             if (this.modelIterator.hasNext()) {
@@ -82,6 +80,9 @@ public class GuardianStageCycle implements StageCycle {
                 this.modelIterator = null;
                 this.stageIterator = null;
 
+                this.presentStage = null;
+                this.presentStageModel = null;
+
                 return false;
             }
         } else {
@@ -94,9 +95,7 @@ public class GuardianStageCycle implements StageCycle {
     @Override
     public boolean nextModel() {
         final Boolean cycleInit = this.initializeCycle();
-        if (cycleInit != null) {
-            return cycleInit;
-        }
+        if (cycleInit != null) return cycleInit;
 
         if (this.modelIterator.hasNext()) {
             this.presentStageModel = this.modelIterator.next();
@@ -114,6 +113,9 @@ public class GuardianStageCycle implements StageCycle {
             // finished
             this.modelIterator = null;
             this.stageIterator = null;
+
+            this.presentStage = null;
+            this.presentStageModel = null;
 
             return false;
         }
@@ -155,9 +157,11 @@ public class GuardianStageCycle implements StageCycle {
     @Override
     @SuppressWarnings("unchecked")
     public List<Class<? extends StageModel<?>>> getAll() {
-        return Lists.newArrayList((Class<? extends StageModel<?>>[]) this.modelArchetypes.stream()
-                .map(stageModelArchetype -> stageModelArchetype.getModelClass())
-                .toArray());
+        final List<Class<? extends StageModel<?>>> models = Lists.newArrayList();
+
+        this.modelArchetypes.forEach(stageModelArchetype -> models.add(stageModelArchetype.getModelClass()));
+
+        return models;
     }
 
     @Override
@@ -173,6 +177,7 @@ public class GuardianStageCycle implements StageCycle {
     private Boolean initializeCycle() {
         if (this.modelIterator == null && this.stageIterator == null) {
             this.modelIterator = this.filteredStages.keys().iterator();
+            System.out.println(this.filteredStages.keys().size());
 
             if (this.modelIterator.hasNext()) {
                 this.presentStageModel = this.modelIterator.next();

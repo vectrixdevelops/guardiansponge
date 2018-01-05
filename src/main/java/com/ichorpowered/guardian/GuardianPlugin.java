@@ -246,7 +246,7 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    public SequenceRegistry getSequenceRegistry() {
+    public SequenceRegistry<Event> getSequenceRegistry() {
         return this.sequenceRegistry;
     }
 

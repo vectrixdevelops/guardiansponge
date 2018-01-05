@@ -134,14 +134,6 @@ public class InternalPluginFacet implements Facet {
                         // Register the detection and inject its properties.
                         detection.register(this.plugin.getDetectionManager());
 
-                        // Register sequences.
-                        final Optional<CheckModel> stageModel = (Optional<CheckModel>) this.plugin.getDetectionManager().getStageModel(CheckModel.class);
-                        if (stageModel.isPresent()) {
-                            for (final Check<?> check : stageModel.get()) {
-                                this.plugin.getSequenceRegistry().put(check.getSequence(detection));
-                            }
-                        }
-
                         // Call the load method.
                         detection.onLoad();
 

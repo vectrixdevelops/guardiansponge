@@ -32,8 +32,11 @@ import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import com.ichorpowered.guardianapi.detection.capture.Capture;
 import com.ichorpowered.guardianapi.detection.check.Check;
+import com.ichorpowered.guardianapi.detection.check.CheckModel;
 import com.ichorpowered.guardianapi.detection.heuristic.Heuristic;
+import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
 import com.ichorpowered.guardianapi.detection.penalty.Penalty;
+import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
 import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -78,27 +81,23 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
     private void transitionPhase(final GuardianPlayerEntry<Player> entityEntry, final GuardianSequence sequence) {
         final StageCycle stageCycle = sequence.getOwner().getStageCycle();
 
-        if (!stageCycle.getModelId().isPresent()) stageCycle.nextModel();
-
-        while (stageCycle.hasNext()) {
-            if (stageCycle.getStage().isPresent() && stageCycle.getStage().get().getClass().equals(Check.class)) {
+        while (stageCycle.next()) {
+            if (stageCycle.getModel().isPresent() && stageCycle.getModel().get().getClass().equals(CheckModel.class)) {
                 if (!stageCycle.nextModel()) return;
                 continue;
             }
 
-            if (stageCycle.getStage().isPresent() && stageCycle.getStage().get().getClass().equals(Heuristic.class)) {
-                if (!stageCycle.getStage().isPresent()) continue;
-                Heuristic heuristic = (Heuristic) stageCycle.getStage().get();
-                // Execute heuristic.
+            if (stageCycle.getModel().isPresent() && stageCycle.getModel().get().getClass().equals(HeuristicModel.class)) {
+                if (!stageCycle.<Heuristic>getStage().isPresent()) continue;
+                Heuristic heuristic = stageCycle.<Heuristic>getStage().get();
+                heuristic.getPredicate().test(sequence.getOwner(), sequence.getSummary(), entityEntry);
             }
 
-            if (stageCycle.getStage().isPresent() && stageCycle.getStage().get().getClass().equals(Penalty.class)) {
-                if (!stageCycle.getStage().isPresent()) continue;
-                Penalty penalty = (Penalty) stageCycle.getStage().get();
-                // Execute penalty.
+            if (stageCycle.getModel().isPresent() && stageCycle.getModel().get().getClass().equals(PenaltyModel.class)) {
+                if (!stageCycle.<Penalty>getStage().isPresent()) continue;
+                Penalty penalty = stageCycle.<Penalty>getStage().get();
+                penalty.getPredicate().test(sequence.getOwner(), sequence.getSummary(), entityEntry);
             }
-
-            if (!stageCycle.next()) return;
         }
     }
 
