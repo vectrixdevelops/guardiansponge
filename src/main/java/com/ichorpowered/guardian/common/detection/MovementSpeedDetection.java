@@ -103,8 +103,6 @@ public class MovementSpeedDetection extends AbstractDetection {
                 if (!this.stageCycle.<Check<Event>>getStage().isPresent()) continue;
                 this.plugin.getSequenceRegistry().put(this.stageCycle.<Check<Event>>getStage().get().getSequence(this));
             }
-
-            if (!this.stageCycle.hasNext()) break;
         }
     }
 
