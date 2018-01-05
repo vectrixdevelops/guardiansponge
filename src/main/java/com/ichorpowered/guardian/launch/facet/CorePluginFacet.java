@@ -108,10 +108,10 @@ public class CorePluginFacet implements Facet {
             this.logger.warn(ConsoleUtil.of(Ansi.Color.RED, "This may not be ready for a production environment. Use at your own risk!"));
         }
 
-        this.logger.info(ConsoleUtil.of("Guardian v{} for Sponge {} and Minecraft {}",
-                PluginInfo.VERSION,
-                Sponge.getPlatform().getContainer(Platform.Component.API).getVersion().orElse("?").substring(0, 5),
-                Sponge.getPlatform().getContainer(Platform.Component.GAME).getVersion().orElse("?")));
+//        this.logger.info(ConsoleUtil.of("Guardian v{} for Sponge {} and Minecraft {}",
+//                PluginInfo.VERSION,
+//                Sponge.getPlatform().getContainer(Platform.Component.API).getVersion().orElse("?").substring(0, 5),
+//                Sponge.getPlatform().getContainer(Platform.Component.GAME).getVersion().orElse("?")));
 
         ModuleController<GuardianPlugin> moduleController = ShadedModularFramework.registerModuleController(this.plugin, Sponge.getGame());
         moduleController.setPluginContainer(this.plugin.getPluginContainer());

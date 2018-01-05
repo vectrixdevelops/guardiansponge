@@ -67,7 +67,7 @@ public class GuardianStageCycle implements StageCycle {
                 this.presentStageModel = this.modelIterator.next();
 
                 // Setup Stage Iterator
-                this.stageIterator = this.presentStageModel.iterator();
+                this.stageIterator = this.filteredStages.get(this.presentStageModel).iterator();
 
                 if (this.stageIterator.hasNext()) {
                     this.presentStage = this.stageIterator.next();
@@ -101,7 +101,7 @@ public class GuardianStageCycle implements StageCycle {
             this.presentStageModel = this.modelIterator.next();
 
             // Setup Stage Iterator
-            this.stageIterator = this.presentStageModel.iterator();
+            this.stageIterator = this.filteredStages.get(this.presentStageModel).iterator();
 
             if (this.stageIterator.hasNext()) {
                 this.presentStage = this.stageIterator.next();
@@ -176,14 +176,13 @@ public class GuardianStageCycle implements StageCycle {
 
     private Boolean initializeCycle() {
         if (this.modelIterator == null && this.stageIterator == null) {
-            this.modelIterator = this.filteredStages.keys().iterator();
-            System.out.println(this.filteredStages.keys().size());
+            this.modelIterator = this.filteredStages.keySet().iterator();
 
             if (this.modelIterator.hasNext()) {
                 this.presentStageModel = this.modelIterator.next();
 
                 // Setup Stage Iterator
-                this.stageIterator = this.presentStageModel.iterator();
+                this.stageIterator = this.filteredStages.get(this.presentStageModel).iterator();
 
                 if (this.stageIterator.hasNext()) {
                     this.presentStage = this.stageIterator.next();
