@@ -23,6 +23,7 @@
  */
 package com.ichorpowered.guardian.detection;
 
+import com.google.common.collect.Maps;
 import com.ichorpowered.guardian.content.assignment.ConfigurationAssignment;
 import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardianapi.content.ContentContainer;
@@ -30,11 +31,14 @@ import com.ichorpowered.guardianapi.content.transaction.ContentAssignment;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
+import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import tech.ferus.util.config.ConfigFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -61,23 +65,31 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
     public void acquireAll() {
         if (this.contentContainer == null) return;
 
-        try {
-            this.configurationFile.reload();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         this.contentContainer.getPossibleKeys()
                 .forEach(key -> {
-                    final Optional<ContentAssignment<?>> assignment = key.getAssignments().stream()
+                    final Optional<ConfigurationAssignment> assignment = key.getAssignments().stream()
                             .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
+                            .map(contentAssignment -> (ConfigurationAssignment) contentAssignment)
                             .findFirst();
 
                     if (!assignment.isPresent()) return;
-                    final ContentAssignment<?> configurationAssignment = assignment.get();
-                    final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
+                    final ConfigurationAssignment configurationAssignment = assignment.get();
+                    final CommentedConfigurationNode node = this.configurationFile.getNode(configurationAssignment.lookup().toArray());
 
-                    this.contentContainer.offer((ContentKey) key, value);
+                    final Map<Object, Object> collect = Maps.newHashMap();
+                    try {
+                        if (node.hasMapChildren()) {
+                            for (final Map.Entry<Object, ? extends ConfigurationNode> entry : node.getChildrenMap().entrySet()) {
+                                collect.put(entry.getKey(), entry.getValue().getValue());
+                                this.contentContainer.offer((ContentKey) key, collect);
+                            }
+                        } else {
+                            this.contentContainer.offer((ContentKey) key,
+                                    this.configurationFile.getNode(configurationAssignment.lookup().toArray()).getValue(key.getElementType()));
+                        }
+                    } catch (ObjectMappingException e) {
+                        e.printStackTrace();
+                    }
                 });
     }
 
@@ -85,23 +97,31 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
     public void acquireAll(Set<ContentKey<?>> contentKeys) {
         if (this.contentContainer == null) return;
 
-        try {
-            this.configurationFile.reload();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         contentKeys
                 .forEach(key -> {
-                    final Optional<ContentAssignment<?>> assignment = key.getAssignments().stream()
+                    final Optional<ConfigurationAssignment> assignment = key.getAssignments().stream()
                             .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
+                            .map(contentAssignment -> (ConfigurationAssignment) contentAssignment)
                             .findFirst();
 
                     if (!assignment.isPresent()) return;
-                    final ContentAssignment<?> configurationAssignment = assignment.get();
-                    final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
+                    final ConfigurationAssignment configurationAssignment = assignment.get();
+                    final CommentedConfigurationNode node = this.configurationFile.getNode(configurationAssignment.lookup().toArray());
 
-                    this.contentContainer.offer((ContentKey) key, value);
+                    final Map<Object, Object> collect = Maps.newHashMap();
+                    try {
+                        if (node.hasMapChildren()) {
+                            for (final Map.Entry<Object, ? extends ConfigurationNode> entry : node.getChildrenMap().entrySet()) {
+                                collect.put(entry.getKey(), entry.getValue().getValue());
+                                this.contentContainer.offer((ContentKey) key, collect);
+                            }
+                        } else {
+                            this.contentContainer.offer((ContentKey) key,
+                                    this.configurationFile.getNode(configurationAssignment.lookup().toArray()).getValue(key.getElementType()));
+                        }
+                    } catch (ObjectMappingException e) {
+                        e.printStackTrace();
+                    }
                 });
     }
 
@@ -109,28 +129,36 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
     public void acquireSingle(ContentKey<?> contentKey) {
         if (this.contentContainer == null) return;
 
-        try {
-            this.configurationFile.reload();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        final Optional<ContentAssignment<?>> assignment = contentKey.getAssignments().stream()
+        final Optional<ConfigurationAssignment> assignment = contentKey.getAssignments().stream()
                 .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
+                .map(contentAssignment -> (ConfigurationAssignment) contentAssignment)
                 .findFirst();
 
         if (!assignment.isPresent()) return;
-        final ContentAssignment<?> configurationAssignment = assignment.get();
-        final Object value = this.configurationFile.getNode(configurationAssignment.lookup()).getValue();
+        final ConfigurationAssignment configurationAssignment = assignment.get();
+        final CommentedConfigurationNode node = this.configurationFile.getNode(configurationAssignment.lookup().toArray());
 
-        this.contentContainer.offer((ContentKey) contentKey, value);
+        final Map<Object, Object> collect = Maps.newHashMap();
+        try {
+            if (node.hasMapChildren()) {
+                for (final Map.Entry<Object, ? extends ConfigurationNode> entry : node.getChildrenMap().entrySet()) {
+                    collect.put(entry.getKey(), entry.getValue().getValue());
+                    this.contentContainer.offer((ContentKey) contentKey, collect);
+                }
+            } else {
+                this.contentContainer.offer((ContentKey) contentKey,
+                        this.configurationFile.getNode(configurationAssignment.lookup().toArray()).getValue(contentKey.getElementType()));
+            }
+        } catch (ObjectMappingException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void load() {
         try {
             this.configurationFile = ConfigFile.loadHocon(this.configurationDirectory.resolve("detection").resolve(this.getRoot()),
-                    "/detection/" + this.getRoot(), false, false);
+                    "/detection/" + this.getRoot(), !this.exists(), false);
         } catch (IOException e) {
             this.detection.getLogger().error("A problem occurred attempting to load the " +
                     "guardian movement speed detection configuration!", e);
@@ -141,24 +169,25 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
     public void save() {
         if (this.contentContainer == null) return;
 
-        try {
-            this.configurationFile.reload();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         this.contentContainer.forEach(singleValue -> {
-            final Optional<ContentAssignment<?>> assignment = singleValue.getKey().getAssignments().stream()
+            final Optional<ConfigurationAssignment> assignment = singleValue.getKey().getAssignments().stream()
                     .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
+                    .map(contentAssignment -> (ConfigurationAssignment) contentAssignment)
                     .findFirst();
 
             if (!assignment.isPresent()) return;
-            final ContentAssignment<?> configurationAssignment = assignment.get();
+            final ConfigurationAssignment configurationAssignment = assignment.get();
 
-            this.configurationFile.getNode(configurationAssignment.lookup()).setValue(singleValue.getElement());
+            this.configurationFile.getNode(configurationAssignment.lookup().toArray()).setValue(singleValue.getElement());
 
             ((GuardianSingleValue<?>) singleValue).setDirty(false);
         });
+
+        try {
+            this.configurationFile.save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean exists() {
