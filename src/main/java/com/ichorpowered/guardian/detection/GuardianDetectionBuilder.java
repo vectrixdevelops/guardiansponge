@@ -24,7 +24,6 @@
 package com.ichorpowered.guardian.detection;
 
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.detection.stage.GuardianStageCycle;
 import com.ichorpowered.guardian.detection.stage.model.GuardianModelArchetype;
 import com.ichorpowered.guardian.util.property.PropertyInjectorFactory;
@@ -34,7 +33,6 @@ import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
 import com.ichorpowered.guardianapi.detection.DetectionManager;
 import com.ichorpowered.guardianapi.detection.stage.Stage;
-import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import com.ichorpowered.guardianapi.detection.stage.model.StageModel;
 import com.ichorpowered.guardianapi.detection.stage.model.StageModelArchetype;
 import com.ichorpowered.guardianapi.detection.stage.model.StageModelBuilder;

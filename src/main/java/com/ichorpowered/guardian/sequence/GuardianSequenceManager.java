@@ -31,7 +31,6 @@ import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import com.ichorpowered.guardianapi.detection.capture.Capture;
-import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.check.CheckModel;
 import com.ichorpowered.guardianapi.detection.heuristic.Heuristic;
 import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
@@ -39,7 +38,6 @@ import com.ichorpowered.guardianapi.detection.penalty.Penalty;
 import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
 import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.scheduler.Task;
 
@@ -78,7 +76,7 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
         return result;
     }
 
-    private void transitionPhase(final GuardianPlayerEntry<Player> entityEntry, final GuardianSequence sequence) {
+    private void transitionPhase(final GuardianPlayerEntry entityEntry, final GuardianSequence sequence) {
         final StageCycle stageCycle = sequence.getOwner().getStageCycle();
 
         while (stageCycle.next()) {
@@ -103,7 +101,7 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
 
     private void tickScheduler() {
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
-            final GuardianPlayerEntry<Player> entityEntry = GuardianPlayerEntry.of(player, player.getUniqueId());
+            final GuardianPlayerEntry entityEntry = GuardianPlayerEntry.of(player, player.getUniqueId());
 
             this.updateSchedulerIf(
                     SequenceContext.builder()

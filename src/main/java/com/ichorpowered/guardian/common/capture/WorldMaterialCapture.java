@@ -30,7 +30,6 @@ import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
 import com.ichorpowered.guardian.util.ContentUtil;
 import com.ichorpowered.guardian.util.WorldUtil;
 import com.ichorpowered.guardian.util.entity.BoundingBox;
-import com.ichorpowered.guardianapi.content.ContentContainer;
 import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
 import com.ichorpowered.guardianapi.detection.Detection;
@@ -88,9 +87,9 @@ public class WorldMaterialCapture extends AbstractCapture {
 
         captureContainer.putOnce(WorldMaterialCapture.MATERIAL_STATE_TICKS, materialState);
 
-        final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
-        final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
-        final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
+        final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
+        final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
+        final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
 
         final double playerWidth = playerBoxWidth.getElement().orElse(1.0) + playerBoxSafety.getElement().orElse(0.08);
         final double playerHeight = playerBoxHeight.getElement().orElse(1.75) + playerBoxSafety.getElement().orElse(0.08);

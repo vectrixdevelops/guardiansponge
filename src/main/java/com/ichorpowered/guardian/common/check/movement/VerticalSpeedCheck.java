@@ -86,13 +86,13 @@ public class VerticalSpeedCheck implements Check<Event> {
     @Override
     public SequenceBlueprint<Event> getSequence(final Detection detection) {
         final Double analysisTime = detection.getContentContainer().get(ContentKeys.ANALYSIS_TIME).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d);
+                .getElement().orElse(0d) / 0.05;
 
         final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d);
+                .getElement().orElse(0d) * analysisTime;
 
         final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d);
+                .getElement().orElse(0d) * analysisTime;
 
         return new GuardianSequenceBuilder()
 

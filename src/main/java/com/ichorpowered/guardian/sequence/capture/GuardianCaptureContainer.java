@@ -23,12 +23,12 @@
  */
 package com.ichorpowered.guardian.sequence.capture;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
 import com.ichorpowered.guardianapi.util.Transform;
 import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 
 public class GuardianCaptureContainer implements CaptureContainer {
 
-    private final BiMap<String, Object> container = HashBiMap.create();
+    private final HashMap<String, Object> container = Maps.newHashMap();
 
     public static GuardianCaptureContainer create() {
         return new GuardianCaptureContainer();
@@ -94,27 +94,21 @@ public class GuardianCaptureContainer implements CaptureContainer {
         this.transform(key.getName(), transform, defaultValue);
     }
 
-    @Nullable
+    @Nonnull
     @Override
     public <T> Optional<T> get(@Nonnull String key) {
         return Optional.ofNullable((T) this.container.get(key));
     }
 
-    @Nullable
+    @Nonnull
     @Override
     public <T> Optional<T> get(@Nonnull NamedTypeKey<T> key) {
         return Optional.ofNullable((T) this.container.get(key.getName()));
     }
 
-    @Nullable
-    @Override
-    public <T> String key(@Nonnull T value) {
-        return this.key(value);
-    }
-
     @Nonnull
     @Override
     public Set<String> keySet() {
-        return this.keySet();
+        return this.container.keySet();
     }
 }

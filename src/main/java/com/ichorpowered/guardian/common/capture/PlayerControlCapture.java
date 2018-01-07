@@ -134,10 +134,9 @@ public class PlayerControlCapture {
         @Override
         public void update(@Nonnull PlayerEntry entry, @Nonnull CaptureContainer captureContainer) {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
+            final Player player = entry.getEntity(Player.class).get();
 
-            Player player = entry.getEntity(Player.class).get();
-
-            Map<String, Integer> controlState = new HashMap<>();
+            final Map<String, Integer> controlState = new HashMap<>();
             controlState.put(FLY, 0);
             controlState.put(WALK, 0);
             controlState.put(SNEAK, 0);

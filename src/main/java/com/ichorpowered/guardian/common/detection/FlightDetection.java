@@ -34,7 +34,6 @@ import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
 import com.ichorpowered.guardianapi.detection.DetectionManager;
-import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.check.CheckModel;
 import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
 import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
@@ -42,7 +41,6 @@ import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import org.slf4j.Logger;
-import org.spongepowered.api.event.Event;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.nio.file.Path;

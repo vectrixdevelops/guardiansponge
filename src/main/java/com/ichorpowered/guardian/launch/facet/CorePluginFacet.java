@@ -53,7 +53,6 @@ import net.kyori.event.ASMEventExecutorFactory;
 import net.kyori.event.SimpleEventBus;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
-import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Event;
 

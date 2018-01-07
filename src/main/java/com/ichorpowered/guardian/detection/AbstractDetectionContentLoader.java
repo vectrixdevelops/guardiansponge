@@ -27,7 +27,6 @@ import com.google.common.collect.Maps;
 import com.ichorpowered.guardian.content.assignment.ConfigurationAssignment;
 import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardianapi.content.ContentContainer;
-import com.ichorpowered.guardianapi.content.transaction.ContentAssignment;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
