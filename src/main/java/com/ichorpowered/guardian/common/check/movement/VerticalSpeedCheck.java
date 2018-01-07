@@ -174,7 +174,7 @@ public class VerticalSpeedCheck implements Check<Event> {
                                 "Overshot maximum movement by " + (verticalDisplacement - verticalPlacement) + ".")
                         );
 
-                        report.put("initial_location", initial);
+                        report.put("initial_location", initial.get());
                         report.put("final_location", player.getLocation());
                         report.put("severity", (verticalDisplacement - verticalPlacement) / verticalDisplacement);
 

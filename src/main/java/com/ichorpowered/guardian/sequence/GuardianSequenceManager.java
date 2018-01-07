@@ -80,18 +80,18 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
         final StageCycle stageCycle = sequence.getOwner().getStageCycle();
 
         while (stageCycle.next()) {
-            if (stageCycle.getModel().isPresent() && stageCycle.getModel().get().getClass().equals(CheckModel.class)) {
+            if (stageCycle.getModel().isPresent() && CheckModel.class.isAssignableFrom(stageCycle.getModel().get().getClass())) {
                 if (!stageCycle.nextModel()) return;
                 continue;
             }
 
-            if (stageCycle.getModel().isPresent() && stageCycle.getModel().get().getClass().equals(HeuristicModel.class)) {
+            if (stageCycle.getModel().isPresent() && HeuristicModel.class.isAssignableFrom(stageCycle.getModel().get().getClass())) {
                 if (!stageCycle.<Heuristic>getStage().isPresent()) continue;
                 Heuristic heuristic = stageCycle.<Heuristic>getStage().get();
                 heuristic.getPredicate().test(sequence.getOwner(), sequence.getSummary(), entityEntry);
             }
 
-            if (stageCycle.getModel().isPresent() && stageCycle.getModel().get().getClass().equals(PenaltyModel.class)) {
+            if (stageCycle.getModel().isPresent() && PenaltyModel.class.isAssignableFrom(stageCycle.getModel().get().getClass())) {
                 if (!stageCycle.<Penalty>getStage().isPresent()) continue;
                 Penalty penalty = stageCycle.<Penalty>getStage().get();
                 penalty.getPredicate().test(sequence.getOwner(), sequence.getSummary(), entityEntry);

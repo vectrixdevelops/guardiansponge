@@ -73,12 +73,30 @@ public class NotificationPenalty implements Penalty {
 
                 player.sendMessage(
                         Text.builder()
-                                .color(TextColors.BLUE).append(Text.of("Guardian AntiCheat » "))
-                                .color(TextColors.GRAY).append(Text.of("The player "))
-                                .color(TextColors.DARK_AQUA).append(Text.of(reported.getName()))
-                                .color(TextColors.GRAY).append(Text.of(" has been flagged by the "))
-                                .color(TextColors.DARK_AQUA).append(Text.of(detectionName))
-                                .color(TextColors.GRAY).append(Text.of(" module."))
+                                .append(Text
+                                        .builder("Guardian AntiCheat #")
+                                        .color(TextColors.BLUE)
+                                        .build())
+                                .append(Text
+                                        .builder(" The player ")
+                                        .color(TextColors.GRAY)
+                                        .build())
+                                .append(Text
+                                        .builder(reported.getName())
+                                        .color(TextColors.DARK_AQUA)
+                                        .build())
+                                .append(Text
+                                        .builder(" has been flagged by the ")
+                                        .color(TextColors.GRAY)
+                                        .build())
+                                .append(Text
+                                        .builder(detectionName)
+                                        .color(TextColors.DARK_AQUA)
+                                        .build())
+                                .append(Text
+                                        .builder(" module.")
+                                        .color(TextColors.GRAY)
+                                        .build())
                         .build()
                 );
             });

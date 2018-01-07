@@ -156,7 +156,7 @@ public class InvalidCheck implements Check<Event> {
                                 "Received invalid controls of " + StringUtils.join((Set<String>) invalidControls.get(), ", ") + ".")
                         );
 
-                        report.put("initial_location", initial);
+                        report.put("initial_location", initial.get());
                         report.put("final_location", player.getLocation());
                         report.put("severity", 1d);
 

@@ -183,7 +183,7 @@ public class HorizontalSpeedCheck implements Check<Event> {
                                 "Overshot maximum movement by " + (horizontalDisplacement - horizontalPlacement) + ".")
                         );
 
-                        report.put("initial_location", initial);
+                        report.put("initial_location", initial.get());
                         report.put("final_location", player.getLocation());
                         report.put("severity", (horizontalDisplacement - horizontalPlacement) / horizontalDisplacement);
 
