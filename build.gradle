@@ -59,4 +59,6 @@ apply from: project.file("gradle/implementation.gradle")
 tasks.minifyShadedJar.dependsOn(shadowJar)
 
 build.dependsOn(shadowJar)
+build.dependsOn(sourceJar)
+build.dependsOn(jar)
 build.dependsOn(minifyShadedJar)
