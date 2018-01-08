@@ -35,6 +35,12 @@ import com.ichorpowered.guardianapi.detection.check.CheckModel;
 import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
 import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
 import com.me4502.modularframework.ModuleController;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.service.permission.PermissionDescription;
+import org.spongepowered.api.service.permission.PermissionService;
+import org.spongepowered.api.text.Text;
+
+import java.util.Optional;
 
 public final class Common {
 
@@ -77,5 +83,23 @@ public final class Common {
 
         penaltyModel.register(new NotificationPenalty());
         penaltyModel.register(new ResetPenalty());
+    }
+
+    public void registerPermissions() {
+        Optional<PermissionService> permissionService = Sponge.getServiceManager().provide(PermissionService.class);
+
+        if (permissionService.isPresent()) {
+            permissionService.get().newDescriptionBuilder(this.plugin)
+                    .id("guardian.penalty.notifier")
+                    .description(Text.of("Allows a player to recieve notifications of detection violations."))
+                    .assign(PermissionDescription.ROLE_STAFF, true)
+                    .register();
+
+            permissionService.get().newDescriptionBuilder(this.plugin)
+                    .id("guardian.penalty.reset-override")
+                    .description(Text.of("Exempts a player from receiving the reset penalty."))
+                    .assign(PermissionDescription.ROLE_STAFF, true)
+                    .register();
+        }
     }
 }

@@ -91,6 +91,7 @@ public class InternalPluginFacet implements Facet {
 
         // STATE: POST_INITIALIZATION
 
+        this.plugin.getCommon().registerPermissions();
         this.plugin.getCommon().loadPenalties();
         this.plugin.getCommon().loadChecks();
         this.plugin.getCommon().loadModules(this.plugin.getModuleController());
