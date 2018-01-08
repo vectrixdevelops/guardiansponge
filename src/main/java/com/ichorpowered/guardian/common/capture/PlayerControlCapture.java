@@ -45,7 +45,6 @@ import javax.annotation.Nonnull;
 
 public class PlayerControlCapture {
 
-    public static String LIFT = "lift";
     public static String FLY = "fly";
     public static String SNEAK = "sneak";
     public static String SPRINT = "sprint";

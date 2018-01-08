@@ -26,6 +26,15 @@ license {
     }
 }
 
+task sourceJar(type: Jar) {
+    classifier = 'source'
+    from sourceSets.main.allSource
+}
+
+jar {
+    classifier = 'dev'
+}
+
 blossom {
     def location = 'src/main/java/com/ichorpowered/guardian/PluginInfo.java'
 
@@ -44,7 +53,7 @@ signing {
 }
 
 shadowJar {
-    classifier = 'dev'
+    classifier = 'shaded'
 
     dependencies {
         include(project("${gradle.guardianApiName}"))
@@ -98,7 +107,7 @@ class ProGuardTask extends proguard.gradle.ProGuardTask {
 
 task minifyShadedJar(type: ProGuardTask, group: 'Build', description: 'Minifies the shaded JAR.') {
     def shadedFile = shadowJar.archivePath
-    def minifiedFile = file(shadedFile.path.replaceFirst('-dev', ''))
+    def minifiedFile = file(shadedFile.path.replaceFirst('-shaded', ''))
 
     injars shadedFile
     outjars minifiedFile
@@ -120,6 +129,8 @@ artifacts {
     }
 
     archives shadowJar
+    archives sourceJar
+    archives jar
 }
 
 model {
