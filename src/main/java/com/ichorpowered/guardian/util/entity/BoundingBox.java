@@ -33,10 +33,6 @@ public class BoundingBox {
     private final Bound b1;
     private final Bound b2;
 
-    public BoundingBox(Bound b1) {
-        this(b1, null);
-    }
-
     public BoundingBox(Bound b1, Bound b2) {
         this.b1 = b1;
         this.b2 = b2;

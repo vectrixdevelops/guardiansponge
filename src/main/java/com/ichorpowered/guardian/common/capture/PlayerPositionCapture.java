@@ -51,11 +51,11 @@ public class PlayerPositionCapture {
 
         private static final String CLASS_NAME = RelativeAltitude.class.getSimpleName().toUpperCase();
 
-        public static NamedTypeKey<Location> DEPTH_THRESHOLD =
-                NamedTypeKey.of(CLASS_NAME + "_DEPTH_THRESHOLD", Location.class);
+        public static NamedTypeKey<Location> INITIAL_DEPTH =
+                NamedTypeKey.of(CLASS_NAME + ":initialDepth", Location.class);
 
-        public static NamedTypeKey<Double> RELATIVE_ALTITUDE_OFFSET =
-                NamedTypeKey.of(CLASS_NAME + "_RELATIVE_ALTITUDE_OFFSET", Double.class);
+        public static NamedTypeKey<Double> RELATIVE_ALTITUDE =
+                NamedTypeKey.of(CLASS_NAME + ":relativeAltitude", Double.class);
 
         private final double amount;
         private final boolean liftOnly;
@@ -99,7 +99,7 @@ public class PlayerPositionCapture {
 
             for (int n = 0; n < location.getY(); n++) {
                 double i = this.amount * n;
-                Optional<Location> maximumDepth = captureContainer.get(RelativeAltitude.DEPTH_THRESHOLD);
+                Optional<Location> maximumDepth = captureContainer.get(RelativeAltitude.INITIAL_DEPTH);
 
                 if (!WorldUtil.isEmptyAtDepth(location, playerBox, i)) {
                     Location currentDepth = location.sub(0, i, 0);
@@ -119,14 +119,14 @@ public class PlayerPositionCapture {
                                 1 : maximumDepth.get().getY() - currentDepth.getY();
                         break;
                     } else if (!maximumDepth.isPresent()) {
-                        captureContainer.put(RelativeAltitude.DEPTH_THRESHOLD, currentDepth);
+                        captureContainer.put(RelativeAltitude.INITIAL_DEPTH, currentDepth);
                         relativeAltitude = currentDepth.add(0, this.amount, 0);
                         break;
                     }
                 }
             }
 
-            if (!captureContainer.get(RelativeAltitude.DEPTH_THRESHOLD).isPresent() || relativeAltitude == null) {
+            if (!captureContainer.get(RelativeAltitude.INITIAL_DEPTH).isPresent() || relativeAltitude == null) {
                 relativeAltitude = player.getLocation().setPosition(new Vector3d(player.getLocation().getX(), 0, player.getLocation().getZ()));
             }
 
@@ -134,7 +134,7 @@ public class PlayerPositionCapture {
 
             if (this.liftOnly && relativeAltitudeOffset < 0) return;
 
-            captureContainer.transform(RelativeAltitude.RELATIVE_ALTITUDE_OFFSET, original -> original + relativeAltitudeOffset, 1.0);
+            captureContainer.transform(RelativeAltitude.RELATIVE_ALTITUDE, original -> original + relativeAltitudeOffset, 1.0);
         }
 
     }

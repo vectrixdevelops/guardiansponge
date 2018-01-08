@@ -80,7 +80,6 @@ public class GamePluginFacet implements Facet {
         propertyInjector.inject("state", GuardianState.STARTING);
 
         // STATE: STARTING
-
         this.logger.info(ConsoleUtil.of(this.facetPrefix + "Preparing environment adaptions."));
 
         // TODO: Environment adaptions are a future feature.
@@ -92,7 +91,6 @@ public class GamePluginFacet implements Facet {
         propertyInjector.inject("state", GuardianState.STARTED);
 
         // STATE: STARTED
-
         this.logger.info(ConsoleUtil.of(this.facetPrefix + "Startup complete. ({} sec)",
                 String.valueOf((double) (System.currentTimeMillis() - this.plugin.getCoreTime()) / 1000)));
 

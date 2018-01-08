@@ -39,5 +39,4 @@ public class ContentUtil {
                 .map(Optional::<SingleValue<T>>get)
                 .findFirst();
     }
-
 }

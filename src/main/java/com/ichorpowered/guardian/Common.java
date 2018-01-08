@@ -40,8 +40,6 @@ import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.text.Text;
 
-import java.util.Optional;
-
 public final class Common {
 
     private static final String DETECTION_PATH = "com.ichorpowered.guardian.common.detection.";
@@ -62,7 +60,6 @@ public final class Common {
         this.plugin.getDetectionManager().provideStageModel(CheckModel.class, checkModel);
 
         // Register Check Stages
-
         checkModel.register(new HorizontalSpeedCheck());
         checkModel.register(new InvalidCheck());
         checkModel.register(new VerticalSpeedCheck());
@@ -80,26 +77,23 @@ public final class Common {
         this.plugin.getDetectionManager().provideStageModel(PenaltyModel.class, penaltyModel);
 
         // Register Penalty Models
-
         penaltyModel.register(new NotificationPenalty());
         penaltyModel.register(new ResetPenalty());
     }
 
     public void registerPermissions() {
-        Optional<PermissionService> permissionService = Sponge.getServiceManager().provide(PermissionService.class);
-
-        if (permissionService.isPresent()) {
-            permissionService.get().newDescriptionBuilder(this.plugin)
+        Sponge.getServiceManager().provide(PermissionService.class).ifPresent(permissionService -> {
+            permissionService.newDescriptionBuilder(this.plugin)
                     .id("guardian.penalty.notifier")
                     .description(Text.of("Allows a player to recieve notifications of detection violations."))
                     .assign(PermissionDescription.ROLE_STAFF, true)
                     .register();
 
-            permissionService.get().newDescriptionBuilder(this.plugin)
+            permissionService.newDescriptionBuilder(this.plugin)
                     .id("guardian.penalty.reset-override")
                     .description(Text.of("Exempts a player from receiving the reset penalty."))
                     .assign(PermissionDescription.ROLE_STAFF, true)
                     .register();
-        }
+        });
     }
 }

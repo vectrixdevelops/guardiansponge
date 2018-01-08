@@ -45,7 +45,7 @@ import java.util.List;
 public class GuardianSequence extends Sequence<Event> {
 
     public static NamedTypeKey<Location> INITIAL_LOCATION =
-            NamedTypeKey.of(GuardianSequence.class.getCanonicalName() + "_INITIAL_LOCATION", Location.class);
+            NamedTypeKey.of(GuardianSequence.class.getCanonicalName() + ":initialLocation", Location.class);
 
     private final GuardianSummary summary;
     private final GuardianCaptureRegistry captureRegistry;

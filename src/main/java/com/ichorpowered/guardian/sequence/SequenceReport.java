@@ -43,7 +43,7 @@ public class SequenceReport implements Report {
         this.origin = origin;
     }
 
-    public boolean isPassed() {
+    public boolean isPassing() {
         return this.pass;
     }
 
@@ -70,5 +70,4 @@ public class SequenceReport implements Report {
     public Origin getOrigin() {
         return this.origin;
     }
-
 }

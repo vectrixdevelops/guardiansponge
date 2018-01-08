@@ -23,6 +23,7 @@
  */
 package com.ichorpowered.guardian.common.detection;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.content.AbstractContentContainer;
@@ -34,6 +35,7 @@ import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
 import com.ichorpowered.guardianapi.detection.DetectionManager;
+import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.check.CheckModel;
 import com.ichorpowered.guardianapi.detection.heuristic.HeuristicModel;
 import com.ichorpowered.guardianapi.detection.penalty.PenaltyModel;
@@ -41,6 +43,7 @@ import com.ichorpowered.guardianapi.detection.stage.StageCycle;
 import com.me4502.modularframework.module.Module;
 import com.me4502.modularframework.module.guice.ModuleContainer;
 import org.slf4j.Logger;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.nio.file.Path;
@@ -83,16 +86,15 @@ public class FlightDetection extends AbstractDetection {
     @Override
     public void onLoad() {
         this.contentLoader.set(this.contentContainer);
-//      TODO: Work in progress.
-//        this.contentLoader.load();
-//        this.contentLoader.acquireAll();
-//
-//        while (this.stageCycle.next()) {
-//            if (this.stageCycle.getStage().isPresent() && this.stageCycle.getStage().get().getClass().equals(Check.class)) {
-//                if (!this.stageCycle.<Check<Event>>getStage().isPresent()) continue;
-//                this.plugin.getSequenceRegistry().put(this.stageCycle.<Check<Event>>getStage().get().getSequence(this));
-//            }
-//        }
+        this.contentLoader.load();
+        this.contentLoader.acquireAll();
+
+        while (this.stageCycle.next()) {
+            if (this.stageCycle.getModel().isPresent() && CheckModel.class.isAssignableFrom(this.stageCycle.getModel().get().getClass())) {
+                if (!this.stageCycle.<Check<Event>>getStage().isPresent()) continue;
+                this.plugin.getSequenceRegistry().put(this.stageCycle.<Check<Event>>getStage().get().getSequence(this));
+            }
+        }
     }
 
     @Override
@@ -155,7 +157,7 @@ public class FlightDetection extends AbstractDetection {
 
         @Override
         public Set<ContentKey<?>> getPossibleKeys() {
-            return null;
+            return Sets.newHashSet();
         }
 
     }

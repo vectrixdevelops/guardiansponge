@@ -129,8 +129,8 @@ public class VerticalSpeedCheck implements Check<Event> {
                     final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                     Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                    Optional<Map> controlStateTicks = captureContainer.get(PlayerControlCapture.Common.CONTROL_STATE_TICKS);
-                    Optional<Double> verticalOffset = captureContainer.get(PlayerControlCapture.Common.VERTICAL_OFFSET);
+                    Optional<Map> controlStateTicks = captureContainer.get(PlayerControlCapture.Common.ACTIVE_CONTROL_TICKS);
+                    Optional<Double> verticalOffset = captureContainer.get(PlayerControlCapture.Common.VERTICAL_DISTANCE);
 
                     /*
                      * Analysis

@@ -90,7 +90,6 @@ public class InternalPluginFacet implements Facet {
         propertyInjector.inject("state", GuardianState.POST_INITIALIZATION);
 
         // STATE: POST_INITIALIZATION
-
         this.plugin.getCommon().registerPermissions();
         this.plugin.getCommon().loadPenalties();
         this.plugin.getCommon().loadChecks();

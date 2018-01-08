@@ -39,7 +39,7 @@ public class PropertyInjector {
     private final Map<String, PropertyContainer> fieldsByName = new HashMap<>();
     private final Map<TypeToken, PropertyContainer> fieldsByType = new HashMap<>();
 
-    PropertyInjector(final Object target) {
+    public PropertyInjector(final Object target) {
         this.target = target;
 
         for (final Field field : this.target.getClass().getDeclaredFields()) {
@@ -116,7 +116,7 @@ public class PropertyInjector {
         try {
             propertyContainer.getField().setAccessible(true);
 
-            if (propertyContainer.getModifier().equals(PropertyModifier.FINAL) && propertyContainer.getField().get(this.target) == null) {
+            if (propertyContainer.getModifier().equals(PropertyModifier.CONSTANT) && propertyContainer.getField().get(this.target) == null) {
                 propertyContainer.getField().set(this.target, object);
             } else {
                 propertyContainer.getField().set(this.target, object);
@@ -156,5 +156,4 @@ public class PropertyInjector {
             return this.propertyModifier;
         }
     }
-
 }

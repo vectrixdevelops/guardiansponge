@@ -36,5 +36,4 @@ public class CommonContextKeys {
     public static final String CAPTURES = "guardian:captures";
 
     public static final String CAPTURE_REGISTRY = "guardian:captureRegistry";
-
 }

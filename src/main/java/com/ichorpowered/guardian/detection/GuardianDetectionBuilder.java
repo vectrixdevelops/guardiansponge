@@ -26,7 +26,7 @@ package com.ichorpowered.guardian.detection;
 import com.google.common.collect.Lists;
 import com.ichorpowered.guardian.detection.stage.GuardianStageCycle;
 import com.ichorpowered.guardian.detection.stage.model.GuardianModelArchetype;
-import com.ichorpowered.guardian.util.property.PropertyInjectorFactory;
+import com.ichorpowered.guardian.util.property.PropertyInjector;
 import com.ichorpowered.guardianapi.content.ContentContainer;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
@@ -92,7 +92,7 @@ public class GuardianDetectionBuilder implements DetectionBuilder {
 
     @Override
     public DetectionManager submit(Object plugin) {
-        PropertyInjectorFactory.create(this.detection)
+        new PropertyInjector(this.detection)
                 .inject("id", this.id)
                 .inject("name", this.name)
                 .inject("stageCycle", new GuardianStageCycle(this.detectionManager, this.stageModelArchetypes))

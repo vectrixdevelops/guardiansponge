@@ -52,11 +52,11 @@ public class WorldMaterialCapture extends AbstractCapture {
 
     private static final String CLASS_NAME = WorldMaterialCapture.class.getSimpleName().toUpperCase();
 
-    public static NamedTypeKey<Double> SPEED_AMPLIFIER =
-            NamedTypeKey.of(CLASS_NAME + "_SPEED_AMPLIFIER", Double.class);
+    public static NamedTypeKey<Double> HORIZONTAL_SPEED_MODIFIER =
+            NamedTypeKey.of(CLASS_NAME + ":horizontalSpeedModifier", Double.class);
 
-    public static NamedTypeKey<Map> MATERIAL_STATE_TICKS =
-            NamedTypeKey.of(CLASS_NAME + "_MATERIAL_STATE_TICKS", Map.class);
+    public static NamedTypeKey<Map> ACTIVE_MATERIAL_TICKS =
+            NamedTypeKey.of(CLASS_NAME + ":activeMaterialTicks", Map.class);
 
     public static String GAS = "gas";
     public static String LIQUID = "liquid";
@@ -85,7 +85,7 @@ public class WorldMaterialCapture extends AbstractCapture {
         materialState.put(LIQUID, 1);
         materialState.put(SOLID, 1);
 
-        captureContainer.putOnce(WorldMaterialCapture.MATERIAL_STATE_TICKS, materialState);
+        captureContainer.putOnce(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, materialState);
 
         final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
         final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
@@ -104,9 +104,9 @@ public class WorldMaterialCapture extends AbstractCapture {
         if (WorldUtil.isEmptyUnder(player, playerBox, isSneaking ? (playerHeight - 0.25) : playerHeight)) {
             final double gasSpeed = this.matterSpeed.get(GAS);
 
-            captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * gasSpeed, gasSpeed);
+            captureContainer.transform(WorldMaterialCapture.HORIZONTAL_SPEED_MODIFIER, original -> original * gasSpeed, gasSpeed);
 
-            captureContainer.transform(WorldMaterialCapture.MATERIAL_STATE_TICKS, original -> {
+            captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
                 ((Map<String, Integer>) original).put(GAS, ((Map<String, Integer>) original).get(GAS) + 1);
                 return (Map<String, Integer>) original;
             }, Maps.newHashMap());
@@ -114,9 +114,9 @@ public class WorldMaterialCapture extends AbstractCapture {
                 || WorldUtil.anyLiquidAtDepth(location, playerBox, isSneaking ? -(playerHeight - 0.25) : -playerHeight)) {
             final double liquidSpeed = this.matterSpeed.get(LIQUID);
 
-            captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * liquidSpeed, liquidSpeed);
+            captureContainer.transform(WorldMaterialCapture.HORIZONTAL_SPEED_MODIFIER, original -> original * liquidSpeed, liquidSpeed);
 
-            captureContainer.transform(WorldMaterialCapture.MATERIAL_STATE_TICKS, original -> {
+            captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
                 ((Map<String, Integer>) original).put(LIQUID, ((Map<String, Integer>) original).get(LIQUID) + 1);
                 return (Map<String, Integer>) original;
             }, Maps.newHashMap());
@@ -132,9 +132,9 @@ public class WorldMaterialCapture extends AbstractCapture {
                     speedModifier = this.matterSpeed.get(SOLID);
                 }
 
-                captureContainer.transform(WorldMaterialCapture.SPEED_AMPLIFIER, original -> original * speedModifier, speedModifier);
+                captureContainer.transform(WorldMaterialCapture.HORIZONTAL_SPEED_MODIFIER, original -> original * speedModifier, speedModifier);
 
-                captureContainer.transform(WorldMaterialCapture.MATERIAL_STATE_TICKS, original -> {
+                captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(SOLID, ((Map<String, Integer>) original).get(SOLID) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());

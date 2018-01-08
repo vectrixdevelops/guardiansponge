@@ -54,8 +54,8 @@ public class PlayerControlCapture {
 
         private static final String CLASS_NAME = Invalid.class.getSimpleName().toUpperCase();
 
-        public static NamedTypeKey<Set> INVALID_MOVEMENT =
-                NamedTypeKey.of(CLASS_NAME + "_INVALID_MOVEMENT", Set.class);
+        public static NamedTypeKey<Set> INVALID_CONTROLS =
+                NamedTypeKey.of(CLASS_NAME + ":invalidControls", Set.class);
 
         public Invalid(@Nonnull Object plugin, @Nonnull Detection detection) {
             super(plugin, detection);
@@ -66,7 +66,7 @@ public class PlayerControlCapture {
             if (!entry.getEntity(Player.class).isPresent()) return;
             Player player = entry.getEntity(Player.class).get();
 
-            Set<String> cap = captureContainer.get(Invalid.INVALID_MOVEMENT).orElse(new HashSet<>());
+            Set<String> cap = captureContainer.get(Invalid.INVALID_CONTROLS).orElse(new HashSet<>());
             if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
                     if (!cap.contains("sneaking") || !cap.contains("sprinting")) {
@@ -86,7 +86,7 @@ public class PlayerControlCapture {
                 }
             }
 
-            captureContainer.put(Invalid.INVALID_MOVEMENT, cap);
+            captureContainer.put(Invalid.INVALID_CONTROLS, cap);
         }
 
     }
@@ -95,14 +95,14 @@ public class PlayerControlCapture {
 
         private static final String CLASS_NAME = Common.class.getSimpleName().toUpperCase();
 
-        public static NamedTypeKey<Double> VERTICAL_OFFSET =
-                NamedTypeKey.of(CLASS_NAME + "_VERTICAL_OFFSET", Double.class);
+        public static NamedTypeKey<Double> VERTICAL_DISTANCE =
+                NamedTypeKey.of(CLASS_NAME + ":verticalDistance", Double.class);
 
-        public static NamedTypeKey<Double> HORIZONTAL_OFFSET =
-                NamedTypeKey.of(CLASS_NAME + "_HORIZONTAL_OFFSET", Double.class);
+        public static NamedTypeKey<Double> HORIZONTAL_DISTANCE =
+                NamedTypeKey.of(CLASS_NAME + ":horizontalDistance", Double.class);
 
-        public static NamedTypeKey<Map> CONTROL_STATE_TICKS =
-                NamedTypeKey.of(CLASS_NAME + "_CONTROL_STATE_TICKS", Map.class);
+        public static NamedTypeKey<Map> ACTIVE_CONTROL_TICKS =
+                NamedTypeKey.of(CLASS_NAME + ":activeControlTicks", Map.class);
 
         private double liftOffset = 2.012;
 
@@ -140,37 +140,37 @@ public class PlayerControlCapture {
             controlState.put(WALK, 0);
             controlState.put(SNEAK, 0);
             controlState.put(SPRINT, 0);
-            captureContainer.putOnce(Common.CONTROL_STATE_TICKS, controlState);
+            captureContainer.putOnce(Common.ACTIVE_CONTROL_TICKS, controlState);
 
             if (player.getLocation().getY() != captureContainer.get(GuardianSequence.INITIAL_LOCATION).get().getY()) {
-                captureContainer.transform(Common.VERTICAL_OFFSET, original -> original * this.liftOffset, this.liftOffset);
+                captureContainer.transform(Common.VERTICAL_DISTANCE, original -> original * this.liftOffset, this.liftOffset);
             }
 
             if ((player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get())) {
-                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.flyOffset, this.flyOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.flyOffset, this.flyOffset);
 
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(FLY, ((Map<String, Integer>) original).get(FLY) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());
             } else if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.sprintOffset, this.sprintOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.sprintOffset, this.sprintOffset);
 
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(SPRINT, ((Map<String, Integer>) original).get(SPRINT) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());
             } else if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
-                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.sneakOffset, this.sneakOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.sneakOffset, this.sneakOffset);
 
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(SNEAK, ((Map<String, Integer>) original).get(SPRINT) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());
             } else {
-                captureContainer.transform(Common.HORIZONTAL_OFFSET, original -> original * this.walkOffset, this.walkOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.walkOffset, this.walkOffset);
 
-                captureContainer.transform(Common.CONTROL_STATE_TICKS, original -> {
+                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(WALK, ((Map<String, Integer>) original).get(WALK) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());

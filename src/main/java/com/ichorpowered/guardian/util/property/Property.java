@@ -35,6 +35,5 @@ public @interface Property {
 
     String alias() default "";
 
-    PropertyModifier modifier() default PropertyModifier.UNDEFINED;
-
+    PropertyModifier modifier() default PropertyModifier.NONE;
 }

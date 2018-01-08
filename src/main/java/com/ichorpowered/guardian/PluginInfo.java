@@ -29,8 +29,6 @@ package com.ichorpowered.guardian;
  */
 public final class PluginInfo {
 
-    private PluginInfo() {}
-
     public static final String ID = "@id@";
     public static final String NAME = "@name@";
     public static final String VERSION = "@version@";
@@ -41,4 +39,5 @@ public final class PluginInfo {
 
     public static final boolean EXPERIMENTAL = true;
 
+    private PluginInfo() {}
 }

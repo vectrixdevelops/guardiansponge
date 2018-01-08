@@ -85,5 +85,4 @@ public class GuardianCaptureRegistry implements CaptureRegistry {
     public Iterator<Capture> iterator() {
         return this.captureRegistry.values().iterator();
     }
-
 }

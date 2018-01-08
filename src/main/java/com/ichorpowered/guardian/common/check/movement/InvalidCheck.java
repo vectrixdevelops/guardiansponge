@@ -123,7 +123,7 @@ public class InvalidCheck implements Check<Event> {
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                         Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                        Optional<Set> invalidControls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_MOVEMENT);
+                        Optional<Set> invalidControls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_CONTROLS);
 
                         /*
                          * Analysis

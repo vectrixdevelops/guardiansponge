@@ -92,5 +92,4 @@ public class GuardianSummary implements Summary {
     public Iterator<Report> iterator() {
         return this.reportRegistry.values().iterator();
     }
-
 }

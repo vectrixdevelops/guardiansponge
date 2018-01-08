@@ -99,7 +99,7 @@ public class InvalidMovementDetection extends AbstractDetection {
         this.contentLoader.acquireAll();
 
         while (this.stageCycle.next()) {
-            if (this.stageCycle.getStage().isPresent() && this.stageCycle.getStage().get().getClass().equals(Check.class)) {
+            if (this.stageCycle.getModel().isPresent() && CheckModel.class.isAssignableFrom(this.stageCycle.getModel().get().getClass())) {
                 if (!this.stageCycle.<Check<Event>>getStage().isPresent()) continue;
                 this.plugin.getSequenceRegistry().put(this.stageCycle.<Check<Event>>getStage().get().getSequence(this));
             }

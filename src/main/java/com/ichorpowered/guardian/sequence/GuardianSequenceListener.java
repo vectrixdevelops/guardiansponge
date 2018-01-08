@@ -61,5 +61,4 @@ public class GuardianSequenceListener {
                 // Don't execute movement sequences if a plugin occurs in the cause.
                 sequence -> !event.getCause().containsType(PluginContainer.class));
     }
-
 }

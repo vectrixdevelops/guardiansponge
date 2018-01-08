@@ -48,5 +48,4 @@ public abstract class AbstractCapture implements Capture {
     public Object getPlugin() {
         return this.plugin;
     }
-
 }

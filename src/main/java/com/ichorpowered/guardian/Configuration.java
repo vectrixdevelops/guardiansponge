@@ -83,5 +83,4 @@ public class Configuration {
     public boolean exists() {
         return this.configDir.resolve(FILE_NAME).toFile().exists();
     }
-
 }

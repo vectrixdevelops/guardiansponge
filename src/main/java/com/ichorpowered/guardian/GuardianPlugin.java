@@ -36,7 +36,6 @@ import com.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import com.ichorpowered.guardian.sequence.GuardianSequenceManager;
 import com.ichorpowered.guardian.util.property.Property;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
-import com.ichorpowered.guardian.util.property.PropertyInjectorFactory;
 import com.ichorpowered.guardian.util.property.PropertyModifier;
 import com.ichorpowered.guardianapi.Guardian;
 import com.ichorpowered.guardianapi.GuardianState;
@@ -99,21 +98,21 @@ public class GuardianPlugin implements Guardian<Event> {
     @Property private Long coreTime;
     @Property private GuardianState state;
 
-    @Property(modifier = PropertyModifier.FINAL) private Common common;
-    @Property(modifier = PropertyModifier.FINAL) private Configuration configuration;
-    @Property(modifier = PropertyModifier.FINAL) private ModuleController<GuardianPlugin> moduleController;
-    @Property(modifier = PropertyModifier.FINAL) private SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
+    @Property(modifier = PropertyModifier.CONSTANT) private Common common;
+    @Property(modifier = PropertyModifier.CONSTANT) private Configuration configuration;
+    @Property(modifier = PropertyModifier.CONSTANT) private ModuleController<GuardianPlugin> moduleController;
+    @Property(modifier = PropertyModifier.CONSTANT) private SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
 
     /* Manager Fields */
-    @Property(modifier = PropertyModifier.FINAL) private GuardianDetectionManager detectionManager;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceManager sequenceManager;
-    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceManager.SequenceTask sequenceTask;
+    @Property(modifier = PropertyModifier.CONSTANT) private GuardianDetectionManager detectionManager;
+    @Property(modifier = PropertyModifier.CONSTANT) private GuardianSequenceManager sequenceManager;
+    @Property(modifier = PropertyModifier.CONSTANT) private GuardianSequenceManager.SequenceTask sequenceTask;
 
     /* Register Fields */
-    @Property(modifier = PropertyModifier.FINAL) private SequenceRegistry<Event> sequenceRegistry;
+    @Property(modifier = PropertyModifier.CONSTANT) private SequenceRegistry<Event> sequenceRegistry;
 
     /* Listeners */
-    @Property(modifier = PropertyModifier.FINAL) private GuardianSequenceListener sequenceListener;
+    @Property(modifier = PropertyModifier.CONSTANT) private GuardianSequenceListener sequenceListener;
 
     @Inject
     public GuardianPlugin(Logger logger,
@@ -124,7 +123,7 @@ public class GuardianPlugin implements Guardian<Event> {
         this.configDirectory = configDirectory;
 
         this.facetBootstrap = new FacetBootstrap(this.logger, this);
-        this.propertyInjector = PropertyInjectorFactory.create(this);
+        this.propertyInjector = new PropertyInjector(this);
     }
 
     // PLUGIN INITIALIZATION

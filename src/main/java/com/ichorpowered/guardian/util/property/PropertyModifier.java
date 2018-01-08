@@ -25,8 +25,6 @@ package com.ichorpowered.guardian.util.property;
 
 public enum PropertyModifier {
 
-    FINAL,
-
-    UNDEFINED
-
+    CONSTANT,
+    NONE
 }

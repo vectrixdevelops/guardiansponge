@@ -46,11 +46,11 @@ public class PlayerEffectCapture extends AbstractCapture {
 
     private static final String CLASS_NAME = PlayerEffectCapture.class.getSimpleName().toUpperCase();
 
-    public static NamedTypeKey<Double> SPEED_AMPLIFIER =
-            NamedTypeKey.of(CLASS_NAME + "_SPEED_AMPLIFIER", Double.class);
+    public static NamedTypeKey<Double> HORIZONTAL_SPEED_MODIFIER =
+            NamedTypeKey.of(CLASS_NAME + ":horizontalSpeedModifier", Double.class);
 
-    public static NamedTypeKey<Double> LIFT_AMPLIFIER =
-            NamedTypeKey.of(CLASS_NAME + "_LIFT_AMPLIFIER", Double.class);
+    public static NamedTypeKey<Double> VERTICAL_SPEED_MODIFIER =
+            NamedTypeKey.of(CLASS_NAME + ":verticalSpeedModifier", Double.class);
 
     private Map<String, Double> effectSpeed;
     private Map<String, Double> effectLift;
@@ -83,7 +83,7 @@ public class PlayerEffectCapture extends AbstractCapture {
                 if (this.effectSpeed.containsKey(potionName)) {
                     final double effectValue = this.effectSpeed.get(potionName);
 
-                    captureContainer.transform(PlayerEffectCapture.SPEED_AMPLIFIER,
+                    captureContainer.transform(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER,
                             original -> original + ((potionEffect.getAmplifier() + 1) * effectValue),
                             ((potionEffect.getAmplifier() + 1) * effectValue));
                 }
@@ -91,7 +91,7 @@ public class PlayerEffectCapture extends AbstractCapture {
                 if (this.effectLift.containsKey(potionName)) {
                     final double effectValue = this.effectLift.get(potionName);
 
-                    captureContainer.transform(PlayerEffectCapture.LIFT_AMPLIFIER,
+                    captureContainer.transform(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER,
                             original -> original + ((potionEffect.getAmplifier() + 1) * effectValue),
                             ((potionEffect.getAmplifier() + 1) * effectValue));
                 }

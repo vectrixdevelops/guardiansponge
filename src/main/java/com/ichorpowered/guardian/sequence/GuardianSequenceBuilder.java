@@ -141,6 +141,5 @@ public class GuardianSequenceBuilder implements ActionBuilder<Event> {
             }
         };
     }
-
 }
 
