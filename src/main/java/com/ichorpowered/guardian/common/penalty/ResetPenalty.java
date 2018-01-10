@@ -62,7 +62,7 @@ public class ResetPenalty implements Penalty {
             if (!playerEntry.getEntity(Player.class).isPresent()) return false;
             Player player = playerEntry.getEntity(Player.class).get();
 
-            if (player.hasPermission("guardian.penalty.reset-override") || summary.view(SequenceReport.class) == null ||
+            if (summary.view(SequenceReport.class) == null ||
                     summary.view(SequenceReport.class).get("initial_location") == null) return false;
 
             return player.setLocationSafely(summary.view(SequenceReport.class).get("initial_location"));

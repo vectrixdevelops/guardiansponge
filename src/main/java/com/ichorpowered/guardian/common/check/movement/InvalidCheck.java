@@ -170,4 +170,9 @@ public class InvalidCheck implements Check<Event> {
                         .root(this)
                         .build());
     }
+
+    @Override
+    public Class<? extends Event> getSequenceTrigger() {
+        return MoveEntityEvent.class;
+    }
 }

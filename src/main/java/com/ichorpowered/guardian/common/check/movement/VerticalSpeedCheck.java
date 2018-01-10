@@ -192,4 +192,8 @@ public class VerticalSpeedCheck implements Check<Event> {
                         .build());
     }
 
+    @Override
+    public Class<? extends Event> getSequenceTrigger() {
+        return MoveEntityEvent.class;
+    }
 }

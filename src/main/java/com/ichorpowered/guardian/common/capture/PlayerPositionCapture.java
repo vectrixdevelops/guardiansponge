@@ -80,7 +80,7 @@ public class PlayerPositionCapture {
         @Override
         public void update(PlayerEntry entry, CaptureContainer captureContainer) {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
-            Player player = entry.getEntity(Player.class).get();
+            final Player player = entry.getEntity(Player.class).get();
 
             final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
             final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());

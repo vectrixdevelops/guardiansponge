@@ -84,14 +84,20 @@ public final class Common {
     public void registerPermissions() {
         Sponge.getServiceManager().provide(PermissionService.class).ifPresent(permissionService -> {
             permissionService.newDescriptionBuilder(this.plugin)
-                    .id("guardian.penalty.notifier")
-                    .description(Text.of("Allows a player to recieve notifications of detection violations."))
-                    .assign(PermissionDescription.ROLE_STAFF, true)
+                    .id("guardian.punishments.<Penalty>")
+                    .description(Text.of("Allows a player to receive the <Penalty> penalty."))
+                    .assign(PermissionDescription.ROLE_USER, true)
                     .register();
 
             permissionService.newDescriptionBuilder(this.plugin)
-                    .id("guardian.penalty.reset-override")
-                    .description(Text.of("Exempts a player from receiving the reset penalty."))
+                    .id("guardian.detections.<Detection>")
+                    .description(Text.of("Allows a player to be checked by the <Detection> detection."))
+                    .assign(PermissionDescription.ROLE_USER, true)
+                    .register();
+
+            permissionService.newDescriptionBuilder(this.plugin)
+                    .id("guardian.reports.notification")
+                    .description(Text.of("Allows a player to receive notifications on new reports created."))
                     .assign(PermissionDescription.ROLE_STAFF, true)
                     .register();
         });

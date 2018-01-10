@@ -191,7 +191,6 @@ public class GuardianPlugin implements Guardian<Event> {
 
     // ACCESSORS
 
-
     public final long getCoreTime() {
         return this.coreTime;
     }
@@ -212,11 +211,11 @@ public class GuardianPlugin implements Guardian<Event> {
         return this.configDirectory.getParent();
     }
 
-    public Common getCommon() {
+    public final Common getCommon() {
         return this.common;
     }
 
-    public Configuration getConfiguration() {
+    public final Configuration getConfiguration() {
         return this.configuration;
     }
 
@@ -235,7 +234,7 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    public DetectionManager getDetectionManager() {
+    public final DetectionManager getDetectionManager() {
         return this.detectionManager;
     }
 
@@ -245,15 +244,15 @@ public class GuardianPlugin implements Guardian<Event> {
     }
 
     @Override
-    public SequenceRegistry<Event> getSequenceRegistry() {
+    public final SequenceRegistry<Event> getSequenceRegistry() {
         return this.sequenceRegistry;
     }
 
-    public GuardianSequenceManager.SequenceTask getSequenceTask() {
+    public final GuardianSequenceManager.SequenceTask getSequenceTask() {
         return this.sequenceTask;
     }
 
-    public GuardianSequenceListener getSequenceListener() {
+    public final GuardianSequenceListener getSequenceListener() {
         return this.sequenceListener;
     }
 }

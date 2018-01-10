@@ -67,7 +67,7 @@ public class NotificationPenalty implements Penalty {
             final Player reported = playerEntry.getEntity(Player.class).get();
 
             Sponge.getServer().getOnlinePlayers().forEach(player -> {
-                if (!player.hasPermission("guardian.penalty.notifier")) return;
+                if (!player.hasPermission("guardian.reports.notification")) return;
 
                 String detectionName = detection.getClass().getAnnotation(Module.class).name();
 
