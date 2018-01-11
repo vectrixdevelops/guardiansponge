@@ -77,8 +77,8 @@ public final class Common {
         this.plugin.getDetectionManager().provideStageModel(PenaltyModel.class, penaltyModel);
 
         // Register Penalty Models
-        penaltyModel.register(new NotificationPenalty());
         penaltyModel.register(new ResetPenalty());
+        penaltyModel.register(new NotificationPenalty());
     }
 
     public void registerPermissions() {

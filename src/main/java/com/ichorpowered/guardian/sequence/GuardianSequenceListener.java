@@ -58,7 +58,7 @@ public class GuardianSequenceListener {
                         .custom(CommonContextKeys.ENTITY_ENTRY, playerEntry)
                         .build(),
 
-                // Don't execute movement sequences if a plugin occurs in the cause.
-                sequence -> !event.getCause().containsType(PluginContainer.class));
+                sequence -> !event.getCause().root().getClass().equals(PluginContainer.class)
+        );
     }
 }
