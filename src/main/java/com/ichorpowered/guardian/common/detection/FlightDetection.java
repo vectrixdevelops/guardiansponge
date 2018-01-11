@@ -26,11 +26,15 @@ package com.ichorpowered.guardian.common.detection;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
+import com.ichorpowered.guardian.common.check.movement.FlightCheck;
+import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
+import com.ichorpowered.guardian.common.penalty.ResetPenalty;
 import com.ichorpowered.guardian.content.AbstractContentContainer;
 import com.ichorpowered.guardian.detection.AbstractDetection;
 import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
 import com.ichorpowered.guardian.util.property.Property;
 import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.content.transaction.ContentKey;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
@@ -50,8 +54,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
-@Module(id = "fly",
-        name = "Fly Detection",
+@Module(id = "flight",
+        name = "Flight Detection",
         authors = { "Connor Hartley (vectrix)" },
         version = "0.2.0",
         onEnable = "onConstruction",
@@ -108,6 +112,7 @@ public class FlightDetection extends AbstractDetection {
                 .stage(CheckModel.class)
                     .min(1)
                     .max(99)
+                    .include(FlightCheck.class)
                     .append()
                 .stage(HeuristicModel.class)
                     .min(1)
@@ -116,6 +121,8 @@ public class FlightDetection extends AbstractDetection {
                 .stage(PenaltyModel.class)
                     .min(1)
                     .max(99)
+                    .include(ResetPenalty.class)
+                    .include(NotificationPenalty.class)
                     .append()
                 .contentLoader(new FlightContentLoader(this, this.plugin.getConfigDirectory()))
                 .content(new FlightContent(this))
@@ -157,7 +164,23 @@ public class FlightDetection extends AbstractDetection {
 
         @Override
         public Set<ContentKey<?>> getPossibleKeys() {
-            return Sets.newHashSet();
+            return Sets.newHashSet(
+                    ContentKeys.ANALYSIS_TIME,
+                    ContentKeys.ANALYSIS_INTERCEPT,
+                    ContentKeys.ANALYSIS_MINIMUM_TICK,
+                    ContentKeys.ANALYSIS_MAXIMUM_TICK,
+                    ContentKeys.BOX_PLAYER_WIDTH,
+                    ContentKeys.BOX_PLAYER_HEIGHT,
+                    ContentKeys.BOX_PLAYER_SAFETY,
+                    ContentKeys.MOVEMENT_LIFT_SPEED,
+                    ContentKeys.MOVEMENT_SNEAK_SPEED,
+                    ContentKeys.MOVEMENT_WALK_SPEED,
+                    ContentKeys.MOVEMENT_SPRINT_SPEED,
+                    ContentKeys.MOVEMENT_FLY_SPEED,
+                    ContentKeys.MOVEMENT_EFFECT_SPEED,
+                    ContentKeys.MOVEMENT_MATTER_SPEED,
+                    ContentKeys.MOVEMENT_MATERIAL_SPEED
+            );
         }
 
     }
@@ -171,7 +194,7 @@ public class FlightDetection extends AbstractDetection {
 
         @Override
         public String getRoot() {
-            return "fly.conf";
+            return "flight.conf";
         }
 
     }

@@ -57,6 +57,9 @@ public class PlayerPositionCapture {
         public static NamedTypeKey<Double> RELATIVE_ALTITUDE =
                 NamedTypeKey.of(CLASS_NAME + ":relativeAltitude", Double.class);
 
+        public static NamedTypeKey<Double> LAST_ALTITUDE =
+                NamedTypeKey.of(CLASS_NAME + ":lastAltitude", Double.class);
+
         private final double amount;
         private final boolean liftOnly;
 
@@ -82,9 +85,9 @@ public class PlayerPositionCapture {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
             final Player player = entry.getEntity(Player.class).get();
 
-            final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
-            final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
-            final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, (ContentContainer) this.getDetection()).orElse(GuardianSingleValue.empty());
+            final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
+            final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
+            final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
 
             final double playerWidth = playerBoxWidth.getElement().orElse(1.0) + playerBoxSafety.getElement().orElse(0.08);
             final double playerHeight = playerBoxHeight.getElement().orElse(1.75) + playerBoxSafety.getElement().orElse(0.08);
@@ -132,9 +135,17 @@ public class PlayerPositionCapture {
 
             double relativeAltitudeOffset = (player.getLocation().getY() - relativeAltitude.getY()) - Math.abs(blockDepthOffset);
 
+            Optional<Double> last = captureContainer.get(RelativeAltitude.LAST_ALTITUDE);
+            if (last.isPresent()) {
+                if (last.get() < (relativeAltitudeOffset / 2)) relativeAltitudeOffset = relativeAltitudeOffset / 2;
+            }
+
             if (this.liftOnly && relativeAltitudeOffset < 0) return;
 
-            captureContainer.transform(RelativeAltitude.RELATIVE_ALTITUDE, original -> original + relativeAltitudeOffset, 1.0);
+            final double offset = relativeAltitudeOffset;
+
+            captureContainer.transform(RelativeAltitude.RELATIVE_ALTITUDE, original -> original + offset, 1.0);
+            captureContainer.transform(RelativeAltitude.LAST_ALTITUDE, original -> offset, 1.0);
         }
 
     }

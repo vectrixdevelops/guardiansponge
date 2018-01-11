@@ -52,7 +52,7 @@ public class WorldMaterialCapture extends AbstractCapture {
 
     private static final String CLASS_NAME = WorldMaterialCapture.class.getSimpleName().toUpperCase();
 
-    public static NamedTypeKey<Double> HORIZONTAL_SPEED_MODIFIER =
+    public static NamedTypeKey<Double> SPEED_MODIFIER =
             NamedTypeKey.of(CLASS_NAME + ":horizontalSpeedModifier", Double.class);
 
     public static NamedTypeKey<Map> ACTIVE_MATERIAL_TICKS =
@@ -104,7 +104,7 @@ public class WorldMaterialCapture extends AbstractCapture {
         if (WorldUtil.isEmptyUnder(player, playerBox, isSneaking ? (playerHeight - 0.25) : playerHeight)) {
             final double gasSpeed = this.matterSpeed.get(GAS);
 
-            captureContainer.transform(WorldMaterialCapture.HORIZONTAL_SPEED_MODIFIER, original -> original * gasSpeed, gasSpeed);
+            captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * gasSpeed, gasSpeed);
 
             captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
                 ((Map<String, Integer>) original).put(GAS, ((Map<String, Integer>) original).get(GAS) + 1);
@@ -114,7 +114,7 @@ public class WorldMaterialCapture extends AbstractCapture {
                 || WorldUtil.anyLiquidAtDepth(location, playerBox, isSneaking ? -(playerHeight - 0.25) : -playerHeight)) {
             final double liquidSpeed = this.matterSpeed.get(LIQUID);
 
-            captureContainer.transform(WorldMaterialCapture.HORIZONTAL_SPEED_MODIFIER, original -> original * liquidSpeed, liquidSpeed);
+            captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * liquidSpeed, liquidSpeed);
 
             captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
                 ((Map<String, Integer>) original).put(LIQUID, ((Map<String, Integer>) original).get(LIQUID) + 1);
@@ -132,7 +132,7 @@ public class WorldMaterialCapture extends AbstractCapture {
                     speedModifier = this.matterSpeed.get(SOLID);
                 }
 
-                captureContainer.transform(WorldMaterialCapture.HORIZONTAL_SPEED_MODIFIER, original -> original * speedModifier, speedModifier);
+                captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * speedModifier, speedModifier);
 
                 captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(SOLID, ((Map<String, Integer>) original).get(SOLID) + 1);

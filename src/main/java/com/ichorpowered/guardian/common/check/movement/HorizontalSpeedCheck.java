@@ -131,7 +131,7 @@ public class HorizontalSpeedCheck implements Check<Event> {
 
                     Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
                     Optional<Double> effectSpeedAmplifier = captureContainer.get(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER);
-                    Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.HORIZONTAL_SPEED_MODIFIER);
+                    Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.SPEED_MODIFIER);
                     Optional<Double> horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_DISTANCE);
                     Optional<Map> controlStateTicks = captureContainer.get(PlayerControlCapture.Common.ACTIVE_CONTROL_TICKS);
 

@@ -23,6 +23,7 @@
  */
 package com.ichorpowered.guardian;
 
+import com.ichorpowered.guardian.common.check.movement.FlightCheck;
 import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
 import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
 import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
@@ -53,6 +54,7 @@ public final class Common {
     public void loadModules(ModuleController<GuardianPlugin> moduleController) {
         moduleController.registerModule(DETECTION_PATH + "InvalidMovementDetection");
         moduleController.registerModule(DETECTION_PATH + "MovementSpeedDetection");
+        moduleController.registerModule(DETECTION_PATH + "FlightDetection");
     }
 
     public void loadChecks() {
@@ -63,6 +65,7 @@ public final class Common {
         checkModel.register(new HorizontalSpeedCheck());
         checkModel.register(new InvalidCheck());
         checkModel.register(new VerticalSpeedCheck());
+        checkModel.register(new FlightCheck());
     }
 
     public void loadHeuristics() {
