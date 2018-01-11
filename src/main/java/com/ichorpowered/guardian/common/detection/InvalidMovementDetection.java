@@ -117,7 +117,6 @@ public class InvalidMovementDetection extends AbstractDetection {
                 .stage(CheckModel.class)
                     .min(1)
                     .max(99)
-                    .filter(check -> check.getTags().contains("invalidmovement"))
                     .include(InvalidCheck.class)
                     .append()
                 .stage(HeuristicModel.class)

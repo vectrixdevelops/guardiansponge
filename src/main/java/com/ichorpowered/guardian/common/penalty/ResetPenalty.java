@@ -65,7 +65,7 @@ public class ResetPenalty implements Penalty {
             if (summary.view(SequenceReport.class) == null ||
                     summary.view(SequenceReport.class).get("initial_location") == null) return false;
 
-            return player.setLocationSafely(summary.view(SequenceReport.class).get("initial_location"));
+            return player.setLocation(summary.view(SequenceReport.class).get("initial_location"));
         };
     }
 }

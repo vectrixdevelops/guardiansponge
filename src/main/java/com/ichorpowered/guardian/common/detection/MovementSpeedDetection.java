@@ -119,7 +119,6 @@ public class MovementSpeedDetection extends AbstractDetection {
                     .max(99)
                     .include(HorizontalSpeedCheck.class)
                     .include(VerticalSpeedCheck.class)
-                    .filter(check -> check.getTags().contains("movementspeed"))
                     .append()
                 .stage(HeuristicModel.class)
                     .min(1)
