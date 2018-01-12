@@ -62,19 +62,19 @@ public class WorldMaterialCapture extends AbstractCapture {
     public static String GAS = "gas";
     public static String LIQUID = "liquid";
 
-    private Map<String, Double> materialSpeed = Maps.newHashMap();
-    private Map<String, Double> matterSpeed = Maps.newHashMap();
+    private Map materialSpeed = Maps.newHashMap();
+    private Map matterSpeed = Maps.newHashMap();
 
     public WorldMaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
         super(plugin, detection);
 
         if (detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED).orElse(GuardianSingleValue.empty()).getElement().isPresent()) {
-            this.matterSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
+            this.matterSpeed = detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED)
                     .orElse(GuardianSingleValue.empty()).getElement().get();
         }
 
         if (detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED).orElse(GuardianSingleValue.empty()).getElement().isPresent()) {
-            this.materialSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
+            this.materialSpeed = detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
                     .orElse(GuardianSingleValue.empty()).getElement().get();
         }
     }
@@ -106,7 +106,7 @@ public class WorldMaterialCapture extends AbstractCapture {
         // Checks
 
         if (WorldUtil.isEmptyUnder(player, playerBox, isSneaking ? (playerHeight - 0.25) : playerHeight)) {
-            final double gasSpeed = this.matterSpeed.get(GAS);
+            final double gasSpeed = (double) this.matterSpeed.get(GAS);
 
             captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * gasSpeed, gasSpeed);
 
@@ -116,7 +116,7 @@ public class WorldMaterialCapture extends AbstractCapture {
             }, Maps.newHashMap());
         } else if (WorldUtil.anyLiquidAtDepth(location, playerBox, 1) || WorldUtil.anyLiquidAtDepth(location, playerBox, 0)
                 || WorldUtil.anyLiquidAtDepth(location, playerBox, isSneaking ? -(playerHeight - 0.25) : -playerHeight)) {
-            final double liquidSpeed = this.matterSpeed.get(LIQUID);
+            final double liquidSpeed = (double) this.matterSpeed.get(LIQUID);
 
             captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * liquidSpeed, liquidSpeed);
 
@@ -131,9 +131,9 @@ public class WorldMaterialCapture extends AbstractCapture {
                 double speedModifier;
 
                 if (this.materialSpeed.containsKey(blockType.getName().toLowerCase())) {
-                    speedModifier = this.materialSpeed.get(blockType.getName().toLowerCase());
+                    speedModifier = (double) this.materialSpeed.get(blockType.getName().toLowerCase());
                 } else {
-                    speedModifier = this.matterSpeed.get(SOLID);
+                    speedModifier = (double) this.matterSpeed.get(SOLID);
                 }
 
                 captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * speedModifier, speedModifier);
