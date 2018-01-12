@@ -109,7 +109,7 @@ public class PlayerControlCapture {
         private double sneakOffset = 1.068;
         private double walkOffset = 1.094;
         private double sprintOffset = 1.124;
-        private double flyOffset = 1.218;
+        private double flyOffset = 2.416;
 
         public Common(@Nonnull Object plugin, @Nonnull Detection detection) {
             super(plugin, detection);
@@ -135,6 +135,9 @@ public class PlayerControlCapture {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
             final Player player = entry.getEntity(Player.class).get();
 
+            double walkSpeedData = player.get(Keys.WALKING_SPEED).orElse(0.2) * 10;
+            double flySpeedData = player.get(Keys.FLYING_SPEED).orElse(0.2) * 10;
+
             final Map<String, Integer> controlState = new HashMap<>();
             controlState.put(FLY, 0);
             controlState.put(WALK, 0);
@@ -147,28 +150,28 @@ public class PlayerControlCapture {
             }
 
             if ((player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get())) {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.flyOffset, this.flyOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.flyOffset * flySpeedData), (this.flyOffset * flySpeedData));
 
                 captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(FLY, ((Map<String, Integer>) original).get(FLY) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());
             } else if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.sprintOffset, this.sprintOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.sprintOffset * walkSpeedData), (this.sprintOffset * walkSpeedData));
 
                 captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(SPRINT, ((Map<String, Integer>) original).get(SPRINT) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());
             } else if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.sneakOffset, this.sneakOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.sneakOffset * walkSpeedData), (this.sneakOffset * walkSpeedData));
 
                 captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(SNEAK, ((Map<String, Integer>) original).get(SPRINT) + 1);
                     return (Map<String, Integer>) original;
                 }, Maps.newHashMap());
             } else {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * this.walkOffset, this.walkOffset);
+                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.walkOffset * walkSpeedData), (this.walkOffset * walkSpeedData));
 
                 captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
                     ((Map<String, Integer>) original).put(WALK, ((Map<String, Integer>) original).get(WALK) + 1);
