@@ -34,6 +34,7 @@ import com.ichorpowered.guardian.launch.facet.InternalPluginFacet;
 import com.ichorpowered.guardian.launch.message.SimpleFacetMessage;
 import com.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import com.ichorpowered.guardian.sequence.GuardianSequenceManager;
+import com.ichorpowered.guardian.service.InternalBypassService;
 import com.ichorpowered.guardian.util.property.Property;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
 import com.ichorpowered.guardian.util.property.PropertyModifier;
@@ -100,6 +101,7 @@ public class GuardianPlugin implements Guardian<Event> {
 
     @Property(modifier = PropertyModifier.CONSTANT) private Common common;
     @Property(modifier = PropertyModifier.CONSTANT) private Configuration configuration;
+    @Property(modifier = PropertyModifier.CONSTANT) private InternalBypassService internalBypassService;
     @Property(modifier = PropertyModifier.CONSTANT) private ModuleController<GuardianPlugin> moduleController;
     @Property(modifier = PropertyModifier.CONSTANT) private SimpleEventBus<GuardianEvent, GuardianListener> eventBus;
 
@@ -217,6 +219,10 @@ public class GuardianPlugin implements Guardian<Event> {
 
     public final Configuration getConfiguration() {
         return this.configuration;
+    }
+
+    public final InternalBypassService getInternalBypassService() {
+        return this.internalBypassService;
     }
 
     public final ModuleController<GuardianPlugin> getModuleController() {

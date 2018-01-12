@@ -135,8 +135,8 @@ public class PlayerControlCapture {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
             final Player player = entry.getEntity(Player.class).get();
 
-            double walkSpeedData = player.get(Keys.WALKING_SPEED).orElse(0.2) * 10;
-            double flySpeedData = player.get(Keys.FLYING_SPEED).orElse(0.2) * 10;
+            double walkSpeedData = player.get(Keys.WALKING_SPEED).orElse(1d) * 10;
+            double flySpeedData = player.get(Keys.FLYING_SPEED).orElse(0.5) * 10;
 
             final Map<String, Integer> controlState = new HashMap<>();
             controlState.put(FLY, 0);

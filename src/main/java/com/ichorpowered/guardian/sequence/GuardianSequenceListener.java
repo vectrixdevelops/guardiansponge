@@ -42,12 +42,12 @@ public class GuardianSequenceListener {
         this.plugin = plugin;
     }
 
+    // Triggers
+
     @Listener
     @Exclude(MoveEntityEvent.Teleport.class)
     public void moveEntityEvent(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
         final GuardianPlayerEntry<Player> playerEntry = GuardianPlayerEntry.of(player, player.getUniqueId());
-
-        // TODO: Block for teleportation.
 
         this.plugin.getSequenceManager().invokeObserverIf(event,
 
@@ -60,5 +60,14 @@ public class GuardianSequenceListener {
 
                 sequence -> !event.getCause().root().getClass().equals(PluginContainer.class)
         );
+    }
+
+    // Blocking
+
+    @Listener
+    public void teleportEntityEvent(MoveEntityEvent.Teleport event, @Getter("getTargetEntity") Player player) {
+        final GuardianPlayerEntry<Player> playerEntry = GuardianPlayerEntry.of(player, player.getUniqueId());
+
+        this.plugin.getInternalBypassService().requestTimeBypassTicket(player, MoveEntityEvent.class, this.plugin, 55);
     }
 }

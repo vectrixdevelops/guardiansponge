@@ -40,6 +40,8 @@ import com.ichorpowered.guardian.launch.message.FacetMessage;
 import com.ichorpowered.guardian.launch.message.SimpleFacetMessage;
 import com.ichorpowered.guardian.sequence.GuardianSequenceListener;
 import com.ichorpowered.guardian.sequence.GuardianSequenceManager;
+import com.ichorpowered.guardian.service.GuardianBypassService;
+import com.ichorpowered.guardian.service.InternalBypassService;
 import com.ichorpowered.guardian.util.ConsoleUtil;
 import com.ichorpowered.guardian.util.property.PropertyInjector;
 import com.ichorpowered.guardianapi.GuardianState;
@@ -49,6 +51,8 @@ import com.ichorpowered.guardianapi.event.GuardianListener;
 import com.ichorpowered.guardianapi.event.origin.Origin;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
+import com.me4502.precogs.Precogs;
+import com.me4502.precogs.service.AntiCheatService;
 import net.kyori.event.ASMEventExecutorFactory;
 import net.kyori.event.SimpleEventBus;
 import org.fusesource.jansi.Ansi;
@@ -113,6 +117,8 @@ public class CorePluginFacet implements Facet {
                 Sponge.getPlatform().getContainer(Platform.Component.API).getVersion().map(version -> version.substring(0, 5)).orElse("?"),
                 Sponge.getPlatform().getContainer(Platform.Component.GAME).getVersion().orElse("?")));
 
+        Sponge.getServiceManager().setProvider(this.plugin, AntiCheatService.class, new GuardianBypassService(this.plugin));
+
         ModuleController<GuardianPlugin> moduleController = ShadedModularFramework.registerModuleController(this.plugin, Sponge.getGame());
         moduleController.setPluginContainer(this.plugin.getPluginContainer());
 
@@ -137,6 +143,8 @@ public class CorePluginFacet implements Facet {
 
         this.logger.info(this.facetPrefix + "Initializing registries.");
 
+        InternalBypassService internalBypassService = new InternalBypassService(this.plugin);
+
         GuardianDetectionManager detectionManager = new GuardianDetectionManager(this.plugin);
 
         SequenceRegistry<Event> sequenceRegistry = new SequenceRegistry<>();
@@ -157,6 +165,7 @@ public class CorePluginFacet implements Facet {
         propertyInjector.inject("common", common);
         propertyInjector.inject("configuration", configuration);
 
+        propertyInjector.inject("internalBypassService", internalBypassService);
         propertyInjector.inject("detectionManager", detectionManager);
         propertyInjector.inject("sequenceManager", sequenceManager);
         propertyInjector.inject("sequenceTask", sequenceTask);
