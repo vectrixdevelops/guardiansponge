@@ -58,21 +58,25 @@ public class WorldMaterialCapture extends AbstractCapture {
     public static NamedTypeKey<Map> ACTIVE_MATERIAL_TICKS =
             NamedTypeKey.of(CLASS_NAME + ":activeMaterialTicks", Map.class);
 
+    public static String SOLID = "solid";
     public static String GAS = "gas";
     public static String LIQUID = "liquid";
-    public static String SOLID = "solid";
 
-    private Map<String, Double> materialSpeed;
-    private Map<String, Double> matterSpeed;
+    private Map<String, Double> materialSpeed = Maps.newHashMap();
+    private Map<String, Double> matterSpeed = Maps.newHashMap();
 
     public WorldMaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
         super(plugin, detection);
 
-        this.materialSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
-                .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
+        if (detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED).orElse(GuardianSingleValue.empty()).getElement().isPresent()) {
+            this.matterSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
+                    .orElse(GuardianSingleValue.empty()).getElement().get();
+        }
 
-        this.matterSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED)
-                .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
+        if (detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED).orElse(GuardianSingleValue.empty()).getElement().isPresent()) {
+            this.materialSpeed = (Map<String, Double>) detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
+                    .orElse(GuardianSingleValue.empty()).getElement().get();
+        }
     }
 
     @Override

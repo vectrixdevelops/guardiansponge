@@ -33,19 +33,19 @@ import java.util.Optional;
 
 public class GuardianSingleValue<E> implements SingleValue<E> {
 
-    private final ContentKey contentKey;
+    private final ContentKey<E> contentKey;
 
     private ContentContainer contentContainer;
     private boolean dirty = false;
     private E element;
 
-    public GuardianSingleValue(final ContentKey contentKey, final ContentContainer contentContainer) {
+    public GuardianSingleValue(final ContentKey<E> contentKey, final ContentContainer contentContainer) {
         this.contentKey = contentKey;
         this.contentContainer = contentContainer;
     }
 
     public static <B> GuardianSingleValue<B> empty() {
-        return new GuardianSingleValue<>(ContentKeys.UNDEFINED, new EmptyContentContainer());
+        return new GuardianSingleValue<>((ContentKey<B>) ContentKeys.UNDEFINED, new EmptyContentContainer());
     }
 
     public GuardianSingleValue<E> setDirty(final boolean dirty) {
@@ -64,7 +64,7 @@ public class GuardianSingleValue<E> implements SingleValue<E> {
     }
 
     @Override
-    public ContentKey getKey() {
+    public ContentKey<E> getKey() {
         return this.contentKey;
     }
 
