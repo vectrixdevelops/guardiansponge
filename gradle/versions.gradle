@@ -1,6 +1,6 @@
 ext.pluginId = 'guardian'
 ext.pluginName = 'Guardian'
-ext.pluginVersion = '0.6.0-07'
+ext.pluginVersion = '0.6.0-08'
 ext.pluginDescription = 'An extensible anticheat plugin for Sponge.'
 
 ext.spongeApiVersion = '7.0.0'
