@@ -23,8 +23,8 @@ The plugin is a work in progress and there are plans for more detections to be a
 
 - [x] HorizontalSpeed    (Movement Speed)
 - [x] VerticalSpeed      (Movement Speed)
-- [ ] Flight             (Flight, Movement Speed)
-- [ ] JetPack            (Flight)
+- [x] Flight             (Flight, Movement Speed)
+- [x] JetPack            (Flight)
 - [ ] Jesus              (Jesus, Movement Speed)
 - [x] Blink              (Movement Speed)
 - [ ] Spider / WallClimb (Flight, Movement Speed)
@@ -42,8 +42,8 @@ And more coming soon.
 ##### Built-In Punishments:
 
 - [ ] Warning
-- [ ] Location Reset
-- [ ] Staff Report
+- [x] Location Reset
+- [x] Staff Report
 - [ ] Kick
 - [ ] Ban
 - [ ] Temporary Ban
