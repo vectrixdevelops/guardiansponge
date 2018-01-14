@@ -41,7 +41,7 @@ dependencies {
 
     compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}-SNAPSHOT"
 
-    compileOnly 'com.github.me4502:Precogs:04c53049ea'
+    compileOnly 'com.github.me4502:Precogs:-SNAPSHOT'
     compileOnly 'com.github.ichorpowered:elderguardian:-SNAPSHOT'
 
     compile 'org.apache.commons:commons-math3:3.6.1'
