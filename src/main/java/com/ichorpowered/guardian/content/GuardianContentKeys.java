@@ -151,19 +151,5 @@ public class GuardianContentKeys {
                 .element(TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "model", "player", "safety"))
                 .build();
-
-        ContentKeys.EQUIPMENT_BLACKLIST = GuardianContentKey.<List>builder()
-                .id("guardian:equipment_blacklist")
-                .name("equipment_blacklist")
-                .element(TypeToken.of(List.class))
-                .assignment(ConfigurationAssignment.of("analysis", "blacklist", "equipment"))
-                .build();
-
-        ContentKeys.ITEM_BLACKLIST = GuardianContentKey.<List>builder()
-                .id("guardian:item_blacklist")
-                .name("item_blacklist")
-                .element(TypeToken.of(List.class))
-                .assignment(ConfigurationAssignment.of("analysis", "blacklist", "item"))
-                .build();
     }
 }
