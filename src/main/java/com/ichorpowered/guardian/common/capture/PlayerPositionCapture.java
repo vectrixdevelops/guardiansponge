@@ -24,19 +24,20 @@
 package com.ichorpowered.guardian.common.capture;
 
 import com.flowpowered.math.vector.Vector3d;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
+import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardian.sequence.capture.GuardianCaptureKey;
 import com.ichorpowered.guardian.util.ContentUtil;
 import com.ichorpowered.guardian.util.WorldUtil;
 import com.ichorpowered.guardian.util.entity.BoundingBox;
-import com.ichorpowered.guardianapi.content.ContentContainer;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentKeys;
-import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKey;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
-import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
@@ -51,14 +52,23 @@ public class PlayerPositionCapture {
 
         private static final String CLASS_NAME = RelativeAltitude.class.getSimpleName().toUpperCase();
 
-        public static NamedTypeKey<Location> INITIAL_DEPTH =
-                NamedTypeKey.of(CLASS_NAME + ":initialDepth", Location.class);
+        public static final CaptureKey<Value<Location>> INITIAL_DEPTH = GuardianCaptureKey.<Value<Location>>builder()
+                .id(CLASS_NAME + ":initialDepth")
+                .name("InitialDepth")
+                .type(GuardianValue.empty(), TypeToken.of(Location.class))
+                .build();
 
-        public static NamedTypeKey<Double> RELATIVE_ALTITUDE =
-                NamedTypeKey.of(CLASS_NAME + ":relativeAltitude", Double.class);
+        public static final CaptureKey<Value<Double>> RELATIVE_ALTITUDE = GuardianCaptureKey.<Value<Double>>builder()
+                .id(CLASS_NAME + ":relativeAltitude")
+                .name("RelativeAltitude")
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
+                .build();
 
-        public static NamedTypeKey<Double> LAST_ALTITUDE =
-                NamedTypeKey.of(CLASS_NAME + ":lastAltitude", Double.class);
+        public static final CaptureKey<Value<Double>> LAST_ALTITUDE = GuardianCaptureKey.<Value<Double>>builder()
+                .id(CLASS_NAME + ":lastAltitude")
+                .name("LastAltitude")
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
+                .build();
 
         private final double amount;
         private final boolean liftOnly;
@@ -85,12 +95,12 @@ public class PlayerPositionCapture {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
             final Player player = entry.getEntity(Player.class).get();
 
-            final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
-            final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
-            final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
+            final Value<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
+            final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
+            final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
 
-            final double playerWidth = playerBoxWidth.getElement().orElse(1.0) + playerBoxSafety.getElement().orElse(0.08);
-            final double playerHeight = playerBoxHeight.getElement().orElse(1.75) + playerBoxSafety.getElement().orElse(0.08);
+            final double playerWidth = playerBoxWidth.getDirect().orElse(1.0) + playerBoxSafety.getDirect().orElse(0.08);
+            final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
 
             final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
             final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
@@ -99,6 +109,11 @@ public class PlayerPositionCapture {
 
             Location relativeAltitude = null;
             double blockDepthOffset = 0;
+
+            captureContainer.offerIfEmpty(GuardianValue.builder(RelativeAltitude.RELATIVE_ALTITUDE)
+                    .defaultElement(1d)
+                    .element(1d)
+                    .create());
 
             for (int n = 0; n < location.getY(); n++) {
                 double i = this.amount * n;
@@ -122,7 +137,11 @@ public class PlayerPositionCapture {
                                 1 : maximumDepth.get().getY() - currentDepth.getY();
                         break;
                     } else if (!maximumDepth.isPresent()) {
-                        captureContainer.put(RelativeAltitude.INITIAL_DEPTH, currentDepth);
+                        captureContainer.offer(GuardianValue.builder(RelativeAltitude.INITIAL_DEPTH)
+                                .defaultElement(currentDepth)
+                                .element(currentDepth)
+                                .create());
+
                         relativeAltitude = currentDepth.add(0, this.amount, 0);
                         break;
                     }
@@ -144,8 +163,8 @@ public class PlayerPositionCapture {
 
             final double offset = relativeAltitudeOffset;
 
-            captureContainer.transform(RelativeAltitude.RELATIVE_ALTITUDE, original -> original + offset, 1.0);
-            captureContainer.transform(RelativeAltitude.LAST_ALTITUDE, original -> offset, 1.0);
+            captureContainer.getValue(RelativeAltitude.RELATIVE_ALTITUDE).ifPresent(value -> value.transform(original -> original + offset));
+            captureContainer.getValue(RelativeAltitude.LAST_ALTITUDE).ifPresent(value -> value.set(offset));
         }
 
     }

@@ -24,19 +24,19 @@
 package com.ichorpowered.guardian.util;
 
 import com.ichorpowered.guardianapi.content.ContentContainer;
-import com.ichorpowered.guardianapi.content.transaction.ContentKey;
-import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
+import com.ichorpowered.guardianapi.content.key.ContentKey;
+import com.ichorpowered.guardianapi.util.item.value.BaseValue;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 public class ContentUtil {
 
-    public static <T> Optional<SingleValue<T>> getFirst(ContentKey<T> contentKey, ContentContainer... contentContainers) {
+    public static <E, V extends BaseValue<E>> Optional<V> getFirst(ContentKey<V> contentKey, ContentContainer... contentContainers) {
         return Arrays.stream(contentContainers)
-                .map(contentContainer -> contentContainer.<T>get(contentKey))
+                .map(contentContainer -> contentContainer.get(contentKey))
                 .filter(Optional::isPresent)
-                .map(Optional::<SingleValue<T>>get)
+                .map(Optional::get)
                 .findFirst();
     }
 }

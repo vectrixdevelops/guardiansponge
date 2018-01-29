@@ -25,8 +25,8 @@ package com.ichorpowered.guardian.sequence.capture;
 
 import com.google.common.collect.Maps;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
-import com.ichorpowered.guardianapi.util.Transform;
-import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKey;
+import com.ichorpowered.guardianapi.util.item.value.BaseValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,11 +34,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class GuardianCaptureContainer implements CaptureContainer {
 
-    private final HashMap<String, Object> container = Maps.newHashMap();
+    private final HashMap<String, BaseValue<?>> container = Maps.newHashMap();
 
     public static GuardianCaptureContainer create() {
         return new GuardianCaptureContainer();
@@ -47,63 +46,38 @@ public class GuardianCaptureContainer implements CaptureContainer {
     private GuardianCaptureContainer() {}
 
     @Override
-    public <T> void putOnce(@Nonnull String key, @Nullable T value) {
-        if (!this.container.containsKey(key)) this.container.put(key, Object.class.cast(value));
+    public <E, V extends BaseValue<E>> void offerIfEmpty(@Nonnull V item) {
+        if (this.container.containsKey(item.getKey().getId())) return;
+        this.container.put(item.getKey().getId(), item);
     }
 
     @Override
-    public <T> void putOnce(@Nonnull NamedTypeKey<T> key, @Nullable T value) {
-        this.putOnce(key.getName(), value);
-    }
-
-    @Override
-    public <T> void put(@Nonnull String id, @Nullable T value) {
-        this.container.remove(id);
-        this.container.put(id, Object.class.cast(value));
-    }
-
-    @Override
-    public <T> void put(@Nonnull NamedTypeKey<T> key, @Nonnull T value) {
-        this.put(key.getName(), value);
+    public <E, V extends BaseValue<E>> void offer(@Nonnull V item) {
+        this.container.remove(item.getKey().getId());
+        this.container.put(item.getKey().getId(), item);
     }
 
     @Nonnull
     @Override
     public CaptureContainer merge(@Nonnull CaptureContainer captureContainer) {
-        Set<Map.Entry<String, Object>> entries = ((GuardianCaptureContainer) captureContainer).container.entrySet();
+        Set<Map.Entry<String, BaseValue<?>>> entries = ((GuardianCaptureContainer) captureContainer).container.entrySet();
 
-        for (Map.Entry<String, Object> entry : entries) {
+        for (Map.Entry<String, BaseValue<?>> entry : entries) {
             this.container.put(entry.getKey(), entry.getValue());
         }
 
         return this;
     }
 
-    @Override
-    public <T> void transform(@Nonnull String key, @Nullable Transform<T> transform, T defaultValue) {
-        if (!this.container.containsKey(key)) {
-            this.put(key, transform.transform(defaultValue));
-            return;
-        }
-
-        this.put(key, transform.transform((T) this.container.get(key)));
-    }
-
-    @Override
-    public <T> void transform(@Nonnull NamedTypeKey<T> key, @Nonnull Transform<T> transform, T defaultValue) {
-        this.transform(key.getName(), transform, defaultValue);
-    }
-
     @Nonnull
     @Override
-    public <T> Optional<T> get(@Nonnull String key) {
-        return Optional.ofNullable((T) this.container.get(key));
+    public <E, V extends BaseValue<E>> Optional<V> getValue(@Nonnull CaptureKey<V> key) {
+        return Optional.ofNullable((V) this.container.get(key.getId()));
     }
 
-    @Nonnull
     @Override
-    public <T> Optional<T> get(@Nonnull NamedTypeKey<T> key) {
-        return Optional.ofNullable((T) this.container.get(key.getName()));
+    public <E, V extends BaseValue<E>> Optional<E> get(@Nonnull CaptureKey<V> key) {
+        return Optional.ofNullable(this.container.get(key.getId()) != null ? (E) this.container.get(key.getId()).getDirect().orElse(null) : null);
     }
 
     @Nonnull

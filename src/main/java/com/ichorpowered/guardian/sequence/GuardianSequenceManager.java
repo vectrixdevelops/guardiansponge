@@ -81,7 +81,6 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
 
         while (stageCycle.next()) {
             if (stageCycle.getModel().isPresent() && CheckModel.class.isAssignableFrom(stageCycle.getModel().get().getClass())) {
-                if (!stageCycle.nextModel()) return;
                 continue;
             }
 

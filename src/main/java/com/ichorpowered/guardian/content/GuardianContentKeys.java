@@ -25,7 +25,11 @@ package com.ichorpowered.guardian.content;
 
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.content.assignment.ConfigurationAssignment;
+import com.ichorpowered.guardian.util.item.mutable.GuardianMapValue;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentKeys;
+import com.ichorpowered.guardianapi.util.item.value.mutable.MapValue;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 
 import java.util.List;
 import java.util.Map;
@@ -40,115 +44,115 @@ public class GuardianContentKeys {
                 .name("undefined")
                 .build();
 
-        ContentKeys.ANALYSIS_TIME = GuardianContentKey.<Double>builder()
+        ContentKeys.ANALYSIS_TIME = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:analysis_time")
                 .name("time")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "time"))
                 .build();
 
-        ContentKeys.ANALYSIS_INTERCEPT = GuardianContentKey.<Double>builder()
+        ContentKeys.ANALYSIS_INTERCEPT = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:analysis_intercept")
                 .name("intercept")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "intercept"))
                 .build();
 
-        ContentKeys.ANALYSIS_MINIMUM_TICK = GuardianContentKey.<Double>builder()
+        ContentKeys.ANALYSIS_MINIMUM_TICK = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:analysis_minimum_tick")
                 .name("minimum_tick")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "minimum-tick"))
                 .build();
 
-        ContentKeys.ANALYSIS_MAXIMUM_TICK = GuardianContentKey.<Double>builder()
+        ContentKeys.ANALYSIS_MAXIMUM_TICK = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:analysis_maximum_tick")
                 .name("maximum_tick")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "maximum-tick"))
                 .build();
 
-        ContentKeys.MOVEMENT_LIFT_SPEED = GuardianContentKey.<Double>builder()
+        ContentKeys.MOVEMENT_LIFT_SPEED = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:movement_lift_speed")
                 .name("lift_speed")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "lift"))
                 .build();
 
-        ContentKeys.MOVEMENT_SNEAK_SPEED = GuardianContentKey.<Double>builder()
+        ContentKeys.MOVEMENT_SNEAK_SPEED = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:movement_sneak_speed")
                 .name("sneak_speed")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "sneak"))
                 .build();
 
-        ContentKeys.MOVEMENT_WALK_SPEED = GuardianContentKey.<Double>builder()
+        ContentKeys.MOVEMENT_WALK_SPEED = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:movement_walk_speed")
                 .name("walk_speed")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "walk"))
                 .build();
 
-        ContentKeys.MOVEMENT_SPRINT_SPEED = GuardianContentKey.<Double>builder()
+        ContentKeys.MOVEMENT_SPRINT_SPEED = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:movement_sprint_speed")
                 .name("sprint_speed")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "sprint"))
                 .build();
 
-        ContentKeys.MOVEMENT_FLY_SPEED = GuardianContentKey.<Double>builder()
+        ContentKeys.MOVEMENT_FLY_SPEED = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:movement_fly_speed")
                 .name("fly_speed")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "control", "fly"))
                 .build();
 
-        ContentKeys.MOVEMENT_MATERIAL_SPEED = GuardianContentKey.<Map>builder()
+        ContentKeys.MOVEMENT_MATERIAL_SPEED = GuardianContentKey.<MapValue<String, Double>>builder()
                 .id("guardian:movement_material_speed")
                 .name("movement_material_speed")
-                .element(TypeToken.of(Map.class))
+                .type(GuardianMapValue.empty(), TypeToken.of(Map.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "material"))
                 .build();
 
-        ContentKeys.MOVEMENT_MATTER_SPEED = GuardianContentKey.<Map>builder()
+        ContentKeys.MOVEMENT_MATTER_SPEED = GuardianContentKey.<MapValue<String, Double>>builder()
                 .id("guardian:movement_matter_speed")
                 .name("movement_matter_speed")
-                .element(TypeToken.of(Map.class))
+                .type(GuardianMapValue.empty(), TypeToken.of(Map.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "matter"))
                 .build();
 
-        ContentKeys.MOVEMENT_EFFECT_SPEED = GuardianContentKey.<Map>builder()
+        ContentKeys.MOVEMENT_EFFECT_SPEED = GuardianContentKey.<MapValue<String, Double>>builder()
                 .id("guardian:movement_effect_speed")
                 .name("effect_speed")
-                .element(TypeToken.of(Map.class))
+                .type(GuardianMapValue.empty(), TypeToken.of(Map.class))
                 .assignment(ConfigurationAssignment.of("analysis", "speed", "effect"))
                 .build();
 
-        ContentKeys.MOVEMENT_EFFECT_LIFT = GuardianContentKey.<Map>builder()
+        ContentKeys.MOVEMENT_EFFECT_LIFT = GuardianContentKey.<MapValue<String, Double>>builder()
                 .id("guardian:movement_effect_lift")
                 .name("effect_lift")
-                .element(TypeToken.of(Map.class))
+                .type(GuardianMapValue.empty(), TypeToken.of(Map.class))
                 .assignment(ConfigurationAssignment.of("analysis", "lift", "effect"))
                 .build();
 
-        ContentKeys.BOX_PLAYER_WIDTH = GuardianContentKey.<Double>builder()
+        ContentKeys.BOX_PLAYER_WIDTH = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:box_player_width")
                 .name("player_width")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "model", "player", "width"))
                 .build();
 
-        ContentKeys.BOX_PLAYER_HEIGHT = GuardianContentKey.<Double>builder()
+        ContentKeys.BOX_PLAYER_HEIGHT = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:box_player_height")
                 .name("player_height")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "model", "player", "height"))
                 .build();
 
-        ContentKeys.BOX_PLAYER_SAFETY = GuardianContentKey.<Double>builder()
+        ContentKeys.BOX_PLAYER_SAFETY = GuardianContentKey.<Value<Double>>builder()
                 .id("guardian:box_player_safety")
                 .name("player_safety")
-                .element(TypeToken.of(Double.class))
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
                 .assignment(ConfigurationAssignment.of("analysis", "model", "player", "safety"))
                 .build();
     }

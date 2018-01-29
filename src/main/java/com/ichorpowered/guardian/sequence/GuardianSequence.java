@@ -27,14 +27,18 @@ import com.abilityapi.sequenceapi.Sequence;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.Action;
+import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.report.GuardianSummary;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureContainer;
+import com.ichorpowered.guardian.sequence.capture.GuardianCaptureKey;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.detection.Detection;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKey;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
 import com.ichorpowered.guardianapi.event.origin.Origin;
-import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -44,8 +48,11 @@ import java.util.List;
 
 public class GuardianSequence extends Sequence<Event> {
 
-    public static NamedTypeKey<Location> INITIAL_LOCATION =
-            NamedTypeKey.of(GuardianSequence.class.getCanonicalName() + ":initialLocation", Location.class);
+    public static CaptureKey<Value<Location>> INITIAL_LOCATION = GuardianCaptureKey.<Value<Location>>builder()
+            .id(GuardianSequence.class.getSimpleName() + ":initialLocation")
+            .name("InitialLocation")
+            .type(GuardianValue.empty(), TypeToken.of(Location.class))
+            .build();
 
     private final GuardianSummary summary;
     private final GuardianCaptureRegistry captureRegistry;
@@ -80,7 +87,10 @@ public class GuardianSequence extends Sequence<Event> {
                 .build();
 
         if (this.getState().equals(State.INACTIVE)) {
-            this.captureRegistry.getContainer().putOnce(INITIAL_LOCATION, player.getLocation());
+            this.captureRegistry.getContainer().offerIfEmpty(GuardianValue.builder(GuardianSequence.INITIAL_LOCATION)
+                    .defaultElement(player.getLocation())
+                    .element(player.getLocation())
+                    .create());
         }
 
         return super.applyObserve(event, mergedContext);
@@ -101,7 +111,10 @@ public class GuardianSequence extends Sequence<Event> {
                 .build();
 
         if (this.getState().equals(State.INACTIVE)) {
-            this.captureRegistry.getContainer().putOnce(INITIAL_LOCATION, player.getLocation());
+            this.captureRegistry.getContainer().offerIfEmpty(GuardianValue.builder(GuardianSequence.INITIAL_LOCATION)
+                    .defaultElement(player.getLocation())
+                    .element(player.getLocation())
+                    .create());
         }
 
         super.applySchedule(mergedContext);

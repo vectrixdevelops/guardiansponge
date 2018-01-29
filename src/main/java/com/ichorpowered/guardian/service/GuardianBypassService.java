@@ -52,12 +52,12 @@ public class GuardianBypassService implements AntiCheatService {
     }
 
     @Override
-    public void logViolation(User user, DetectionType detectionType, double v) {
+    public void logViolation(User user, DetectionType detectionType, double value) {
 
     }
 
     @Override
-    public void logViolation(User user, DetectionType detectionType, double v, String s) {
+    public void logViolation(User user, DetectionType detectionType, double value, String reason) {
 
     }
 }

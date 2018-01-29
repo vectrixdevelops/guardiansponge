@@ -21,50 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.content;
+package com.ichorpowered.guardian.sequence.capture;
 
-import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
-import com.ichorpowered.guardianapi.content.key.ContentKey;
-import com.ichorpowered.guardianapi.content.key.ContentKeyBuilder;
-import com.ichorpowered.guardianapi.content.transaction.ContentAssignment;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKey;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKeyBuilder;
 import com.ichorpowered.guardianapi.util.item.value.BaseValue;
 
-import java.util.Set;
-
-public class GuardianContentKey<V extends BaseValue> implements ContentKey<V> {
+public class GuardianCaptureKey<V extends BaseValue<?>> implements CaptureKey<V> {
 
     private final String id;
     private final String name;
     private final V defaultValue;
     private final TypeToken<?> elementType;
-    private final Set<ContentAssignment<?>> assignments;
 
-    public GuardianContentKey(final Builder<V> builder) {
+    public GuardianCaptureKey(final Builder<V> builder) {
         this.id = builder.id;
         this.name = builder.name;
         this.defaultValue = builder.defaultValue;
         this.elementType = builder.elementType;
-        this.assignments = builder.assignments;
     }
 
     public static <A extends BaseValue<?>> Builder<A> builder() {
-        return new GuardianContentKey.Builder<>();
-    }
-
-    @Override
-    public String getId() {
-        return this.id;
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public Set<ContentAssignment<?>> getAssignments() {
-        return this.assignments;
+        return new GuardianCaptureKey.Builder<>();
     }
 
     @Override
@@ -77,42 +56,45 @@ public class GuardianContentKey<V extends BaseValue> implements ContentKey<V> {
         return this.elementType;
     }
 
-    public static class Builder<V extends BaseValue> implements ContentKeyBuilder<V> {
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    public static class Builder<V extends BaseValue<?>> implements CaptureKeyBuilder<V> {
 
         private String id;
         private String name;
         private V defaultValue;
         private TypeToken<?> elementType;
-        private Set<ContentAssignment<?>> assignments = Sets.newHashSet();
 
         @Override
-        public ContentKeyBuilder<V> id(String id) {
+        public Builder<V> id(String id) {
             this.id = id;
             return this;
         }
 
         @Override
-        public ContentKeyBuilder<V> name(String name) {
+        public Builder<V> name(String name) {
             this.name = name;
             return this;
         }
 
         @Override
-        public ContentKeyBuilder<V> type(V value, TypeToken<?> elementToken) {
-            this.defaultValue = value;
+        public Builder<V> type(V defaultValue, TypeToken<?> elementToken) {
+            this.defaultValue = defaultValue;
             this.elementType = elementToken;
             return this;
         }
 
         @Override
-        public ContentKeyBuilder<V> assignment(ContentAssignment<?> assignment) {
-            this.assignments.add(assignment);
-            return this;
-        }
-
-        @Override
-        public ContentKey<V> build() {
-            return new GuardianContentKey<>(this);
+        public GuardianCaptureKey<V> build() {
+            return new GuardianCaptureKey<>(this);
         }
     }
 }

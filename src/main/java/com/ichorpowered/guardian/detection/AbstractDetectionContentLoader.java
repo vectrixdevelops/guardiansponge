@@ -25,11 +25,15 @@ package com.ichorpowered.guardian.detection;
 
 import com.google.common.collect.Maps;
 import com.ichorpowered.guardian.content.assignment.ConfigurationAssignment;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
+import com.ichorpowered.guardian.util.item.mutable.GuardianMapValue;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentContainer;
-import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.content.key.ContentKey;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
+import com.ichorpowered.guardianapi.util.item.key.Key;
+import com.ichorpowered.guardianapi.util.item.value.mutable.MapValue;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -62,7 +66,7 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
 
     @Override
     public void acquireAll() {
-        if (this.contentContainer == null) return;
+        if (this.contentContainer == null || this.contentContainer.getPossibleKeys() == null) return;
 
         this.contentContainer.getPossibleKeys()
                 .forEach(key -> {
@@ -75,19 +79,30 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
                     final ConfigurationAssignment configurationAssignment = assignment.get();
                     final CommentedConfigurationNode node = this.configurationFile.getNode(configurationAssignment.lookup().toArray());
 
-                    final Map<Object, Object> collect = Maps.newHashMap();
-                    try {
+                    if (MapValue.class.isAssignableFrom(key.getDefaultValue().getClass())) {
+                        final Map<Object, Object> collect = Maps.newHashMap();
                         if (node.hasMapChildren()) {
                             for (final Map.Entry<Object, ? extends ConfigurationNode> entry : node.getChildrenMap().entrySet()) {
                                 collect.put(entry.getKey(), entry.getValue().getValue());
-                                this.contentContainer.offer((ContentKey) key, collect);
+                                this.contentContainer.attempt(key, GuardianMapValue.builder((Key) key)
+                                        .defaultElement(collect)
+                                        .element(collect)
+                                        .create());
                             }
-                        } else {
-                            this.contentContainer.offer((ContentKey) key,
-                                    this.configurationFile.getNode(configurationAssignment.lookup().toArray()).getValue(key.getElementType()));
+                            return;
                         }
-                    } catch (ObjectMappingException e) {
-                        e.printStackTrace();
+                    }
+
+                    if (Value.class.isAssignableFrom(key.getDefaultValue().getClass())) {
+                        try {
+                            Object value = node.getValue(key.getElementToken());
+                            this.contentContainer.attempt(key, GuardianValue.builder((Key) key)
+                                    .defaultElement(value)
+                                    .element(value)
+                                    .create());
+                        } catch (ObjectMappingException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
     }
@@ -107,28 +122,39 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
                     final ConfigurationAssignment configurationAssignment = assignment.get();
                     final CommentedConfigurationNode node = this.configurationFile.getNode(configurationAssignment.lookup().toArray());
 
-                    final Map<Object, Object> collect = Maps.newHashMap();
-                    try {
+                    if (MapValue.class.isAssignableFrom(key.getDefaultValue().getClass())) {
+                        final Map<Object, Object> collect = Maps.newHashMap();
                         if (node.hasMapChildren()) {
                             for (final Map.Entry<Object, ? extends ConfigurationNode> entry : node.getChildrenMap().entrySet()) {
                                 collect.put(entry.getKey(), entry.getValue().getValue());
-                                this.contentContainer.offer((ContentKey) key, collect);
+                                this.contentContainer.attempt(key, GuardianMapValue.builder((Key) key)
+                                        .defaultElement(collect)
+                                        .element(collect)
+                                        .create());
                             }
-                        } else {
-                            this.contentContainer.offer((ContentKey) key,
-                                    this.configurationFile.getNode(configurationAssignment.lookup().toArray()).getValue(key.getElementType()));
+                            return;
                         }
-                    } catch (ObjectMappingException e) {
-                        e.printStackTrace();
+                    }
+
+                    if (Value.class.isAssignableFrom(key.getDefaultValue().getClass())) {
+                        try {
+                            Object value = node.getValue(key.getElementToken());
+                            this.contentContainer.attempt(key, GuardianValue.builder((Key) key)
+                                    .defaultElement(value)
+                                    .element(value)
+                                    .create());
+                        } catch (ObjectMappingException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
     }
 
     @Override
-    public void acquireSingle(ContentKey<?> contentKey) {
+    public void acquireSingle(ContentKey<?> key) {
         if (this.contentContainer == null) return;
 
-        final Optional<ConfigurationAssignment> assignment = contentKey.getAssignments().stream()
+        final Optional<ConfigurationAssignment> assignment = key.getAssignments().stream()
                 .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
                 .map(contentAssignment -> (ConfigurationAssignment) contentAssignment)
                 .findFirst();
@@ -137,19 +163,30 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
         final ConfigurationAssignment configurationAssignment = assignment.get();
         final CommentedConfigurationNode node = this.configurationFile.getNode(configurationAssignment.lookup().toArray());
 
-        final Map<Object, Object> collect = Maps.newHashMap();
-        try {
+        if (MapValue.class.isAssignableFrom(key.getDefaultValue().getClass())) {
+            final Map<Object, Object> collect = Maps.newHashMap();
             if (node.hasMapChildren()) {
                 for (final Map.Entry<Object, ? extends ConfigurationNode> entry : node.getChildrenMap().entrySet()) {
                     collect.put(entry.getKey(), entry.getValue().getValue());
-                    this.contentContainer.offer((ContentKey) contentKey, collect);
+                    this.contentContainer.attempt(key, GuardianMapValue.builder((Key) key)
+                            .defaultElement(collect)
+                            .element(collect)
+                            .create());
                 }
-            } else {
-                this.contentContainer.offer((ContentKey) contentKey,
-                        this.configurationFile.getNode(configurationAssignment.lookup().toArray()).getValue(contentKey.getElementType()));
+                return;
             }
-        } catch (ObjectMappingException e) {
-            e.printStackTrace();
+        }
+
+        if (Value.class.isAssignableFrom(key.getDefaultValue().getClass())) {
+            try {
+                Object value = node.getValue(key.getElementToken());
+                this.contentContainer.attempt(key, GuardianValue.builder((Key) key)
+                        .defaultElement(value)
+                        .element(value)
+                        .create());
+            } catch (ObjectMappingException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -168,8 +205,8 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
     public void save() {
         if (this.contentContainer == null) return;
 
-        this.contentContainer.forEach(singleValue -> {
-            final Optional<ConfigurationAssignment> assignment = singleValue.getKey().getAssignments().stream()
+        this.contentContainer.getMap().forEach((key, value) -> {
+            final Optional<ConfigurationAssignment> assignment = key.getAssignments().stream()
                     .filter(contentAssignment -> contentAssignment.getClass().equals(ConfigurationAssignment.class))
                     .map(contentAssignment -> (ConfigurationAssignment) contentAssignment)
                     .findFirst();
@@ -177,9 +214,7 @@ public abstract class AbstractDetectionContentLoader<T extends Detection> implem
             if (!assignment.isPresent()) return;
             final ConfigurationAssignment configurationAssignment = assignment.get();
 
-            this.configurationFile.getNode(configurationAssignment.lookup().toArray()).setValue(singleValue.getElement());
-
-            ((GuardianSingleValue<?>) singleValue).setDirty(false);
+            this.configurationFile.getNode(configurationAssignment.lookup().toArray()).setValue(key.getElementToken());
         });
 
         try {

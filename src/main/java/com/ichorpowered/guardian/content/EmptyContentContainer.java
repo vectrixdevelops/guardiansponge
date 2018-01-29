@@ -24,7 +24,7 @@
 package com.ichorpowered.guardian.content;
 
 import com.google.common.collect.Sets;
-import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.content.key.ContentKey;
 
 import java.util.Set;
 

@@ -24,25 +24,28 @@
 package com.ichorpowered.guardian.common.capture;
 
 import com.google.common.collect.Maps;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
+import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardian.sequence.capture.GuardianCaptureKey;
 import com.ichorpowered.guardian.util.ContentUtil;
 import com.ichorpowered.guardian.util.WorldUtil;
 import com.ichorpowered.guardian.util.entity.BoundingBox;
+import com.ichorpowered.guardian.util.item.mutable.GuardianMapValue;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentKeys;
-import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKey;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
-import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
+import com.ichorpowered.guardianapi.util.item.value.mutable.MapValue;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,78 +55,82 @@ public class WorldMaterialCapture extends AbstractCapture {
 
     private static final String CLASS_NAME = WorldMaterialCapture.class.getSimpleName().toUpperCase();
 
-    public static NamedTypeKey<Double> SPEED_MODIFIER =
-            NamedTypeKey.of(CLASS_NAME + ":horizontalSpeedModifier", Double.class);
+    public static final CaptureKey<Value<Double>> SPEED_MODIFIER = GuardianCaptureKey.<Value<Double>>builder()
+            .id(CLASS_NAME + ":horizontalSpeedModifier")
+            .name("HorizontalSpeedModifier")
+            .type(GuardianValue.empty(), TypeToken.of(Double.class))
+            .build();
 
-    public static NamedTypeKey<Map> ACTIVE_MATERIAL_TICKS =
-            NamedTypeKey.of(CLASS_NAME + ":activeMaterialTicks", Map.class);
+    public static final CaptureKey<MapValue<String, Integer>> ACTIVE_MATERIAL_TICKS = GuardianCaptureKey.<MapValue<String, Integer>>builder()
+            .id(CLASS_NAME + ":activeMaterialTicks")
+            .name("ActiveMaterialTicks")
+            .type(GuardianMapValue.empty(), TypeToken.of(Map.class))
+            .build();
 
     public static String SOLID = "solid";
     public static String GAS = "gas";
     public static String LIQUID = "liquid";
 
-    private Map materialSpeed = Maps.newHashMap();
-    private Map matterSpeed = Maps.newHashMap();
+    private Map materialSpeed;
+    private Map matterSpeed;
 
     public WorldMaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
         super(plugin, detection);
 
-        if (detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED).orElse(GuardianSingleValue.empty()).getElement().isPresent()) {
-            this.matterSpeed = detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED)
-                    .orElse(GuardianSingleValue.empty()).getElement().get();
-        }
+        this.materialSpeed = detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
+                .orElse(GuardianMapValue.empty()).getDirect().orElse(Maps.newHashMap());
 
-        if (detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED).orElse(GuardianSingleValue.empty()).getElement().isPresent()) {
-            this.materialSpeed = detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
-                    .orElse(GuardianSingleValue.empty()).getElement().get();
-        }
+        this.matterSpeed = detection.getContentContainer().get(ContentKeys.MOVEMENT_MATTER_SPEED)
+                .orElse(GuardianMapValue.empty()).getDirect().orElse(Maps.newHashMap());
     }
 
     @Override
     public void update(@Nonnull PlayerEntry entry, @Nonnull CaptureContainer captureContainer) {
         if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
-        Player player = entry.getEntity(Player.class).get();
+        final Player player = entry.getEntity(Player.class).get();
+        final Location<World> location = player.getLocation();
 
-        Map<String, Integer> materialState = new HashMap<>();
-        materialState.put(GAS, 1);
-        materialState.put(LIQUID, 1);
-        materialState.put(SOLID, 1);
+        final MapValue<String, Integer> activeMaterials = GuardianMapValue.builder(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS)
+                .defaultElement(Maps.newHashMap())
+                .element(Maps.newHashMap())
+                .create();
 
-        captureContainer.putOnce(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, materialState);
+        activeMaterials.put(GAS, 0);
+        activeMaterials.put(LIQUID, 0);
+        activeMaterials.put(SOLID, 0);
 
-        final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
-        final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
-        final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, this.getDetection().getContentContainer()).orElse(GuardianSingleValue.empty());
+        captureContainer.offerIfEmpty(activeMaterials);
 
-        final double playerWidth = playerBoxWidth.getElement().orElse(1.0) + playerBoxSafety.getElement().orElse(0.08);
-        final double playerHeight = playerBoxHeight.getElement().orElse(1.75) + playerBoxSafety.getElement().orElse(0.08);
+        captureContainer.offerIfEmpty(GuardianValue.builder(WorldMaterialCapture.SPEED_MODIFIER)
+                .defaultElement(1d)
+                .element(1d)
+                .create());
+
+        final Value<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
+        final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
+        final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
+
+        final double playerWidth = playerBoxWidth.getDirect().orElse(1.0) + playerBoxSafety.getDirect().orElse(0.08);
+        final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
 
         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
         final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
-
-        final Location<World> location = player.getLocation();
 
         // Checks
 
         if (WorldUtil.isEmptyUnder(player, playerBox, isSneaking ? (playerHeight - 0.25) : playerHeight)) {
             final double gasSpeed = (double) this.matterSpeed.get(GAS);
 
-            captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * gasSpeed, gasSpeed);
+            captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * gasSpeed));
 
-            captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
-                ((Map<String, Integer>) original).put(GAS, ((Map<String, Integer>) original).get(GAS) + 1);
-                return (Map<String, Integer>) original;
-            }, Maps.newHashMap());
+            captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(GAS, value.get().get(GAS) + 1));
         } else if (WorldUtil.anyLiquidAtDepth(location, playerBox, 1) || WorldUtil.anyLiquidAtDepth(location, playerBox, 0)
                 || WorldUtil.anyLiquidAtDepth(location, playerBox, isSneaking ? -(playerHeight - 0.25) : -playerHeight)) {
             final double liquidSpeed = (double) this.matterSpeed.get(LIQUID);
 
-            captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * liquidSpeed, liquidSpeed);
+            captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * liquidSpeed));
 
-            captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
-                ((Map<String, Integer>) original).put(LIQUID, ((Map<String, Integer>) original).get(LIQUID) + 1);
-                return (Map<String, Integer>) original;
-            }, Maps.newHashMap());
+            captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(LIQUID, value.get().get(LIQUID) + 1));
         } else {
             final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksAtDepth(location, playerBox, 1);
 
@@ -136,13 +143,10 @@ public class WorldMaterialCapture extends AbstractCapture {
                     speedModifier = (double) this.matterSpeed.get(SOLID);
                 }
 
-                captureContainer.transform(WorldMaterialCapture.SPEED_MODIFIER, original -> original * speedModifier, speedModifier);
-
-                captureContainer.transform(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS, original -> {
-                    ((Map<String, Integer>) original).put(SOLID, ((Map<String, Integer>) original).get(SOLID) + 1);
-                    return (Map<String, Integer>) original;
-                }, Maps.newHashMap());
+                captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * speedModifier));
             }
+
+            captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(SOLID, value.get().get(SOLID) + 1));
         }
     }
 }

@@ -39,7 +39,7 @@ repositories {
 dependencies {
     compile project("$gradle.guardianApiName")
 
-    compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}-SNAPSHOT"
+    compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}"
 
     compileOnly 'com.github.me4502:Precogs:-SNAPSHOT'
     compileOnly 'com.github.ichorpowered:elderguardian:-SNAPSHOT'

@@ -36,7 +36,7 @@ import com.ichorpowered.guardian.detection.AbstractDetectionContentLoader;
 import com.ichorpowered.guardian.util.property.Property;
 import com.ichorpowered.guardianapi.content.ContentContainer;
 import com.ichorpowered.guardianapi.content.ContentKeys;
-import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.content.key.ContentKey;
 import com.ichorpowered.guardianapi.detection.DetectionBuilder;
 import com.ichorpowered.guardianapi.detection.DetectionContentLoader;
 import com.ichorpowered.guardianapi.detection.DetectionManager;

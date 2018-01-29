@@ -23,18 +23,15 @@
  */
 package com.ichorpowered.guardian.content;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.ichorpowered.guardian.content.transaction.GuardianBatchValue;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardianapi.content.ContentContainer;
 import com.ichorpowered.guardianapi.content.ContentLoader;
-import com.ichorpowered.guardianapi.content.transaction.ContentKey;
-import com.ichorpowered.guardianapi.content.transaction.result.BatchValue;
-import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
+import com.ichorpowered.guardianapi.content.key.ContentKey;
+import com.ichorpowered.guardianapi.util.item.value.BaseValue;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -43,7 +40,7 @@ public abstract class AbstractContentContainer implements ContentContainer {
 
     private final ContentLoader contentLoader;
     private final Set<ContentKey<?>> keySet = Sets.newHashSet();
-    private final Map<String, SingleValue<?>> container = Maps.newHashMap();
+    private final Map<String, BaseValue<?>> container = Maps.newHashMap();
 
     public AbstractContentContainer() {
         this(null);
@@ -54,48 +51,36 @@ public abstract class AbstractContentContainer implements ContentContainer {
     }
 
     @Override
-    public <E> SingleValue<E> offer(ContentKey<E> key, E value) {
-        GuardianSingleValue<E> singleValueResult = new GuardianSingleValue<>(key, this);
-
+    public <E extends BaseValue<?>> void offer(ContentKey<E> key, E value) {
         if (!this.keySet.contains(key)) this.keySet.add(key);
-        if (!this.container.containsKey(key.getId())) this.container.put(key.getId(), singleValueResult.setElement(value).setDirty(true));
-
-        return singleValueResult;
+        if (!this.container.containsKey(key.getId())) this.container.put(key.getId(), value);
     }
 
     @Override
-    public <E> Optional<SingleValue<E>> offer(String id, E value) {
-        Optional<ContentKey<?>> contentKey = this.getPossibleKeys().stream()
-                .filter(key -> key.getId().equals(id))
-                .findFirst();
-
-        return contentKey.map(identifiedKey -> this.offer((ContentKey<E>) identifiedKey, value));
+    public void attempt(ContentKey key, BaseValue<?> value) {
+        if (!this.keySet.contains(key)) this.keySet.add(key);
+        if (!this.container.containsKey(key.getId())) this.container.put(key.getId(), value);
     }
 
     @Override
-    public BatchValue offer(List<ContentKey> keys, List<?> values) {
-        for (int i = 0; i < keys.size(); i++) {
-            this.offer(keys.get(i), values.get(i));
-        }
-
-        return new GuardianBatchValue(keys, this).setElements(values).setDirty(true);
-    }
-
-    @Override
-    public <E> Optional<SingleValue<E>> get(ContentKey<E> key) {
+    public <E extends BaseValue<?>> Optional<E> get(ContentKey<E> key) {
         if (!this.keySet.contains(key)) return Optional.empty();
         if (!this.container.containsKey(key.getId())) return Optional.empty();
 
-        return Optional.ofNullable((SingleValue<E>) this.container.get(key.getId()));
+        return Optional.ofNullable((E) this.container.get(key.getId()));
     }
 
     @Override
-    public <E> Optional<SingleValue<E>> get(String id) {
-        Optional<ContentKey<?>> contentKey = this.getPossibleKeys().stream()
-                .filter(key -> key.getId().equals(id))
-                .findFirst();
+    public ImmutableMap<ContentKey<?>, BaseValue<?>> getMap() {
+        final Map<ContentKey<?>, BaseValue<?>> map = Maps.newHashMap();
+        for (Map.Entry<String, BaseValue<?>> entry : this.container.entrySet()) {
+            final Optional<ContentKey<?>> key = this.keySet.stream().filter(contentKey -> contentKey.getId().equals(entry.getKey())).findFirst();
 
-        return contentKey.map(identifiedKey -> this.get((ContentKey<E>) identifiedKey).orElse(null));
+            if (!key.isPresent()) continue;
+            map.put(key.get(), entry.getValue());
+        }
+
+        return ImmutableMap.copyOf(map);
     }
 
     @Override
@@ -114,7 +99,7 @@ public abstract class AbstractContentContainer implements ContentContainer {
     }
 
     @Override
-    public Iterator<SingleValue<?>> iterator() {
+    public Iterator<BaseValue<?>> iterator() {
         return this.container.values().iterator();
     }
 }

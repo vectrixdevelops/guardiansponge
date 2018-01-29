@@ -25,14 +25,18 @@ package com.ichorpowered.guardian.common.capture;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
+import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardian.sequence.capture.GuardianCaptureKey;
+import com.ichorpowered.guardian.util.item.mutable.GuardianMapValue;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKey;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
-import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.entity.living.player.Player;
@@ -46,11 +50,17 @@ public class PlayerEffectCapture extends AbstractCapture {
 
     private static final String CLASS_NAME = PlayerEffectCapture.class.getSimpleName().toUpperCase();
 
-    public static NamedTypeKey<Double> HORIZONTAL_SPEED_MODIFIER =
-            NamedTypeKey.of(CLASS_NAME + ":horizontalSpeedModifier", Double.class);
+    public static final CaptureKey<Value<Double>> HORIZONTAL_SPEED_MODIFIER = GuardianCaptureKey.<Value<Double>>builder()
+            .id(CLASS_NAME + ":horizontalSpeedModifier")
+            .name("HorizontalSpeedModifier")
+            .type(GuardianValue.empty(), TypeToken.of(Double.class))
+            .build();
 
-    public static NamedTypeKey<Double> VERTICAL_SPEED_MODIFIER =
-            NamedTypeKey.of(CLASS_NAME + ":verticalSpeedModifier", Double.class);
+    public static final CaptureKey<Value<Double>> VERTICAL_SPEED_MODIFIER = GuardianCaptureKey.<Value<Double>>builder()
+            .id(CLASS_NAME + ":verticalSpeedModifier")
+            .name("VerticalSpeedModifier")
+            .type(GuardianValue.empty(), TypeToken.of(Double.class))
+            .build();
 
     private Map<String, Double> effectSpeed;
     private Map<String, Double> effectLift;
@@ -60,19 +70,29 @@ public class PlayerEffectCapture extends AbstractCapture {
 
         // Movement
 
-        this.effectSpeed = (Map<String, Double>) this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_EFFECT_SPEED)
-                .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
+        this.effectSpeed = this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_EFFECT_SPEED)
+                .orElse(GuardianMapValue.empty()).getDirect().orElse(Maps.newHashMap());
 
         // Lift
 
-        this.effectLift = (Map<String, Double>) this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_EFFECT_LIFT)
-                .orElse(GuardianSingleValue.empty()).getElement().orElse(Maps.newHashMap());
+        this.effectLift = this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_EFFECT_LIFT)
+                .orElse(GuardianMapValue.empty()).getDirect().orElse(Maps.newHashMap());
     }
 
     @Override
     public void update(@Nonnull PlayerEntry entry, @Nonnull CaptureContainer captureContainer) {
         if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
         final Player player = entry.getEntity(Player.class).get();
+
+        captureContainer.offerIfEmpty(GuardianValue.builder(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER)
+                .defaultElement(1d)
+                .element(1d)
+                .create());
+
+        captureContainer.offerIfEmpty(GuardianValue.builder(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER)
+                .defaultElement(1d)
+                .element(1d)
+                .create());
 
         final List<PotionEffect> potionEffects = player.get(Keys.POTION_EFFECTS).orElse(Lists.newArrayList());
 
@@ -83,17 +103,15 @@ public class PlayerEffectCapture extends AbstractCapture {
                 if (this.effectSpeed.containsKey(potionName)) {
                     final double effectValue = this.effectSpeed.get(potionName);
 
-                    captureContainer.transform(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER,
-                            original -> original + ((potionEffect.getAmplifier() + 1) * effectValue),
-                            ((potionEffect.getAmplifier() + 1) * effectValue));
+                    captureContainer.getValue(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER).ifPresent(value ->
+                            value.transform(original -> original + ((potionEffect.getAmplifier() + 1) * effectValue)));
                 }
 
                 if (this.effectLift.containsKey(potionName)) {
                     final double effectValue = this.effectLift.get(potionName);
 
-                    captureContainer.transform(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER,
-                            original -> original + ((potionEffect.getAmplifier() + 1) * effectValue),
-                            ((potionEffect.getAmplifier() + 1) * effectValue));
+                    captureContainer.getValue(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER).ifPresent(value ->
+                            value.transform(original -> original + ((potionEffect.getAmplifier() + 1) * effectValue)));
                 }
             }
         }

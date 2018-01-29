@@ -47,7 +47,7 @@ public class WorldUtil {
     }
 
     public static boolean isEmptyUnder(final Player player, final BoundingBox boundingBox, final double maxDepth) {
-        double depthPortion = 0.25;
+        double depthPortion = 0.125;
 
         for (int n = 0; n < player.getLocation().getY(); n++) {
             double i = depthPortion * n;

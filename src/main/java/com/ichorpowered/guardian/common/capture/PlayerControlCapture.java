@@ -24,20 +24,26 @@
 package com.ichorpowered.guardian.common.capture;
 
 import com.google.common.collect.Maps;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
+import com.google.common.collect.Sets;
+import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.capture.AbstractCapture;
+import com.ichorpowered.guardian.sequence.capture.GuardianCaptureKey;
+import com.ichorpowered.guardian.util.item.mutable.GuardianMapValue;
+import com.ichorpowered.guardian.util.item.mutable.GuardianSetValue;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
+import com.ichorpowered.guardianapi.detection.capture.CaptureKey;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
-import com.ichorpowered.guardianapi.util.key.NamedTypeKey;
+import com.ichorpowered.guardianapi.util.item.value.mutable.MapValue;
+import com.ichorpowered.guardianapi.util.item.value.mutable.SetValue;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,8 +60,11 @@ public class PlayerControlCapture {
 
         private static final String CLASS_NAME = Invalid.class.getSimpleName().toUpperCase();
 
-        public static NamedTypeKey<Set> INVALID_CONTROLS =
-                NamedTypeKey.of(CLASS_NAME + ":invalidControls", Set.class);
+        public static final CaptureKey<SetValue<String>> INVALID_CONTROLS = GuardianCaptureKey.<SetValue<String>>builder()
+                .id(CLASS_NAME + ":invalidControls")
+                .name("InvalidControls")
+                .type(GuardianSetValue.empty(), TypeToken.of(String.class))
+                .build();
 
         public Invalid(@Nonnull Object plugin, @Nonnull Detection detection) {
             super(plugin, detection);
@@ -66,27 +75,32 @@ public class PlayerControlCapture {
             if (!entry.getEntity(Player.class).isPresent()) return;
             Player player = entry.getEntity(Player.class).get();
 
-            Set<String> cap = captureContainer.get(Invalid.INVALID_CONTROLS).orElse(new HashSet<>());
+            final Set<String> controls = captureContainer.get(Invalid.INVALID_CONTROLS)
+                    .orElse(Sets.newHashSet());
+
             if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                    if (!cap.contains("sneaking") || !cap.contains("sprinting")) {
-                        cap.addAll(Arrays.asList("sneaking", "sprinting"));
+                    if (!controls.contains("sneaking") || !controls.contains("sprinting")) {
+                        controls.addAll(Arrays.asList("sneaking", "sprinting"));
                     }
                 }
             } else if (player.get(Keys.IS_SLEEPING).isPresent() && player.get(Keys.IS_SLEEPING).get() ||
                     player.get(Keys.VEHICLE).isPresent()) {
                 if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                    if (!cap.contains("sitting") || !cap.contains("sprinting")) {
-                        cap.addAll(Arrays.asList("sitting", "sprinting"));
+                    if (!controls.contains("sitting") || !controls.contains("sprinting")) {
+                        controls.addAll(Arrays.asList("sitting", "sprinting"));
                     }
                 } else if (player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get()) {
-                    if (!cap.contains("sitting") || !cap.contains("flying")) {
-                        cap.addAll(Arrays.asList("sitting", "flying"));
+                    if (!controls.contains("sitting") || !controls.contains("flying")) {
+                        controls.addAll(Arrays.asList("sitting", "flying"));
                     }
                 }
             }
 
-            captureContainer.put(Invalid.INVALID_CONTROLS, cap);
+            captureContainer.offer(GuardianSetValue.builder(Invalid.INVALID_CONTROLS)
+                    .defaultElement(Sets.newHashSet())
+                    .element(controls)
+                    .create());
         }
 
     }
@@ -95,39 +109,48 @@ public class PlayerControlCapture {
 
         private static final String CLASS_NAME = Common.class.getSimpleName().toUpperCase();
 
-        public static NamedTypeKey<Double> VERTICAL_DISTANCE =
-                NamedTypeKey.of(CLASS_NAME + ":verticalDistance", Double.class);
+        public static final CaptureKey<Value<Double>> VERTICAL_DISTANCE = GuardianCaptureKey.<Value<Double>>builder()
+                .id(CLASS_NAME + ":verticalDistance")
+                .name("VerticalDistance")
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
+                .build();
 
-        public static NamedTypeKey<Double> HORIZONTAL_DISTANCE =
-                NamedTypeKey.of(CLASS_NAME + ":horizontalDistance", Double.class);
+        public static final CaptureKey<Value<Double>> HORIZONTAL_DISTANCE = GuardianCaptureKey.<Value<Double>>builder()
+                .id(CLASS_NAME + ":horizontalDistance")
+                .name("HorizontalDistance")
+                .type(GuardianValue.empty(), TypeToken.of(Double.class))
+                .build();
 
-        public static NamedTypeKey<Map> ACTIVE_CONTROL_TICKS =
-                NamedTypeKey.of(CLASS_NAME + ":activeControlTicks", Map.class);
+        public static final CaptureKey<MapValue<String, Integer>> ACTIVE_CONTROL_TICKS = GuardianCaptureKey.<MapValue<String, Integer>>builder()
+                .id(CLASS_NAME + ":activeControlTicks")
+                .name("ActiveControlTicks")
+                .type(GuardianMapValue.empty(), TypeToken.of(Map.class))
+                .build();
 
-        private double liftOffset = 2.012;
+        private double liftOffset;
 
-        private double sneakOffset = 1.068;
-        private double walkOffset = 1.094;
-        private double sprintOffset = 1.124;
-        private double flyOffset = 2.416;
+        private double sneakOffset;
+        private double walkOffset;
+        private double sprintOffset;
+        private double flyOffset;
 
         public Common(@Nonnull Object plugin, @Nonnull Detection detection) {
             super(plugin, detection);
 
-            this.liftOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_LIFT_SPEED)
-                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.liftOffset);
+            this.liftOffset = this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_LIFT_SPEED)
+                    .orElse(GuardianValue.empty()).getDirect().orElse(2.012);
 
-            this.sneakOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_SNEAK_SPEED)
-                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.sneakOffset);
+            this.sneakOffset = this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_SNEAK_SPEED)
+                    .orElse(GuardianValue.empty()).getDirect().orElse(1.068);
 
-            this.walkOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_WALK_SPEED)
-                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.walkOffset);
+            this.walkOffset = this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_WALK_SPEED)
+                    .orElse(GuardianValue.empty()).getDirect().orElse(1.094);
 
-            this.sprintOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_SPRINT_SPEED)
-                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.sprintOffset);
+            this.sprintOffset = this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_SPRINT_SPEED)
+                    .orElse(GuardianValue.empty()).getDirect().orElse(1.124);
 
-            this.flyOffset = this.getDetection().getContentContainer().<Double>get(ContentKeys.MOVEMENT_FLY_SPEED)
-                    .orElse(GuardianSingleValue.empty()).getElement().orElse(this.flyOffset);
+            this.flyOffset = this.getDetection().getContentContainer().get(ContentKeys.MOVEMENT_FLY_SPEED)
+                    .orElse(GuardianValue.empty()).getDirect().orElse(1.218);
         }
 
         @Override
@@ -135,48 +158,51 @@ public class PlayerControlCapture {
             if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
             final Player player = entry.getEntity(Player.class).get();
 
+            final MapValue<String, Integer> activeControls = GuardianMapValue.builder(Common.ACTIVE_CONTROL_TICKS)
+                    .defaultElement(Maps.newHashMap())
+                    .element(Maps.newHashMap())
+                    .create();
+
+            activeControls.put(FLY, 0);
+            activeControls.put(WALK, 0);
+            activeControls.put(SNEAK, 0);
+            activeControls.put(SPRINT, 0);
+
+            captureContainer.offerIfEmpty(activeControls);
+
+            captureContainer.offerIfEmpty(GuardianValue.builder(Common.HORIZONTAL_DISTANCE)
+                    .defaultElement(1d)
+                    .element(1d)
+                    .create());
+
+            captureContainer.offerIfEmpty(GuardianValue.builder(Common.VERTICAL_DISTANCE)
+                    .defaultElement(1d)
+                    .element(1d)
+                    .create());
+
             double walkSpeedData = player.get(Keys.WALKING_SPEED).orElse(1d) * 10;
             double flySpeedData = player.get(Keys.FLYING_SPEED).orElse(0.5) * 10;
 
-            final Map<String, Integer> controlState = new HashMap<>();
-            controlState.put(FLY, 0);
-            controlState.put(WALK, 0);
-            controlState.put(SNEAK, 0);
-            controlState.put(SPRINT, 0);
-            captureContainer.putOnce(Common.ACTIVE_CONTROL_TICKS, controlState);
-
             if (player.getLocation().getY() != captureContainer.get(GuardianSequence.INITIAL_LOCATION).get().getY()) {
-                captureContainer.transform(Common.VERTICAL_DISTANCE, original -> original * this.liftOffset, this.liftOffset);
+                captureContainer.getValue(Common.VERTICAL_DISTANCE).ifPresent(value -> value.transform(original -> original * this.liftOffset));
             }
 
             if ((player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get())) {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.flyOffset * flySpeedData), (this.flyOffset * flySpeedData));
+                captureContainer.getValue(Common.HORIZONTAL_DISTANCE).ifPresent(value -> value.transform(original -> original * (this.flyOffset * flySpeedData)));
 
-                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
-                    ((Map<String, Integer>) original).put(FLY, ((Map<String, Integer>) original).get(FLY) + 1);
-                    return (Map<String, Integer>) original;
-                }, Maps.newHashMap());
+                captureContainer.getValue(Common.ACTIVE_CONTROL_TICKS).ifPresent(value -> value.put(FLY, value.get().get(FLY) + 1));
             } else if (player.get(Keys.IS_SPRINTING).isPresent() && player.get(Keys.IS_SPRINTING).get()) {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.sprintOffset * walkSpeedData), (this.sprintOffset * walkSpeedData));
+                captureContainer.getValue(Common.HORIZONTAL_DISTANCE).ifPresent(value -> value.transform(original -> original * (this.sprintOffset * walkSpeedData)));
 
-                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
-                    ((Map<String, Integer>) original).put(SPRINT, ((Map<String, Integer>) original).get(SPRINT) + 1);
-                    return (Map<String, Integer>) original;
-                }, Maps.newHashMap());
+                captureContainer.getValue(Common.ACTIVE_CONTROL_TICKS).ifPresent(value -> value.put(SPRINT, value.get().get(SPRINT) + 1));
             } else if (player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get()) {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.sneakOffset * walkSpeedData), (this.sneakOffset * walkSpeedData));
+                captureContainer.getValue(Common.HORIZONTAL_DISTANCE).ifPresent(value -> value.transform(original -> original * (this.sneakOffset * walkSpeedData)));
 
-                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
-                    ((Map<String, Integer>) original).put(SNEAK, ((Map<String, Integer>) original).get(SPRINT) + 1);
-                    return (Map<String, Integer>) original;
-                }, Maps.newHashMap());
+                captureContainer.getValue(Common.ACTIVE_CONTROL_TICKS).ifPresent(value -> value.put(SNEAK, value.get().get(SNEAK) + 1));
             } else {
-                captureContainer.transform(Common.HORIZONTAL_DISTANCE, original -> original * (this.walkOffset * walkSpeedData), (this.walkOffset * walkSpeedData));
+                captureContainer.getValue(Common.HORIZONTAL_DISTANCE).ifPresent(value -> value.transform(original -> original * (this.walkOffset * walkSpeedData)));
 
-                captureContainer.transform(Common.ACTIVE_CONTROL_TICKS, original -> {
-                    ((Map<String, Integer>) original).put(WALK, ((Map<String, Integer>) original).get(WALK) + 1);
-                    return (Map<String, Integer>) original;
-                }, Maps.newHashMap());
+                captureContainer.getValue(Common.ACTIVE_CONTROL_TICKS).ifPresent(value -> value.put(WALK, value.get().get(WALK) + 1));
             }
         }
     }

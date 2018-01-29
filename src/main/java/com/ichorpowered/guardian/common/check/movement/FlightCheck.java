@@ -31,7 +31,6 @@ import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
 import com.ichorpowered.guardian.common.capture.PlayerEffectCapture;
 import com.ichorpowered.guardian.common.capture.PlayerPositionCapture;
 import com.ichorpowered.guardian.common.capture.WorldMaterialCapture;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
@@ -41,13 +40,14 @@ import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import com.ichorpowered.guardian.util.ContentUtil;
 import com.ichorpowered.guardian.util.WorldUtil;
 import com.ichorpowered.guardian.util.entity.BoundingBox;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentKeys;
-import com.ichorpowered.guardianapi.content.transaction.result.SingleValue;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
 import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.report.Summary;
 import com.ichorpowered.guardianapi.event.origin.Origin;
+import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -86,17 +86,17 @@ public class FlightCheck implements Check<Event> {
 
     @Override
     public SequenceBlueprint<Event> getSequence(final Detection detection) {
-        final Double analysisTime = detection.getContentContainer().get(ContentKeys.ANALYSIS_TIME).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d) / 0.05;
+        final Double analysisTime = detection.getContentContainer().get(ContentKeys.ANALYSIS_TIME).orElse(GuardianValue.empty())
+                .getDirect().orElse(0d) / 0.05;
 
-        final Double analysisIntercept = detection.getContentContainer().get(ContentKeys.ANALYSIS_INTERCEPT).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d);
+        final Double analysisIntercept = detection.getContentContainer().get(ContentKeys.ANALYSIS_INTERCEPT).orElse(GuardianValue.empty())
+                .getDirect().orElse(0d);
 
-        final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d) * analysisTime;
+        final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianValue.empty())
+                .getDirect().orElse(0d) * analysisTime;
 
-        final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d) * analysisTime;
+        final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianValue.empty())
+                .getDirect().orElse(0d) * analysisTime;
 
         return new GuardianSequenceBuilder()
 
@@ -109,11 +109,40 @@ public class FlightCheck implements Check<Event> {
 
                 .observe(MoveEntityEvent.class)
 
+                // After : Move Entity Event
+
                 .observe(MoveEntityEvent.class)
                     .delay(analysisTime.intValue())
                     .expire(maximumTickRate.intValue())
 
                     // TODO: Permission check.
+
+                    // Pre Analysis
+
+                    .condition(sequenceContext -> {
+                        final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+                        final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
+
+                        summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
+
+                        if (!entityEntry.getEntity(Player.class).isPresent()) return false;
+                        final Player player = entityEntry.getEntity(Player.class).get();
+
+                        final Value<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+                        final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+                        final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.0) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
+
+                        final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
+                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
+
+                        if (!WorldUtil.isEmptyUnder(player, playerBox, 0.85)) return false;
+
+                        summary.set(SequenceReport.class, new SequenceReport(true, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
+                        return true;
+                    }, ConditionType.NORMAL)
 
                     .condition(sequenceContext -> {
                         final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
@@ -124,17 +153,7 @@ public class FlightCheck implements Check<Event> {
                         summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
 
                         if (!entityEntry.getEntity(Player.class).isPresent()) return false;
-                        Player player = entityEntry.getEntity(Player.class).get();
-
-                        final SingleValue<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entityEntry, detection.getContentContainer()).orElse(GuardianSingleValue.empty());
-                        final SingleValue<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianSingleValue.empty());
-                        final SingleValue<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianSingleValue.empty());
-
-                        final double playerWidth = playerBoxWidth.getElement().orElse(1.0) + playerBoxSafety.getElement().orElse(0.08);
-                        final double playerHeight = playerBoxHeight.getElement().orElse(1.75) + playerBoxSafety.getElement().orElse(0.08);
-
-                        final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
-                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
+                        final Player player = entityEntry.getEntity(Player.class).get();
 
                         /*
                          * Capture Collection
@@ -142,12 +161,12 @@ public class FlightCheck implements Check<Event> {
 
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
-                        Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                        Optional<Double> effectLiftAmplifier = captureContainer.get(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER);
-                        Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.SPEED_MODIFIER);
-                        Optional<Double> altitude = captureContainer.get(PlayerPositionCapture.RelativeAltitude.RELATIVE_ALTITUDE);
-                        Optional<Map> materialStateTicks = captureContainer.get(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS);
-                        Optional<Map> controlStateTicks = captureContainer.get(PlayerControlCapture.Common.ACTIVE_CONTROL_TICKS);
+                        final Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
+                        final Optional<Double> effectLiftAmplifier = captureContainer.get(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER);
+                        final Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.SPEED_MODIFIER);
+                        final Optional<Double> altitude = captureContainer.get(PlayerPositionCapture.RelativeAltitude.RELATIVE_ALTITUDE);
+                        final Optional<Map<String, Integer>> materialStateTicks = captureContainer.get(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS);
+                        final Optional<Map<String, Integer>> controlStateTicks = captureContainer.get(PlayerControlCapture.Common.ACTIVE_CONTROL_TICKS);
 
                         /*
                          * Analysis
@@ -158,15 +177,25 @@ public class FlightCheck implements Check<Event> {
                                 || !altitude.isPresent()
                                 || !materialStateTicks.isPresent()) return false;
 
+                        final Value<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+                        final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+                        final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.0) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
+
+                        final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
+                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
+
                         long current = System.currentTimeMillis();
 
-                        // Finds the average between now and the last action.
-                        double averageClockRate = ((current - lastActionTime) / 1000) / 0.05;
+                        // Gets the average time between now and the last action.
+                        double averageActionTime = ((current - lastActionTime) / 1000) / 0.05;
 
-                        if (averageClockRate < minimumTickRate) {
+                        if (averageActionTime < minimumTickRate) {
                             detection.getLogger().warn("The server may be overloaded. A check could not be completed.");
                             return false;
-                        } else if (averageClockRate > maximumTickRate) {
+                        } else if (averageActionTime > maximumTickRate) {
                             return false;
                         }
 
@@ -174,50 +203,46 @@ public class FlightCheck implements Check<Event> {
                                 || (player.get(Keys.IS_FLYING).isPresent() && player.get(Keys.IS_FLYING).get())
                                 || player.getLocation().getY() < 1) return false;
 
-                        double intercept = analysisIntercept + (effectLiftAmplifier.orElse(0d) / analysisTime);
+                        final double intercept = analysisIntercept + (effectLiftAmplifier.orElse(0d) / analysisTime);
 
-                        // Finds the players displacement y in the world.
-                        double altitudeDisplacement = ((player.getLocation().getY() - initial.get().getY()) == 0) ? intercept
+                        // Gets the players vertical displacement in the world.
+                        final double verticalDisplacement = ((player.getLocation().getY() - initial.get().getY()) == 0) ? intercept
                                 : player.getLocation().getY() - initial.get().getY();
 
-                        // Finds the players relative altitude to the ground.
-                        double altitudePlacement = altitude.get() / averageClockRate;
+                        // Gets the players relative altitude to the ground.
+                        final double averageAltitude = altitude.get() / averageActionTime;
 
-                        // Finds the time the player is on solid ground or a liquid.
-                        int groundTime = ((Map<String, Integer>) materialStateTicks.get())
-                                .get(WorldMaterialCapture.SOLID);
+                        // Gets the time the player is on solid ground or a liquid.
+                        final int solidMaterialTime = materialStateTicks.get().get(WorldMaterialCapture.SOLID);
+                        final int liquidMaterialTime = materialStateTicks.get().get(WorldMaterialCapture.LIQUID);
 
-                        int liquidTime = ((Map<String, Integer>) materialStateTicks.get())
-                                .get(WorldMaterialCapture.LIQUID);
+                        // Gets the time the player is using flight.
+                        final int flightControlTime = controlStateTicks.get().get(PlayerControlCapture.FLY);
 
-                        // Finds the players fly time time in ticks.
-                        double flyTime = ((Map<String, Integer>) controlStateTicks.get())
-                                .get(PlayerControlCapture.FLY).doubleValue() * 0.05;
+                        if (verticalDisplacement <= 1 || averageAltitude <= 1
+                                || !WorldUtil.isEmptyUnder(player, playerBox, 0.85)
+                                || solidMaterialTime > 1
+                                || liquidMaterialTime > 1
+                                || flightControlTime > 1) return false;
 
-                        if (altitudeDisplacement <= 1 || altitudePlacement <= 1
-                                || !WorldUtil.isEmptyUnder(player, playerBox, playerHeight)
-                                || groundTime > 1
-                                || liquidTime > 1) return false;
-
-                        if (((altitudeDisplacement / altitudePlacement) + altitudePlacement)
-                                > (intercept * (analysisTime * 0.05))
-                                && flyTime == 0d) {
+                        if (((verticalDisplacement / averageAltitude) + averageAltitude)
+                                > (intercept * (analysisTime * 0.05))) {
                             // ------------------------- DEBUG -----------------------------
                             System.out.println(player.getName() + " has been caught using fly hacks. (" +
-                                    ((altitudeDisplacement / altitudePlacement) + altitudePlacement) + ")");
+                                    ((verticalDisplacement / averageAltitude) + averageAltitude) + ")");
                             // -------------------------------------------------------------
 
                             SequenceReport report = new SequenceReport(true, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build());
                             report.put("type", "Flight");
 
                             report.put("information", Collections.singletonList(
-                                    "Gained altitude over " + ((altitudeDisplacement / altitudePlacement) + altitudePlacement) + ".")
+                                    "Gained altitude over " + ((verticalDisplacement / averageAltitude) + averageAltitude) + ".")
                             );
 
                             report.put("initial_location", initial.get());
                             report.put("final_location", player.getLocation());
-                            report.put("severity", ((altitudeDisplacement / altitudePlacement) + altitudePlacement)
-                                    / (altitudeDisplacement + altitudePlacement));
+                            report.put("severity", ((verticalDisplacement / averageAltitude) + averageAltitude)
+                                    / (verticalDisplacement + averageAltitude));
 
                             summary.set(SequenceReport.class, report);
 

@@ -23,9 +23,10 @@
  */
 package com.ichorpowered.guardian.entry;
 
+import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.content.AbstractContentContainer;
-import com.ichorpowered.guardianapi.content.transaction.ContentKey;
+import com.ichorpowered.guardianapi.content.key.ContentKey;
 import com.ichorpowered.guardianapi.entry.entity.PlayerEntry;
 import net.kyori.lunar.reflect.Reified;
 
@@ -71,7 +72,7 @@ public class GuardianPlayerEntry<T> extends AbstractContentContainer implements 
 
     @Override
     public Set<ContentKey<?>> getPossibleKeys() {
-        return null;
+        return Sets.newHashSet();
     }
 
     @Override

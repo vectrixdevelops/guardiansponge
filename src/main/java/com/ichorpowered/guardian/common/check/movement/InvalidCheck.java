@@ -28,13 +28,13 @@ import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.condition.ConditionType;
 import com.google.common.collect.Sets;
 import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
-import com.ichorpowered.guardian.content.transaction.GuardianSingleValue;
 import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
 import com.ichorpowered.guardian.sequence.SequenceReport;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureRegistry;
 import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
+import com.ichorpowered.guardian.util.item.mutable.GuardianValue;
 import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.capture.CaptureContainer;
@@ -80,14 +80,14 @@ public class InvalidCheck implements Check<Event> {
     @Nonnull
     @Override
     public SequenceBlueprint<Event> getSequence(final Detection detection) {
-        final Double analysisTime = detection.getContentContainer().get(ContentKeys.ANALYSIS_TIME).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d) / 0.05;
+        final Double analysisTime = detection.getContentContainer().get(ContentKeys.ANALYSIS_TIME).orElse(GuardianValue.empty())
+                .getDirect().orElse(0d) / 0.05;
 
-        final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d) * analysisTime;
+        final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianValue.empty())
+                .getDirect().orElse(0d) * analysisTime;
 
-        final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianSingleValue.empty())
-                .getElement().orElse(0d) * analysisTime;
+        final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianValue.empty())
+                .getDirect().orElse(0d) * analysisTime;
 
         return new GuardianSequenceBuilder()
 
@@ -97,7 +97,7 @@ public class InvalidCheck implements Check<Event> {
 
                 .observe(MoveEntityEvent.class)
 
-                // Analysis : Move Entity Event
+                // After : Move Entity Event
 
                 .observe(MoveEntityEvent.class)
                     .delay(analysisTime.intValue())
@@ -114,7 +114,7 @@ public class InvalidCheck implements Check<Event> {
                         summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
 
                         if (!entityEntry.getEntity(Player.class).isPresent()) return false;
-                        Player player = entityEntry.getEntity(Player.class).get();
+                        final Player player = entityEntry.getEntity(Player.class).get();
 
                         /*
                          * Capture Collection
@@ -123,7 +123,7 @@ public class InvalidCheck implements Check<Event> {
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                         Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                        Optional<Set> invalidControls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_CONTROLS);
+                        Optional<Set<String>> invalidControls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_CONTROLS);
 
                         /*
                          * Analysis
