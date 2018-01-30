@@ -50,6 +50,8 @@ import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
 
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -133,6 +135,7 @@ public class HorizontalSpeedCheck implements Check<Event> {
                         final Optional<Double> effectSpeedAmplifier = captureContainer.get(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER);
                         final Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.SPEED_MODIFIER);
                         final Optional<Double> horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_DISTANCE);
+                        final Optional<Map<String, Integer>> activeControls = captureContainer.get(PlayerControlCapture.Common.ACTIVE_CONTROL_TICKS);
 
                         /*
                          * Analysis
@@ -158,32 +161,39 @@ public class HorizontalSpeedCheck implements Check<Event> {
 
                         double intercept = analysisIntercept + (effectSpeedAmplifier.orElse(0d) / analysisTime);
 
+                        final Optional<Map.Entry<String, Integer>> validControlTicks = activeControls.get().entrySet().stream()
+                                .max(Comparator.comparingInt(Map.Entry::getValue));
+
                         // Gets the players horizontal displacement in the world.
                         final double horizontalDisplacement = Math.abs((player.getLocation().getX() -
                                 initial.get().getX()) + (player.getLocation().getZ() - initial.get().getZ()));
+
+                        // Gets the percentage of the displacement that is the most important.
+                        final double maximumHorizontalDisplacement = validControlTicks.map(entry -> horizontalDisplacement * (entry.getValue() / averageActionTime))
+                                .orElse(horizontalDisplacement);
 
                         // Gets the players maximum horizontal speed in the world, for this analysis.
                         final double maximumHorizontalSpeed = (((horizontalOffset.get() * materialSpeedAmplifier.get()) / 2)
                                 / averageActionTime) + intercept;
 
-                        if (horizontalDisplacement <= 1 || maximumHorizontalSpeed < 1) return false;
+                        if (horizontalDisplacement <= 1 || maximumHorizontalDisplacement < 1 || maximumHorizontalSpeed < 1) return false;
 
-                        if (horizontalDisplacement > maximumHorizontalSpeed) {
+                        if (maximumHorizontalDisplacement > maximumHorizontalSpeed) {
                             // ------------------------- DEBUG -----------------------------
                             System.out.println(player.getName() + " has been caught using horizontal speed hacks. (" +
-                                    (horizontalDisplacement - maximumHorizontalSpeed) + ")");
+                                    (maximumHorizontalDisplacement - maximumHorizontalSpeed) + ")");
                             // -------------------------------------------------------------
 
                             SequenceReport report = new SequenceReport(true, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build());
                             report.put("type", "Horizontal Speed");
 
                             report.put("information", Collections.singletonList(
-                                    "Overshot maximum movement by " + (horizontalDisplacement - maximumHorizontalSpeed) + ".")
+                                    "Overshot maximum movement by " + (maximumHorizontalDisplacement - maximumHorizontalSpeed) + ".")
                             );
 
                             report.put("initial_location", initial.get());
                             report.put("final_location", player.getLocation());
-                            report.put("severity", (horizontalDisplacement - maximumHorizontalSpeed) / horizontalDisplacement);
+                            report.put("severity", (maximumHorizontalDisplacement - maximumHorizontalSpeed) / maximumHorizontalDisplacement);
 
                             summary.set(SequenceReport.class, report);
 
