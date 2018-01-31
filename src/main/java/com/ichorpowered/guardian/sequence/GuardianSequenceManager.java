@@ -65,6 +65,18 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
     }
 
     @Override
+    public boolean _invokeAfter(final Sequence<Event> sequence,
+                                final SequenceContext sequenceContext) {
+        boolean result = super._invokeAfter(sequence, sequenceContext);
+
+        if (sequence.getState().equals(Sequence.State.FINISHED)) {
+            this.transitionPhase(sequenceContext.get(CommonContextKeys.ENTITY_ENTRY), (GuardianSequence) sequence);
+        }
+
+        return result;
+    }
+
+    @Override
     public boolean _invokeScheduler(final Sequence<Event> sequence,
                                     final SequenceContext sequenceContext) {
         boolean result = super._invokeScheduler(sequence, sequenceContext);

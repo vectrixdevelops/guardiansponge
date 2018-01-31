@@ -97,6 +97,30 @@ public class GuardianSequence extends Sequence<Event> {
     }
 
     @Override
+    public boolean applyAfter(SequenceContext sequenceContext) {
+        final PlayerEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+        final Player player = entityEntry.getEntity(Player.class)
+                .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
+
+        if (player == null) return false;
+
+        final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
+                .custom(CommonContextKeys.LAST_ACTION_TIME, super.getLastActionTime())
+                .custom(CommonContextKeys.CAPTURE_REGISTRY, this.captureRegistry)
+                .custom(CommonContextKeys.SUMMARY, this.summary)
+                .build();
+
+        if (this.getState().equals(State.INACTIVE)) {
+            this.captureRegistry.getContainer().offerIfEmpty(GuardianValue.builder(GuardianSequence.INITIAL_LOCATION)
+                    .defaultElement(player.getLocation())
+                    .element(player.getLocation())
+                    .create());
+        }
+
+        return super.applyAfter(mergedContext);
+    }
+
+    @Override
     public final void applySchedule(final SequenceContext sequenceContext) {
         final PlayerEntry playerEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
         final Player player = playerEntry.getEntity(Player.class)

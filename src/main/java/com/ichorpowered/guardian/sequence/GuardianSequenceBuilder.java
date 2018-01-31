@@ -28,6 +28,8 @@ import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.Action;
 import com.abilityapi.sequenceapi.action.ActionBuilder;
+import com.abilityapi.sequenceapi.action.type.after.AfterAction;
+import com.abilityapi.sequenceapi.action.type.after.AfterActionBuilder;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverAction;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverActionBlueprint;
 import com.abilityapi.sequenceapi.action.type.observe.ObserverActionBuilder;
@@ -70,6 +72,18 @@ public class GuardianSequenceBuilder implements ActionBuilder<Event> {
         this.actions.add(action);
 
         return new ObserverActionBuilder<>(this, action);
+    }
+
+    @Override
+    public AfterActionBuilder<Event> after() {
+        return this.after(new AfterAction());
+    }
+
+    @Override
+    public AfterActionBuilder<Event> after(AfterAction action) {
+        this.actions.add(action);
+
+        return new AfterActionBuilder<>(this, action);
     }
 
     @Override
