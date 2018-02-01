@@ -100,13 +100,13 @@ public class HorizontalSpeedCheck implements Check<Event> {
                 .capture(new WorldMaterialCapture(detection.getPlugin(), detection))
                 .capture(new PlayerEffectCapture(detection.getPlugin(), detection))
 
-                // Trigger : Move Entity Event
+                // Observe : Move Entity Event
 
                 .observe(MoveEntityEvent.class)
 
-                // After : Move Entity Event
+                // After
 
-                .observe(MoveEntityEvent.class)
+                .after()
                     .delay(analysisTime.intValue())
                     .expire(maximumTickRate.intValue())
 

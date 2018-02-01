@@ -105,13 +105,13 @@ public class FlightCheck implements Check<Event> {
                 .capture(new WorldMaterialCapture(detection.getPlugin(), detection))
                 .capture(new PlayerEffectCapture(detection.getPlugin(), detection))
 
-                // Trigger : Move Entity Event
+                // Observe : Move Entity Event
 
                 .observe(MoveEntityEvent.class)
 
-                // After : Move Entity Event
+                // After
 
-                .observe(MoveEntityEvent.class)
+                .after()
                     .delay(analysisTime.intValue())
                     .expire(maximumTickRate.intValue())
 
@@ -132,7 +132,7 @@ public class FlightCheck implements Check<Event> {
                         final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
                         final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
 
-                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.0) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
                         final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
 
                         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
@@ -181,7 +181,7 @@ public class FlightCheck implements Check<Event> {
                         final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
                         final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
 
-                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.0) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.25) + playerBoxSafety.getDirect().orElse(0.08);
                         final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
 
                         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();

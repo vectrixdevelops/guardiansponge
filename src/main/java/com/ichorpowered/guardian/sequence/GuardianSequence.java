@@ -97,12 +97,12 @@ public class GuardianSequence extends Sequence<Event> {
     }
 
     @Override
-    public boolean applyAfter(SequenceContext sequenceContext) {
+    public final void applyAfter(SequenceContext sequenceContext) {
         final PlayerEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
         final Player player = entityEntry.getEntity(Player.class)
                 .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
 
-        if (player == null) return false;
+        if (player == null) return;
 
         final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
                 .custom(CommonContextKeys.LAST_ACTION_TIME, super.getLastActionTime())
@@ -117,7 +117,7 @@ public class GuardianSequence extends Sequence<Event> {
                     .create());
         }
 
-        return super.applyAfter(mergedContext);
+        super.applyAfter(mergedContext);
     }
 
     @Override

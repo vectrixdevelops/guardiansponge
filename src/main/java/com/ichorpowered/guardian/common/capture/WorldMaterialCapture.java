@@ -110,7 +110,7 @@ public class WorldMaterialCapture extends AbstractCapture {
         final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
         final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entry, this.getDetection().getContentContainer()).orElse(GuardianValue.empty());
 
-        final double playerWidth = playerBoxWidth.getDirect().orElse(1.0) + playerBoxSafety.getDirect().orElse(0.08);
+        final double playerWidth = playerBoxWidth.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
         final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
 
         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();

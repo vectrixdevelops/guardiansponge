@@ -102,9 +102,9 @@ public class VerticalSpeedCheck implements Check<Event> {
 
                 .observe(MoveEntityEvent.class)
 
-                // After : Move Entity Event
+                // After
 
-                .observe(MoveEntityEvent.class)
+                .after()
                     .delay(analysisTime.intValue())
                     .expire(maximumTickRate.intValue())
 

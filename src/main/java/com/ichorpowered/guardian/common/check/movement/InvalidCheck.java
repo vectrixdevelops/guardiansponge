@@ -93,11 +93,11 @@ public class InvalidCheck implements Check<Event> {
 
                 .capture(new PlayerControlCapture.Invalid(detection.getPlugin(), detection))
 
-                // Trigger : Move Entity Event
+                // Observe : Move Entity Event
 
                 .observe(MoveEntityEvent.class)
 
-                // After : Move Entity Event
+                // Observe : Move Entity Event
 
                 .observe(MoveEntityEvent.class)
                     .delay(analysisTime.intValue())
