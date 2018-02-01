@@ -123,16 +123,16 @@ public class PlayerPositionCapture {
                     Location currentDepth = location.sub(0, i, 0);
 
                     if (maximumDepth.isPresent() && maximumDepth.get().getY() == currentDepth.getY()) {
-                        relativeAltitude = currentDepth.add(0, i - maximumDepth.get().getY(), 0);
+                        relativeAltitude = currentDepth.add(0, this.amount, 0);
                         blockDepthOffset = 1;
                         break;
                     } else if (maximumDepth.isPresent() && maximumDepth.get().getY() < currentDepth.getY()) {
-                        relativeAltitude = currentDepth.add(0, i - maximumDepth.get().getY(), 0);
+                        relativeAltitude = currentDepth.add(0, this.amount, 0);
                         blockDepthOffset = (currentDepth.getY() - maximumDepth.get().getY()) > -1 ?
                                 -1 : currentDepth.getY() - maximumDepth.get().getY();
                         break;
                     } else if (maximumDepth.isPresent() && maximumDepth.get().getY() > currentDepth.getY()) {
-                        relativeAltitude = currentDepth.add(0, i - maximumDepth.get().getY(), 0);
+                        relativeAltitude = currentDepth.add(0, this.amount, 0);
                         blockDepthOffset = (maximumDepth.get().getY() - currentDepth.getY()) < 1 ?
                                 1 : maximumDepth.get().getY() - currentDepth.getY();
                         break;
@@ -142,7 +142,7 @@ public class PlayerPositionCapture {
                                 .element(currentDepth)
                                 .create());
 
-                        relativeAltitude = currentDepth.add(0, i / 2, 0);
+                        relativeAltitude = currentDepth.add(0, this.amount, 0);
                         break;
                     }
                 }
