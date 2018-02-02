@@ -53,7 +53,7 @@ signing {
 }
 
 shadowJar {
-    classifier = 'shaded'
+    classifier = ''
 
     dependencies {
         include(project("${gradle.guardianApiName}"))
@@ -99,35 +99,7 @@ shadowJar {
     exclude 'com/me4502/modularframework/ModularFramework.class'
 }
 
-class ProGuardTask extends proguard.gradle.ProGuardTask {
-    def keepclass(String className) {
-        keep "class ${className},${className}\$* { *; }"
-    }
-}
-
-task minifyShadedJar(type: ProGuardTask, group: 'Build', description: 'Minifies the shaded JAR.') {
-    def shadedFile = shadowJar.archivePath
-    def minifiedFile = file(shadedFile.path.replaceFirst('-shaded', ''))
-
-    injars shadedFile
-    outjars minifiedFile
-
-    libraryjars files(configurations.runtime.collect())
-    libraryjars file("${System.getProperty('java.home')}/lib/rt.jar")
-
-    dontoptimize
-    dontobfuscate
-    dontwarn
-
-    keepattributes 'Signature, InnerClasses, Annotation'
-    keep "class !com.ichorpowered.guardian.relocate.**,com.ichorpowered.** { *; }"
-}
-
 artifacts {
-    tasks.minifyShadedJar.outJarFiles.each {
-        archives it
-    }
-
     archives shadowJar
     archives sourceJar
     archives jar
@@ -135,6 +107,6 @@ artifacts {
 
 model {
     tasks.signArchives {
-        dependsOn tasks.minifyShadedJar
+        dependsOn shadowJar
     }
 }
