@@ -30,7 +30,9 @@ import com.ichorpowered.guardian.sequence.context.CommonContextKeys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
+import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.filter.type.Exclude;
 import org.spongepowered.api.plugin.PluginContainer;
 
@@ -66,8 +68,11 @@ public class GuardianSequenceListener {
 
     @Listener
     public void teleportEntityEvent(MoveEntityEvent.Teleport event, @Getter("getTargetEntity") Player player) {
-        final GuardianPlayerEntry<Player> playerEntry = GuardianPlayerEntry.of(player, player.getUniqueId());
+        this.plugin.getInternalBypassService().requestTimeBypassTicket(player, MoveEntityEvent.class, this.plugin, 55);
+    }
 
+    @Listener
+    public void respawnEntityEvent(SpawnEntityEvent event, @Root Player player) {
         this.plugin.getInternalBypassService().requestTimeBypassTicket(player, MoveEntityEvent.class, this.plugin, 55);
     }
 }

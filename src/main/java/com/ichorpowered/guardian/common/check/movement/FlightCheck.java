@@ -117,33 +117,6 @@ public class FlightCheck implements Check<Event> {
 
                     // TODO: Permission check.
 
-                    // Pre Analysis
-
-                    .condition(sequenceContext -> {
-                        final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
-                        final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
-
-                        summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
-
-                        if (!entityEntry.getEntity(Player.class).isPresent()) return false;
-                        final Player player = entityEntry.getEntity(Player.class).get();
-
-                        final Value<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
-                        final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
-                        final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
-
-                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
-                        final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
-
-                        final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
-                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
-
-                        if (!WorldUtil.isEmptyUnder(player, playerBox, 0.85)) return false;
-
-                        summary.set(SequenceReport.class, new SequenceReport(true, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
-                        return true;
-                    }, ConditionType.NORMAL)
-
                     .condition(sequenceContext -> {
                         final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
                         final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
@@ -181,7 +154,7 @@ public class FlightCheck implements Check<Event> {
                         final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
                         final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
 
-                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.25) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
                         final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
 
                         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
@@ -219,14 +192,16 @@ public class FlightCheck implements Check<Event> {
                         // Gets the time the player is using flight.
                         final int flightControlTime = controlStateTicks.get().get(PlayerControlCapture.FLY);
 
-                        if (verticalDisplacement <= 1 || averageAltitude <= 1
+                        if (verticalDisplacement <= 1
+                                || averageAltitude <= 1
                                 || !WorldUtil.isEmptyUnder(player, playerBox, 0.85)
+                                || player.get(Keys.FALL_DISTANCE).orElse(0f) != 0f
                                 || solidMaterialTime > 1
                                 || liquidMaterialTime > 1
                                 || flightControlTime > 1) return false;
 
                         if (((verticalDisplacement / averageAltitude) + averageAltitude)
-                                > (intercept * (analysisTime * 0.05))) {
+                                > intercept) {
                             // ------------------------- DEBUG -----------------------------
                             System.out.println(player.getName() + " has been caught using fly hacks. (" +
                                     ((verticalDisplacement / averageAltitude) + averageAltitude) + ")");

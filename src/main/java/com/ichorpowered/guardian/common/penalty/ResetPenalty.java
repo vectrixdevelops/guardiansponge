@@ -27,7 +27,13 @@ import com.google.common.collect.Sets;
 import com.ichorpowered.guardian.sequence.SequenceReport;
 import com.ichorpowered.guardianapi.detection.penalty.Penalty;
 import com.ichorpowered.guardianapi.util.StagePredicate;
+import org.spongepowered.api.Game;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.TeleportHelper;
+import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.teleport.TeleportHelperFilters;
 
 import java.util.Set;
 
@@ -60,12 +66,16 @@ public class ResetPenalty implements Penalty {
     public StagePredicate getPredicate() {
         return (detection, summary, playerEntry) -> {
             if (!playerEntry.getEntity(Player.class).isPresent()) return false;
-            Player player = playerEntry.getEntity(Player.class).get();
+            final Player player = playerEntry.getEntity(Player.class).get();
 
             if (summary.view(SequenceReport.class) == null ||
                     summary.view(SequenceReport.class).get("initial_location") == null) return false;
 
-            return player.setLocationSafely(summary.view(SequenceReport.class).get("initial_location")) || player.setLocation(summary.view(SequenceReport.class).get("initial_location"));
+            final Location<World> location = summary.view(SequenceReport.class).get("initial_location");
+
+            return Sponge.getGame().getTeleportHelper().getSafeLocation(location, location.getBlockY(), 8)
+                    .map(player::setLocation)
+                    .orElse(false);
         };
     }
 }
