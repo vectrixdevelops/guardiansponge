@@ -154,7 +154,7 @@ public class FlightCheck implements Check<Event> {
                         final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
                         final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
 
-                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(2.0) + playerBoxSafety.getDirect().orElse(0.08);
                         final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
 
                         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
