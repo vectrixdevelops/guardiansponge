@@ -55,8 +55,8 @@ public class BoundingBox {
          * @param a1 first vector offset
          * @param a2 second vector offset
          */
-        public Bound(Vector3d a1, Vector3d a2) {
-            super(a1, a1.add(Math.abs(a1.getX()), 0, 0), a2.add(-a2.getX(), 0, 0), a2);
+        public Bound(final Vector3d a1, final Vector3d a2) {
+            super(a1, a1.add(Math.abs(a1.getX() * 2), 0, 0), a2.add(-a2.getX() * 2, 0, 0), a2);
         }
     }
 }

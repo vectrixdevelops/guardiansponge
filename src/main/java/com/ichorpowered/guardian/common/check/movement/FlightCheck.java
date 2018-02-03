@@ -109,6 +109,34 @@ public class FlightCheck implements Check<Event> {
 
                 .observe(MoveEntityEvent.class)
 
+                // Pre After
+
+                .after()
+                    .delay(10)
+                    .expire(20)
+
+                    .condition(sequenceContext -> {
+                        final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
+                        final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
+
+                        summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
+
+                        if (!entityEntry.getEntity(Player.class).isPresent()) return false;
+                        final Player player = entityEntry.getEntity(Player.class).get();
+
+                        final Value<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+                        final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+                        final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
+
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.25) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerHeight = playerBoxHeight.getDirect().orElse(1.85) + playerBoxSafety.getDirect().orElse(0.08);
+
+                        final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
+                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
+
+                        return WorldUtil.isEmptyUnder(player, playerBox, 0.85);
+                    }, ConditionType.NORMAL)
+
                 // After
 
                 .after()
@@ -154,11 +182,11 @@ public class FlightCheck implements Check<Event> {
                         final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
                         final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
 
-                        final double playerWidth = playerBoxWidth.getDirect().orElse(2.0) + playerBoxSafety.getDirect().orElse(0.08);
-                        final double playerHeight = playerBoxHeight.getDirect().orElse(1.75) + playerBoxSafety.getDirect().orElse(0.08);
+                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.2) + playerBoxSafety.getDirect().orElse(0.05);
+                        final double playerHeight = playerBoxHeight.getDirect().orElse(1.8) + playerBoxSafety.getDirect().orElse(0.05);
 
                         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
-                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
+                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.15) : playerHeight);
 
                         long current = System.currentTimeMillis();
 
