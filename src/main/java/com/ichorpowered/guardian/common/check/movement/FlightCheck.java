@@ -223,7 +223,6 @@ public class FlightCheck implements Check<Event> {
                         if (verticalDisplacement <= 1
                                 || averageAltitude <= 1
                                 || WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 1.25)
-                                || player.get(Keys.FALL_DISTANCE).orElse(0f) != 0f
                                 || solidMaterialTime > 1
                                 || liquidMaterialTime > 1
                                 || flightControlTime > 1) return false;

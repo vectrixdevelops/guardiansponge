@@ -74,7 +74,7 @@ public class PlayerPositionCapture {
         private final boolean liftOnly;
 
         public RelativeAltitude(@Nonnull Object plugin, @Nonnull Detection detection) {
-            this(plugin, detection, 0.25);
+            this(plugin, detection, 0.125);
         }
 
         public RelativeAltitude(@Nonnull Object plugin, @Nonnull Detection detection,
