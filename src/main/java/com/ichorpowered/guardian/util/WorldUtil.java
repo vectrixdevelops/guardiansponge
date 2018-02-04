@@ -46,19 +46,6 @@ public class WorldUtil {
         return new BoundingBox(new BoundingBox.Bound(a1, b2), new BoundingBox.Bound(a1.add(0, height, 0), b2.add(0, height, 0)));
     }
 
-    public static boolean isEmptyUnder(final Player player, final BoundingBox boundingBox, final double maxDepth) {
-        double depthPortion = 0.125;
-
-        for (int n = 0; n < player.getLocation().getY(); n++) {
-            double i = depthPortion * n;
-
-            if (i >= maxDepth) break;
-            if (isEmptyAtDepth(player.getLocation(), boundingBox, i)) return true;
-        }
-
-        return false;
-    }
-
     public static boolean isEmptyAtDepth(final Location<World> location, final BoundingBox boundingBox, final double depth) {
         if (boundingBox.getLowerBounds().isPresent()) {
             BoundingBox.Bound bound = boundingBox.getLowerBounds().get();
@@ -101,20 +88,53 @@ public class WorldUtil {
         return false;
     }
 
+    public static boolean containsBlocksUnder(final Location<World> location, final BoundingBox boundingBox, final double maxDepth) {
+        final double depthPortion = 0.25;
+
+        for (int n = 0; n < location.getY(); n++) {
+            final double i = depthPortion * n;
+
+            if (i >= maxDepth) break;
+
+            if (!getBlocksAtDepth(location, boundingBox, i).isEmpty()) return true;
+        }
+
+        return false;
+    }
+
+    public static List<BlockType> getBlocksUnder(final Location<World> location, final BoundingBox boundingBox, final double maxDepth) {
+        final double depthPortion = 0.25;
+
+        for (int n = 0; n < location.getY(); n++) {
+            final double i = depthPortion * n;
+
+            if (i >= maxDepth) break;
+
+            final List<BlockType> blocks = getBlocksAtDepth(location, boundingBox, i);
+            if (blocks.isEmpty()) continue;
+
+            return blocks;
+        }
+
+        return Lists.newArrayList();
+    }
+
     public static List<BlockType> getBlocksAtDepth(final Location<World> location, final BoundingBox boundingBox, final double depth) {
         final List<BlockType> blockTypes = Lists.newArrayList();
 
         if (boundingBox.getLowerBounds().isPresent()) {
-            final List<BlockType> blockFilter = Lists.newArrayList();
+            final List<BlockType> blacklistBlocks = Lists.newArrayList(BlockTypes.AIR);
+            final List<BlockType> blocks = Lists.newArrayList();
             final BoundingBox.Bound bound = boundingBox.getLowerBounds().get();
 
-            blockFilter.add(location.sub(bound.getFirst().add(0, depth, 0)).getBlock().getType());
-            blockFilter.add(location.sub(bound.getSecond().add(0, depth, 0)).getBlock().getType());
-            blockFilter.add(location.sub(bound.getThird().add(0, depth, 0)).getBlock().getType());
-            blockFilter.add(location.sub(bound.getFourth().add(0, depth, 0)).getBlock().getType());
-            blockFilter.add(location.sub(0, depth, 0).getBlock().getType());
+            blocks.add(location.sub(bound.getFirst().add(0, depth, 0)).getBlock().getType());
+            blocks.add(location.sub(bound.getSecond().add(0, depth, 0)).getBlock().getType());
+            blocks.add(location.sub(bound.getThird().add(0, depth, 0)).getBlock().getType());
+            blocks.add(location.sub(bound.getFourth().add(0, depth, 0)).getBlock().getType());
+            blocks.add(location.sub(0, depth, 0).getBlock().getType());
 
-            blockFilter.stream()
+            blocks.stream()
+                    .filter(blockType -> !blacklistBlocks.contains(blockType))
                     .filter(blockType -> !blockTypes.contains(blockType))
                     .forEach(blockTypes::add);
         }

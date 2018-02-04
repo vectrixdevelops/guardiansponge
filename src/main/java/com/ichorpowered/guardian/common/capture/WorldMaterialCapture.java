@@ -71,8 +71,8 @@ public class WorldMaterialCapture extends AbstractCapture {
     public static String GAS = "gas";
     public static String LIQUID = "liquid";
 
-    private Map materialSpeed;
-    private Map matterSpeed;
+    private Map<String, Double> materialSpeed;
+    private Map<String, Double> matterSpeed;
 
     public WorldMaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
         super(plugin, detection);
@@ -118,30 +118,24 @@ public class WorldMaterialCapture extends AbstractCapture {
 
         // Checks
 
-        if (WorldUtil.isEmptyUnder(player, playerBox, isSneaking ? (playerHeight - 0.25) : playerHeight)) {
-            final double gasSpeed = (double) this.matterSpeed.get(GAS);
+        if (!WorldUtil.containsBlocksUnder(location, playerBox, 1.25)) {
+            final double gasSpeed = this.matterSpeed.get(GAS);
 
             captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * gasSpeed));
 
             captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(GAS, value.get().get(GAS) + 1));
-        } else if (WorldUtil.anyLiquidAtDepth(location, playerBox, 1) || WorldUtil.anyLiquidAtDepth(location, playerBox, 0)
+        } else if (WorldUtil.anyLiquidAtDepth(location, playerBox, 1d) || WorldUtil.anyLiquidAtDepth(location, playerBox, 0)
                 || WorldUtil.anyLiquidAtDepth(location, playerBox, isSneaking ? -(playerHeight - 0.25) : -playerHeight)) {
-            final double liquidSpeed = (double) this.matterSpeed.get(LIQUID);
+            final double liquidSpeed = this.matterSpeed.get(LIQUID);
 
             captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * liquidSpeed));
 
             captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(LIQUID, value.get().get(LIQUID) + 1));
         } else {
-            final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksAtDepth(location, playerBox, 1);
+            final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksUnder(location, playerBox, 1.25);
 
-            for (BlockType blockType : surroundingBlockTypes) {
-                double speedModifier;
-
-                if (this.materialSpeed.containsKey(blockType.getName().toLowerCase())) {
-                    speedModifier = (double) this.materialSpeed.get(blockType.getName().toLowerCase());
-                } else {
-                    speedModifier = (double) this.matterSpeed.get(SOLID);
-                }
+            for (final BlockType blockType : surroundingBlockTypes) {
+                final double speedModifier = this.materialSpeed.getOrDefault(blockType.getName().toLowerCase(), this.matterSpeed.get(SOLID));
 
                 captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * speedModifier));
             }

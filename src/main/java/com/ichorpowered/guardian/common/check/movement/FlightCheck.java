@@ -134,7 +134,7 @@ public class FlightCheck implements Check<Event> {
                         final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
                         final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
 
-                        return WorldUtil.isEmptyUnder(player, playerBox, 0.85);
+                        return !WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 1.25);
                     }, ConditionType.NORMAL)
 
                 // After
@@ -222,7 +222,7 @@ public class FlightCheck implements Check<Event> {
 
                         if (verticalDisplacement <= 1
                                 || averageAltitude <= 1
-                                || !WorldUtil.isEmptyUnder(player, playerBox, 0.85)
+                                || WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 1.25)
                                 || player.get(Keys.FALL_DISTANCE).orElse(0f) != 0f
                                 || solidMaterialTime > 1
                                 || liquidMaterialTime > 1
