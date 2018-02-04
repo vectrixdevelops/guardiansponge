@@ -42,6 +42,7 @@ import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.report.Summary;
 import com.ichorpowered.guardianapi.event.origin.Origin;
 import org.apache.commons.lang3.StringUtils;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
@@ -143,7 +144,8 @@ public class InvalidCheck implements Check<Event> {
                             return false;
                         }
 
-                        if (invalidControls.get().isEmpty()) return false;
+                        if (invalidControls.get().isEmpty()
+                                || player.get(Keys.VEHICLE).isPresent()) return false;
 
                         // ------------------------- DEBUG -----------------------------
                         System.out.println(player.getName() + " has been caught using invalid movement hacks.");
