@@ -93,10 +93,10 @@ public class FlightCheck implements Check<Event> {
                 .getDirect().orElse(0d);
 
         final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianValue.empty())
-                .getDirect().orElse(0d) * analysisTime;
+                .getDirect().orElse(0d) / 0.05;
 
         final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianValue.empty())
-                .getDirect().orElse(0d) * analysisTime;
+                .getDirect().orElse(0d) / 0.05;
 
         return new GuardianSequenceBuilder()
 
@@ -109,39 +109,10 @@ public class FlightCheck implements Check<Event> {
 
                 .observe(MoveEntityEvent.class)
 
-                // Pre After
-
-                .after()
-                    .delay(10)
-                    .expire(20)
-
-                    .condition(sequenceContext -> {
-                        final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
-                        final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
-
-                        summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build()));
-
-                        if (!entityEntry.getEntity(Player.class).isPresent()) return false;
-                        final Player player = entityEntry.getEntity(Player.class).get();
-
-                        final Value<Double> playerBoxWidth = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_WIDTH, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
-                        final Value<Double> playerBoxHeight = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_HEIGHT, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
-                        final Value<Double> playerBoxSafety = ContentUtil.getFirst(ContentKeys.BOX_PLAYER_SAFETY, entityEntry, detection.getContentContainer()).orElse(GuardianValue.empty());
-
-                        final double playerWidth = playerBoxWidth.getDirect().orElse(1.25) + playerBoxSafety.getDirect().orElse(0.08);
-                        final double playerHeight = playerBoxHeight.getDirect().orElse(1.85) + playerBoxSafety.getDirect().orElse(0.08);
-
-                        final boolean isSneaking = player.get(Keys.IS_SNEAKING).isPresent() && player.get(Keys.IS_SNEAKING).get();
-                        final BoundingBox playerBox = WorldUtil.getBoundingBox(playerWidth, isSneaking ? (playerHeight - 0.25) : playerHeight);
-
-                        return !WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 1.25);
-                    }, ConditionType.NORMAL)
-
                 // After
 
                 .after()
                     .delay(analysisTime.intValue())
-                    .expire(maximumTickRate.intValue())
 
                     // TODO: Permission check.
 
@@ -222,7 +193,7 @@ public class FlightCheck implements Check<Event> {
 
                         if (verticalDisplacement <= 1
                                 || averageAltitude <= 1
-                                || WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 1.25)
+                                || WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 1d)
                                 || solidMaterialTime > 1
                                 || liquidMaterialTime > 1
                                 || flightControlTime > 1) return false;

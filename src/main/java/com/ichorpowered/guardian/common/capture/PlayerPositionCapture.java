@@ -41,6 +41,7 @@ import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.util.Optional;
 
@@ -115,12 +116,13 @@ public class PlayerPositionCapture {
                     .element(1d)
                     .create());
 
-            for (int n = 0; n < location.getY(); n++) {
+            for (int n = 0; n < Math.abs(location.getY()); n++) {
                 double i = this.amount * n;
                 Optional<Location> maximumDepth = captureContainer.get(RelativeAltitude.INITIAL_DEPTH);
 
+                Location currentDepth = location.sub(0, i, 0);
+
                 if (!WorldUtil.isEmptyAtDepth(location, playerBox, i)) {
-                    Location currentDepth = location.sub(0, i, 0);
 
                     if (maximumDepth.isPresent() && maximumDepth.get().getY() == currentDepth.getY()) {
                         relativeAltitude = currentDepth.add(0, this.amount, 0);
@@ -145,6 +147,19 @@ public class PlayerPositionCapture {
                         relativeAltitude = currentDepth.add(0, this.amount, 0);
                         break;
                     }
+                } else if ((currentDepth.getY() - 1) < 0) {
+                    if (!maximumDepth.isPresent()) {
+                        captureContainer.offer(GuardianValue.builder(RelativeAltitude.INITIAL_DEPTH)
+                                .defaultElement(location.getExtent().getLocation(currentDepth.getX(), -256, currentDepth.getZ()))
+                                .element(location.getExtent().getLocation(currentDepth.getX(), -256, currentDepth.getZ()))
+                                .create());
+                    }
+
+                    if (maximumDepth.isPresent() && maximumDepth.get().getY() == currentDepth.getY()) {
+                        relativeAltitude = currentDepth.add(0, this.amount, 0);
+                        blockDepthOffset = -1;
+                        break;
+                    }
                 }
             }
 
@@ -153,11 +168,6 @@ public class PlayerPositionCapture {
             }
 
             double relativeAltitudeOffset = (player.getLocation().getY() - relativeAltitude.getY()) - Math.abs(blockDepthOffset);
-
-            Optional<Double> last = captureContainer.get(RelativeAltitude.LAST_ALTITUDE);
-            if (last.isPresent()) {
-                if (last.get() < (relativeAltitudeOffset / 2)) relativeAltitudeOffset = relativeAltitudeOffset / 2;
-            }
 
             if (this.liftOnly && relativeAltitudeOffset < 0) return;
 

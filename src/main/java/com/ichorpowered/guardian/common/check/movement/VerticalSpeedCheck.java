@@ -88,10 +88,10 @@ public class VerticalSpeedCheck implements Check<Event> {
                 .getDirect().orElse(0d) / 0.05;
 
         final Double minimumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MINIMUM_TICK).orElse(GuardianValue.empty())
-                .getDirect().orElse(0d) * analysisTime;
+                .getDirect().orElse(0d) / 0.05;
 
         final Double maximumTickRate = detection.getContentContainer().get(ContentKeys.ANALYSIS_MAXIMUM_TICK).orElse(GuardianValue.empty())
-                .getDirect().orElse(0d) * analysisTime;
+                .getDirect().orElse(0d) / 0.05;
 
         return new GuardianSequenceBuilder()
 
@@ -106,7 +106,6 @@ public class VerticalSpeedCheck implements Check<Event> {
 
                 .after()
                     .delay(analysisTime.intValue())
-                    .expire(maximumTickRate.intValue())
 
                     // TODO: Permission check.
 

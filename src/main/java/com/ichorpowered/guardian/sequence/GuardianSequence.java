@@ -27,6 +27,7 @@ import com.abilityapi.sequenceapi.Sequence;
 import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.Action;
+import com.abilityapi.sequenceapi.util.Tristate;
 import com.google.common.reflect.TypeToken;
 import com.ichorpowered.guardian.report.GuardianSummary;
 import com.ichorpowered.guardian.sequence.capture.GuardianCaptureContainer;
@@ -97,12 +98,12 @@ public class GuardianSequence extends Sequence<Event> {
     }
 
     @Override
-    public final void applyAfter(SequenceContext sequenceContext) {
+    public final Tristate applyAfter(SequenceContext sequenceContext) {
         final PlayerEntry entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
         final Player player = entityEntry.getEntity(Player.class)
                 .orElse(Sponge.getServer().getPlayer(entityEntry.getUniqueId()).orElse(null));
 
-        if (player == null) return;
+        if (player == null) return Tristate.FALSE;
 
         final SequenceContext mergedContext = SequenceContext.from(sequenceContext)
                 .custom(CommonContextKeys.LAST_ACTION_TIME, super.getLastActionTime())
@@ -117,7 +118,7 @@ public class GuardianSequence extends Sequence<Event> {
                     .create());
         }
 
-        super.applyAfter(mergedContext);
+        return super.applyAfter(mergedContext);
     }
 
     @Override

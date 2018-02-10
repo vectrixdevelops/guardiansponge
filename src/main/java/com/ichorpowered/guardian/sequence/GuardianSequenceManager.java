@@ -41,6 +41,8 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.scheduler.Task;
 
+import java.util.concurrent.TimeUnit;
+
 public class GuardianSequenceManager extends SequenceManager<Event> {
 
     private final GuardianPlugin plugin;
@@ -158,7 +160,7 @@ public class GuardianSequenceManager extends SequenceManager<Event> {
                         this.sequenceManager.clean(false);
                         this.sequenceManager.tickScheduler();
                     })
-                    .intervalTicks(1)
+                    .interval(50, TimeUnit.MILLISECONDS)
                     .submit(this.plugin);
         }
 
