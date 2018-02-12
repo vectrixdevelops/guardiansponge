@@ -31,7 +31,6 @@ import com.ichorpowered.guardianapi.content.ContentKeys;
 import com.ichorpowered.guardianapi.util.item.value.mutable.MapValue;
 import com.ichorpowered.guardianapi.util.item.value.mutable.Value;
 
-import java.util.List;
 import java.util.Map;
 
 public class GuardianContentKeys {

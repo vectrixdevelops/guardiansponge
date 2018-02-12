@@ -27,8 +27,8 @@ import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.condition.ConditionType;
 import com.google.common.collect.Sets;
-import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
-import com.ichorpowered.guardian.common.capture.PlayerEffectCapture;
+import com.ichorpowered.guardian.common.capture.player.ControlCapture;
+import com.ichorpowered.guardian.common.capture.player.PotionEffectCapture;
 import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
@@ -95,8 +95,8 @@ public class VerticalSpeedCheck implements Check<Event> {
 
         return new GuardianSequenceBuilder()
 
-                .capture(new PlayerControlCapture.Common(detection.getPlugin(), detection))
-                .capture(new PlayerEffectCapture(detection.getPlugin(), detection))
+                .capture(new ControlCapture(detection.getPlugin(), detection))
+                .capture(new PotionEffectCapture(detection.getPlugin(), detection))
 
                 // Trigger : Move Entity Event
 
@@ -127,7 +127,7 @@ public class VerticalSpeedCheck implements Check<Event> {
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                         Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                        Optional<Double> verticalOffset = captureContainer.get(PlayerControlCapture.Common.VERTICAL_DISTANCE);
+                        Optional<Double> verticalOffset = captureContainer.get(ControlCapture.VERTICAL_DISTANCE);
 
                         /*
                          * Analysis

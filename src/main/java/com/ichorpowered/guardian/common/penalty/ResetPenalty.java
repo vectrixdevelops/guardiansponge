@@ -27,13 +27,10 @@ import com.google.common.collect.Sets;
 import com.ichorpowered.guardian.sequence.SequenceReport;
 import com.ichorpowered.guardianapi.detection.penalty.Penalty;
 import com.ichorpowered.guardianapi.util.StagePredicate;
-import org.spongepowered.api.Game;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.TeleportHelper;
 import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.teleport.TeleportHelperFilters;
 
 import java.util.Set;
 

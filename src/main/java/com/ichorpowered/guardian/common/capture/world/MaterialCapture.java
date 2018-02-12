@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.common.capture;
+package com.ichorpowered.guardian.common.capture.world;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
@@ -51,9 +51,9 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-public class WorldMaterialCapture extends AbstractCapture {
+public class MaterialCapture extends AbstractCapture {
 
-    private static final String CLASS_NAME = WorldMaterialCapture.class.getSimpleName().toUpperCase();
+    private static final String CLASS_NAME = MaterialCapture.class.getSimpleName().toUpperCase();
 
     public static final CaptureKey<Value<Double>> SPEED_MODIFIER = GuardianCaptureKey.<Value<Double>>builder()
             .id(CLASS_NAME + ":horizontalSpeedModifier")
@@ -74,7 +74,7 @@ public class WorldMaterialCapture extends AbstractCapture {
     private Map<String, Double> materialSpeed;
     private Map<String, Double> matterSpeed;
 
-    public WorldMaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
+    public MaterialCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
         super(plugin, detection);
 
         this.materialSpeed = detection.getContentContainer().get(ContentKeys.MOVEMENT_MATERIAL_SPEED)
@@ -90,7 +90,7 @@ public class WorldMaterialCapture extends AbstractCapture {
         final Player player = entry.getEntity(Player.class).get();
         final Location<World> location = player.getLocation();
 
-        final MapValue<String, Integer> activeMaterials = GuardianMapValue.builder(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS)
+        final MapValue<String, Integer> activeMaterials = GuardianMapValue.builder(MaterialCapture.ACTIVE_MATERIAL_TICKS)
                 .defaultElement(Maps.newHashMap())
                 .element(Maps.newHashMap())
                 .create();
@@ -101,7 +101,7 @@ public class WorldMaterialCapture extends AbstractCapture {
 
         captureContainer.offerIfEmpty(activeMaterials);
 
-        captureContainer.offerIfEmpty(GuardianValue.builder(WorldMaterialCapture.SPEED_MODIFIER)
+        captureContainer.offerIfEmpty(GuardianValue.builder(MaterialCapture.SPEED_MODIFIER)
                 .defaultElement(1d)
                 .element(1d)
                 .create());
@@ -121,26 +121,26 @@ public class WorldMaterialCapture extends AbstractCapture {
         if (!WorldUtil.containsBlocksUnder(location, playerBox, 1.25)) {
             final double gasSpeed = this.matterSpeed.get(GAS);
 
-            captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * gasSpeed));
+            captureContainer.getValue(MaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * gasSpeed));
 
-            captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(GAS, value.get().get(GAS) + 1));
+            captureContainer.getValue(MaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(GAS, value.get().get(GAS) + 1));
         } else if (WorldUtil.anyLiquidAtDepth(location, playerBox, 1d) || WorldUtil.anyLiquidAtDepth(location, playerBox, 0)
                 || WorldUtil.anyLiquidAtDepth(location, playerBox, isSneaking ? -(playerHeight - 0.25) : -playerHeight)) {
             final double liquidSpeed = this.matterSpeed.get(LIQUID);
 
-            captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * liquidSpeed));
+            captureContainer.getValue(MaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * liquidSpeed));
 
-            captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(LIQUID, value.get().get(LIQUID) + 1));
+            captureContainer.getValue(MaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(LIQUID, value.get().get(LIQUID) + 1));
         } else {
             final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksUnder(location, playerBox, 1.25);
 
             for (final BlockType blockType : surroundingBlockTypes) {
                 final double speedModifier = this.materialSpeed.getOrDefault(blockType.getName().toLowerCase(), this.matterSpeed.get(SOLID));
 
-                captureContainer.getValue(WorldMaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * speedModifier));
+                captureContainer.getValue(MaterialCapture.SPEED_MODIFIER).ifPresent(value -> value.transform(original -> original * speedModifier));
             }
 
-            captureContainer.getValue(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(SOLID, value.get().get(SOLID) + 1));
+            captureContainer.getValue(MaterialCapture.ACTIVE_MATERIAL_TICKS).ifPresent(value -> value.put(SOLID, value.get().get(SOLID) + 1));
         }
     }
 }

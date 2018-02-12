@@ -27,9 +27,9 @@ import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.condition.ConditionType;
 import com.google.common.collect.Sets;
-import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
-import com.ichorpowered.guardian.common.capture.PlayerEffectCapture;
-import com.ichorpowered.guardian.common.capture.WorldMaterialCapture;
+import com.ichorpowered.guardian.common.capture.player.ControlCapture;
+import com.ichorpowered.guardian.common.capture.player.PotionEffectCapture;
+import com.ichorpowered.guardian.common.capture.world.MaterialCapture;
 import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
@@ -96,9 +96,9 @@ public class HorizontalSpeedCheck implements Check<Event> {
 
         return new GuardianSequenceBuilder()
 
-                .capture(new PlayerControlCapture.Common(detection.getPlugin(), detection))
-                .capture(new WorldMaterialCapture(detection.getPlugin(), detection))
-                .capture(new PlayerEffectCapture(detection.getPlugin(), detection))
+                .capture(new ControlCapture(detection.getPlugin(), detection))
+                .capture(new MaterialCapture(detection.getPlugin(), detection))
+                .capture(new PotionEffectCapture(detection.getPlugin(), detection))
 
                 // Observe : Move Entity Event
 
@@ -131,10 +131,10 @@ public class HorizontalSpeedCheck implements Check<Event> {
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                         final Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                        final Optional<Double> effectSpeedAmplifier = captureContainer.get(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER);
-                        final Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.SPEED_MODIFIER);
-                        final Optional<Double> horizontalOffset = captureContainer.get(PlayerControlCapture.Common.HORIZONTAL_DISTANCE);
-                        final Optional<Map<String, Integer>> activeControls = captureContainer.get(PlayerControlCapture.Common.ACTIVE_CONTROL_TICKS);
+                        final Optional<Double> effectSpeedAmplifier = captureContainer.get(PotionEffectCapture.HORIZONTAL_SPEED_MODIFIER);
+                        final Optional<Double> materialSpeedAmplifier = captureContainer.get(MaterialCapture.SPEED_MODIFIER);
+                        final Optional<Double> horizontalOffset = captureContainer.get(ControlCapture.HORIZONTAL_DISTANCE);
+                        final Optional<Map<String, Integer>> activeControls = captureContainer.get(ControlCapture.ACTIVE_CONTROL_TICKS);
 
                         /*
                          * Analysis

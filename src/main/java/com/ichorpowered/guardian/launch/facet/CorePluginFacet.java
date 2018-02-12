@@ -51,7 +51,6 @@ import com.ichorpowered.guardianapi.event.GuardianListener;
 import com.ichorpowered.guardianapi.event.origin.Origin;
 import com.me4502.modularframework.ModuleController;
 import com.me4502.modularframework.ShadedModularFramework;
-import com.me4502.precogs.Precogs;
 import com.me4502.precogs.service.AntiCheatService;
 import net.kyori.event.ASMEventExecutorFactory;
 import net.kyori.event.SimpleEventBus;
@@ -120,7 +119,6 @@ public class CorePluginFacet implements Facet {
         Sponge.getServiceManager().setProvider(this.plugin, AntiCheatService.class, new GuardianBypassService(this.plugin));
 
         ModuleController<GuardianPlugin> moduleController = ShadedModularFramework.registerModuleController(this.plugin, Sponge.getGame());
-        moduleController.setPluginContainer(this.plugin.getPluginContainer());
 
         SimpleEventBus<GuardianEvent, GuardianListener> eventBus = new SimpleEventBus<>(new ASMEventExecutorFactory<GuardianEvent, GuardianListener>());
 

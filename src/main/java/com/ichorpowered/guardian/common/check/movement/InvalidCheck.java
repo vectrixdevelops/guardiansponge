@@ -27,7 +27,7 @@ import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.condition.ConditionType;
 import com.google.common.collect.Sets;
-import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
+import com.ichorpowered.guardian.common.capture.player.InvalidControlCapture;
 import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
@@ -65,7 +65,7 @@ public class InvalidCheck implements Check<Event> {
 
     @Override
     public String getName() {
-        return "Invalid Movement Check";
+        return "InvalidControlCapture Movement Check";
     }
 
     @Override
@@ -92,7 +92,7 @@ public class InvalidCheck implements Check<Event> {
 
         return new GuardianSequenceBuilder()
 
-                .capture(new PlayerControlCapture.Invalid(detection.getPlugin(), detection))
+                .capture(new InvalidControlCapture(detection.getPlugin(), detection))
 
                 // Observe : Move Entity Event
 
@@ -124,7 +124,7 @@ public class InvalidCheck implements Check<Event> {
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                         Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                        Optional<Set<String>> invalidControls = captureContainer.get(PlayerControlCapture.Invalid.INVALID_CONTROLS);
+                        Optional<Set<String>> invalidControls = captureContainer.get(InvalidControlCapture.INVALID_CONTROLS);
 
                         /*
                          * Analysis
@@ -152,7 +152,7 @@ public class InvalidCheck implements Check<Event> {
                         // -------------------------------------------------------------
 
                         SequenceReport report = new SequenceReport(true, Origin.source(sequenceContext.getRoot()).owner(entityEntry).build());
-                        report.put("type", "Invalid Movement");
+                        report.put("type", "InvalidControlCapture Movement");
 
                         report.put("information", Collections.singletonList(
                                 "Received invalid controls of " + StringUtils.join((Set<String>) invalidControls.get(), ", ") + ".")

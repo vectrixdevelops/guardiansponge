@@ -27,10 +27,10 @@ import com.abilityapi.sequenceapi.SequenceBlueprint;
 import com.abilityapi.sequenceapi.SequenceContext;
 import com.abilityapi.sequenceapi.action.condition.ConditionType;
 import com.google.common.collect.Sets;
-import com.ichorpowered.guardian.common.capture.PlayerControlCapture;
-import com.ichorpowered.guardian.common.capture.PlayerEffectCapture;
-import com.ichorpowered.guardian.common.capture.PlayerPositionCapture;
-import com.ichorpowered.guardian.common.capture.WorldMaterialCapture;
+import com.ichorpowered.guardian.common.capture.player.AltitudeCapture;
+import com.ichorpowered.guardian.common.capture.player.ControlCapture;
+import com.ichorpowered.guardian.common.capture.player.PotionEffectCapture;
+import com.ichorpowered.guardian.common.capture.world.MaterialCapture;
 import com.ichorpowered.guardian.entry.GuardianPlayerEntry;
 import com.ichorpowered.guardian.sequence.GuardianSequence;
 import com.ichorpowered.guardian.sequence.GuardianSequenceBuilder;
@@ -100,10 +100,10 @@ public class FlightCheck implements Check<Event> {
 
         return new GuardianSequenceBuilder()
 
-                .capture(new PlayerControlCapture.Common(detection.getPlugin(), detection))
-                .capture(new PlayerPositionCapture.RelativeAltitude(detection.getPlugin(), detection))
-                .capture(new WorldMaterialCapture(detection.getPlugin(), detection))
-                .capture(new PlayerEffectCapture(detection.getPlugin(), detection))
+                .capture(new ControlCapture(detection.getPlugin(), detection))
+                .capture(new AltitudeCapture(detection.getPlugin(), detection))
+                .capture(new MaterialCapture(detection.getPlugin(), detection))
+                .capture(new PotionEffectCapture(detection.getPlugin(), detection))
 
                 // Observe : Move Entity Event
 
@@ -134,11 +134,11 @@ public class FlightCheck implements Check<Event> {
                         final CaptureContainer captureContainer = captureRegistry.getContainer();
 
                         final Optional<Location> initial = captureContainer.get(GuardianSequence.INITIAL_LOCATION);
-                        final Optional<Double> effectLiftAmplifier = captureContainer.get(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER);
-                        final Optional<Double> materialSpeedAmplifier = captureContainer.get(WorldMaterialCapture.SPEED_MODIFIER);
-                        final Optional<Double> altitude = captureContainer.get(PlayerPositionCapture.RelativeAltitude.RELATIVE_ALTITUDE);
-                        final Optional<Map<String, Integer>> materialStateTicks = captureContainer.get(WorldMaterialCapture.ACTIVE_MATERIAL_TICKS);
-                        final Optional<Map<String, Integer>> controlStateTicks = captureContainer.get(PlayerControlCapture.Common.ACTIVE_CONTROL_TICKS);
+                        final Optional<Double> effectLiftAmplifier = captureContainer.get(PotionEffectCapture.VERTICAL_SPEED_MODIFIER);
+                        final Optional<Double> materialSpeedAmplifier = captureContainer.get(MaterialCapture.SPEED_MODIFIER);
+                        final Optional<Double> altitude = captureContainer.get(AltitudeCapture.RELATIVE_ALTITUDE);
+                        final Optional<Map<String, Integer>> materialStateTicks = captureContainer.get(MaterialCapture.ACTIVE_MATERIAL_TICKS);
+                        final Optional<Map<String, Integer>> controlStateTicks = captureContainer.get(ControlCapture.ACTIVE_CONTROL_TICKS);
 
                         /*
                          * Analysis
@@ -185,11 +185,11 @@ public class FlightCheck implements Check<Event> {
                         final double averageAltitude = altitude.get() / averageActionTime;
 
                         // Gets the time the player is on solid ground or a liquid.
-                        final int solidMaterialTime = materialStateTicks.get().get(WorldMaterialCapture.SOLID);
-                        final int liquidMaterialTime = materialStateTicks.get().get(WorldMaterialCapture.LIQUID);
+                        final int solidMaterialTime = materialStateTicks.get().get(MaterialCapture.SOLID);
+                        final int liquidMaterialTime = materialStateTicks.get().get(MaterialCapture.LIQUID);
 
                         // Gets the time the player is using flight.
-                        final int flightControlTime = controlStateTicks.get().get(PlayerControlCapture.FLY);
+                        final int flightControlTime = controlStateTicks.get().get(ControlCapture.FLY);
 
                         if (verticalDisplacement <= 1
                                 || averageAltitude <= 1

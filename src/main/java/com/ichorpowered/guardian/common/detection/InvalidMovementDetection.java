@@ -55,7 +55,7 @@ import java.util.Set;
 
 @Module(
         id = "invalidmovement",
-        name = "Invalid Movement Detection",
+        name = "InvalidControlCapture Movement Detection",
         authors = { "Connor Hartley (vectrix)" },
         version = "0.2.0",
         onEnable = "onConstruction",

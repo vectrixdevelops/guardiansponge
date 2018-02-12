@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.common.capture;
+package com.ichorpowered.guardian.common.capture.player;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -46,9 +46,9 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-public class PlayerEffectCapture extends AbstractCapture {
+public class PotionEffectCapture extends AbstractCapture {
 
-    private static final String CLASS_NAME = PlayerEffectCapture.class.getSimpleName().toUpperCase();
+    private static final String CLASS_NAME = PotionEffectCapture.class.getSimpleName().toUpperCase();
 
     public static final CaptureKey<Value<Double>> HORIZONTAL_SPEED_MODIFIER = GuardianCaptureKey.<Value<Double>>builder()
             .id(CLASS_NAME + ":horizontalSpeedModifier")
@@ -65,7 +65,7 @@ public class PlayerEffectCapture extends AbstractCapture {
     private Map<String, Double> effectSpeed;
     private Map<String, Double> effectLift;
 
-    public PlayerEffectCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
+    public PotionEffectCapture(@Nonnull Object plugin, @Nonnull Detection detection) {
         super(plugin, detection);
 
         // Movement
@@ -84,12 +84,12 @@ public class PlayerEffectCapture extends AbstractCapture {
         if (!entry.getEntity(Player.class).isPresent() || !captureContainer.get(GuardianSequence.INITIAL_LOCATION).isPresent()) return;
         final Player player = entry.getEntity(Player.class).get();
 
-        captureContainer.offerIfEmpty(GuardianValue.builder(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER)
+        captureContainer.offerIfEmpty(GuardianValue.builder(PotionEffectCapture.HORIZONTAL_SPEED_MODIFIER)
                 .defaultElement(1d)
                 .element(1d)
                 .create());
 
-        captureContainer.offerIfEmpty(GuardianValue.builder(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER)
+        captureContainer.offerIfEmpty(GuardianValue.builder(PotionEffectCapture.VERTICAL_SPEED_MODIFIER)
                 .defaultElement(1d)
                 .element(1d)
                 .create());
@@ -103,18 +103,17 @@ public class PlayerEffectCapture extends AbstractCapture {
                 if (this.effectSpeed.containsKey(potionName)) {
                     final double effectValue = this.effectSpeed.get(potionName);
 
-                    captureContainer.getValue(PlayerEffectCapture.HORIZONTAL_SPEED_MODIFIER).ifPresent(value ->
+                    captureContainer.getValue(PotionEffectCapture.HORIZONTAL_SPEED_MODIFIER).ifPresent(value ->
                             value.transform(original -> original + ((potionEffect.getAmplifier() + 1) * effectValue)));
                 }
 
                 if (this.effectLift.containsKey(potionName)) {
                     final double effectValue = this.effectLift.get(potionName);
 
-                    captureContainer.getValue(PlayerEffectCapture.VERTICAL_SPEED_MODIFIER).ifPresent(value ->
+                    captureContainer.getValue(PotionEffectCapture.VERTICAL_SPEED_MODIFIER).ifPresent(value ->
                             value.transform(original -> original + ((potionEffect.getAmplifier() + 1) * effectValue)));
                 }
             }
         }
     }
-
 }
