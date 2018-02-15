@@ -58,11 +58,12 @@ public class GuardianSequence extends Sequence<Event> {
     private final GuardianSummary summary;
     private final GuardianCaptureRegistry captureRegistry;
 
-    public GuardianSequence(final SequenceContext sequenceContext,
+    public GuardianSequence(final Event rootEvent,
+                            final SequenceContext sequenceContext,
                             final SequenceBlueprint<Event> sequenceBlueprint,
                             final GuardianCaptureRegistry captureRegistry,
                             final List<Action> actions) {
-        super(actions, sequenceContext, sequenceBlueprint, Sequence.getComparatorAssignable());
+        super(rootEvent, actions, sequenceContext, sequenceBlueprint, Sequence.getComparatorAssignable());
 
         this.captureRegistry = captureRegistry;
         this.captureRegistry.getContainer().merge(GuardianCaptureContainer.create());

@@ -25,7 +25,9 @@ package com.ichorpowered.guardian.sequence.context;
 
 public class CommonContextKeys {
 
-    public static final String TRIGGER = "sequence:trigger";
+    public static final String TRIGGER_CLASS = "_triggerClass";
+
+    public static final String TRIGGER_INSTANCE = "_triggerInstance";
 
     public static final String ENTITY_ENTRY = "guardian:entityEntry";
 

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.common.capture.player.trace;
+package com.ichorpowered.guardian.common.check.combat;
 
-public class EntityTraceCapture {
+public class RangeCheck {
 }

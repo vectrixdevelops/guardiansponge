@@ -102,9 +102,9 @@ public class GuardianSequenceBuilder implements ActionBuilder<Event> {
     public final SequenceBlueprint<Event> build(final SequenceContext buildContext) {
         return new SequenceBlueprint<Event>() {
             @Override
-            public final Sequence<Event> create(final SequenceContext createContext) {
+            public final Sequence<Event> create(final Event rootEvent, final SequenceContext createContext) {
                 final SequenceContext modifiedContext = SequenceContext.from(createContext)
-                        .custom(CommonContextKeys.TRIGGER, getTrigger())
+                        .custom(CommonContextKeys.TRIGGER_CLASS, this.getTrigger())
                         .merge(buildContext).build();
 
                 final GuardianCaptureRegistry captureRegistry = new GuardianCaptureRegistry(
@@ -114,7 +114,7 @@ public class GuardianSequenceBuilder implements ActionBuilder<Event> {
                 GuardianSequenceBuilder.this.captures.forEach(capture ->
                         captureRegistry.put(modifiedContext.getId(), capture.getClass(), capture));
 
-                return new GuardianSequence(modifiedContext, this, captureRegistry, GuardianSequenceBuilder.this.actions);
+                return new GuardianSequence(rootEvent, modifiedContext, this, captureRegistry, GuardianSequenceBuilder.this.actions);
             }
 
             @Override
