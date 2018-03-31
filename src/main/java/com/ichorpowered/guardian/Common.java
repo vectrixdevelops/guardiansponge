@@ -24,6 +24,7 @@
 package com.ichorpowered.guardian;
 
 import com.ichorpowered.guardian.common.check.combat.BlockReachCheck;
+import com.ichorpowered.guardian.common.check.combat.EntityReachCheck;
 import com.ichorpowered.guardian.common.check.movement.FlightCheck;
 import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
 import com.ichorpowered.guardian.common.check.movement.InvalidCheck;
@@ -70,6 +71,7 @@ public final class Common {
         checkModel.register(new FlightCheck());
 
         checkModel.register(new BlockReachCheck());
+        checkModel.register(new EntityReachCheck());
     }
 
     public void loadHeuristics() {

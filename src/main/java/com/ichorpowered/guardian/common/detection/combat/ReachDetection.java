@@ -26,6 +26,7 @@ package com.ichorpowered.guardian.common.detection.combat;
 import com.google.common.collect.Sets;
 import com.ichorpowered.guardian.GuardianPlugin;
 import com.ichorpowered.guardian.common.check.combat.BlockReachCheck;
+import com.ichorpowered.guardian.common.check.combat.EntityReachCheck;
 import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
 import com.ichorpowered.guardian.content.AbstractContentContainer;
 import com.ichorpowered.guardian.detection.AbstractDetection;
@@ -101,6 +102,7 @@ public class ReachDetection extends AbstractDetection {
                 .stage(CheckModel.class)
                     .min(1)
                     .max(99)
+                    .include(EntityReachCheck.class)
                     .include(BlockReachCheck.class)
                     .append()
                 .stage(HeuristicModel.class)
