@@ -46,7 +46,7 @@ public class GuardianSetValue<E> implements SetValue<E>, ValueHolder<SetValue> {
         return new GuardianSetValue<>(null, null, null);
     }
 
-    public static <T> Builder<T> builder(Key<SetValue<T>> key) {
+    public static <T> Builder<T> builder(final Key<SetValue<T>> key) {
         return new Builder<>(key);
     }
 
@@ -55,7 +55,7 @@ public class GuardianSetValue<E> implements SetValue<E>, ValueHolder<SetValue> {
 
     private Set<E> value;
 
-    private GuardianSetValue(Key<SetValue<E>> key, Set<E> defaultValue,
+    private GuardianSetValue(final Key<SetValue<E>> key, final Set<E> defaultValue,
                              final Set<E> value) {
         this.key = key;
         this.defaultValue = defaultValue;

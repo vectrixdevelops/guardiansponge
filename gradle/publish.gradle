@@ -1,0 +1,55 @@
+apply plugin: 'maven-publish'
+
+task sourceJar(type: Jar) {
+    classifier = 'source'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+jar {
+    classifier = ''
+}
+
+artifacts {
+    archives sourceJar
+    archives jar
+    archives shadowJar
+}
+
+if (System.env.TRAVIS && !Boolean.valueOf(System.env.TRAVIS_PULL_REQUEST)) {
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                repository(url: 'http://repo.foxdenstudio.net/repository/maven-vectrix/') {
+                    authentication(userName: System.env.NEXUS_USER, password: System.env.NEXUS_PASS)
+                }
+
+                pom.project {
+                    name project.name
+
+                    licenses {
+                        license {
+                            name 'MIT License'
+                            url 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+
+                    issueManagement {
+                        system 'Github Issues'
+                        url 'https://github.com/ichorpowered/guardian/issues'
+                    }
+
+                    scm {
+                        connection 'scm:git@github.com/ichorpowered/guardian.git'
+                        developerConnection 'scm:git@github.com/ichorpowered/guardian.git'
+                        url 'https://github.com/ichorpowered/guardian/'
+                    }
+                }
+            }
+        }
+    }
+}

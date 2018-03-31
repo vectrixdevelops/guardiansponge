@@ -105,6 +105,7 @@ public class GuardianSequenceBuilder implements ActionBuilder<Event> {
             public final Sequence<Event> create(final Event rootEvent, final SequenceContext createContext) {
                 final SequenceContext modifiedContext = SequenceContext.from(createContext)
                         .custom(CommonContextKeys.TRIGGER_CLASS, this.getTrigger())
+                        .custom(CommonContextKeys.TRIGGER_INSTANCE, rootEvent)
                         .merge(buildContext).build();
 
                 final GuardianCaptureRegistry captureRegistry = new GuardianCaptureRegistry(

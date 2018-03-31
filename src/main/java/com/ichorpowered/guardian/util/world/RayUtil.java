@@ -60,9 +60,34 @@ public class RayUtil {
         return Optional.empty();
     }
 
-    public static Optional<EntityUniverse.EntityHit> getFirstEntity(final Extent extent, final Vector3d from,
-                                                                    final Vector3d direction, final Predicate<EntityType> skipFilter,
-                                                                    final int distanceLimit) {
+    public static Optional<BlockRayHit> getFirstBlock(final Extent extent, final Vector3d from, final Vector3d direction,
+                                                      final Predicate<EntityType> entitySkipFilter, final Predicate<BlockType> blockSkipFilter,
+                                                      final int distanceLimit, final boolean ignoreObstruction) {
+        if (ignoreObstruction) return getFirstBlock(extent, from, direction, blockSkipFilter, distanceLimit);
+
+        Optional<BlockRayHit> firstBlock = getFirstBlock(extent, from, direction, blockSkipFilter, distanceLimit);
+        Optional<EntityUniverse.EntityHit> firstEntity = getFirstEntity(extent, from, direction, entitySkipFilter, distanceLimit);
+
+        if (firstBlock.isPresent()) {
+            if (!firstEntity.isPresent()) return firstBlock;
+
+            if (firstEntity.get().getDistance() > firstBlock.get().getNormal().distanceSquared(from)) return firstBlock;
+        }
+
+        return Optional.empty();
+    }
+
+    public static Predicate<BlockType> createBlockFilter(final BlockType... blockTypes) {
+        return blockType -> Arrays.asList(blockTypes).contains(blockType);
+    }
+
+    public static Predicate<BlockType> createMatterFilter(final MatterProperty.Matter defaultProperty, final MatterProperty.Matter... matter) {
+        return blockType -> Arrays.asList(matter).contains(blockType.getProperty(MatterProperty.class).map(AbstractProperty::getValue).orElse(defaultProperty));
+    }
+
+    private static Optional<EntityUniverse.EntityHit> getFirstEntity(final Extent extent, final Vector3d from,
+                                                                     final Vector3d direction, final Predicate<EntityType> skipFilter,
+                                                                     final int distanceLimit) {
         final Set<EntityUniverse.EntityHit> entityRay = extent.getIntersectingEntities(from, direction, distanceLimit);
 
         return entityRay.stream()
@@ -70,9 +95,9 @@ public class RayUtil {
                 .min(Comparator.comparingDouble(EntityUniverse.EntityHit::getDistance));
     }
 
-    public static Optional<BlockRayHit> getFirstBlock(final Extent extent, final Vector3d from,
-                                                              final Vector3d direction, final Predicate<BlockType> skipFilter,
-                                                              final int distanceLimit) {
+    private static Optional<BlockRayHit> getFirstBlock(final Extent extent, final Vector3d from,
+                                                       final Vector3d direction, final Predicate<BlockType> skipFilter,
+                                                       final int distanceLimit) {
         final BlockRay<Extent> blockRay = BlockRay.from(extent, from).direction(direction).distanceLimit(distanceLimit).build();
         Optional<BlockRayHit> blockRayHit = Optional.empty();
 
@@ -86,14 +111,6 @@ public class RayUtil {
         }
 
         return blockRayHit;
-    }
-
-    public static Predicate<BlockType> createBlockFilter(final BlockType... blockTypes) {
-        return blockType -> Arrays.asList(blockTypes).contains(blockType);
-    }
-
-    public static Predicate<BlockType> createMatterFilter(final MatterProperty.Matter defaultProperty, final MatterProperty.Matter... matter) {
-        return blockType -> Arrays.asList(matter).contains(blockType.getProperty(MatterProperty.class).map(AbstractProperty::getValue).orElse(defaultProperty));
     }
 
 }

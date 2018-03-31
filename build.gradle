@@ -55,6 +55,7 @@ dependencies {
 }
 
 apply from: project.file("gradle/implementation.gradle")
+apply from: project.file("gradle/publish.gradle")
 
 build.dependsOn(shadowJar)
 build.dependsOn(sourceJar)

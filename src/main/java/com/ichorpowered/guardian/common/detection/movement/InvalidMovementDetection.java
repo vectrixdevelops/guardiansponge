@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.common.detection;
+package com.ichorpowered.guardian.common.detection.movement;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;

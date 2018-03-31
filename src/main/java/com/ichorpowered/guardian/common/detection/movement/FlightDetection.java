@@ -21,13 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.common.detection;
+package com.ichorpowered.guardian.common.detection.movement;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.ichorpowered.guardian.GuardianPlugin;
-import com.ichorpowered.guardian.common.check.movement.HorizontalSpeedCheck;
-import com.ichorpowered.guardian.common.check.movement.VerticalSpeedCheck;
+import com.ichorpowered.guardian.common.check.movement.FlightCheck;
 import com.ichorpowered.guardian.common.penalty.NotificationPenalty;
 import com.ichorpowered.guardian.common.penalty.ResetPenalty;
 import com.ichorpowered.guardian.content.AbstractContentContainer;
@@ -55,17 +54,17 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
-@Module(id = "movementspeed",
-        name = "Movement Speed Detection",
+@Module(id = "flight",
+        name = "Flight Detection",
         authors = { "Connor Hartley (vectrix)" },
         version = "0.2.0",
         onEnable = "onConstruction",
         onDisable = "onDeconstruction"
 )
-public class MovementSpeedDetection extends AbstractDetection {
+public class FlightDetection extends AbstractDetection {
 
-    private static String MODULE_ID = MovementSpeedDetection.class.getAnnotation(Module.class).id();
-    private static String MODULE_NAME = MovementSpeedDetection.class.getAnnotation(Module.class).name();
+    private static String MODULE_ID = FlightDetection.class.getAnnotation(Module.class).id();
+    private static String MODULE_NAME = FlightDetection.class.getAnnotation(Module.class).name();
 
     private final GuardianPlugin plugin;
 
@@ -76,21 +75,17 @@ public class MovementSpeedDetection extends AbstractDetection {
     @Property private DetectionContentLoader contentLoader;
 
     @Inject
-    public MovementSpeedDetection(@ModuleContainer PluginContainer pluginContainer) {
-        super(MovementSpeedDetection.MODULE_ID, MovementSpeedDetection.MODULE_NAME);
+    public FlightDetection(@ModuleContainer PluginContainer pluginContainer) {
+        super(FlightDetection.MODULE_ID, FlightDetection.MODULE_NAME);
 
         this.plugin = (GuardianPlugin) pluginContainer.getInstance().orElse(null);
     }
 
     @Override
-    public void onConstruction() {
-
-    }
+    public void onConstruction() {}
 
     @Override
-    public void onDeconstruction() {
-
-    }
+    public void onDeconstruction() {}
 
     @Override
     public void onLoad() {
@@ -107,18 +102,17 @@ public class MovementSpeedDetection extends AbstractDetection {
     }
 
     @Override
-    public DetectionManager register(DetectionManager detectionManager) {
-        final Optional<DetectionBuilder> detectionBuilder = detectionManager.provider(MovementSpeedDetection.class);
+    public DetectionManager register(final DetectionManager detectionManager) {
+        final Optional<DetectionBuilder> detectionBuilder = detectionManager.provider(FlightDetection.class);
         if (!detectionBuilder.isPresent()) return detectionManager;
 
         return detectionBuilder.get()
-                .id(MovementSpeedDetection.MODULE_ID)
-                .name(MovementSpeedDetection.MODULE_NAME)
+                .id(FlightDetection.MODULE_ID)
+                .name(FlightDetection.MODULE_NAME)
                 .stage(CheckModel.class)
                     .min(1)
                     .max(99)
-                    .include(HorizontalSpeedCheck.class)
-                    .include(VerticalSpeedCheck.class)
+                    .include(FlightCheck.class)
                     .append()
                 .stage(HeuristicModel.class)
                     .min(1)
@@ -130,8 +124,8 @@ public class MovementSpeedDetection extends AbstractDetection {
                     .include(ResetPenalty.class)
                     .include(NotificationPenalty.class)
                     .append()
-                .contentLoader(new MovementSpeedContentLoader(this, this.plugin.getConfigDirectory()))
-                .content(new MovementSpeedContent(this))
+                .contentLoader(new FlightContentLoader(this, this.plugin.getConfigDirectory()))
+                .content(new FlightContent(this))
                 .submit(this.plugin);
     }
 
@@ -160,11 +154,11 @@ public class MovementSpeedDetection extends AbstractDetection {
         return this.plugin;
     }
 
-    public static class MovementSpeedContent extends AbstractContentContainer {
+    public static class FlightContent extends AbstractContentContainer {
 
-        private final MovementSpeedDetection detection;
+        private final FlightDetection detection;
 
-        public MovementSpeedContent(final MovementSpeedDetection detection) {
+        public FlightContent(final FlightDetection detection) {
             this.detection = detection;
         }
 
@@ -188,18 +182,20 @@ public class MovementSpeedDetection extends AbstractDetection {
                     ContentKeys.MOVEMENT_MATERIAL_SPEED
             );
         }
+
     }
 
-    public static class MovementSpeedContentLoader extends AbstractDetectionContentLoader<MovementSpeedDetection> {
+    public static class FlightContentLoader extends AbstractDetectionContentLoader<FlightDetection> {
 
-        public MovementSpeedContentLoader(final MovementSpeedDetection detection,
-                                          final Path configurationDirectory) {
+        public FlightContentLoader(final FlightDetection detection,
+                                   final Path configurationDirectory) {
             super(detection, configurationDirectory);
         }
 
         @Override
         public String getRoot() {
-            return "movementspeed.conf";
+            return "flight.conf";
         }
+
     }
 }

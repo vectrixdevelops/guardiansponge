@@ -35,6 +35,8 @@ import com.ichorpowered.guardianapi.detection.Detection;
 import com.ichorpowered.guardianapi.detection.check.Check;
 import com.ichorpowered.guardianapi.detection.report.Summary;
 import com.ichorpowered.guardianapi.event.origin.Origin;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.property.entity.EyeLocationProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.entity.AttackEntityEvent;
@@ -83,6 +85,7 @@ public class AngleCheck implements Check<Event> {
                         final GuardianPlayerEntry<Player> entityEntry = sequenceContext.get(CommonContextKeys.ENTITY_ENTRY);
                         final Summary summary = sequenceContext.get(CommonContextKeys.SUMMARY);
                         final AttackEntityEvent event = sequenceContext.get(CommonContextKeys.TRIGGER_INSTANCE);
+
 
                         summary.set(SequenceReport.class, new SequenceReport(false, Origin.source(sequenceContext.getRoot())
                                 .owner(entityEntry).build()));

@@ -14,11 +14,6 @@ license {
     }
 }
 
-task sourceJar(type: Jar) {
-    classifier = 'source'
-    from sourceSets.main.allSource
-}
-
 jar {
     classifier = 'dev'
 }
@@ -88,9 +83,8 @@ shadowJar {
 }
 
 artifacts {
-    archives shadowJar
-    archives sourceJar
     archives jar
+    archives shadowJar
 }
 
 model {
