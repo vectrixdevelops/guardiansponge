@@ -121,6 +121,7 @@ public class FlightCheck implements Check<Event> {
                         }
 
                         if (player.get(Keys.VEHICLE).isPresent()
+                                || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)
                                 || player.get(Keys.IS_FLYING).orElse(false)
                                 || player.get(Keys.GAME_MODE).map(gameMode -> gameMode.equals(GameModes.SPECTATOR)).orElse(false)
                                 || player.getLocation().getY() < 1) return process.end();

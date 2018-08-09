@@ -35,7 +35,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Singleton
 public class SpongeGlobalConfiguration implements GlobalConfiguration {
@@ -44,7 +43,6 @@ public class SpongeGlobalConfiguration implements GlobalConfiguration {
 
     private final ModelFactories modelFactories;
 
-    private Path target;
     private ConfigurationLoader<CommentedConfigurationNode> source;
     private CommentedConfigurationNode root;
 
@@ -56,23 +54,22 @@ public class SpongeGlobalConfiguration implements GlobalConfiguration {
     @Override
     public void load(final boolean overwrite, final boolean merge) {
         final String resource = "/" + FILE_NAME;
-        this.target = Guardian.getConfigPath().resolve(FILE_NAME);
 
         try {
             if (overwrite) {
-                Files.deleteIfExists(this.target);
+                Files.deleteIfExists(Guardian.getConfigPath());
             }
 
             final boolean fileIsFresh;
-            if (!Files.exists(this.target)) {
-                Files.createDirectories(this.target.getParent());
-                Files.copy(SpongeGlobalConfiguration.class.getResourceAsStream(resource), this.target);
+            if (!Files.exists(Guardian.getConfigPath())) {
+                Files.createDirectories(Guardian.getConfigPath().getParent());
+                Files.copy(SpongeGlobalConfiguration.class.getResourceAsStream(resource), Guardian.getConfigPath());
                 fileIsFresh = true;
             } else {
                 fileIsFresh = false;
             }
 
-            final ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(this.target).build();
+            final ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(Guardian.getConfigPath()).build();
             final CommentedConfigurationNode root = loader.load();
 
             if (!fileIsFresh && merge) {

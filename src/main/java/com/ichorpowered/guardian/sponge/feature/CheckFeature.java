@@ -23,6 +23,7 @@
  */
 package com.ichorpowered.guardian.sponge.feature;
 
+import com.google.common.collect.ImmutableList;
 import com.ichorpowered.guardian.api.detection.DetectionController;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
@@ -95,7 +96,7 @@ public class CheckFeature {
     }
 
     public void unregister() {
-        this.detectionController.forEach(detection -> this.detectionController.removeDetection(detection.getId()));
+        ImmutableList.copyOf(this.detectionController).forEach(detection -> this.detectionController.removeDetection(detection.getId()));
     }
 
     public void categorize() {

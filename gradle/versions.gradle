@@ -6,6 +6,6 @@ ext.pluginUrl = 'https://github.com/ichorpowered'
 
 ext.precogsVersion = '1.2-SNAPSHOT'
 
-ext.spongeApiVersion = '7.0.0'
+ext.spongeApiVersion = '7.1.0'
 
 ext.databaseVersion = 1

@@ -108,7 +108,7 @@ public class HorizontalCheck implements Check<Event> {
                             return process.end();
                         }
 
-                        if (player.get(Keys.VEHICLE).isPresent()) return process.end();
+                        if (player.get(Keys.VEHICLE).isPresent() || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)) return process.end();
 
                         // Find average tick time for captured ticks.
                         int averageTicks = 1;
