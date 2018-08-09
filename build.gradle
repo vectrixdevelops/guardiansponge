@@ -20,38 +20,24 @@ plugins {
     id 'org.spongepowered.plugin' version '0.8.1'
 }
 
-apply from: project("$gradle.guardianApiName").file("gradle/versions.gradle")
 apply from: project.file("gradle/versions.gradle")
+
+apply plugin: "com.github.hierynomus.license"
 
 defaultTasks 'licenseFormat', 'build'
 
 group = "com.ichorpowered"
 version = "${spongeApiVersion}-${pluginVersion}"
 
-apply from: project("$gradle.guardianApiName").file("gradle/shared.gradle")
-
 repositories {
-    maven { url 'https://repo.bstats.org/content/groups/public/' }
-    maven { url 'http://repo.drnaylor.co.uk/artifactory/list/minecraft/' }
-    maven { url 'http://repo.foxdenstudio.net/repository/maven-vectrix/' }
+    mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/groups/public/' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    compile project("$gradle.guardianApiName")
-
     compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}"
-
-    compileOnly 'com.github.me4502:Precogs:-SNAPSHOT'
-    compileOnly 'com.github.ichorpowered:elderguardian:-SNAPSHOT'
-
-//    compile 'org.apache.commons:commons-math3:3.6.1'
-    compile 'com.github.me4502.ModularFramework:modularframework-sponge:-SNAPSHOT'
-    compile 'org.bstats:bstats-sponge-lite:1.1'
-    compile "org.fusesource.jansi:jansi:1.16"
-
-    compile 'tech.ferus:ConfigKeys:5.1.0'
-    compile 'tech.ferus.util:basicsql-h2:2.0.1'
-    compile 'tech.ferus.util:basicsql-mysql:2.0.1'
+    compile 'com.github.IchorPowered:GuardianCommon:1.0.0-2'
 }
 
 apply from: project.file("gradle/implementation.gradle")
