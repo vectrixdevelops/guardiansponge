@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}"
+    compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}-SNAPSHOT"
     compile 'com.github.IchorPowered:GuardianCommon:1.0.0-2'
 }
 
