@@ -81,7 +81,7 @@ public class GuardianPlugin {
                 Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getVersion().orElse("UNKNOWN"),
                 Sponge.getPlatform().getContainer(Platform.Component.GAME).getVersion().orElse("UNKNOWN"),
                 PluginInfo.VERSION,
-                "beta"
+                "bleeding"
         );
 
         this.injector = this.rootInjector.createChildInjector(new SpongeGuardianModule(this.configPath, platform));

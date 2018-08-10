@@ -1,6 +1,6 @@
 ext.pluginId = 'guardian'
 ext.pluginName = 'Guardian AntiCheat'
-ext.pluginVersion = '1.0.0.beta.1'
+ext.pluginVersion = '1.0.0.bleeding.1'
 ext.pluginDescription = 'An extensible anticheat plugin for Sponge.'
 ext.pluginUrl = 'https://github.com/ichorpowered'
 
