@@ -90,6 +90,7 @@ public final class GuardianImpl {
 
     public void stopSequence() {
         this.sequenceTask.stop();
+        Sponge.getEventManager().unregisterListeners(this.sequenceListener);
     }
 
     public void registerPermissions() {

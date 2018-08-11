@@ -36,8 +36,6 @@ import com.ichorpowered.guardian.sponge.common.check.VerticalCheck;
 import com.ichorpowered.guardian.sponge.common.heuristic.DistributionHeuristic;
 import com.ichorpowered.guardian.sponge.common.penalty.ReportPenalty;
 
-import java.util.stream.StreamSupport;
-
 public class CheckFeature {
 
     private final GuardianPlugin plugin;
