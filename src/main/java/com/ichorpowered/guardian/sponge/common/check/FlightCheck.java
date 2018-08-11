@@ -90,13 +90,15 @@ public class FlightCheck implements Check<Event> {
                         final GameReference<Player> gameReference = process.getContext().get("root:player", new TypeToken<GameReference<Player>>() {});
                         final Location<World> location = process.getContext().get("root:player_location", TypeToken.of(Location.class));
                         final long stepTime = process.getContext().get("root:step_time", TypeToken.of(Long.class));
+                        if (gameReference == null) return process.end();
 
                         final Model playerModel = Guardian.getModelRegistry().get(gameReference).orElse(null);
-
-                        if (gameReference == null || playerModel == null) return process.end();
+                        if (playerModel == null) return process.end();
 
                         final Player player = gameReference.get();
                         final double averagePing = playerModel.requestFirst(GameKeys.AVERAGE_PING).map(value -> value.get()).orElse(0d);
+
+                        if (player.hasPermission("guardian.admin.detection.bypass") || player.hasPermission("guardian.admin.detection." + detection.getId() + ".bypass")) return process.end();
 
                         // Capture Context
 

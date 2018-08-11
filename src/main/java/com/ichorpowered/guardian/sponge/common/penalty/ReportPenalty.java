@@ -47,7 +47,7 @@ public class ReportPenalty implements Penalty {
         final Player target = gameReference.get();
 
         Sponge.getServer().getOnlinePlayers().forEach(player -> {
-            if (!player.hasPermission("guardian.report.notify")) return;
+            if (!player.hasPermission("guardian.chat.notification")) return;
 
             player.sendMessage(Text.builder().append(
                     Text.builder("Guardian AntiCheat ").color(TextColors.BLUE).build(),
