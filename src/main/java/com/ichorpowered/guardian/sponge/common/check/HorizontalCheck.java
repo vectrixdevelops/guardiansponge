@@ -91,6 +91,8 @@ public class HorizontalCheck implements Check<Event> {
                         final Player player = gameReference.get();
                         final double averagePing = playerModel.requestFirst(GameKeys.AVERAGE_PING).map(value -> value.get()).orElse(0d);
 
+                        if (player.hasPermission("guardian.admin.detection.bypass") || player.hasPermission("guardian.admin.detection." + detection.getId() + ".bypass")) return process.end();
+
                         // Capture Context
 
                         final int ticks = process.getContext().get(TickCapture.TICKS, TypeToken.of(Integer.class));

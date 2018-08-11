@@ -37,6 +37,9 @@ import com.ichorpowered.guardian.sponge.feature.GameFeature;
 import com.ichorpowered.guardian.sponge.sequence.SequenceControllerImpl;
 import com.ichorpowered.guardian.sponge.sequence.SequenceListener;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.service.permission.PermissionDescription;
+import org.spongepowered.api.service.permission.PermissionService;
+import org.spongepowered.api.text.Text;
 
 @Singleton
 public final class GuardianImpl {
@@ -87,6 +90,28 @@ public final class GuardianImpl {
 
     public void stopSequence() {
         this.sequenceTask.stop();
+    }
+
+    public void registerPermissions() {
+        Sponge.getServiceManager().provide(PermissionService.class).ifPresent(permissionService -> {
+            permissionService.newDescriptionBuilder(this.plugin)
+                    .id("guardian.admin.detection.bypass")
+                    .description(Text.of("Allows a player to bypass all detections."))
+                    .assign(PermissionDescription.ROLE_ADMIN, true)
+                    .register();
+
+            permissionService.newDescriptionBuilder(this.plugin)
+                    .id("guardian.admin.detection.<Detection>.bypass")
+                    .description(Text.of("Allows a player to bypass the specified detection."))
+                    .assign(PermissionDescription.ROLE_ADMIN, true)
+                    .register();
+
+            permissionService.newDescriptionBuilder(this.plugin)
+                    .id("guardian.chat.notification")
+                    .description(Text.of("Allows a player to receive chat notifications on reported players."))
+                    .assign(PermissionDescription.ROLE_STAFF, true)
+                    .register();
+        });
     }
 
 }
