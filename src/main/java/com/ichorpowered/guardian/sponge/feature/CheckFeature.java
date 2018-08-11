@@ -84,7 +84,7 @@ public class CheckFeature {
     }
 
     public void register() {
-        this.detectionController.forEach(detection -> {
+        ImmutableList.copyOf(this.detectionController).forEach(detection -> {
             if (!detection.getConfiguration().getNode("enable").getBoolean(false)) {
                 this.detectionController.removeDetection(detection.getId());
                 return;
