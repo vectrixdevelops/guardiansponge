@@ -23,13 +23,12 @@ sponge.plugin.id = name
 version = "${presentedSpongeVersion}-${apiSuffix}-${buildNumber}"
 
 repositories {
-    mavenCentral()
-    maven { url 'https://oss.sonatype.org/content/groups/public/' }
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     compileOnly "org.spongepowered:spongeapi:${spongeVersion}"
+    compileOnly 'com.github.me4502:Precogs:0ecc1f0b85'
 }
 
 blossom {

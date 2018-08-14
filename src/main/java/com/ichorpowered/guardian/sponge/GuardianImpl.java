@@ -36,6 +36,8 @@ import com.ichorpowered.guardian.sponge.feature.CheckFeature;
 import com.ichorpowered.guardian.sponge.feature.GameFeature;
 import com.ichorpowered.guardian.sponge.sequence.SequenceControllerImpl;
 import com.ichorpowered.guardian.sponge.sequence.SequenceListener;
+import com.ichorpowered.guardian.sponge.service.BypassServiceImpl;
+import com.me4502.precogs.service.AntiCheatService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
@@ -45,6 +47,8 @@ import org.spongepowered.api.text.Text;
 public final class GuardianImpl {
 
     private final GuardianPlugin plugin;
+    private final DetectionController detectionController;
+    private final SequenceController sequenceController;
 
     private GameFeature bukkitKeys;
     private CheckFeature guardianChecks;
@@ -57,11 +61,18 @@ public final class GuardianImpl {
                         final GameKeyRegistry keyRegistry, final SequenceRegistry sequenceRegistry,
                         final ModelRegistry modelRegistry) {
         this.plugin = plugin;
+        this.detectionController = detectionController;
+        this.sequenceController = sequenceController;
 
         this.bukkitKeys = new GameFeature(keyFactory, keyRegistry);
         this.guardianChecks = new CheckFeature(plugin, detectionController, sequenceRegistry);
         this.sequenceListener = new SequenceListener(modelRegistry, sequenceController, this.bukkitKeys);
         this.sequenceTask = new SequenceControllerImpl.SequenceTask(this.plugin, sequenceController);
+    }
+
+    public void loadService() {
+        Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new BypassServiceImpl(this.detectionController, this.sequenceController, this.plugin));
+        this.guardianChecks.categorize();
     }
 
     public void loadConfiguration() {
@@ -76,7 +87,6 @@ public final class GuardianImpl {
     public void loadDetections() {
         this.guardianChecks.create();
         this.guardianChecks.register();
-        this.guardianChecks.categorize();
     }
 
     public void unloadDetections() {

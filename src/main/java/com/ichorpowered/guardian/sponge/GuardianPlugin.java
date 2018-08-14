@@ -31,13 +31,18 @@ import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
 import com.ichorpowered.guardian.common.detection.stage.type.HeuristicStageImpl;
 import com.ichorpowered.guardian.common.detection.stage.type.PenaltyStageImpl;
 import com.ichorpowered.guardian.common.util.ConsoleUtil;
+import com.ichorpowered.guardian.sponge.detection.DetectionWrapper;
 import com.ichorpowered.guardian.sponge.inject.SpongeGuardianModule;
+import com.ichorpowered.guardian.sponge.service.BypassServiceImpl;
+import com.me4502.precogs.detection.DetectionType;
+import com.me4502.precogs.service.AntiCheatService;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
@@ -96,6 +101,7 @@ public class GuardianPlugin {
         this.guardian.loadConfiguration();
         this.guardian.loadKeys();
         this.guardian.loadDetections();
+        this.guardian.loadService();
 
         final int detectionCount = (int) StreamSupport.stream(Guardian.getDetectionController().spliterator(), false).count();
         final int checkCount = StreamSupport.stream(Guardian.getDetectionController().spliterator(), false)
@@ -116,6 +122,13 @@ public class GuardianPlugin {
 
         this.getLogger().info(ConsoleUtil.of("Startup complete. ({} sec)",
                 String.valueOf((double) (System.currentTimeMillis() - startTime) / 1000)));
+    }
+
+    @Listener
+    public void onGameRegistry(final GameRegistryEvent.Register<DetectionType> event) {
+        if (Guardian.getDetectionController() == null) return;
+
+        Guardian.getDetectionController().forEach(detection -> event.register(new DetectionWrapper(detection, detection.getId(), detection.getName())));
     }
 
     @Listener

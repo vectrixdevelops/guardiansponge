@@ -24,6 +24,7 @@
 package com.ichorpowered.guardian.sponge.feature;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.ichorpowered.guardian.api.detection.DetectionController;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
@@ -35,6 +36,9 @@ import com.ichorpowered.guardian.sponge.common.check.HorizontalCheck;
 import com.ichorpowered.guardian.sponge.common.check.VerticalCheck;
 import com.ichorpowered.guardian.sponge.common.heuristic.DistributionHeuristic;
 import com.ichorpowered.guardian.sponge.common.penalty.ReportPenalty;
+import com.me4502.precogs.detection.CommonDetectionTypes;
+import com.me4502.precogs.detection.DetectionType;
+import org.spongepowered.api.Sponge;
 
 public class CheckFeature {
 
@@ -98,7 +102,11 @@ public class CheckFeature {
     }
 
     public void categorize() {
+        Sponge.getRegistry().getType(DetectionType.class, "flight_detection").ifPresent(detectionType ->
+                CommonDetectionTypes.provideDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT, Lists.newArrayList(detectionType)));
 
+        Sponge.getRegistry().getType(DetectionType.class, "speed_detection").ifPresent(detectionType ->
+                CommonDetectionTypes.provideDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT, Lists.newArrayList(detectionType)));
     }
 
 }
