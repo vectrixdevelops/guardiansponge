@@ -5,29 +5,22 @@ buildscript {
         }
     }
     dependencies {
-        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+        classpath 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
     }
 }
 
 plugins {
-    id 'java'
-    id 'maven'
-    id 'idea'
-    id 'eclipse'
-    id 'signing'
     id 'ninja.miserable.blossom' version '1.0.1'
-    id 'com.github.johnrengelman.shadow' version '2.0.0'
     id 'org.spongepowered.plugin' version '0.8.1'
 }
 
-apply from: project.file("gradle/versions.gradle")
+apply from: project(':guardiancommon').file('gradle/implementation.gradle')
+apply plugin: 'org.spongepowered.plugin'
 
-apply plugin: "com.github.hierynomus.license"
+sponge.plugin.id = name
 
-defaultTasks 'licenseFormat', 'build'
-
-group = "com.ichorpowered"
-version = "${spongeApiVersion}-${pluginVersion}"
+version = "${presentedSpongeVersion}-${apiSuffix}-${buildNumber}"
 
 repositories {
     mavenCentral()
@@ -36,13 +29,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.spongepowered:spongeapi:${spongeApiVersion}-SNAPSHOT"
-    compile 'com.github.IchorPowered:GuardianCommon:1.0.0-3'
+    compileOnly "org.spongepowered:spongeapi:${spongeVersion}"
 }
 
-apply from: project.file("gradle/implementation.gradle")
-apply from: project.file("gradle/publish.gradle")
+blossom {
+    def location = 'src/main/java/com/ichorpowered/guardian/sponge/PluginInfo.java'
 
-build.dependsOn(shadowJar)
-build.dependsOn(sourceJar)
-build.dependsOn(jar)
+    replaceToken '@id@', name, location
+    replaceToken '@name@', 'Guardian', location
+    replaceToken '@version@', version, location
+    replaceToken '@description@', description, location
+    replaceToken '@url@', url, location
+}

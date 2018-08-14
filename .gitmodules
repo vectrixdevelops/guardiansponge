@@ -1,3 +1,6 @@
 [submodule "guardianapi"]
 	path = guardianapi
 	url = https://github.com/ichorpowered/guardianapi
+[submodule "guardiancommon"]
+	path = guardiancommon
+	url = git@github.com:ichorpowered/guardiancommon.git
