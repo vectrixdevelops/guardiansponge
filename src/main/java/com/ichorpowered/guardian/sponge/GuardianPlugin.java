@@ -31,11 +31,9 @@ import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
 import com.ichorpowered.guardian.common.detection.stage.type.HeuristicStageImpl;
 import com.ichorpowered.guardian.common.detection.stage.type.PenaltyStageImpl;
 import com.ichorpowered.guardian.common.util.ConsoleUtil;
-import com.ichorpowered.guardian.sponge.detection.DetectionWrapper;
+import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;
 import com.ichorpowered.guardian.sponge.inject.SpongeGuardianModule;
-import com.ichorpowered.guardian.sponge.service.BypassServiceImpl;
 import com.me4502.precogs.detection.DetectionType;
-import com.me4502.precogs.service.AntiCheatService;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
@@ -46,16 +44,18 @@ import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
+import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.stream.StreamSupport;
 
 @Plugin(
         id = PluginInfo.ID,
         name = PluginInfo.NAME,
         version = PluginInfo.VERSION,
-//        dependencies = { @Dependency(id = "precogs", version = PluginInfo.PRECOGS_VERSION) },
+        dependencies = { @Dependency(id = "precogs") },
         description = PluginInfo.DESCRIPTION,
         url = PluginInfo.URL,
         authors = { "Vectrix (Connor Hartley)" }
@@ -75,6 +75,12 @@ public class GuardianPlugin {
         this.rootInjector = injector;
         this.logger = logger;
         this.configPath = configPath;
+    }
+
+    @Listener
+    public void onGameRegistry(final GameRegistryEvent.Register<DetectionType> event) {
+        Arrays.stream(GuardianDetections.DETECTIONS).forEach(detectionProvider ->
+                event.register((DetectionType) detectionProvider));
     }
 
     @Listener
@@ -122,13 +128,6 @@ public class GuardianPlugin {
 
         this.getLogger().info(ConsoleUtil.of("Startup complete. ({} sec)",
                 String.valueOf((double) (System.currentTimeMillis() - startTime) / 1000)));
-    }
-
-    @Listener
-    public void onGameRegistry(final GameRegistryEvent.Register<DetectionType> event) {
-        if (Guardian.getDetectionController() == null) return;
-
-        Guardian.getDetectionController().forEach(detection -> event.register(new DetectionWrapper(detection, detection.getId(), detection.getName())));
     }
 
     @Listener

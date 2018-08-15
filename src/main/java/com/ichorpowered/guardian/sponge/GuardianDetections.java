@@ -21,24 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ichorpowered.guardian.sponge.detection;
+package com.ichorpowered.guardian.sponge;
 
-import com.ichorpowered.guardian.api.detection.Detection;
-import com.me4502.precogs.detection.DetectionType;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import com.ichorpowered.guardian.api.detection.DetectionProvider;
+import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;
 
-public class DetectionWrapper extends DetectionType {
+public final class GuardianDetections {
 
-    private final Detection detection;
+    public static DetectionProvider[] DETECTIONS = {
+            new DetectionProviderImpl("flight_detection", "Flight Detection"),
+            new DetectionProviderImpl("speed_detection", "Speed Detection")
+    };
 
-    public DetectionWrapper(final Detection detection, final String id, final String name) {
-        super(id, name);
+    public static DetectionProvider FLIGHT_DETECTION = GuardianDetections.DETECTIONS[0];
 
-        this.detection = detection;
-    }
-
-    public @NonNull Detection getDetection() {
-        return this.detection;
-    }
+    public static DetectionProvider SPEED_DETECTION = GuardianDetections.DETECTIONS[1];
 
 }

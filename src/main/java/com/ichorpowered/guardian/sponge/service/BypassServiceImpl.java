@@ -23,11 +23,10 @@
  */
 package com.ichorpowered.guardian.sponge.service;
 
-import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionController;
 import com.ichorpowered.guardian.api.sequence.SequenceController;
 import com.ichorpowered.guardian.sponge.GuardianPlugin;
-import com.ichorpowered.guardian.sponge.detection.DetectionWrapper;
+import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;
 import com.me4502.precogs.detection.DetectionType;
 import com.me4502.precogs.service.AntiCheatService;
 import com.me4502.precogs.service.BypassTicket;
@@ -57,7 +56,7 @@ public class BypassServiceImpl implements AntiCheatService {
         return Optional.of(new BypassTicketImpl(this.detectionController, this.sequenceController, this.plugin, player,
                 detectionTypes.stream()
                         .map(detectionType -> {
-                            if (detectionType instanceof DetectionWrapper) return (DetectionWrapper) detectionType;
+                            if (detectionType instanceof DetectionProviderImpl) return (DetectionProviderImpl) detectionType;
                             else return null;
                         })
                         .filter(Objects::nonNull).collect(Collectors.toList())

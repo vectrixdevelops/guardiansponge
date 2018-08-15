@@ -29,7 +29,7 @@ import com.ichorpowered.guardian.api.detection.stage.process.Check;
 import com.ichorpowered.guardian.api.sequence.SequenceController;
 import com.ichorpowered.guardian.common.detection.stage.StageCycleImpl;
 import com.ichorpowered.guardian.sponge.GuardianPlugin;
-import com.ichorpowered.guardian.sponge.detection.DetectionWrapper;
+import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;
 import com.me4502.precogs.detection.DetectionType;
 import com.me4502.precogs.service.BypassTicket;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -46,7 +46,7 @@ public class BypassTicketImpl implements BypassTicket {
     private final SequenceController sequenceController;
     private final GuardianPlugin plugin;
     private final Player player;
-    private final List<DetectionWrapper> detections;
+    private final List<DetectionProviderImpl> detections;
     private final Object owner;
 
     private List<Long> blockId = new ArrayList<>();
@@ -54,7 +54,7 @@ public class BypassTicketImpl implements BypassTicket {
 
     public BypassTicketImpl(final @NonNull DetectionController detectionController, final @NonNull SequenceController sequenceController,
                             final @NonNull GuardianPlugin plugin, final @NonNull Player player,
-                            final @NonNull List<DetectionWrapper> detections, final @NonNull Object owner) {
+                            final @NonNull List<DetectionProviderImpl> detections, final @NonNull Object owner) {
         this.detectionController = detectionController;
         this.sequenceController = sequenceController;
         this.plugin = plugin;
@@ -63,7 +63,7 @@ public class BypassTicketImpl implements BypassTicket {
         this.owner = owner;
 
         this.detections.forEach(detectionType -> {
-            final Detection detection = detectionType.getDetection();
+            final Detection detection = detectionType.provide();
 
             while (detection.getStageCycle().next()) {
                 if (detection.getStageCycle().getStage().isPresent() && StageCycleImpl.class.isAssignableFrom(detection.getStageCycle().getStage().get().getClass())) {
@@ -87,7 +87,7 @@ public class BypassTicketImpl implements BypassTicket {
 
     @Override
     public List<DetectionType> getDetectionTypes() {
-        return this.detections.stream().map(detectionWrapper -> (DetectionType) detectionWrapper).collect(Collectors.toList());
+        return this.detections.stream().map(detectionProvider -> (DetectionType) detectionProvider).collect(Collectors.toList());
     }
 
     @Override
@@ -98,7 +98,7 @@ public class BypassTicketImpl implements BypassTicket {
     @Override
     public void close() {
         this.detections.forEach(detectionType -> {
-            final Detection detection = detectionType.getDetection();
+            final Detection detection = detectionType.provide();
 
             while (detection.getStageCycle().next()) {
                 if (detection.getStageCycle().getStage().isPresent() && StageCycleImpl.class.isAssignableFrom(detection.getStageCycle().getStage().get().getClass())) {

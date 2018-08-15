@@ -38,6 +38,7 @@ import com.ichorpowered.guardian.sponge.sequence.SequenceControllerImpl;
 import com.ichorpowered.guardian.sponge.sequence.SequenceListener;
 import com.ichorpowered.guardian.sponge.service.BypassServiceImpl;
 import com.me4502.precogs.service.AntiCheatService;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
@@ -71,7 +72,7 @@ public final class GuardianImpl {
     }
 
     public void loadService() {
-        Sponge.getServiceManager().setProvider(this, AntiCheatService.class, new BypassServiceImpl(this.detectionController, this.sequenceController, this.plugin));
+        Sponge.getServiceManager().setProvider(this.plugin, AntiCheatService.class, new BypassServiceImpl(this.detectionController, this.sequenceController, this.plugin));
         this.guardianChecks.categorize();
     }
 
@@ -123,6 +124,10 @@ public final class GuardianImpl {
                     .assign(PermissionDescription.ROLE_STAFF, true)
                     .register();
         });
+    }
+
+    public @NonNull DetectionController getDetectionController() {
+        return this.detectionController;
     }
 
 }

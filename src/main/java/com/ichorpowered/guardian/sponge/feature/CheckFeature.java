@@ -30,12 +30,14 @@ import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
 import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
 import com.ichorpowered.guardian.common.detection.stage.type.HeuristicStageImpl;
 import com.ichorpowered.guardian.common.detection.stage.type.PenaltyStageImpl;
+import com.ichorpowered.guardian.sponge.GuardianDetections;
 import com.ichorpowered.guardian.sponge.GuardianPlugin;
 import com.ichorpowered.guardian.sponge.common.check.FlightCheck;
 import com.ichorpowered.guardian.sponge.common.check.HorizontalCheck;
 import com.ichorpowered.guardian.sponge.common.check.VerticalCheck;
 import com.ichorpowered.guardian.sponge.common.heuristic.DistributionHeuristic;
 import com.ichorpowered.guardian.sponge.common.penalty.ReportPenalty;
+import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.detection.DetectionType;
 import org.spongepowered.api.Sponge;
@@ -52,37 +54,19 @@ public class CheckFeature {
         this.sequenceRegistry = sequenceRegistry;
     }
 
+    @SuppressWarnings("unchecked")
     public void create() {
-        this.detectionController.builder("flight_detection")
-                .stage(CheckStageImpl.class)
-                .add(FlightCheck.class)
-                .max(10)
-                .submit()
-                .stage(HeuristicStageImpl.class)
-                .add(DistributionHeuristic.class)
-                .max(10)
-                .submit()
-                .stage(PenaltyStageImpl.class)
-                .add(ReportPenalty.class)
-                .max(10)
-                .submit()
-                .register("Flight Detection", this.plugin);
+        this.detectionController.builder()
+                .stage(CheckStageImpl.class, FlightCheck.class)
+                .stage(HeuristicStageImpl.class, DistributionHeuristic.class)
+                .stage(PenaltyStageImpl.class, ReportPenalty.class)
+                .register(GuardianDetections.FLIGHT_DETECTION, this.plugin);
 
-        this.detectionController.builder("speed_detection")
-                .stage(CheckStageImpl.class)
-                .add(HorizontalCheck.class)
-                .add(VerticalCheck.class)
-                .max(10)
-                .submit()
-                .stage(HeuristicStageImpl.class)
-                .add(DistributionHeuristic.class)
-                .max(10)
-                .submit()
-                .stage(PenaltyStageImpl.class)
-                .add(ReportPenalty.class)
-                .max(10)
-                .submit()
-                .register("Speed Detection", this.plugin);
+        this.detectionController.builder()
+                .stage(CheckStageImpl.class, HorizontalCheck.class, VerticalCheck.class)
+                .stage(HeuristicStageImpl.class, DistributionHeuristic.class)
+                .stage(PenaltyStageImpl.class, ReportPenalty.class)
+                .register(GuardianDetections.SPEED_DETECTION, this.plugin);
     }
 
     public void register() {
@@ -94,6 +78,10 @@ public class CheckFeature {
 
             detection.getStageCycle().getFor(CheckStageImpl.class).forEach(stageProcess ->
                     this.sequenceRegistry.set(stageProcess.getClass(), stageProcess.getSequence(detection)));
+
+            Sponge.getRegistry().getType(DetectionType.class, detection.getId()).ifPresent(detectionType -> {
+                if (detectionType instanceof DetectionProviderImpl) ((DetectionProviderImpl) detectionType).setProvider(detection);
+            });
         });
     }
 
