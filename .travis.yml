@@ -2,13 +2,15 @@ dist: trusty
 
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 before_install:
   - chmod +x gradlew
 
 install: true
+
 script: ./gradlew build
+after_success: ./gradlew uploadArchives
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
