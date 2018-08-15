@@ -3,4 +3,4 @@
 	url = https://github.com/ichorpowered/guardianapi
 [submodule "guardiancommon"]
 	path = guardiancommon
-	url = git@github.com:ichorpowered/guardiancommon.git
+	url = https://github.com/ichorpowered/guardiancommon
