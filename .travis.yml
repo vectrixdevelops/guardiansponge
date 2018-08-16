@@ -9,7 +9,7 @@ before_install:
 
 install: true
 
-script: ./gradlew build uploadArchives
+script: ./gradlew clean build :uploadArchives --refresh-dependencies
 
 notifications:
   email: false
