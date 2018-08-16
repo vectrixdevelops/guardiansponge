@@ -16,9 +16,6 @@ plugins {
 }
 
 apply from: project(':guardiancommon').file('gradle/implementation.gradle')
-apply plugin: 'org.spongepowered.plugin'
-
-sponge.plugin.id = name
 
 version = "${presentedSpongeVersion}-${apiSuffix}-${buildNumber}"
 
@@ -27,8 +24,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.spongepowered:spongeapi:${spongeVersion}"
-    compileOnly 'com.github.me4502:Precogs:0ecc1f0b85'
+    compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
+    compile 'com.github.me4502:Precogs:0ecc1f0b85'
 }
 
 blossom {
@@ -40,3 +37,5 @@ blossom {
     replaceToken '@description@', description, location
     replaceToken '@url@', url, location
 }
+
+sponge.plugin.id = name
