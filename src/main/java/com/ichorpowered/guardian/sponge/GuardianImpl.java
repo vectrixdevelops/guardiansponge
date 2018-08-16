@@ -26,12 +26,17 @@ package com.ichorpowered.guardian.sponge;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.ichorpowered.guardian.api.Guardian;
+import com.ichorpowered.guardian.api.GuardianPlatform;
 import com.ichorpowered.guardian.api.detection.DetectionController;
 import com.ichorpowered.guardian.api.game.model.ModelRegistry;
 import com.ichorpowered.guardian.api.game.model.value.key.GameKey;
 import com.ichorpowered.guardian.api.game.model.value.key.GameKeyRegistry;
 import com.ichorpowered.guardian.api.sequence.SequenceController;
 import com.ichorpowered.guardian.api.sequence.SequenceRegistry;
+import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
+import com.ichorpowered.guardian.common.detection.stage.type.HeuristicStageImpl;
+import com.ichorpowered.guardian.common.detection.stage.type.PenaltyStageImpl;
+import com.ichorpowered.guardian.common.util.ConsoleUtil;
 import com.ichorpowered.guardian.sponge.feature.CheckFeature;
 import com.ichorpowered.guardian.sponge.feature.GameFeature;
 import com.ichorpowered.guardian.sponge.sequence.SequenceControllerImpl;
@@ -39,15 +44,20 @@ import com.ichorpowered.guardian.sponge.sequence.SequenceListener;
 import com.ichorpowered.guardian.sponge.service.BypassServiceImpl;
 import com.me4502.precogs.service.AntiCheatService;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.fusesource.jansi.Ansi;
+import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.text.Text;
 
+import java.util.stream.StreamSupport;
+
 @Singleton
 public final class GuardianImpl {
 
     private final GuardianPlugin plugin;
+    private final GuardianPlatform platform;
     private final DetectionController detectionController;
     private final SequenceController sequenceController;
 
@@ -57,11 +67,12 @@ public final class GuardianImpl {
     private SequenceControllerImpl.SequenceTask sequenceTask;
 
     @Inject
-    public GuardianImpl(final GuardianPlugin plugin, final SequenceController sequenceController,
+    public GuardianImpl(final GuardianPlugin plugin, final GuardianPlatform platform, final SequenceController sequenceController,
                         final DetectionController detectionController, final GameKey.Factory keyFactory,
                         final GameKeyRegistry keyRegistry, final SequenceRegistry sequenceRegistry,
                         final ModelRegistry modelRegistry) {
         this.plugin = plugin;
+        this.platform = platform;
         this.detectionController = detectionController;
         this.sequenceController = sequenceController;
 
@@ -71,35 +82,82 @@ public final class GuardianImpl {
         this.sequenceTask = new SequenceControllerImpl.SequenceTask(this.plugin, sequenceController);
     }
 
-    public void loadService() {
-        Sponge.getServiceManager().setProvider(this.plugin, AntiCheatService.class, new BypassServiceImpl(this.detectionController, this.sequenceController, this.plugin));
-        this.guardianChecks.categorize();
+    public void initialize() {
+        this.plugin.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false, "     _____               _ _             "));
+        this.plugin.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false, "    |   __|_ _ ___ ___ _| |_|___ ___     "));
+        this.plugin.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false, "    |  |  | | | .'|  _| . | | .'|   |    "));
+        this.plugin.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false, "    |_____|___|__,|_| |___|_|__,|_|_|    "));
+
+        this.plugin.getLogger().info(ConsoleUtil.of(" "));
+
+        this.plugin.getLogger().info(ConsoleUtil.of(Ansi.Color.BLACK, true, "  Starting v{} on {} {} and Minecraft {}  ",
+                this.platform.getVersion(),
+                this.platform.getPlatformName(),
+                this.platform.getPlatformVersion(),
+                this.platform.getGameVersion()
+        ));
+
+        this.plugin.getLogger().info(ConsoleUtil.of(" "));
     }
 
     public void loadConfiguration() {
+        this.plugin.getLogger().info(ConsoleUtil.of("Loading configuration..."));
+
         Guardian.getGlobalConfiguration().load(false, false);
     }
 
     public void loadKeys() {
+        this.plugin.getLogger().info(ConsoleUtil.of("Loading models..."));
+
         this.bukkitKeys.create();
         this.bukkitKeys.register();
     }
 
     public void loadDetections() {
+        this.plugin.getLogger().info(ConsoleUtil.of("Loading stages..."));
+
         this.guardianChecks.create();
         this.guardianChecks.register();
+
+        final int detectionCount = (int) StreamSupport.stream(this.detectionController.spliterator(), false).count();
+        final int checkCount = StreamSupport.stream(this.detectionController.spliterator(), false)
+                .mapToInt(detection -> detection.getStageCycle().sizeFor(CheckStageImpl.class)).sum();
+        final int heuristicCount = StreamSupport.stream(this.detectionController.spliterator(), false)
+                .mapToInt(detection -> detection.getStageCycle().sizeFor(HeuristicStageImpl.class)).sum();
+        final int penaltyCount = StreamSupport.stream(this.detectionController.spliterator(), false)
+                .mapToInt(detection -> detection.getStageCycle().sizeFor(PenaltyStageImpl.class)).sum();
+
+        this.plugin.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false, "Loaded {} punishment(s), {} heuristic(s) and {} check(s) for {} detection(s).",
+                String.valueOf(penaltyCount),
+                String.valueOf(heuristicCount),
+                String.valueOf(checkCount),
+                String.valueOf(detectionCount)
+        ));
     }
 
     public void unloadDetections() {
+        this.plugin.getLogger().info(ConsoleUtil.of("Unloading stages..."));
+
         this.guardianChecks.unregister();
     }
 
+    public void loadService() {
+        this.plugin.getLogger().info(ConsoleUtil.of("Registering service... [Precogs]"));
+
+        Sponge.getServiceManager().setProvider(this.plugin, AntiCheatService.class, new BypassServiceImpl(this.detectionController, this.sequenceController, this.plugin));
+        this.guardianChecks.categorize();
+    }
+
     public void startSequence() {
+        this.plugin.getLogger().info(ConsoleUtil.of("Starting detection strategies..."));
+
         Sponge.getEventManager().registerListeners(this.plugin, this.sequenceListener);
         this.sequenceTask.start();
     }
 
     public void stopSequence() {
+        this.plugin.getLogger().info(ConsoleUtil.of("Stopping detection strategies..."));
+
         this.sequenceTask.stop();
         Sponge.getEventManager().unregisterListeners(this.sequenceListener);
     }

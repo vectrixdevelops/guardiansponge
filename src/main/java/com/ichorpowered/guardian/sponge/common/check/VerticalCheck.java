@@ -129,7 +129,7 @@ public class VerticalCheck implements Check<Event> {
                                 || possibility <= 1) return process.end();
 
                         if (verticalDisplacement > possibility) {
-                            ((GuardianPlugin) detection.getPlugin()).getLogger().info(ConsoleUtil.of(Ansi.Color.RED, "{} has been caught " +
+                            ((GuardianPlugin) detection.getPlugin()).getLogger().info(ConsoleUtil.of(Ansi.Color.RED, false, "{} has been caught " +
                                     "using a vertical speed cheat. ({})", player.getName(), String.valueOf(verticalDisplacement - possibility)
                             ));
 

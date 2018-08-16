@@ -162,7 +162,7 @@ public class FlightCheck implements Check<Event> {
                                 || flightTick > 1) return process.end();
 
                         if (((verticalDisplacement / averageAltitude) + averageAltitude) > possibility) {
-                            ((GuardianPlugin) detection.getPlugin()).getLogger().info(ConsoleUtil.of(Ansi.Color.RED, "{} has been caught " +
+                            ((GuardianPlugin) detection.getPlugin()).getLogger().info(ConsoleUtil.of(Ansi.Color.RED, false, "{} has been caught " +
                                     "using a fly cheat. ({})", player.getName(), String.valueOf((verticalDisplacement / averageAltitude) + averageAltitude)
                             ));
 

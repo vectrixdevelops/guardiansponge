@@ -47,6 +47,7 @@ import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 
+import java.awt.*;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.StreamSupport;
@@ -89,55 +90,44 @@ public class GuardianPlugin {
 
         final CommonGuardianPlatform platform = new CommonGuardianPlatform(
                 Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName(),
-                Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getVersion().orElse("UNKNOWN"),
-                Sponge.getPlatform().getContainer(Platform.Component.GAME).getVersion().orElse("UNKNOWN"),
+                Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getVersion().orElse("unknown"),
+                Sponge.getPlatform().getContainer(Platform.Component.GAME).getVersion().orElse("unknown"),
                 PluginInfo.VERSION,
-                "bleeding"
+                "beta"
         );
 
         this.injector = this.rootInjector.createChildInjector(new SpongeGuardianModule(this.configPath, platform));
 
-        this.getLogger().info(ConsoleUtil.of("Environment [ Platform: {} {}, Minecraft: {} ]",
-                platform.getPlatformName(),
-                platform.getPlatformVersion(),
-                platform.getGameVersion()
-        ));
+        this.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false,"Initializing modules..."));
 
         this.guardian = this.injector.getInstance(GuardianImpl.class);
+        this.guardian.initialize();
+
         this.guardian.loadConfiguration();
         this.guardian.loadKeys();
         this.guardian.loadDetections();
         this.guardian.loadService();
 
-        final int detectionCount = (int) StreamSupport.stream(Guardian.getDetectionController().spliterator(), false).count();
-        final int checkCount = StreamSupport.stream(Guardian.getDetectionController().spliterator(), false)
-                .mapToInt(detection -> detection.getStageCycle().sizeFor(CheckStageImpl.class)).sum();
-        final int heuristicCount = StreamSupport.stream(Guardian.getDetectionController().spliterator(), false)
-                .mapToInt(detection -> detection.getStageCycle().sizeFor(HeuristicStageImpl.class)).sum();
-        final int penaltyCount = StreamSupport.stream(Guardian.getDetectionController().spliterator(), false)
-                .mapToInt(detection -> detection.getStageCycle().sizeFor(PenaltyStageImpl.class)).sum();
-
-        this.getLogger().info(ConsoleUtil.of(Ansi.Color.YELLOW, "Loaded {} punishment(s), {} heuristic(s) and {} check(s) for {} detection(s).",
-                String.valueOf(penaltyCount),
-                String.valueOf(heuristicCount),
-                String.valueOf(checkCount),
-                String.valueOf(detectionCount)
-        ));
+        this.guardian.registerPermissions();
 
         this.guardian.startSequence();
 
-        this.getLogger().info(ConsoleUtil.of("Startup complete. ({} sec)",
+        this.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false,"Startup complete. ({} sec)",
                 String.valueOf((double) (System.currentTimeMillis() - startTime) / 1000)));
     }
 
     @Listener
     public void onGameReload(final GameReloadEvent event) {
         if (this.guardian == null) return;
+        this.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false,"Reloading..."));
+
         this.guardian.stopSequence();
         this.guardian.unloadDetections();
 
         this.guardian.loadDetections();
         this.guardian.startSequence();
+
+        this.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false,"Reloaded."));
     }
 
     @Listener
@@ -145,6 +135,8 @@ public class GuardianPlugin {
         if (this.guardian == null) return;
         this.guardian.stopSequence();
         this.guardian.unloadDetections();
+
+        this.getLogger().info(ConsoleUtil.of(Ansi.Color.CYAN, false,"Shutdown complete."));
     }
 
     public Logger getLogger() {
