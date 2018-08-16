@@ -9,8 +9,7 @@ before_install:
 
 install: true
 
-script: ./gradlew build
-after_success: ./gradlew uploadArchives
+script: ./gradlew build uploadArchives
 
 notifications:
   email: false
