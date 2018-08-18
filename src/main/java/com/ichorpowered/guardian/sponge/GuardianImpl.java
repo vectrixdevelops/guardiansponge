@@ -45,7 +45,6 @@ import com.ichorpowered.guardian.sponge.service.BypassServiceImpl;
 import com.me4502.precogs.service.AntiCheatService;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.fusesource.jansi.Ansi;
-import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
@@ -61,8 +60,8 @@ public final class GuardianImpl {
     private final DetectionController detectionController;
     private final SequenceController sequenceController;
 
-    private GameFeature bukkitKeys;
-    private CheckFeature guardianChecks;
+    private GameFeature gameFeature;
+    private CheckFeature checkFeature;
     private SequenceListener sequenceListener;
     private SequenceControllerImpl.SequenceTask sequenceTask;
 
@@ -76,9 +75,9 @@ public final class GuardianImpl {
         this.detectionController = detectionController;
         this.sequenceController = sequenceController;
 
-        this.bukkitKeys = new GameFeature(keyFactory, keyRegistry);
-        this.guardianChecks = new CheckFeature(plugin, detectionController, sequenceRegistry);
-        this.sequenceListener = new SequenceListener(modelRegistry, sequenceController, this.bukkitKeys);
+        this.gameFeature = new GameFeature(keyFactory, keyRegistry);
+        this.checkFeature = new CheckFeature(plugin, detectionController, sequenceRegistry);
+        this.sequenceListener = new SequenceListener(modelRegistry, sequenceController, this.gameFeature);
         this.sequenceTask = new SequenceControllerImpl.SequenceTask(this.plugin, sequenceController);
     }
 
@@ -109,15 +108,15 @@ public final class GuardianImpl {
     public void loadKeys() {
         this.plugin.getLogger().info(ConsoleUtil.of("Loading models..."));
 
-        this.bukkitKeys.create();
-        this.bukkitKeys.register();
+        this.gameFeature.create();
+        this.gameFeature.register();
     }
 
     public void loadDetections() {
         this.plugin.getLogger().info(ConsoleUtil.of("Loading stages..."));
 
-        this.guardianChecks.create();
-        this.guardianChecks.register();
+        this.checkFeature.create();
+        this.checkFeature.register();
 
         final int detectionCount = (int) StreamSupport.stream(this.detectionController.spliterator(), false).count();
         final int checkCount = StreamSupport.stream(this.detectionController.spliterator(), false)
@@ -138,14 +137,14 @@ public final class GuardianImpl {
     public void unloadDetections() {
         this.plugin.getLogger().info(ConsoleUtil.of("Unloading stages..."));
 
-        this.guardianChecks.unregister();
+        this.checkFeature.unregister();
     }
 
     public void loadService() {
         this.plugin.getLogger().info(ConsoleUtil.of("Registering service... [Precogs]"));
 
         Sponge.getServiceManager().setProvider(this.plugin, AntiCheatService.class, new BypassServiceImpl(this.detectionController, this.sequenceController, this.plugin));
-        this.guardianChecks.categorize();
+        this.checkFeature.categorize();
     }
 
     public void startSequence() {
@@ -182,10 +181,6 @@ public final class GuardianImpl {
                     .assign(PermissionDescription.ROLE_STAFF, true)
                     .register();
         });
-    }
-
-    public @NonNull DetectionController getDetectionController() {
-        return this.detectionController;
     }
 
 }

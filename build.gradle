@@ -21,11 +21,13 @@ version = "${presentedSpongeVersion}-${apiSuffix}-${buildNumber}"
 
 repositories {
     maven { url 'https://jitpack.io' }
+    maven { url 'http://repo.foxdenstudio.net/repository/maven-vectrix' }
 }
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
+    compileOnly 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
     compile 'com.github.me4502:Precogs:0ecc1f0b85'
+    compile 'com.ichorpowered:rxjava-sponge:1.0.0-SNAPSHOT'
 }
 
 blossom {
@@ -36,6 +38,13 @@ blossom {
     replaceToken '@version@', version, location
     replaceToken '@description@', description, location
     replaceToken '@url@', url, location
+}
+
+shadowJar {
+    dependencies {
+        include dependency('com.ichorpowered:rxjava-sponge')
+        include dependency('io.reactivex:rxjava')
+    }
 }
 
 sponge.plugin.id = name
