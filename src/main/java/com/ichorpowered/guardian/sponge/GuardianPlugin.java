@@ -25,13 +25,8 @@ package com.ichorpowered.guardian.sponge;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.common.CommonGuardianPlatform;
-import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
-import com.ichorpowered.guardian.common.detection.stage.type.HeuristicStageImpl;
-import com.ichorpowered.guardian.common.detection.stage.type.PenaltyStageImpl;
 import com.ichorpowered.guardian.common.util.ConsoleUtil;
-import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;
 import com.ichorpowered.guardian.sponge.inject.SpongeGuardianModule;
 import com.me4502.precogs.detection.DetectionType;
 import org.fusesource.jansi.Ansi;
@@ -47,10 +42,8 @@ import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 
-import java.awt.*;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.stream.StreamSupport;
 
 @Plugin(
         id = PluginInfo.ID,

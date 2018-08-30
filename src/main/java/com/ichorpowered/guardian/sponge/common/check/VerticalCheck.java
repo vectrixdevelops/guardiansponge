@@ -151,6 +151,7 @@ public class VerticalCheck implements Check<Event> {
                     })
 
                 .build(new SequenceContextImpl()
+                        .add("root:type", TypeToken.of(Class.class), VerticalCheck.class)
                         .add("root:owner", TypeToken.of(Detection.class), detection)
                         .add("root:event_type", new TypeToken<Class<? extends Event>>() {}, this.getEventType())
                 );

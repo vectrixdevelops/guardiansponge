@@ -61,7 +61,8 @@ public class SequenceListener {
         model.getComponent("model-geometry").ifPresent(component -> component.set(GameKeys.JOIN_PING, player.getConnection().getLatency()));
 
         this.keys.populate(model);
-        this.sequenceController.getPlayerGroupResource().add(this.sequenceController.getPlayerResource().add(gameReference));
+        this.sequenceController.getPlayerGroupResource().add(gameReference);
+        this.sequenceController.getPlayerResource().add(gameReference);
     }
 
     @Listener

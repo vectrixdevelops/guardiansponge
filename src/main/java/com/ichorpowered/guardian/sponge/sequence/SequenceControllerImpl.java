@@ -150,7 +150,7 @@ public final class SequenceControllerImpl implements SequenceController<Event> {
 
     @Override
     public void clean(final boolean force) {
-        Sponge.getServer().getOnlinePlayers().forEach(player -> this.playerResource.get(player.toString()).ifPresent(gameReference -> this.clean(gameReference, force)));
+        Sponge.getServer().getOnlinePlayers().forEach(player -> this.playerResource.get(player.getUniqueId().toString()).ifPresent(gameReference -> this.clean(gameReference, force)));
     }
 
     @Override

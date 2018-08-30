@@ -90,10 +90,10 @@ public class CheckFeature {
     }
 
     public void categorize() {
-        Sponge.getRegistry().getType(DetectionType.class, "flight_detection").ifPresent(detectionType ->
+        Sponge.getRegistry().getType(DetectionType.class, GuardianDetections.FLIGHT_DETECTION.getId()).ifPresent(detectionType ->
                 CommonDetectionTypes.provideDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT, Lists.newArrayList(detectionType)));
 
-        Sponge.getRegistry().getType(DetectionType.class, "speed_detection").ifPresent(detectionType ->
+        Sponge.getRegistry().getType(DetectionType.class, GuardianDetections.SPEED_DETECTION.getId()).ifPresent(detectionType ->
                 CommonDetectionTypes.provideDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT, Lists.newArrayList(detectionType)));
     }
 

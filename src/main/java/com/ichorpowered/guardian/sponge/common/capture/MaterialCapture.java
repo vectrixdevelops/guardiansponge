@@ -75,6 +75,10 @@ public class MaterialCapture implements CaptureValue {
         final List<BlockType> activeMaterials = process.getContext().setOnce(MaterialCapture.ACTIVE_MATERIALS, new TypeToken<List<BlockType>>() {}, Lists.newArrayList());
         process.getContext().setOnce(MaterialCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), 1d);
 
+        matterHorizontalDistance.put("gas", 0d);
+        matterHorizontalDistance.put("liquid", 0d);
+        matterHorizontalDistance.put("solid", 0d);
+
         matterTime.put("gas", 0);
         matterTime.put("liquid", 0);
         matterTime.put("solid", 0);
@@ -84,16 +88,14 @@ public class MaterialCapture implements CaptureValue {
 
             process.getContext().transform(MaterialCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * gasSpeed);
 
-            final Integer gasValue = matterTime.get("gas");
-            matterTime.put("gas", (gasValue != null ? gasValue : 0) + 1);
+            matterTime.put("gas", matterTime.get("gas") + 1);
         } else if (WorldUtil.anyLiquidAtDepth(location, playerBox, 0.75) || WorldUtil.anyLiquidAtDepth(location, playerBox, 0)
                 || WorldUtil.anyLiquidAtDepth(location, playerBox, player.get(Keys.IS_SNEAKING).orElse(false) ? -(playerHeight - 0.15) : -playerHeight)) {
             final double liquidSpeed = matterHorizontalDistance.get("liquid");
 
             process.getContext().transform(MaterialCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * liquidSpeed);
 
-            final Integer liquidValue = matterTime.get("liquid");
-            matterTime.put("liquid", (liquidValue != null ? liquidValue : 0) + 1);
+            matterTime.put("liquid", matterTime.get("liquid") + 1);
         } else {
             final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksUnder(location, playerBox, 0.75);
 
@@ -107,8 +109,7 @@ public class MaterialCapture implements CaptureValue {
 
                 process.getContext().transform(MaterialCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * speedModifier);
 
-                final Integer solidValue = matterTime.get("solid");
-                matterTime.put("solid", (solidValue != null ? solidValue : 0) + 1);
+                matterTime.put("solid", matterTime.get("solid") + 1);
             }
         }
     }

@@ -127,7 +127,7 @@ public class SequenceBuilderImpl<T extends Event> implements SequenceBuilder<T> 
                 final CaptureRegistry captureRegistry = new CaptureRegistryImpl(merged.get("root:player", new TypeToken<GameReference<Player>>() {}), SequenceBuilderImpl.this.captures);
                 final Process process = new ProcessImpl(captureRegistry, merged, Process.State.INACTIVE);
 
-                return new SequenceImpl<>(event, process, this, (base, that) -> base.equals(that.getClass()), SequenceBuilderImpl.this.actions);
+                return new SequenceImpl<>(event, process, this, (base, that) -> base.isAssignableFrom(that.getClass()), SequenceBuilderImpl.this.actions);
             }
 
             @Override
@@ -145,7 +145,7 @@ public class SequenceBuilderImpl<T extends Event> implements SequenceBuilder<T> 
 
             @Override
             public int hashCode() {
-                return Objects.hash(buildContext.get("root:owner", TypeToken.of(Detection.class)), buildContext.get("root:event_type", new TypeToken<Class<? extends Event>>() {}));
+                return Objects.hash(buildContext.get("root:type", TypeToken.of(Class.class)), buildContext.get("root:owner", TypeToken.of(Detection.class)), buildContext.get("root:event_type", new TypeToken<Class<? extends Event>>() {}));
             }
 
             @Override
@@ -153,13 +153,15 @@ public class SequenceBuilderImpl<T extends Event> implements SequenceBuilder<T> 
                 if (this == other) return true;
                 if (!(other instanceof SequenceBlueprint<?>)) return false;
                 final SequenceBlueprint<?> that = (SequenceBlueprint<?>) other;
-                return Objects.equals(buildContext.get("root:owner", TypeToken.of(Detection.class)), that.getContext().get("root:owner", TypeToken.of(Detection.class)))
+                return Objects.equals(buildContext.get("root:type", TypeToken.of(Class.class)), that.getContext().get("root:type", TypeToken.of(Class.class)))
+                        && Objects.equals(buildContext.get("root:owner", TypeToken.of(Detection.class)), that.getContext().get("root:owner", TypeToken.of(Detection.class)))
                         && Objects.equals(buildContext.get("root:event_type", new TypeToken<Class<? extends Event>>() {}), that.getContext().get("root:event_type", new TypeToken<Class<? extends Event>>() {}));
             }
 
             @Override
             public String toString() {
                 return MoreObjects.toStringHelper(this)
+                        .add("type", buildContext.get("root:type", TypeToken.of(Class.class)))
                         .add("owner", buildContext.get("root:owner", TypeToken.of(Detection.class)))
                         .add("event_type", buildContext.get("root:event_type", new TypeToken<Class<? extends Event>>() {}))
                         .toString();

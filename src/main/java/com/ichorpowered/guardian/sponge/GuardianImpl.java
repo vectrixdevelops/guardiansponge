@@ -43,7 +43,6 @@ import com.ichorpowered.guardian.sponge.sequence.SequenceControllerImpl;
 import com.ichorpowered.guardian.sponge.sequence.SequenceListener;
 import com.ichorpowered.guardian.sponge.service.BypassServiceImpl;
 import com.me4502.precogs.service.AntiCheatService;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.fusesource.jansi.Ansi;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.permission.PermissionDescription;
