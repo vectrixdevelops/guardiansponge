@@ -154,7 +154,7 @@ public class HorizontalCheck implements Check<Event> {
                                     "Control type used was " + controlType + "."
                             ));
 
-                            process.getContext().add("detection_severity", TypeToken.of(Double.class), (horizontalDisplacement - possibility) / horizontalDisplacement);
+                            process.getContext().add("detection_severity", TypeToken.of(Double.class), horizontalDisplacement - possibility);
 
                             return process.next();
                         }

@@ -142,7 +142,7 @@ public class VerticalCheck implements Check<Event> {
                                     "Control type used was " + controlType + "."
                             ));
 
-                            process.getContext().add("detection_severity", TypeToken.of(Double.class), (verticalDisplacement - possibility) / verticalDisplacement);
+                            process.getContext().add("detection_severity", TypeToken.of(Double.class), verticalDisplacement - possibility);
 
                             return process.next();
                         }

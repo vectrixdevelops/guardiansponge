@@ -128,6 +128,7 @@ public final class SequenceControllerImpl implements SequenceController<Event> {
         final long index = this.avoidIndex++;
 
         this.avoidedObservers.put(gameReference, new Ordered<>(index, eventType));
+        this.sequences.get(gameReference.getGameId()).removeIf(sequence -> eventType.equals(sequence.getEventType()));
 
         return index;
     }

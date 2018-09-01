@@ -34,6 +34,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
 
 public class ReportPenalty implements Penalty {
 
@@ -50,7 +51,7 @@ public class ReportPenalty implements Penalty {
             if (!player.hasPermission("guardian.chat.notification")) return;
 
             player.sendMessage(Text.builder().append(
-                    Text.builder("Guardian AntiCheat ").color(TextColors.BLUE).build(),
+                    Text.builder("Guardian AntiCheat ").color(TextColors.RED).style(TextStyles.BOLD).build(),
                     Text.builder("# ").color(TextColors.DARK_GRAY).build(),
                     Text.builder("Caught ").color(TextColors.GRAY).build(),
                     Text.builder(target.getName()).color(TextColors.RED).build(),
@@ -58,6 +59,7 @@ public class ReportPenalty implements Penalty {
                     Text.builder(detectionName).color(TextColors.RED).build(),
                     Text.builder(" detection, with ").color(TextColors.GRAY).build(),
                     Text.builder(detectionProbability.toString().substring(0, 4)).color(TextColors.RED).build(),
+                    Text.builder("%").color(TextColors.RED).build(),
                     Text.builder(" certainty.").color(TextColors.GRAY).build()
             ).build());
         });
