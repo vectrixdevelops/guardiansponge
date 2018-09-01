@@ -30,24 +30,35 @@ import com.ichorpowered.guardian.api.game.model.ModelRegistry;
 import com.ichorpowered.guardian.api.game.model.value.key.GameKeys;
 import com.ichorpowered.guardian.api.sequence.SequenceController;
 import com.ichorpowered.guardian.common.game.GameReferenceImpl;
+import com.ichorpowered.guardian.sponge.GuardianPlugin;
 import com.ichorpowered.guardian.sponge.feature.GameFeature;
+import com.me4502.precogs.Precogs;
+import com.me4502.precogs.detection.CommonDetectionTypes;
+import com.me4502.precogs.service.AntiCheatService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class SequenceListener {
 
+    private final GuardianPlugin plugin;
     private final ModelRegistry modelRegistry;
     private final SequenceController<Event> sequenceController;
     private final GameFeature keys;
 
-    public SequenceListener(final ModelRegistry modelRegistry, final SequenceController sequenceController, final GameFeature gameFeature) {
+    public SequenceListener(final GuardianPlugin plugin, final ModelRegistry modelRegistry,
+                            final SequenceController sequenceController, final GameFeature gameFeature) {
+        this.plugin = plugin;
         this.modelRegistry = modelRegistry;
         this.sequenceController = sequenceController;
         this.keys = gameFeature;
@@ -76,12 +87,40 @@ public class SequenceListener {
     }
 
     @Listener
+    public void onPlayerTeleport(final MoveEntityEvent.Teleport event, final @First Player player) {
+        Sponge.getServiceManager().provide(AntiCheatService.class).ifPresent(antiCheatService ->
+                antiCheatService.requestTimedBypassTicket(
+                        player,
+                        CommonDetectionTypes.getDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT),
+                        this.plugin,
+                        2500,
+                        TimeUnit.MILLISECONDS
+                )
+        );
+    }
+
+    @Listener
+    public void onPlayerRespawn(final SpawnEntityEvent event, @Root Player player) {
+        Sponge.getServiceManager().provide(AntiCheatService.class).ifPresent(antiCheatService ->
+                antiCheatService.requestTimedBypassTicket(
+                        player,
+                        CommonDetectionTypes.getDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT),
+                        this.plugin,
+                        2500,
+                        TimeUnit.MILLISECONDS
+                )
+        );
+    }
+
+    // Sequence Handlers
+
+    @Listener
     public void onPlayerMove(final MoveEntityEvent event, final @First Player player) {
         this.sequenceController.getPlayerResource().get(player.getUniqueId().toString()).ifPresent(gameReference -> {
             this.sequenceController.invokeObserver(event, gameReference, new SequenceContextImpl()
                     .add("root:player", new TypeToken<GameReference<Player>>() {}, (GameReference<Player>) gameReference)
                     .add("root:force_observe", TypeToken.of(Boolean.class), false),
-                    eventSequence -> true);
+                    eventSequence -> !event.getCause().root().getClass().equals(PluginContainer.class));
         });
     }
 

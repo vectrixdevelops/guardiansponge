@@ -76,7 +76,7 @@ public final class GuardianImpl {
 
         this.gameFeature = new GameFeature(keyFactory, keyRegistry);
         this.checkFeature = new CheckFeature(plugin, detectionController, sequenceRegistry);
-        this.sequenceListener = new SequenceListener(modelRegistry, sequenceController, this.gameFeature);
+        this.sequenceListener = new SequenceListener(plugin, modelRegistry, sequenceController, this.gameFeature);
         this.sequenceTask = new SequenceControllerImpl.SequenceTask(this.plugin, sequenceController);
     }
 
