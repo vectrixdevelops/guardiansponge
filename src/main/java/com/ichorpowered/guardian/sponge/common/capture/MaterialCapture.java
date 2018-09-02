@@ -83,7 +83,7 @@ public class MaterialCapture implements CaptureValue {
         matterTime.put("liquid", 0);
         matterTime.put("solid", 0);
 
-        if (!WorldUtil.containsBlocksUnder(location, playerBox, 0.75)) {
+        if (!WorldUtil.containsBlocksUnder(location, playerBox, 1.25)) {
             final double gasSpeed = matterHorizontalDistance.get("gas");
 
             process.getContext().transform(MaterialCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * gasSpeed);
@@ -97,7 +97,7 @@ public class MaterialCapture implements CaptureValue {
 
             matterTime.put("liquid", matterTime.get("liquid") + 1);
         } else {
-            final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksUnder(location, playerBox, 0.75);
+            final List<BlockType> surroundingBlockTypes = WorldUtil.getBlocksUnder(location, playerBox, 1.25);
 
             for (BlockType blockType : surroundingBlockTypes) {
                 final Double matterHorizontalValue = matterHorizontalDistance.get("solid");

@@ -156,7 +156,7 @@ public class FlightCheck implements Check<Event> {
 
                         if (verticalDisplacement <= 1
                                 || averageAltitude <= 1
-                                || WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 0.75)
+                                || WorldUtil.containsBlocksUnder(player.getLocation(), playerBox, 1.25)
                                 || solidTick > 1
                                 || liquidTick > 1
                                 || flightTick > 1) return process.end();
