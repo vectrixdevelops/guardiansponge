@@ -25,9 +25,11 @@ package com.ichorpowered.guardian.sponge.service;
 
 import com.ichorpowered.guardian.api.detection.Detection;
 import com.ichorpowered.guardian.api.detection.DetectionController;
+import com.ichorpowered.guardian.api.detection.stage.StageCycle;
 import com.ichorpowered.guardian.api.detection.stage.process.Check;
 import com.ichorpowered.guardian.api.sequence.SequenceController;
 import com.ichorpowered.guardian.common.detection.stage.StageCycleImpl;
+import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
 import com.ichorpowered.guardian.sponge.GuardianPlugin;
 import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;
 import com.me4502.precogs.detection.DetectionType;
@@ -64,9 +66,10 @@ public class BypassTicketImpl implements BypassTicket {
 
         this.detections.forEach(detectionType -> {
             final Detection detection = detectionType.provide();
+            final StageCycle stageCycle = detection.getStageCycle();
 
-            while (detection.getStageCycle().next()) {
-                if (detection.getStageCycle().getStage().isPresent() && StageCycleImpl.class.isAssignableFrom(detection.getStageCycle().getStage().get().getClass())) {
+            while (stageCycle.next()) {
+                if (stageCycle.getStage().isPresent() && CheckStageImpl.class.isAssignableFrom(stageCycle.getStage().get().getClass())) {
                     if (!detection.getStageCycle().<Check<Event>>getStageProcess().isPresent()) continue;
                     final Check<Event> check = detection.getStageCycle().<Check<Event>>getStageProcess().get();
 
@@ -99,13 +102,14 @@ public class BypassTicketImpl implements BypassTicket {
     public void close() {
         this.detections.forEach(detectionType -> {
             final Detection detection = detectionType.provide();
+            final StageCycle stageCycle = detection.getStageCycle();
 
-            while (detection.getStageCycle().next()) {
-                if (detection.getStageCycle().getStage().isPresent() && StageCycleImpl.class.isAssignableFrom(detection.getStageCycle().getStage().get().getClass())) {
+            while (stageCycle.next()) {
+                if (stageCycle.getStage().isPresent() && CheckStageImpl.class.isAssignableFrom(stageCycle.getStage().get().getClass())) {
                     if (!detection.getStageCycle().<Check<Event>>getStageProcess().isPresent()) continue;
                     final Check<Event> check = detection.getStageCycle().<Check<Event>>getStageProcess().get();
 
-                    this.sequenceController.getPlayerResource().get(player.getUniqueId().toString()).ifPresent(gameReference -> {
+                    this.sequenceController.getPlayerResource().get(this.player.getUniqueId().toString()).ifPresent(gameReference -> {
                         for (long id : this.blockId) {
                             this.sequenceController.unavoidObserver(gameReference, check.getEventType(), id);
                         }

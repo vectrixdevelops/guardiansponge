@@ -93,7 +93,7 @@ public class SequenceListener {
                         player,
                         CommonDetectionTypes.getDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT),
                         this.plugin,
-                        2500,
+                        3500,
                         TimeUnit.MILLISECONDS
                 )
         );
@@ -106,7 +106,7 @@ public class SequenceListener {
                         player,
                         CommonDetectionTypes.getDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT),
                         this.plugin,
-                        2500,
+                        3500,
                         TimeUnit.MILLISECONDS
                 )
         );
