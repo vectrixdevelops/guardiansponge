@@ -36,9 +36,12 @@ import com.me4502.precogs.Precogs;
 import com.me4502.precogs.detection.CommonDetectionTypes;
 import com.me4502.precogs.service.AntiCheatService;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.key.Key;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.data.ChangeDataHolderEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
@@ -110,6 +113,22 @@ public class SequenceListener {
                         TimeUnit.MILLISECONDS
                 )
         );
+    }
+
+    public void compatibilityDataHandlers() {
+        Keys.IS_FLYING.registerEvent(Player.class, event -> {
+            final Player player = (Player) event.getTargetHolder();
+
+            Sponge.getServiceManager().provide(AntiCheatService.class).ifPresent(antiCheatService ->
+                    antiCheatService.requestTimedBypassTicket(
+                            player,
+                            CommonDetectionTypes.getDetectionTypesFor(CommonDetectionTypes.Category.MOVEMENT),
+                            this.plugin,
+                            2500,
+                            TimeUnit.MILLISECONDS
+                    )
+            );
+        });
     }
 
     // Sequence Handlers
