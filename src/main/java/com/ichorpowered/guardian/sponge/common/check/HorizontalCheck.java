@@ -145,8 +145,6 @@ public class HorizontalCheck implements Check<Event> {
                                     "using a horizontal speed cheat. ({})", player.getName(), String.valueOf(horizontalDisplacement - possibility)
                             ));
 
-                            System.out.println("Distance: " + controlHorizontalDistance + ". Effect Distance: " + effectHorizontalDistance + ". Material Distance: " + materialHorizontalDistance + ". Displacement: " + horizontalDisplacement);
-
                             process.getContext().add("detection", TypeToken.of(Detection.class), detection);
                             process.getContext().add("detection_type", TypeToken.of(String.class), "Horizontal Speed");
                             process.getContext().add("detection_type_id", TypeToken.of(Integer.class), 1);
