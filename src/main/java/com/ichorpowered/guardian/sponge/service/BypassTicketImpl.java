@@ -28,7 +28,6 @@ import com.ichorpowered.guardian.api.detection.DetectionController;
 import com.ichorpowered.guardian.api.detection.stage.StageCycle;
 import com.ichorpowered.guardian.api.detection.stage.process.Check;
 import com.ichorpowered.guardian.api.sequence.SequenceController;
-import com.ichorpowered.guardian.common.detection.stage.StageCycleImpl;
 import com.ichorpowered.guardian.common.detection.stage.type.CheckStageImpl;
 import com.ichorpowered.guardian.sponge.GuardianPlugin;
 import com.ichorpowered.guardian.sponge.detection.DetectionProviderImpl;

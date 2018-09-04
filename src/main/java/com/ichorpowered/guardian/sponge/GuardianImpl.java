@@ -150,7 +150,6 @@ public final class GuardianImpl {
         this.plugin.getLogger().info(ConsoleUtil.of("Starting detection strategies..."));
 
         Sponge.getEventManager().registerListeners(this.plugin, this.sequenceListener);
-        this.sequenceListener.compatibilityDataHandlers();
         this.sequenceTask.start();
     }
 

@@ -59,10 +59,10 @@ public class ControlCapture implements CaptureValue {
         // Model Values
 
         final double lift = playerModel.requestFirst(GameKeys.LIFT_SPEED).map(value -> value.get()).orElse(2.012);
-        final double sneak = playerModel.requestFirst(GameKeys.SNEAK_SPEED).map(value -> value.get()).orElse(1.068);
-        final double walk = playerModel.requestFirst(GameKeys.WALK_SPEED).map(value -> value.get()).orElse(1.094);
-        final double sprint = playerModel.requestFirst(GameKeys.SPRINT_SPEED).map(value -> value.get()).orElse(1.124);
-        final double flight = playerModel.requestFirst(GameKeys.FLIGHT_SPEED).map(value -> value.get()).orElse(1.218);
+        final double sneak = playerModel.requestFirst(GameKeys.SNEAK_SPEED).map(value -> value.get()).orElse(1.086);
+        final double walk = playerModel.requestFirst(GameKeys.WALK_SPEED).map(value -> value.get()).orElse(1.218);
+        final double sprint = playerModel.requestFirst(GameKeys.SPRINT_SPEED).map(value -> value.get()).orElse(1.236);
+        final double flight = playerModel.requestFirst(GameKeys.FLIGHT_SPEED).map(value -> value.get()).orElse(2.418);
 
         // Capture Context
 
@@ -71,10 +71,12 @@ public class ControlCapture implements CaptureValue {
         process.getContext().setOnce(ControlCapture.VERTICAL_DISTANCE, TypeToken.of(Double.class), 1d);
         process.getContext().setOnce(ControlCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), 1d);
 
-        controls.put("flight", 0);
-        controls.put("sprint", 0);
-        controls.put("sneak", 0);
-        controls.put("walk", 0);
+        if (controls.isEmpty()) {
+            controls.put("flight", 0);
+            controls.put("sprint", 0);
+            controls.put("sneak", 0);
+            controls.put("walk", 0);
+        }
 
         double walkSpeed = player.get(Keys.WALKING_SPEED).orElse(1d) * 10;
         double flySpeed = player.get(Keys.FLYING_SPEED).orElse(0.5) * 5;
@@ -83,28 +85,28 @@ public class ControlCapture implements CaptureValue {
             process.getContext().transform(ControlCapture.VERTICAL_DISTANCE, TypeToken.of(Double.class), value -> value * lift);
         }
 
-        if (player.get(Keys.IS_FLYING).orElse(false) || player.get(Keys.GAME_MODE).map(gameMode -> gameMode.equals(GameModes.SPECTATOR)).orElse(false)) {
+        if (player.get(Keys.IS_FLYING).orElse(false)
+                || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)
+                || player.get(Keys.GAME_MODE).map(gameMode -> gameMode.equals(GameModes.SPECTATOR)).orElse(false)) {
             process.getContext().transform(ControlCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * (flight * flySpeed));
 
-            final Integer flightValue = controls.get("flight");
-            controls.put("flight", (flightValue != null ? flightValue : 0) + 1);
+            controls.put("flight", controls.get("flight") + 1);
         }
 
         if (player.get(Keys.IS_SPRINTING).orElse(false)) {
             process.getContext().transform(ControlCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * (sprint * walkSpeed));
 
-            final Integer sprintValue = controls.get("sprint");
-            controls.put("sprint", (sprintValue != null ? sprintValue : 0) + 1);
-        } else if (player.get(Keys.IS_SNEAKING).orElse(false)) {
+            controls.put("sprint", controls.get("sprint") + 1);
+        }
+
+        if (player.get(Keys.IS_SNEAKING).orElse(false)) {
             process.getContext().transform(ControlCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * (sneak * walkSpeed));
 
-            final Integer sneakValue = controls.get("sneak");
-            controls.put("sneak", (sneakValue != null ? sneakValue : 0) + 1);
+            controls.put("sneak", controls.get("sneak") + 1);
         } else {
             process.getContext().transform(ControlCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * (walk * walkSpeed));
 
-            final Integer walkValue = controls.get("walk");
-            controls.put("walk", (walkValue != null ? walkValue : 0) + 1);
+            controls.put("walk", controls.get("walk") + 1);
         }
     }
 

@@ -124,8 +124,9 @@ public class HorizontalCheck implements Check<Event> {
                                 + materialHorizontalDistance)
                                 / 3;
 
-                        final double horizontalDisplacement = Math.abs((player.getLocation().getX() -
-                                location.getX()) + (player.getLocation().getZ() - location.getZ()));
+                        final double horizontalDisplacement = (Math.abs(player.getLocation().getX() - location.getX())
+                                + Math.abs(player.getLocation().getZ() - location.getZ()))
+                                / 2;
 
                         if (averageTicks > 1) possibility *= averageTicks;
                         if (averagePing > 1) possibility *= averagePing;
@@ -143,6 +144,8 @@ public class HorizontalCheck implements Check<Event> {
                             ((GuardianPlugin) detection.getPlugin()).getLogger().info(ConsoleUtil.of(Ansi.Color.RED, false, "{} has been caught " +
                                     "using a horizontal speed cheat. ({})", player.getName(), String.valueOf(horizontalDisplacement - possibility)
                             ));
+
+                            System.out.println("Distance: " + controlHorizontalDistance + ". Effect Distance: " + effectHorizontalDistance + ". Material Distance: " + materialHorizontalDistance + ". Displacement: " + horizontalDisplacement);
 
                             process.getContext().add("detection", TypeToken.of(Detection.class), detection);
                             process.getContext().add("detection_type", TypeToken.of(String.class), "Horizontal Speed");

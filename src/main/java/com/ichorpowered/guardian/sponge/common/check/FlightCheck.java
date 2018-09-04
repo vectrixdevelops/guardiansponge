@@ -53,7 +53,6 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.world.Location;
@@ -122,19 +121,13 @@ public class FlightCheck implements Check<Event> {
                             return process.end();
                         }
 
-                        if (player.get(Keys.VEHICLE).isPresent()
-                                || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)
-                                || player.get(Keys.IS_FLYING).orElse(false)
-                                || player.get(Keys.GAME_MODE).map(gameMode -> gameMode.equals(GameModes.SPECTATOR)).orElse(false)
-                                || player.getLocation().getY() < 1) return process.end();
+                        if (player.get(Keys.VEHICLE).isPresent() || player.getLocation().getY() < 1) return process.end();
 
                         // Find average tick time for captured ticks.
                         int averageTicks = 1;
                         if (collectionTime >= ticks) {
                             averageTicks = (collectionTime / ticks) / 2;
                         }
-
-                        if (!activeMaterials.isEmpty() && activeMaterials.contains(BlockTypes.SLIME)) return process.end();
 
                         // Gets the players possible vertical displacement in the world.
                         double possibility = (effectVerticalDistance / collectionTime) * 0.5;
@@ -161,7 +154,9 @@ public class FlightCheck implements Check<Event> {
                                 || liquidTick > 1
                                 || flightTick > 1) return process.end();
 
-                        if (((verticalDisplacement / averageAltitude) + averageAltitude) > possibility) {
+                        if (!activeMaterials.isEmpty() && activeMaterials.contains(BlockTypes.SLIME)) return process.end();
+
+                        if ((verticalDisplacement / averageAltitude) + averageAltitude > possibility) {
                             ((GuardianPlugin) detection.getPlugin()).getLogger().info(ConsoleUtil.of(Ansi.Color.RED, false, "{} has been caught " +
                                     "using a fly cheat. ({})", player.getName(), String.valueOf((verticalDisplacement / averageAltitude) + averageAltitude)
                             ));
@@ -174,8 +169,7 @@ public class FlightCheck implements Check<Event> {
                                     "Gained altitude by " + ((verticalDisplacement / averageAltitude) + averageAltitude) + "."
                             ));
 
-                            process.getContext().add("detection_severity", TypeToken.of(Double.class), ((verticalDisplacement / averageAltitude) + averageAltitude)
-                                    / (verticalDisplacement + averageAltitude));
+                            process.getContext().add("detection_severity", TypeToken.of(Double.class), (verticalDisplacement / averageAltitude) + averageAltitude);
 
                             return process.next();
                         }

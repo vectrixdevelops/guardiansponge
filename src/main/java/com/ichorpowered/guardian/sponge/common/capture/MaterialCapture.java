@@ -75,13 +75,17 @@ public class MaterialCapture implements CaptureValue {
         final List<BlockType> activeMaterials = process.getContext().setOnce(MaterialCapture.ACTIVE_MATERIALS, new TypeToken<List<BlockType>>() {}, Lists.newArrayList());
         process.getContext().setOnce(MaterialCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), 1d);
 
-        matterHorizontalDistance.put("gas", 0d);
-        matterHorizontalDistance.put("liquid", 0d);
-        matterHorizontalDistance.put("solid", 0d);
+        if (materialHorizontalDistance.isEmpty()) {
+            matterHorizontalDistance.put("gas", 1.245);
+            matterHorizontalDistance.put("liquid", 1.110);
+            matterHorizontalDistance.put("solid", 1.147);
+        }
 
-        matterTime.put("gas", 0);
-        matterTime.put("liquid", 0);
-        matterTime.put("solid", 0);
+        if (matterTime.isEmpty()) {
+            matterTime.put("gas", 0);
+            matterTime.put("liquid", 0);
+            matterTime.put("solid", 0);
+        }
 
         if (!WorldUtil.containsBlocksUnder(location, playerBox, 1.25)) {
             final double gasSpeed = matterHorizontalDistance.get("gas");
