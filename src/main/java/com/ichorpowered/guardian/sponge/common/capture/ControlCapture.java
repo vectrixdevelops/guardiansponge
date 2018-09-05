@@ -63,6 +63,7 @@ public class ControlCapture implements CaptureValue {
         final double walk = playerModel.requestFirst(GameKeys.WALK_SPEED).map(value -> value.get()).orElse(1.218);
         final double sprint = playerModel.requestFirst(GameKeys.SPRINT_SPEED).map(value -> value.get()).orElse(1.236);
         final double flight = playerModel.requestFirst(GameKeys.FLIGHT_SPEED).map(value -> value.get()).orElse(2.418);
+        final double spectator = playerModel.requestFirst(GameKeys.SPECTATOR_SPEED).map(value -> value.get()).orElse(2.816);
 
         // Capture Context
 
@@ -85,9 +86,14 @@ public class ControlCapture implements CaptureValue {
             process.getContext().transform(ControlCapture.VERTICAL_DISTANCE, TypeToken.of(Double.class), value -> value * lift);
         }
 
+        if (player.get(Keys.GAME_MODE).map(gameMode -> gameMode.equals(GameModes.SPECTATOR)).orElse(false)) {
+            process.getContext().transform(ControlCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * spectator);
+
+            controls.put("flight", controls.get("flight") + 1);
+        }
+
         if (player.get(Keys.IS_FLYING).orElse(false)
-                || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)
-                || player.get(Keys.GAME_MODE).map(gameMode -> gameMode.equals(GameModes.SPECTATOR)).orElse(false)) {
+                || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)) {
             process.getContext().transform(ControlCapture.HORIZONTAL_DISTANCE, TypeToken.of(Double.class), value -> value * (flight * flySpeed));
 
             controls.put("flight", controls.get("flight") + 1);

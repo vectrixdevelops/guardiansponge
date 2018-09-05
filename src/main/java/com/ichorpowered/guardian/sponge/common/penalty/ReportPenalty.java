@@ -24,6 +24,7 @@
 package com.ichorpowered.guardian.sponge.common.penalty;
 
 import com.google.common.reflect.TypeToken;
+import com.ichorpowered.guardian.api.Guardian;
 import com.ichorpowered.guardian.api.detection.stage.Stage;
 import com.ichorpowered.guardian.api.detection.stage.process.Penalty;
 import com.ichorpowered.guardian.api.game.GameReference;
@@ -44,6 +45,8 @@ public class ReportPenalty implements Penalty {
         final Double detectionProbability = process.getContext().get("detection_probability", TypeToken.of(Double.class));
         final String detectionName = process.getContext().get("detection_type", TypeToken.of(String.class));
         if (gameReference == null || detectionName == null || detectionProbability == null) return false;
+
+        if (!Guardian.getGlobalConfiguration().getRoot().getNode("global", "notification", "enable").getBoolean(true)) return false;
 
         final Player target = gameReference.get();
 

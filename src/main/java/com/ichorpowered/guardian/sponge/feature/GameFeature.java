@@ -65,6 +65,7 @@ public class GameFeature {
         GameKeys.SNEAK_SPEED = (GameKey<Double>) this.keyFactory.create("sneak", TypeToken.of(Double.class), TypeToken.of(Double.class), GameStores.PHYSICAL);
         GameKeys.SPRINT_SPEED = (GameKey<Double>) this.keyFactory.create("sprint", TypeToken.of(Double.class), TypeToken.of(Double.class), GameStores.PHYSICAL);
         GameKeys.FLIGHT_SPEED = (GameKey<Double>) this.keyFactory.create("flight", TypeToken.of(Double.class), TypeToken.of(Double.class), GameStores.PHYSICAL);
+        GameKeys.SPECTATOR_SPEED = (GameKey<Double>) this.keyFactory.create("spectator", TypeToken.of(Double.class), TypeToken.of(Double.class), GameStores.PHYSICAL);
 
         GameKeys.LIFT_SPEED = (GameKey<Double>) this.keyFactory.create("lift", TypeToken.of(Double.class), TypeToken.of(Double.class), GameStores.PHYSICAL);
 
@@ -93,6 +94,7 @@ public class GameFeature {
                 .register(GameKeys.SNEAK_SPEED)
                 .register(GameKeys.SPRINT_SPEED)
                 .register(GameKeys.FLIGHT_SPEED)
+                .register(GameKeys.SPECTATOR_SPEED)
                 .register(GameKeys.LIFT_SPEED)
                 .register(GameKeys.MATTER_HORIZONTAL_DISTANCE)
                 .register(GameKeys.MATERIAL_HORIZONTAL_DISTANCE)
