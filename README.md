@@ -1,7 +1,7 @@
 <h1 align="center">
   <img src="https://forums-cdn.spongepowered.org/uploads/default/original/3X/f/9/f97c66af122e9aed4ef7387b59460778234bd690.png" width="620">
 </h1>
-<p align="center">**Sponge Implementation**</p>
+<p align="center"><b>Sponge Implementation</b></p>
 <p align="center">An extensible AntiCheat plugin for Sponge.</p>
 
 <p align="center">
@@ -22,20 +22,19 @@ The plugin is a work in progress and there are plans for more detections to be a
 
 ###### Movement:
 
-- [x] HorizontalSpeed    (Movement Speed)
-- [x] VerticalSpeed      (Movement Speed)
+- [x] Speed    (Movement Speed)
 - [x] Flight             (Flight, Movement Speed)
 - [x] JetPack            (Flight)
-- [ ] Jesus              (Jesus, Movement Speed)
+- [ ] Jesus
 - [x] Blink              (Movement Speed)
-- [ ] Spider / WallClimb (Flight, Movement Speed)
+- [ ] Spider / WallClimb
 - [x] Timer              (Movement Speed)
-- [x] AutoSneak          (Invalid Movement, Movement Speed)
-- [x] AutoSprint         (Invalid Movement, Movement Speed)
-- [x] FastLadder         (Movement Speed)
+- [ ] AutoSneak
+- [ ] AutoSprint
+- [ ] FastLadder         (Movement Speed)
 - [ ] Phase/NoClip
 - [ ] MiniJump
-- [x] Glide              (Movement Speed)
+- [ ] Glide
 - [ ] HighJump / LongJump
 
 And more coming soon.
