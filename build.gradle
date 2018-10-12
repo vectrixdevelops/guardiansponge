@@ -21,7 +21,7 @@ version = "${presentedSpongeVersion}-${apiSuffix}-${buildNumber}"
 
 repositories {
     maven { url 'https://jitpack.io' }
-    maven { url 'http://repo.foxdenstudio.net/repository/maven-vectrix' }
+    maven { url 'http://maven.ichorpowered.com/repository/maven-snapshots/' }
 }
 
 dependencies {
